@@ -52,13 +52,13 @@ describe("generateScales", () => {
     }
   });
 
-  it("brand-700 has the default anchor lightness (0.36)", () => {
-    expect(scales.brand["700"].light.l).toBe(0.36);
+  it("brand-700 has the default anchor lightness (0.44)", () => {
+    expect(scales.brand["700"].light.l).toBe(0.44);
   });
 
-  it("brand-700 has cMult 1.0 (full chroma)", () => {
+  it("brand-600 has peak chroma (cMult 1.0)", () => {
     const primary = parsePrimary("#5e6ad2");
-    expect(scales.brand["700"].light.c).toBeCloseTo(primary.c, 6);
+    expect(scales.brand["600"].light.c).toBeCloseTo(primary.c, 6);
   });
 
   it("preserves input hue across all brand steps", () => {
@@ -69,8 +69,8 @@ describe("generateScales", () => {
   });
 
   it("accepts custom brandAnchorL", () => {
-    const custom = generateScales("#5e6ad2", { brandAnchorL: 0.40 });
-    expect(custom.brand["700"].light.l).toBe(0.40);
+    const custom = generateScales("#5e6ad2", { brandAnchorL: 0.50 });
+    expect(custom.brand["700"].light.l).toBe(0.50);
   });
 
   it("accent hue is brand + 150°", () => {
@@ -79,9 +79,9 @@ describe("generateScales", () => {
     expect(scales.accent["700"].light.h).toBeCloseTo(expectedH, 6);
   });
 
-  it("accent chroma is brand × 0.85", () => {
+  it("accent chroma is brand × 0.85 at peak", () => {
     const primary = parsePrimary("#5e6ad2");
-    expect(scales.accent["700"].light.c).toBeCloseTo(primary.c * 0.85, 6);
+    expect(scales.accent["600"].light.c).toBeCloseTo(primary.c * 0.85, 6);
   });
 
   it("semantic colors use fixed hues", () => {
@@ -91,10 +91,10 @@ describe("generateScales", () => {
     expect(scales.blue["700"].light.h).toBe(250);
   });
 
-  it("semantic chroma derives from brand chroma", () => {
+  it("semantic chroma derives from brand chroma at peak", () => {
     const primary = parsePrimary("#5e6ad2");
-    expect(scales.green["700"].light.c).toBeCloseTo(primary.c * 0.90, 6);
-    expect(scales.red["700"].light.c).toBeCloseTo(primary.c * 0.95, 6);
+    expect(scales.green["600"].light.c).toBeCloseTo(primary.c * 0.90, 6);
+    expect(scales.red["600"].light.c).toBeCloseTo(primary.c * 0.95, 6);
   });
 
   it("gray uses brand hue with low chroma", () => {

@@ -17,7 +17,7 @@ export interface ColorConfig {
 }
 
 const DEFAULT_CONFIG: ColorConfig = {
-  brandAnchorL: 0.36,
+  brandAnchorL: 0.44,
   grayChroma: 0.012,
 };
 
@@ -30,16 +30,16 @@ interface StepDef {
 }
 
 const CHROMATIC_STEPS: readonly StepDef[] = [
-  { step: "100",  l: 0.96, cMult: 0.15 },
-  { step: "200",  l: 0.90, cMult: 0.25 },
-  { step: "300",  l: 0.82, cMult: 0.40 },
-  { step: "400",  l: 0.70, cMult: 0.60 },
-  { step: "500",  l: 0.58, cMult: 0.80 },
-  { step: "600",  l: 0.46, cMult: 0.92 },
-  { step: "700",  l: 0.36, cMult: 1.00 },
-  { step: "800",  l: 0.28, cMult: 0.95 },
-  { step: "900",  l: 0.20, cMult: 0.75 },
-  { step: "1000", l: 0.13, cMult: 0.55 },
+  { step: "100",  l: 0.97, cMult: 0.25 },
+  { step: "200",  l: 0.92, cMult: 0.40 },
+  { step: "300",  l: 0.85, cMult: 0.55 },
+  { step: "400",  l: 0.75, cMult: 0.75 },
+  { step: "500",  l: 0.64, cMult: 0.90 },
+  { step: "600",  l: 0.54, cMult: 1.00 },
+  { step: "700",  l: 0.44, cMult: 0.95 },
+  { step: "800",  l: 0.35, cMult: 0.80 },
+  { step: "900",  l: 0.26, cMult: 0.60 },
+  { step: "1000", l: 0.17, cMult: 0.40 },
 ];
 
 const GRAY_STEPS: readonly { readonly step: string; readonly l: number }[] = [
@@ -72,7 +72,7 @@ export const parsePrimary = (hex: string): Oklch => {
   return { l: color.l ?? 0, c: color.c ?? 0, h: color.h ?? 0 };
 };
 
-const DEFAULT_ANCHOR_L = 0.36;
+const DEFAULT_ANCHOR_L = 0.44;
 
 const clampL = (l: number): number => Math.min(0.99, Math.max(0.01, l));
 
