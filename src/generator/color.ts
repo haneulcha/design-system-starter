@@ -1,7 +1,9 @@
 // src/generator/color.ts
 
 import { formatHex, converter } from "culori";
-import type { NeutralUndertone } from "../schema/types.js";
+import type { NeutralUndertone, ColorScales } from "../schema/types.js";
+
+export type { ColorScales };
 
 const toOklch = converter("oklch");
 
@@ -12,11 +14,6 @@ function oklchToHex(l: number, c: number, h: number): string {
 
 export interface ColorScale {
   [step: string]: { light: string; dark: string };
-}
-
-export interface ColorScales {
-  gray: ColorScale;
-  [hueName: string]: ColorScale;
 }
 
 export function detectHueName(hue: number): string {

@@ -18,24 +18,13 @@ export interface UserInputs {
 
 // ═══ Color ═══
 
-export interface ColorRole {
-  name: string;
-  hex: string;
-  description: string;
+export interface ColorStep {
+  light: string;
+  dark: string;
 }
 
-export interface ColorPalette {
-  primary: ColorRole[];
-  accent: ColorRole[];
-  neutral: ColorRole[];
-  semantic: ColorRole[];
-  surface: ColorRole[];
-  border: ColorRole[];
-  dark: {
-    surface: ColorRole[];
-    text: ColorRole[];
-    border: ColorRole[];
-  };
+export interface ColorScales {
+  [hue: string]: Record<string, ColorStep>;
 }
 
 // ═══ Typography ═══
@@ -170,7 +159,7 @@ export interface DesignSystem {
   brandName: string;
   mood: MoodArchetype;
   theme: { atmosphere: string; characteristics: string[] };
-  colors: ColorPalette;
+  colors: ColorScales;
   typography: TypographySystem;
   components: ComponentSpecs;
   layout: LayoutSystem;

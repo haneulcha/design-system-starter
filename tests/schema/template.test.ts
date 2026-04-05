@@ -17,80 +17,41 @@ const mockSystem: DesignSystem = {
     ],
   },
   colors: {
-    primary: [
-      { name: "Primary 500", hex: "#0066FF", description: "Main brand color" },
-      { name: "Primary 600", hex: "#0052CC", description: "Hover state" },
-      { name: "Primary 400", hex: "#3385FF", description: "Light variant" },
-    ],
-    accent: [
-      { name: "Accent Teal", hex: "#00BFA5", description: "Supporting accent" },
-      { name: "Accent Amber", hex: "#FFB300", description: "Warning accent" },
-    ],
-    neutral: [
-      { name: "Gray 50", hex: "#FAFAFA", description: "Lightest background" },
-      { name: "Gray 100", hex: "#F5F5F5", description: "Subtle background" },
-      { name: "Gray 300", hex: "#E0E0E0", description: "Borders" },
-      { name: "Gray 500", hex: "#9E9E9E", description: "Muted text" },
-      { name: "Gray 700", hex: "#616161", description: "Secondary text" },
-      { name: "Gray 900", hex: "#212121", description: "Primary text" },
-    ],
-    semantic: [
-      { name: "Success", hex: "#4CAF50", description: "Success state" },
-      { name: "Warning", hex: "#FF9800", description: "Warning state" },
-      { name: "Error", hex: "#F44336", description: "Error state" },
-      { name: "Info", hex: "#2196F3", description: "Info state" },
-    ],
-    surface: [
-      { name: "Surface White", hex: "#FFFFFF", description: "Default surface" },
-      { name: "Surface Gray", hex: "#FAFAFA", description: "Subtle surface" },
-      { name: "Surface Dark", hex: "#121212", description: "Dark surface" },
-    ],
-    border: [
-      { name: "Border Light", hex: "#E0E0E0", description: "Default border" },
-      { name: "Border Medium", hex: "#BDBDBD", description: "Stronger border" },
-    ],
-    dark: {
-      surface: [
-        {
-          name: "Dark Surface 900",
-          hex: "#121212",
-          description: "Primary dark background",
-        },
-        {
-          name: "Dark Surface 800",
-          hex: "#1E1E1E",
-          description: "Secondary dark surface",
-        },
-        {
-          name: "Dark Surface 700",
-          hex: "#2C2C2C",
-          description: "Elevated dark surface",
-        },
-      ],
-      text: [
-        {
-          name: "Dark Text Primary",
-          hex: "#FFFFFF",
-          description: "Primary text on dark",
-        },
-        {
-          name: "Dark Text Secondary",
-          hex: "#B0B0B0",
-          description: "Secondary text on dark",
-        },
-      ],
-      border: [
-        {
-          name: "Dark Border",
-          hex: "#333333",
-          description: "Border on dark background",
-        },
-        {
-          name: "Dark Border Strong",
-          hex: "#444444",
-          description: "Strong border on dark",
-        },
-      ],
+    gray: {
+      "100": { light: "#f5f5f5", dark: "#0b0b0b" },
+      "200": { light: "#e8e8e8", dark: "#141414" },
+      "300": { light: "#d4d4d4", dark: "#1f1f1f" },
+      "400": { light: "#b8b8b8", dark: "#2e2e2e" },
+      "500": { light: "#969696", dark: "#454545" },
+      "600": { light: "#757575", dark: "#616161" },
+      "700": { light: "#545454", dark: "#878787" },
+      "800": { light: "#363636", dark: "#adadad" },
+      "900": { light: "#1f1f1f", dark: "#d1d1d1" },
+      "1000": { light: "#1b1a1a", dark: "#e8e7e8" },
+    },
+    blue: {
+      "100": { light: "#f3f5fb", dark: "#0a0b0f" },
+      "200": { light: "#e2e7f5", dark: "#111521" },
+      "300": { light: "#c8d3ed", dark: "#192036" },
+      "400": { light: "#a2b3e0", dark: "#253252" },
+      "500": { light: "#7a93d0", dark: "#374c72" },
+      "600": { light: "#5873bc", dark: "#4d6391" },
+      "700": { light: "#4a53a8", dark: "#6874bc" },
+      "800": { light: "#3a4090", dark: "#8d97d0" },
+      "900": { light: "#2c3175", dark: "#b8bde2" },
+      "1000": { light: "#110f49", dark: "#dee6ff" },
+    },
+    green: {
+      "100": { light: "#f2fbf4", dark: "#050f07" },
+      "200": { light: "#e0f5e5", dark: "#0e1f12" },
+      "300": { light: "#c3ebcc", dark: "#162e1c" },
+      "400": { light: "#98d9a6", dark: "#1f452a" },
+      "500": { light: "#6dc47f", dark: "#2d633d" },
+      "600": { light: "#47ae5b", dark: "#3d8150" },
+      "700": { light: "#3a9649", dark: "#55a368" },
+      "800": { light: "#2d7939", dark: "#79c18a" },
+      "900": { light: "#225f2c", dark: "#a8d9b2" },
+      "1000": { light: "#0e2d14", dark: "#d2efd8" },
     },
   },
   typography: {
@@ -318,26 +279,24 @@ describe("renderDesignMd", () => {
   });
 
   describe("Section 2 — Colors", () => {
-    it("has ### Primary sub-heading", () => {
-      expect(output).toMatch(/^### Primary$/m);
+    it("has ### Color Scales sub-heading", () => {
+      expect(output).toMatch(/^### Color Scales$/m);
     });
-    it("has ### Accent sub-heading", () => {
-      expect(output).toMatch(/^### Accent$/m);
+    it("has #### Gray hue heading", () => {
+      expect(output).toMatch(/^#### Gray$/m);
     });
-    it("has ### Neutral Scale sub-heading", () => {
-      expect(output).toMatch(/^### Neutral Scale$/m);
+    it("has #### Blue hue heading", () => {
+      expect(output).toMatch(/^#### Blue$/m);
     });
-    it("has ### Semantic sub-heading", () => {
-      expect(output).toMatch(/^### Semantic$/m);
+    it("has #### Green hue heading", () => {
+      expect(output).toMatch(/^#### Green$/m);
     });
-    it("has ### Surface & Background sub-heading", () => {
-      expect(output).toMatch(/^### Surface & Background$/m);
+    it("has step table header", () => {
+      expect(output).toMatch(/\| Step \| Light \| Dark \|/);
     });
-    it("has ### Border sub-heading", () => {
-      expect(output).toMatch(/^### Border$/m);
-    });
-    it("has ### Dark Mode sub-heading", () => {
-      expect(output).toMatch(/^### Dark Mode$/m);
+    it("contains step values in table rows", () => {
+      expect(output).toMatch(/\| 100 \|/);
+      expect(output).toMatch(/\| 1000 \|/);
     });
   });
 

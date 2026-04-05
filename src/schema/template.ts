@@ -2,19 +2,10 @@
 
 import type {
   DesignSystem,
-  ColorRole,
   TypeStyle,
   ElevationLevel,
   Breakpoint,
 } from "./types.js";
-
-// ─── Color helpers ───────────────────────────────────────────────────────────
-
-function renderColorList(colors: ColorRole[]): string {
-  return colors
-    .map((c) => `- **${c.name}** (\`${c.hex}\`): ${c.description}`)
-    .join("\n");
-}
 
 // ─── Section renderers ───────────────────────────────────────────────────────
 
@@ -33,32 +24,19 @@ function renderTheme(system: DesignSystem): string {
 function renderColors(system: DesignSystem): string {
   const lines: string[] = [];
   lines.push("## 2. Color System\n");
+  lines.push("### Color Scales\n");
+  lines.push("Each color has 10 steps (100-1000). Steps 100-300: backgrounds, 400-600: borders, 700-800: high contrast, 900-1000: text.\n");
 
-  lines.push("### Primary\n");
-  lines.push(renderColorList(system.colors.primary));
-
-  lines.push("\n### Accent\n");
-  lines.push(renderColorList(system.colors.accent));
-
-  lines.push("\n### Neutral Scale\n");
-  lines.push(renderColorList(system.colors.neutral));
-
-  lines.push("\n### Semantic\n");
-  lines.push(renderColorList(system.colors.semantic));
-
-  lines.push("\n### Surface & Background\n");
-  lines.push(renderColorList(system.colors.surface));
-
-  lines.push("\n### Border\n");
-  lines.push(renderColorList(system.colors.border));
-
-  lines.push("\n### Dark Mode\n");
-  lines.push("**Surfaces:**");
-  lines.push(renderColorList(system.colors.dark.surface));
-  lines.push("\n**Text:**");
-  lines.push(renderColorList(system.colors.dark.text));
-  lines.push("\n**Borders:**");
-  lines.push(renderColorList(system.colors.dark.border));
+  for (const [hue, scale] of Object.entries(system.colors)) {
+    lines.push(`#### ${hue.charAt(0).toUpperCase() + hue.slice(1)}\n`);
+    const steps = Object.entries(scale).sort((a, b) => Number(a[0]) - Number(b[0]));
+    lines.push("| Step | Light | Dark |");
+    lines.push("|------|-------|------|");
+    for (const [step, values] of steps) {
+      lines.push(`| ${step} | \`${values.light}\` | \`${values.dark}\` |`);
+    }
+    lines.push("");
+  }
 
   return lines.join("\n");
 }
