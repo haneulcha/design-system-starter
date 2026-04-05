@@ -1,77 +1,57 @@
 // src/generator/components.ts
 
-import type { ArchetypePreset, ColorPalette, ComponentSpecs } from "../schema/types.js";
+import type { ArchetypePreset, ComponentSpecs } from "../schema/types.js";
 
-export function generateComponents(palette: ColorPalette, archetype: ArchetypePreset): ComponentSpecs {
-  const primaryColor = palette.primary[0].hex;
-  const primaryDark = palette.primary[1].hex;
-  const surfaceMuted = palette.surface[2].hex;
-  const surfaceSubtle = palette.surface[1].hex;
-  const borderColor = palette.border[0].hex;
-  const neutralDark = palette.neutral[2].hex;
-  const surfaceBase = palette.surface[0].hex;
-
-  const buttons = [
-    {
-      name: "primary",
-      background: primaryColor,
-      text: "#ffffff",
-      padding: "10px 20px",
-      radius: archetype.buttonRadius,
-      shadow: "none",
-      hoverBg: primaryDark,
-      use: "Primary call-to-action",
+export function generateComponents(archetype: ArchetypePreset): ComponentSpecs {
+  return {
+    button: {
+      sizes: {
+        sm: { height: "spacing.xl", paddingX: "spacing.sm", gap: "spacing.2xs", fontSize: "typography.caption", iconSize: "spacing.md", radius: "radius.button" },
+        md: { height: "spacing.2xl", paddingX: "spacing.md", gap: "spacing.xs", fontSize: "typography.button", iconSize: "spacing.md", radius: "radius.button" },
+        lg: { height: "spacing.3xl", paddingX: "spacing.lg", gap: "spacing.xs", fontSize: "typography.body", iconSize: "spacing.lg", radius: "radius.button" },
+      },
+      variants: ["primary", "secondary", "ghost"],
     },
-    {
-      name: "secondary",
-      background: surfaceMuted,
-      text: neutralDark,
-      padding: "10px 20px",
-      radius: archetype.buttonRadius,
-      shadow: "none",
-      hoverBg: palette.surface[3].hex,
-      use: "Secondary actions and less prominent CTAs",
+    input: {
+      fieldHeight: "spacing.2xl",
+      fieldPaddingX: "spacing.sm",
+      fieldRadius: "radius.input",
+      labelFieldGap: "spacing.2xs",
+      fieldHelperGap: "spacing.2xs",
+      labelFont: "typography.label",
+      valueFont: "typography.body",
+      helperFont: "typography.caption",
+      iconSize: "spacing.md",
+      states: ["default", "focus", "error", "disabled"],
     },
-    {
-      name: "ghost",
-      background: "transparent",
-      text: primaryColor,
-      padding: "10px 20px",
-      radius: archetype.buttonRadius,
-      shadow: `0 0 0 1px ${borderColor}`,
-      hoverBg: surfaceSubtle,
-      use: "Tertiary actions and inline buttons",
+    card: {
+      radius: "radius.card",
+      contentPadding: "spacing.lg",
+      contentGap: "spacing.sm",
+      shadow: "elevation.raised",
+      headerFont: "typography.card-title",
+      bodyFont: "typography.body",
+      footerGap: "spacing.xs",
+      variants: ["default", "compact"],
     },
-  ];
-
-  const cards = {
-    background: surfaceSubtle,
-    border: `1px solid ${borderColor}`,
-    radius: archetype.cardRadius,
-    shadow: "0 1px 3px rgba(0,0,0,0.06)",
-    padding: "24px",
-    hoverEffect: "box-shadow 0.2s ease",
+    badge: {
+      sizes: {
+        sm: { height: "spacing.lg", paddingX: "spacing.xs", radius: "radius.pill", font: "typography.label" },
+        md: { height: "spacing.xl", paddingX: "spacing.sm", radius: "radius.pill", font: "typography.caption" },
+      },
+      variants: ["default", "success", "error", "warning", "info"],
+    },
+    avatar: {
+      sizes: {
+        sm: { size: "spacing.xl", radius: "radius.pill", font: "typography.caption", statusDot: "spacing.xs" },
+        md: { size: "spacing.2xl", radius: "radius.pill", font: "typography.button", statusDot: "spacing.xs" },
+        lg: { size: "spacing.3xl", radius: "radius.pill", font: "typography.body", statusDot: "spacing.sm" },
+      },
+    },
+    divider: {
+      lineHeight: "spacing.3xs",
+      labelPaddingX: "spacing.sm",
+      labelFont: "typography.caption",
+    },
   };
-
-  const inputs = {
-    background: "#ffffff",
-    border: `1px solid ${borderColor}`,
-    radius: archetype.inputRadius,
-    focusBorder: primaryColor,
-    focusShadow: `0 0 0 3px ${primaryColor}33`,
-    padding: "10px 14px",
-    textColor: neutralDark,
-    placeholderColor: palette.neutral[5].hex,
-  };
-
-  const navigation = {
-    background: surfaceBase,
-    position: "sticky",
-    linkSize: "14px",
-    linkWeight: archetype.fontWeights.ui,
-    linkColor: neutralDark,
-    activeIndicator: primaryColor,
-  };
-
-  return { buttons, cards, inputs, navigation };
 }
