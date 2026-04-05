@@ -49,7 +49,7 @@ export function generate(inputs: UserInputs): GenerateResult {
   const colors = generatePalette(inputs.primaryColor, archetype.neutralUndertone);
   const fontFamily = inputs.fontFamily || archetype.defaultFont;
   const typography = generateTypography(archetype, fontFamily);
-  const components = generateComponents(colors, archetype);
+  const components = generateComponents(archetype);
   const layout = generateLayout(archetype);
   const elevation = generateElevation(archetype, colors);
   const responsive = generateResponsive();
