@@ -3,11 +3,10 @@
 // ═══ User Inputs ═══
 
 export type MoodArchetype =
-  | "clean-minimal"
-  | "warm-friendly"
-  | "bold-energetic"
-  | "professional"
-  | "playful-creative";
+  | "precise"
+  | "confident"
+  | "expressive"
+  | "modern";
 
 export interface UserInputs {
   brandName: string;

@@ -3,16 +3,15 @@ import { getArchetype, ARCHETYPES } from "../../src/schema/archetypes.js";
 import type { MoodArchetype } from "../../src/schema/types.js";
 
 const ALL_MOODS: MoodArchetype[] = [
-  "clean-minimal",
-  "warm-friendly",
-  "bold-energetic",
-  "professional",
-  "playful-creative",
+  "precise",
+  "confident",
+  "expressive",
+  "modern",
 ];
 
 describe("ARCHETYPES", () => {
-  it("has exactly 5 entries", () => {
-    expect(Object.keys(ARCHETYPES)).toHaveLength(5);
+  it("has exactly 4 entries", () => {
+    expect(Object.keys(ARCHETYPES)).toHaveLength(4);
   });
 });
 
@@ -52,23 +51,19 @@ describe("getArchetype", () => {
     });
   }
 
-  it("warm-friendly has warm undertone", () => {
-    expect(getArchetype("warm-friendly").neutralUndertone).toBe("warm");
+  it("precise has cool undertone", () => {
+    expect(getArchetype("precise").neutralUndertone).toBe("cool");
   });
 
-  it("clean-minimal has neutral undertone", () => {
-    expect(getArchetype("clean-minimal").neutralUndertone).toBe("neutral");
+  it("confident has neutral undertone", () => {
+    expect(getArchetype("confident").neutralUndertone).toBe("neutral");
   });
 
-  it("professional has cool undertone", () => {
-    expect(getArchetype("professional").neutralUndertone).toBe("cool");
+  it("expressive has warm undertone", () => {
+    expect(getArchetype("expressive").neutralUndertone).toBe("warm");
   });
 
-  it("bold-energetic has neutral undertone", () => {
-    expect(getArchetype("bold-energetic").neutralUndertone).toBe("neutral");
-  });
-
-  it("playful-creative has warm undertone", () => {
-    expect(getArchetype("playful-creative").neutralUndertone).toBe("warm");
+  it("modern has neutral undertone", () => {
+    expect(getArchetype("modern").neutralUndertone).toBe("neutral");
   });
 });

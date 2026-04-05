@@ -36,7 +36,7 @@ describe("transformToFigma", () => {
   const { tokens } = generate({
     brandName: "Test",
     primaryColor: "#5e6ad2",
-    mood: "clean-minimal",
+    mood: "precise",
     fontFamily: "Inter",
   });
   const figma = transformToFigma(tokens);

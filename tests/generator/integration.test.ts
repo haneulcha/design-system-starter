@@ -3,11 +3,10 @@ import { generate } from "../../src/generator/index.js";
 import type { MoodArchetype } from "../../src/schema/types.js";
 
 const ALL_MOODS: MoodArchetype[] = [
-  "clean-minimal",
-  "warm-friendly",
-  "bold-energetic",
-  "professional",
-  "playful-creative",
+  "precise",
+  "confident",
+  "expressive",
+  "modern",
 ];
 
 for (const mood of ALL_MOODS) {
