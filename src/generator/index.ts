@@ -1,0 +1,119 @@
+// src/generator/index.ts
+
+import type { UserInputs, DesignSystem, DesignTokens } from "../schema/types.js";
+import { getArchetype } from "../schema/archetypes.js";
+import { renderDesignMd } from "../schema/template.js";
+import { generatePalette } from "./color.js";
+import { generateTypography } from "./typography.js";
+import { generateComponents } from "./components.js";
+import { generateLayout } from "./layout.js";
+import { generateElevation } from "./elevation.js";
+import { generateResponsive } from "./responsive.js";
+import { generateTokens } from "./tokens.js";
+
+export interface GenerateResult {
+  system: DesignSystem;
+  designMd: string;
+  tokens: DesignTokens;
+}
+
+function replacePlaceholders(
+  text: string,
+  vars: Record<string, string>
+): string {
+  return text.replace(/\{\{([^}]+)\}\}/g, (_, key) => {
+    return key in vars ? vars[key] : `{{${key}}}`;
+  });
+}
+
+function replaceInArray(arr: string[], vars: Record<string, string>): string[] {
+  return arr.map((s) => replacePlaceholders(s, vars));
+}
+
+export function generate(inputs: UserInputs): GenerateResult {
+  const archetype = getArchetype(inputs.mood);
+
+  // Generate all subsystems
+  const colors = generatePalette(inputs.primaryColor, archetype.neutralUndertone);
+  const fontFamily = inputs.fontFamily || archetype.defaultFont;
+  const typography = generateTypography(archetype, fontFamily);
+  const components = generateComponents(colors, archetype);
+  const layout = generateLayout(archetype);
+  const elevation = generateElevation(archetype, colors);
+  const responsive = generateResponsive();
+
+  // Template variable map
+  const vars: Record<string, string> = {
+    brandName: inputs.brandName,
+    primaryHex: inputs.primaryColor,
+    fontFamily,
+    "fontWeights.heading": String(archetype.fontWeights.heading),
+    "fontWeights.ui": String(archetype.fontWeights.ui),
+    "fontWeights.body": String(archetype.fontWeights.body),
+  };
+
+  // Build theme with replaced placeholders
+  const atmosphere = replacePlaceholders(archetype.atmosphereTemplate, vars);
+  const characteristics = replaceInArray(archetype.characteristics, vars);
+  const dos = replaceInArray(archetype.dos, vars);
+  const donts = replaceInArray(archetype.donts, vars);
+
+  // Build agent guide
+  const primaryHex = colors.primary[0].hex;
+  const surfaceBase = colors.surface[0].hex;
+  const neutral900 = colors.neutral[1].hex; // Gray 900 — heading text
+  const neutral600 = colors.neutral[4].hex; // Gray 600 — body text
+  const borderDefault = colors.border[1].hex; // Border Default
+  const accentHex = colors.accent[0].hex;
+
+  const quickColors = [
+    { name: "Primary CTA", hex: primaryHex },
+    { name: "Background", hex: surfaceBase },
+    { name: "Heading Text", hex: neutral900 },
+    { name: "Body Text", hex: neutral600 },
+    { name: "Border", hex: borderDefault },
+    { name: "Accent", hex: accentHex },
+  ];
+
+  const examplePrompts = [
+    `Create a hero section with a heading in ${fontFamily} weight ${archetype.fontWeights.heading}, background ${surfaceBase}, and a CTA button using ${primaryHex}.`,
+    `Build a card component with ${archetype.cardRadius} border-radius, a subtle border using ${borderDefault}, and padding of 24px.`,
+    `Design a navigation bar with background ${surfaceBase}, link color ${neutral900}, and an active indicator using ${primaryHex}.`,
+    `Create a form input with ${archetype.inputRadius} radius, border ${borderDefault}, and focus ring using ${primaryHex}33.`,
+    `Design a section divider using ${accentHex} as an accent stripe, with ${archetype.sectionSpacing} of vertical spacing around it.`,
+  ];
+
+  const iterationTips = [
+    `Adjust the neutral undertone (${archetype.neutralUndertone}) by shifting the gray hue — warmer grays feel approachable, cooler grays feel precise.`,
+    `Tweak the border-radius scale starting from the button radius (${archetype.buttonRadius}) to shift the personality from sharp/technical to soft/friendly.`,
+    `Change font weights (currently heading: ${archetype.fontWeights.heading}, UI: ${archetype.fontWeights.ui}, body: ${archetype.fontWeights.body}) to increase contrast or reduce hierarchy intensity.`,
+    `Modify the shadow intensity (${archetype.shadowIntensity}) to control perceived depth — whisper feels flat/editorial, dramatic feels physical/energetic.`,
+  ];
+
+  const system: DesignSystem = {
+    brandName: inputs.brandName,
+    mood: inputs.mood,
+    theme: {
+      atmosphere,
+      characteristics,
+    },
+    colors,
+    typography,
+    components,
+    layout,
+    elevation,
+    responsive,
+    dos,
+    donts,
+    agentGuide: {
+      quickColors,
+      examplePrompts,
+      iterationTips,
+    },
+  };
+
+  const designMd = renderDesignMd(system);
+  const tokens = generateTokens(system);
+
+  return { system, designMd, tokens };
+}
