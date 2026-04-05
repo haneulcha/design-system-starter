@@ -28,32 +28,34 @@ export function detectHueName(hue: number): string {
   return "red";
 }
 
+// Chroma curve derived from Tailwind CSS color scales (oklch analysis).
+// Peak chroma at step 700-800, tapering at extremes.
 // Light mode: step 100=lightest → step 1000=darkest
 const LIGHT_STEPS: Array<{ step: string; l: number; cMult: number }> = [
-  { step: "100",  l: 0.97, cMult: 0.05 },
-  { step: "200",  l: 0.93, cMult: 0.10 },
-  { step: "300",  l: 0.87, cMult: 0.20 },
-  { step: "400",  l: 0.78, cMult: 0.35 },
-  { step: "500",  l: 0.68, cMult: 0.55 },
-  { step: "600",  l: 0.58, cMult: 0.75 },
-  { step: "700",  l: 0.48, cMult: 0.85 },
-  { step: "800",  l: 0.38, cMult: 0.90 },
-  { step: "900",  l: 0.30, cMult: 0.80 },
-  { step: "1000", l: 0.22, cMult: 0.65 },
+  { step: "100",  l: 0.97, cMult: 0.07 },
+  { step: "200",  l: 0.93, cMult: 0.15 },
+  { step: "300",  l: 0.87, cMult: 0.28 },
+  { step: "400",  l: 0.78, cMult: 0.45 },
+  { step: "500",  l: 0.68, cMult: 0.65 },
+  { step: "600",  l: 0.58, cMult: 0.87 },
+  { step: "700",  l: 0.48, cMult: 0.99 },
+  { step: "800",  l: 0.38, cMult: 1.00 },
+  { step: "900",  l: 0.30, cMult: 0.83 },
+  { step: "1000", l: 0.22, cMult: 0.64 },
 ];
 
 // Dark mode: step 100=darkest → step 1000=lightest
 const DARK_STEPS: Array<{ step: string; l: number; cMult: number }> = [
-  { step: "100",  l: 0.15, cMult: 0.05 },
-  { step: "200",  l: 0.19, cMult: 0.10 },
-  { step: "300",  l: 0.24, cMult: 0.18 },
-  { step: "400",  l: 0.30, cMult: 0.30 },
-  { step: "500",  l: 0.38, cMult: 0.45 },
-  { step: "600",  l: 0.48, cMult: 0.60 },
-  { step: "700",  l: 0.58, cMult: 0.70 },
-  { step: "800",  l: 0.68, cMult: 0.75 },
-  { step: "900",  l: 0.80, cMult: 0.60 },
-  { step: "1000", l: 0.93, cMult: 0.30 },
+  { step: "100",  l: 0.15, cMult: 0.07 },
+  { step: "200",  l: 0.19, cMult: 0.15 },
+  { step: "300",  l: 0.24, cMult: 0.25 },
+  { step: "400",  l: 0.30, cMult: 0.40 },
+  { step: "500",  l: 0.38, cMult: 0.55 },
+  { step: "600",  l: 0.48, cMult: 0.70 },
+  { step: "700",  l: 0.58, cMult: 0.85 },
+  { step: "800",  l: 0.68, cMult: 0.90 },
+  { step: "900",  l: 0.80, cMult: 0.70 },
+  { step: "1000", l: 0.93, cMult: 0.35 },
 ];
 
 function buildScale(baseChroma: number, hue: number): ColorScale {
@@ -101,12 +103,12 @@ export function generateScales(
   const baseC = base.c ?? 0.12;
   const baseH = base.h ?? 0;
 
-  // Fixed status hues
-  const STATUS_HUES: Array<{ name: string; hue: number }> = [
-    { name: "blue",  hue: 250 },
-    { name: "red",   hue: 25  },
-    { name: "amber", hue: 75  },
-    { name: "green", hue: 145 },
+  // Fixed status hues with peak chroma from Tailwind reference scales
+  const STATUS_HUES: Array<{ name: string; hue: number; chroma: number }> = [
+    { name: "blue",  hue: 250, chroma: 0.22 },
+    { name: "red",   hue: 25,  chroma: 0.22 },
+    { name: "amber", hue: 75,  chroma: 0.17 },
+    { name: "green", hue: 145, chroma: 0.19 },
   ];
 
   // Brand hue name from primary
@@ -130,9 +132,9 @@ export function generateScales(
   // the same detected name (meaning they're the same perceptual hue region).
   // We do NOT suppress by raw angle proximity alone — that can drop status colors
   // that the system still needs (e.g., amber is always needed for warnings).
-  for (const { name, hue } of STATUS_HUES) {
+  for (const { name, hue, chroma } of STATUS_HUES) {
     if (scales[name]) continue; // brand/accent already occupies this name slot
-    scales[name] = buildScale(0.16, hue);
+    scales[name] = buildScale(chroma, hue);
   }
 
   return scales;
