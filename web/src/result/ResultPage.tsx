@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { WizardState, MoodArchetype, ColorCharacter, FullResult } from "../hooks/useGenerator";
+import type { WizardState, MoodArchetype, FullResult } from "../hooks/useGenerator";
 import { ARCHETYPES, getArchetype } from "../hooks/useGenerator";
 import { ColorPreview } from "./ColorPreview";
 import { ComponentPreview } from "./ComponentPreview";
@@ -101,36 +101,6 @@ export function ResultPage({
                 className="flex-1 font-mono text-sm px-3 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-neutral-500"
                 placeholder="#5e6ad2"
               />
-            </div>
-          </div>
-
-          {/* Color Character */}
-          <div>
-            <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1.5">
-              Color Character
-            </label>
-            <div className="flex flex-col gap-1.5">
-              {(["vivid", "balanced", "muted"] as const).map((char) => (
-                <label
-                  key={char}
-                  className={[
-                    "flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all text-sm",
-                    state.colorCharacter === char
-                      ? "border-neutral-900 bg-neutral-900 text-white"
-                      : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-400",
-                  ].join(" ")}
-                >
-                  <input
-                    type="radio"
-                    name="result-character"
-                    value={char}
-                    checked={state.colorCharacter === char}
-                    onChange={() => onChange({ colorCharacter: char as ColorCharacter })}
-                    className="sr-only"
-                  />
-                  <span className="capitalize font-medium">{char}</span>
-                </label>
-              ))}
             </div>
           </div>
 

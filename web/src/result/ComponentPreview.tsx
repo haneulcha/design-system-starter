@@ -1,32 +1,36 @@
-import type { DesignSystem, DesignTokens } from "@core/schema/types.js";
+import type { DesignSystem, DesignTokens, Oklch } from "@core/schema/types.js";
 import { getArchetype } from "@core/schema/archetypes.js";
+import { formatOklch, formatOklchAlpha } from "@core/generator/color.js";
 
-function resolveColor(tokens: DesignTokens, semanticKey: string): string {
-  const primitiveRef = tokens.semantic[semanticKey];
-  if (!primitiveRef) return "#cccccc";
-  const parts = primitiveRef.split("-");
-  const step = parts[parts.length - 1];
-  const hue = parts.slice(0, -1).join("-");
-  return tokens.primitive.colors[hue]?.[step]?.light ?? "#cccccc";
+// ─── Color Resolution Layer ─────────────────────────────────────────────────
+
+function resolveOklch(tokens: DesignTokens, semanticKey: string): Oklch | null {
+  const ref = tokens.semantic[semanticKey];
+  if (!ref) return null;
+  const lastDash = ref.lastIndexOf("-");
+  const hue = ref.slice(0, lastDash);
+  const step = ref.slice(lastDash + 1);
+  return tokens.primitive.colors[hue]?.[step]?.light ?? null;
+}
+
+function resolveColor(tokens: DesignTokens, key: string): string {
+  const color = resolveOklch(tokens, key);
+  return color ? formatOklch(color) : "oklch(0.8 0 0)";
+}
+
+function resolveColorAlpha(tokens: DesignTokens, key: string, alpha: number): string {
+  const color = resolveOklch(tokens, key);
+  return color ? formatOklchAlpha(color, alpha) : "oklch(0.8 0 0)";
 }
 
 function resolveComponentColor(tokens: DesignTokens, componentPath: string): string {
   const [comp, variant, prop] = componentPath.split(".");
   const semanticKey = tokens.component[comp]?.[variant]?.[prop];
-  if (!semanticKey || semanticKey === "transparent") return semanticKey ?? "#cccccc";
+  if (!semanticKey || semanticKey === "transparent") return semanticKey ?? "oklch(0.8 0 0)";
   return resolveColor(tokens, semanticKey);
 }
 
-function resolveSpacing(tokens: DesignTokens, tokenName: string): number {
-  // tokenName like "spacing.md" → look up tokens.spacing["md"]
-  const key = tokenName.split(".").pop() ?? tokenName;
-  return tokens.spacing[key] ?? 8;
-}
-
-function resolveRadius(tokens: DesignTokens, tokenName: string): number {
-  const key = tokenName.split(".").pop() ?? tokenName;
-  return tokens.borderRadius[key] ?? 4;
-}
+// ─── Component ──────────────────────────────────────────────────────────────
 
 export function ComponentPreview({
   system,
@@ -50,28 +54,16 @@ export function ComponentPreview({
   const borderDefault = resolveColor(tokens, "border/default");
 
   // Component token colors
-  const btnPrimaryBg = resolveComponentColor(tokens, "button.primary.bg") !== "#cccccc"
-    ? resolveComponentColor(tokens, "button.primary.bg")
-    : brandPrimary;
+  const btnPrimaryBg = resolveComponentColor(tokens, "button.primary.bg");
 
   const inputBorder = resolveColor(tokens, "border/default");
   const inputFocusBorder = resolveColor(tokens, "brand/primary");
-  const inputErrorBorder = resolveColor(tokens, "status/error") !== "#cccccc"
-    ? resolveColor(tokens, "status/error")
-    : "#ef4444";
+  const inputErrorBorder = resolveColor(tokens, "status/error");
 
-  const successColor = resolveColor(tokens, "status/success") !== "#cccccc"
-    ? resolveColor(tokens, "status/success")
-    : "#22c55e";
-  const errorColor = resolveColor(tokens, "status/error") !== "#cccccc"
-    ? resolveColor(tokens, "status/error")
-    : "#ef4444";
-  const warningColor = resolveColor(tokens, "status/warning") !== "#cccccc"
-    ? resolveColor(tokens, "status/warning")
-    : "#f59e0b";
-  const infoColor = resolveColor(tokens, "status/info") !== "#cccccc"
-    ? resolveColor(tokens, "status/info")
-    : "#3b82f6";
+  const successColor = resolveColor(tokens, "status/success");
+  const errorColor = resolveColor(tokens, "status/error");
+  const warningColor = resolveColor(tokens, "status/warning");
+  const infoColor = resolveColor(tokens, "status/info");
 
   const fontFamily = system.typography.families.primary
     ? `'${system.typography.families.primary}', system-ui, sans-serif`
@@ -92,7 +84,7 @@ export function ComponentPreview({
           <button
             style={{
               backgroundColor: btnPrimaryBg,
-              color: "#ffffff",
+              color: "white",
               borderRadius: btnRadiusPx,
               padding: "8px 20px",
               fontSize: 14,
@@ -301,7 +293,7 @@ export function ComponentPreview({
             <button
               style={{
                 backgroundColor: btnPrimaryBg,
-                color: "#ffffff",
+                color: "white",
                 borderRadius: btnRadiusPx,
                 padding: "6px 16px",
                 fontSize: 13,
@@ -338,10 +330,30 @@ export function ComponentPreview({
         <div className="flex flex-wrap gap-2">
           {[
             { label: "Default", bg: bgSubtle, text: textPrimary, border: borderDefault },
-            { label: "Success", bg: `${successColor}18`, text: successColor, border: `${successColor}40` },
-            { label: "Error", bg: `${errorColor}18`, text: errorColor, border: `${errorColor}40` },
-            { label: "Warning", bg: `${warningColor}18`, text: warningColor, border: `${warningColor}40` },
-            { label: "Info", bg: `${infoColor}18`, text: infoColor, border: `${infoColor}40` },
+            {
+              label: "Success",
+              bg: resolveColorAlpha(tokens, "status/success", 0.09),
+              text: successColor,
+              border: resolveColorAlpha(tokens, "status/success", 0.25),
+            },
+            {
+              label: "Error",
+              bg: resolveColorAlpha(tokens, "status/error", 0.09),
+              text: errorColor,
+              border: resolveColorAlpha(tokens, "status/error", 0.25),
+            },
+            {
+              label: "Warning",
+              bg: resolveColorAlpha(tokens, "status/warning", 0.09),
+              text: warningColor,
+              border: resolveColorAlpha(tokens, "status/warning", 0.25),
+            },
+            {
+              label: "Info",
+              bg: resolveColorAlpha(tokens, "status/info", 0.09),
+              text: infoColor,
+              border: resolveColorAlpha(tokens, "status/info", 0.25),
+            },
           ].map(({ label, bg, text, border }) => (
             <span
               key={label}
