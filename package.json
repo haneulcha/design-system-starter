@@ -1,0 +1,27 @@
+{
+  "name": "design-system-starter",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    "./schema": "./dist/schema/index.js",
+    "./generator": "./dist/generator/index.js",
+    "./figma": "./dist/figma/index.js"
+  },
+  "bin": { "design-system": "./dist/cli/index.js" },
+  "scripts": {
+    "dev": "tsx src/cli/index.ts",
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "culori": "^4.0.0"
+  },
+  "devDependencies": {
+    "@inquirer/prompts": "^7.0.0",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
