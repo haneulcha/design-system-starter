@@ -109,14 +109,32 @@ export function transformToFigma(tokens: DesignTokens): FigmaDesignSystem {
   const lightModeId = "mode-light";
   const darkModeId = "mode-dark";
 
+  // Resolve semantic references through primitive.colors
+  const primitiveColors = tokens.primitive.colors;
+
+  function resolveColor(ref: string): string {
+    return primitiveColors[ref] ?? ref;
+  }
+
+  // Build resolved light and dark color maps
+  const resolvedLight: Record<string, string> = {};
+  for (const [key, ref] of Object.entries(tokens.semantic.light)) {
+    resolvedLight[key] = resolveColor(ref);
+  }
+
+  const resolvedDark: Record<string, string> = {};
+  for (const [key, ref] of Object.entries(tokens.semantic.dark)) {
+    resolvedDark[key] = resolveColor(ref);
+  }
+
   // Merge all unique color keys from light and dark
   const allColorKeys = Array.from(
-    new Set([...Object.keys(tokens.color.light), ...Object.keys(tokens.color.dark)])
+    new Set([...Object.keys(resolvedLight), ...Object.keys(resolvedDark)])
   );
 
   const colorVariables: FigmaVariable[] = allColorKeys.map((key) => {
-    const lightVal = tokens.color.light[key];
-    const darkVal = tokens.color.dark[key];
+    const lightVal = resolvedLight[key];
+    const darkVal = resolvedDark[key];
     return {
       name: key,
       type: "COLOR",

@@ -9,12 +9,24 @@ import { generateComponents } from "./components.js";
 import { generateLayout } from "./layout.js";
 import { generateElevation } from "./elevation.js";
 import { generateResponsive } from "./responsive.js";
-import { generateTokens } from "./tokens.js";
+import {
+  generatePrimitive,
+  generateSemantic,
+  generateComponent,
+  buildDesignTokens,
+} from "./tokens.js";
+import {
+  writePrimitiveTs,
+  writeSemanticTs,
+  writeComponentTs,
+  writeIndexTs,
+} from "./token-writer.js";
 
 export interface GenerateResult {
   system: DesignSystem;
   designMd: string;
   tokens: DesignTokens;
+  tokenFiles: Record<string, string>;
 }
 
 function replacePlaceholders(
@@ -113,7 +125,20 @@ export function generate(inputs: UserInputs): GenerateResult {
   };
 
   const designMd = renderDesignMd(system);
-  const tokens = generateTokens(system);
 
-  return { system, designMd, tokens };
+  // Build 3-layer token system
+  const primitive = generatePrimitive(colors, inputs.primaryColor);
+  const semantic = generateSemantic(primitive, archetype);
+  const component = generateComponent(semantic);
+  const tokens = buildDesignTokens(system, primitive, semantic, component);
+
+  // Generate token file strings
+  const tokenFiles: Record<string, string> = {
+    "primitive.ts": writePrimitiveTs(primitive),
+    "semantic.ts": writeSemanticTs(semantic),
+    "component.ts": writeComponentTs(component),
+    "index.ts": writeIndexTs(),
+  };
+
+  return { system, designMd, tokens, tokenFiles };
 }

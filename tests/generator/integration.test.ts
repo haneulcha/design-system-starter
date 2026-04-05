@@ -33,12 +33,40 @@ for (const mood of ALL_MOODS) {
       expect(result.designMd).toContain("# Design System: TestBrand");
     });
 
-    it("tokens have light colors", () => {
-      expect(result.tokens.color.light["brand-primary"]).toBeTruthy();
+    it("tokens.primitive.colors has hue-named keys", () => {
+      const keys = Object.keys(result.tokens.primitive.colors);
+      // Should have at least one key ending in a numeric scale value
+      const hasScaleKey = keys.some((k) => /\d+$/.test(k));
+      expect(hasScaleKey).toBe(true);
+      expect(keys.length).toBeGreaterThanOrEqual(10);
     });
 
-    it("tokens have dark colors", () => {
-      expect(result.tokens.color.dark["dark-background"]).toBeTruthy();
+    it("tokens.semantic.light values are keys in primitive.colors", () => {
+      const primitiveKeys = new Set(Object.keys(result.tokens.primitive.colors));
+      for (const val of Object.values(result.tokens.semantic.light)) {
+        expect(primitiveKeys.has(val)).toBe(true);
+      }
+    });
+
+    it("tokens.semantic.dark values are keys in primitive.colors", () => {
+      const primitiveKeys = new Set(Object.keys(result.tokens.primitive.colors));
+      for (const val of Object.values(result.tokens.semantic.dark)) {
+        expect(primitiveKeys.has(val)).toBe(true);
+      }
+    });
+
+    it("tokens.component.button.primary exists", () => {
+      expect(result.tokens.component.button).toBeTruthy();
+      expect(result.tokens.component.button.primary).toBeTruthy();
+      expect(result.tokens.component.button.primary.bg).toBeTruthy();
+    });
+
+    it("tokenFiles has 4 entries", () => {
+      expect(Object.keys(result.tokenFiles)).toHaveLength(4);
+      expect(result.tokenFiles["primitive.ts"]).toBeTruthy();
+      expect(result.tokenFiles["semantic.ts"]).toBeTruthy();
+      expect(result.tokenFiles["component.ts"]).toBeTruthy();
+      expect(result.tokenFiles["index.ts"]).toBeTruthy();
     });
 
     it("tokens have 12+ typography styles", () => {
