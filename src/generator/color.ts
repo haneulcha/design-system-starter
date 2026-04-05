@@ -31,15 +31,15 @@ interface StepDef {
 
 const CHROMATIC_STEPS: readonly StepDef[] = [
   { step: "100",  l: 0.96, cMult: 0.30 },
-  { step: "200",  l: 0.90, cMult: 0.45 },
-  { step: "300",  l: 0.82, cMult: 0.60 },
-  { step: "400",  l: 0.70, cMult: 0.75 },
-  { step: "500",  l: 0.58, cMult: 0.90 },
-  { step: "600",  l: 0.46, cMult: 0.97 },
+  { step: "200",  l: 0.91, cMult: 0.45 },
+  { step: "300",  l: 0.84, cMult: 0.60 },
+  { step: "400",  l: 0.74, cMult: 0.75 },
+  { step: "500",  l: 0.64, cMult: 0.90 },
+  { step: "600",  l: 0.55, cMult: 0.97 },
   { step: "700",  l: 0.45, cMult: 1.00 },
   { step: "800",  l: 0.35, cMult: 0.95 },
-  { step: "900",  l: 0.20, cMult: 0.65 },
-  { step: "1000", l: 0.13, cMult: 0.50 },
+  { step: "900",  l: 0.23, cMult: 0.65 },
+  { step: "1000", l: 0.14, cMult: 0.50 },
 ];
 
 const GRAY_STEPS: readonly { readonly step: string; readonly l: number }[] = [
