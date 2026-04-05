@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { generatePalette } from "../../src/generator/color.js";
+import { detectHueName } from "../../src/generator/color.js";
 
 describe("generatePalette", () => {
   it("generates correct structure from hex + neutral undertone", () => {
@@ -48,5 +49,18 @@ describe("generatePalette", () => {
     expect(names).toContain("Error Red");
     expect(names).toContain("Warning Amber");
     expect(names).toContain("Info Blue");
+  });
+});
+
+describe("detectHueName", () => {
+  it("maps hue ranges to color names", () => {
+    expect(detectHueName(10)).toBe("red");
+    expect(detectHueName(50)).toBe("orange");
+    expect(detectHueName(90)).toBe("yellow");
+    expect(detectHueName(145)).toBe("green");
+    expect(detectHueName(200)).toBe("cyan");
+    expect(detectHueName(265)).toBe("blue");
+    expect(detectHueName(320)).toBe("purple");
+    expect(detectHueName(350)).toBe("red"); // wraps around
   });
 });

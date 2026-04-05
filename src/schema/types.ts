@@ -196,26 +196,40 @@ export interface ArchetypePreset {
   suggestedFonts: { name: string; fallback: string }[];
 }
 
-// ═══ Design Tokens (for Figma bridge) ═══
+// ═══ Design Tokens — 3-Layer Architecture ═══
+
+/** Layer 1: Raw palette values. No semantic meaning. */
+export interface PrimitiveTokens {
+  colors: Record<string, string>;
+}
+
+/** Layer 2: Role-based aliases. Every value is a key from PrimitiveTokens.colors */
+export interface SemanticTokens {
+  light: Record<string, string>;
+  dark: Record<string, string>;
+}
+
+/** Layer 3: Component-scoped. Every value is a key from SemanticTokens */
+export interface ComponentTokens {
+  [component: string]: {
+    [variant: string]: Record<string, string>;
+  };
+}
 
 export interface DesignTokens {
   brand: { name: string; mood: MoodArchetype };
-  color: {
-    light: Record<string, string>;
-    dark: Record<string, string>;
-  };
+  primitive: PrimitiveTokens;
+  semantic: SemanticTokens;
+  component: ComponentTokens;
   typography: {
     families: Record<string, string>;
-    styles: Record<
-      string,
-      {
-        fontFamily: string;
-        fontSize: number;
-        fontWeight: number;
-        lineHeight: number;
-        letterSpacing: number;
-      }
-    >;
+    styles: Record<string, {
+      fontFamily: string;
+      fontSize: number;
+      fontWeight: number;
+      lineHeight: number;
+      letterSpacing: number;
+    }>;
   };
   spacing: Record<string, number>;
   borderRadius: Record<string, number>;

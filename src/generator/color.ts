@@ -14,6 +14,18 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
+export function detectHueName(hue: number): string {
+  const h = ((hue % 360) + 360) % 360;
+  if (h < 30) return "red";
+  if (h < 70) return "orange";
+  if (h < 110) return "yellow";
+  if (h < 170) return "green";
+  if (h < 250) return "cyan";
+  if (h < 310) return "blue";
+  if (h < 350) return "purple";
+  return "red";
+}
+
 export function generatePalette(primaryHex: string, undertone: NeutralUndertone): ColorPalette {
   const base = toOklch(primaryHex);
   if (!base) throw new Error(`Invalid hex color: ${primaryHex}`);
