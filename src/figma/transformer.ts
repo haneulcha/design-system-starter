@@ -110,21 +110,30 @@ export function transformToFigma(tokens: DesignTokens): FigmaDesignSystem {
   const darkModeId = "mode-dark";
 
   // Resolve semantic references through primitive.colors
+  // Semantic values are "{hue}-{step}" references (e.g. "gray-100", "blue-700")
+  // Primitive colors are nested: primitive.colors[hue][step] = { light, dark }
   const primitiveColors = tokens.primitive.colors;
 
-  function resolveColor(ref: string): string {
-    return primitiveColors[ref] ?? ref;
+  function resolveColorMode(ref: string, mode: "light" | "dark"): string {
+    // Parse "{hue}-{step}" format
+    const lastDash = ref.lastIndexOf("-");
+    if (lastDash !== -1) {
+      const hue = ref.slice(0, lastDash);
+      const step = ref.slice(lastDash + 1);
+      const hueMap = primitiveColors[hue];
+      if (hueMap && hueMap[step]) {
+        return hueMap[step][mode];
+      }
+    }
+    return ref; // fallback (e.g. "transparent")
   }
 
-  // Build resolved light and dark color maps
+  // Build resolved light and dark color maps from flat semantic
   const resolvedLight: Record<string, string> = {};
-  for (const [key, ref] of Object.entries(tokens.semantic.light)) {
-    resolvedLight[key] = resolveColor(ref);
-  }
-
   const resolvedDark: Record<string, string> = {};
-  for (const [key, ref] of Object.entries(tokens.semantic.dark)) {
-    resolvedDark[key] = resolveColor(ref);
+  for (const [key, ref] of Object.entries(tokens.semantic)) {
+    resolvedLight[key] = resolveColorMode(ref, "light");
+    resolvedDark[key] = resolveColorMode(ref, "dark");
   }
 
   // Merge all unique color keys from light and dark

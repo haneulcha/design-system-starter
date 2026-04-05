@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { generatePalette } from "../../src/generator/color.js";
-import { getArchetype } from "../../src/schema/archetypes.js";
+import { generateScales } from "../../src/generator/color.js";
 import {
   generatePrimitive,
   generateSemantic,
@@ -12,141 +11,115 @@ import type {
   ComponentTokens,
 } from "../../src/schema/types.js";
 
-const archetype = getArchetype("clean-minimal");
-const palette = generatePalette("#5e6ad2", archetype.neutralUndertone);
+const scales = generateScales("#5e6ad2", "cool");
 
 let primitive: PrimitiveTokens;
 let semantic: SemanticTokens;
 let component: ComponentTokens;
 
 beforeAll(() => {
-  primitive = generatePrimitive(palette, "#5e6ad2");
-  semantic = generateSemantic(primitive, archetype);
+  primitive = generatePrimitive(scales);
+  semantic = generateSemantic(primitive);
   component = generateComponent(semantic);
 });
 
 // ─── generatePrimitive ────────────────────────────────────────────────────────
 
 describe("generatePrimitive", () => {
-  it("has hue-named brand colors: blue500, blue700, blue200", () => {
-    expect(primitive.colors).toHaveProperty("blue500");
-    expect(primitive.colors).toHaveProperty("blue700");
-    expect(primitive.colors).toHaveProperty("blue200");
+  it("has a gray hue", () => {
+    expect(primitive.colors).toHaveProperty("gray");
   });
 
-  it("has neutral gray scale from gray950 to gray50", () => {
-    const expected = [
-      "gray950", "gray900", "gray800", "gray700", "gray600",
-      "gray500", "gray400", "gray300", "gray200", "gray100", "gray50",
-    ];
-    for (const key of expected) {
-      expect(primitive.colors, `missing ${key}`).toHaveProperty(key);
+  it("each hue has exactly 10 steps (100-1000)", () => {
+    const expectedSteps = ["100", "200", "300", "400", "500", "600", "700", "800", "900", "1000"];
+    for (const [hue, scale] of Object.entries(primitive.colors)) {
+      for (const step of expectedSteps) {
+        expect(scale, `${hue} missing step ${step}`).toHaveProperty(step);
+      }
+      expect(Object.keys(scale)).toHaveLength(10);
     }
   });
 
-  it("has semantic hues: green500, green200, red500, red200, amber500, amber200, cyan500, cyan200", () => {
-    const semanticKeys = [
-      "green500", "green200",
-      "red500", "red200",
-      "amber500", "amber200",
-      "cyan500", "cyan200",
-    ];
-    for (const key of semanticKeys) {
-      expect(primitive.colors, `missing ${key}`).toHaveProperty(key);
+  it("each step has light and dark hex values", () => {
+    for (const [hue, scale] of Object.entries(primitive.colors)) {
+      for (const [step, value] of Object.entries(scale)) {
+        expect(value, `${hue}-${step} missing light`).toHaveProperty("light");
+        expect(value, `${hue}-${step} missing dark`).toHaveProperty("dark");
+        expect(value.light, `${hue}-${step}.light not hex`).toMatch(/^#[0-9a-f]{6}$/i);
+        expect(value.dark, `${hue}-${step}.dark not hex`).toMatch(/^#[0-9a-f]{6}$/i);
+      }
     }
   });
 
-  it("has surface tokens: surfaceBase, surfaceSubtle, surfaceMuted, surfaceRaised", () => {
-    expect(primitive.colors).toHaveProperty("surfaceBase");
-    expect(primitive.colors).toHaveProperty("surfaceSubtle");
-    expect(primitive.colors).toHaveProperty("surfaceMuted");
-    expect(primitive.colors).toHaveProperty("surfaceRaised");
+  it("has at least 5 hues (gray + brand + accent + 4 status)", () => {
+    expect(Object.keys(primitive.colors).length).toBeGreaterThanOrEqual(5);
   });
 
-  it("has border tokens: borderSubtle, borderDefault, borderStrong", () => {
-    expect(primitive.colors).toHaveProperty("borderSubtle");
-    expect(primitive.colors).toHaveProperty("borderDefault");
-    expect(primitive.colors).toHaveProperty("borderStrong");
-  });
-
-  it("has dark tokens", () => {
-    const darkKeys = [
-      "darkBg", "darkSubtle", "darkRaised",
-      "darkTextMuted", "darkTextDefault", "darkTextStrong",
-      "darkBorderSubtle", "darkBorderDefault", "darkBorderStrong",
-    ];
-    for (const key of darkKeys) {
-      expect(primitive.colors, `missing ${key}`).toHaveProperty(key);
-    }
-  });
-
-  it("has constants white and black", () => {
-    expect(primitive.colors.white).toBe("#ffffff");
-    expect(primitive.colors.black).toBe("#000000");
-  });
-
-  it("ALL values match /^#[0-9a-f]{6}$/i", () => {
-    for (const [key, value] of Object.entries(primitive.colors)) {
-      expect(value, `${key} = "${value}" is not a valid 6-digit hex`).toMatch(
-        /^#[0-9a-f]{6}$/i
-      );
-    }
+  it("has status hues: green, red, amber, blue", () => {
+    const hues = Object.keys(primitive.colors);
+    expect(hues).toContain("green");
+    expect(hues).toContain("red");
+    expect(hues).toContain("amber");
+    expect(hues).toContain("blue");
   });
 });
 
 // ─── generateSemantic ─────────────────────────────────────────────────────────
 
 describe("generateSemantic", () => {
-  const requiredLightKeys = [
-    "bgBase", "bgSubtle", "bgMuted", "bgRaised",
-    "textStrong", "textDefault", "textMuted",
-    "borderSubtle", "borderDefault", "borderStrong",
-    "brandPrimary", "brandHover", "brandLight",
-    "success", "successLight",
-    "error", "errorLight",
-    "warning", "warningLight",
-    "info", "infoLight",
+  const expectedRoles = [
+    "bg/base", "bg/subtle", "bg/muted",
+    "text/primary", "text/secondary", "text/muted", "text/disabled",
+    "border/default", "border/subtle", "border/strong",
+    "brand/primary", "brand/secondary", "brand/subtle", "brand/muted",
+    "accent/primary", "accent/subtle",
+    "status/success", "status/success-subtle", "status/success-text",
+    "status/error", "status/error-subtle", "status/error-text",
+    "status/warning", "status/warning-subtle", "status/warning-text",
+    "status/info", "status/info-subtle", "status/info-text",
     "white", "black",
   ];
 
-  it("has all required light keys", () => {
-    for (const key of requiredLightKeys) {
-      expect(semantic.light, `missing light.${key}`).toHaveProperty(key);
+  it("has all required role keys", () => {
+    for (const role of expectedRoles) {
+      expect(semantic, `missing role: ${role}`).toHaveProperty(role);
     }
   });
 
-  it("has dark mode keys", () => {
-    const requiredDarkKeys = [
-      "bgBase", "bgSubtle", "bgRaised",
-      "textStrong", "textDefault", "textMuted",
-      "borderSubtle", "borderDefault", "borderStrong",
-      "brandPrimary", "brandHover", "brandLight",
-      "success", "successLight",
-      "error", "errorLight",
-      "warning", "warningLight",
-      "info", "infoLight",
-      "white", "black",
-    ];
-    for (const key of requiredDarkKeys) {
-      expect(semantic.dark, `missing dark.${key}`).toHaveProperty(key);
-    }
-  });
-
-  it("ALL light values are keys that exist in primitive.colors", () => {
-    for (const [key, value] of Object.entries(semantic.light)) {
+  it("ALL values match \"{hue}-{step}\" pattern", () => {
+    const pattern = /^[a-z]+-\d{3,4}$/;
+    for (const [role, value] of Object.entries(semantic)) {
       expect(
-        primitive.colors,
-        `semantic.light.${key} = "${value}" is not a key in primitive.colors`
-      ).toHaveProperty(value);
+        value,
+        `semantic["${role}"] = "${value}" does not match {hue}-{step} pattern`
+      ).toMatch(pattern);
     }
   });
 
-  it("ALL dark values are keys that exist in primitive.colors", () => {
-    for (const [key, value] of Object.entries(semantic.dark)) {
+  it("ALL referenced hues exist in primitive.colors", () => {
+    const primitiveHues = new Set(Object.keys(primitive.colors));
+    for (const [role, ref] of Object.entries(semantic)) {
+      const lastDash = ref.lastIndexOf("-");
+      const hue = ref.slice(0, lastDash);
       expect(
-        primitive.colors,
-        `semantic.dark.${key} = "${value}" is not a key in primitive.colors`
-      ).toHaveProperty(value);
+        primitiveHues.has(hue),
+        `semantic["${role}"] = "${ref}" — hue "${hue}" not in primitive.colors`
+      ).toBe(true);
+    }
+  });
+
+  it("ALL referenced steps exist in the respective hue", () => {
+    for (const [role, ref] of Object.entries(semantic)) {
+      const lastDash = ref.lastIndexOf("-");
+      const hue = ref.slice(0, lastDash);
+      const step = ref.slice(lastDash + 1);
+      const hueMap = primitive.colors[hue];
+      if (hueMap) {
+        expect(
+          hueMap,
+          `semantic["${role}"] = "${ref}" — step "${step}" not in primitive.colors["${hue}"]`
+        ).toHaveProperty(step);
+      }
     }
   });
 });
@@ -154,21 +127,20 @@ describe("generateSemantic", () => {
 // ─── generateComponent ────────────────────────────────────────────────────────
 
 describe("generateComponent", () => {
-  it("has button.primary with required keys", () => {
+  it("has button.primary, button.secondary, button.ghost", () => {
     expect(component.button).toBeDefined();
     expect(component.button.primary).toBeDefined();
+    expect(component.button.secondary).toBeDefined();
+    expect(component.button.ghost).toBeDefined();
+  });
+
+  it("button.primary has required keys", () => {
     const bp = component.button.primary;
     expect(bp).toHaveProperty("bg");
     expect(bp).toHaveProperty("bgHover");
-    expect(bp).toHaveProperty("bgActive");
     expect(bp).toHaveProperty("bgDisabled");
     expect(bp).toHaveProperty("text");
     expect(bp).toHaveProperty("textDisabled");
-  });
-
-  it("has button.secondary and button.ghost", () => {
-    expect(component.button.secondary).toBeDefined();
-    expect(component.button.ghost).toBeDefined();
   });
 
   it("has input.default, input.focus, input.error, input.disabled", () => {
@@ -193,23 +165,25 @@ describe("generateComponent", () => {
     expect(component.badge.info).toBeDefined();
   });
 
-  it("has avatar.default and divider.default", () => {
-    expect(component.avatar).toBeDefined();
-    expect(component.avatar.default).toBeDefined();
+  it("has divider.default", () => {
     expect(component.divider).toBeDefined();
     expect(component.divider.default).toBeDefined();
   });
 
-  it("ALL leaf values exist in semantic.light keys OR are 'transparent'", () => {
-    const semanticLightKeys = new Set(Object.keys(semantic.light));
+  it("does NOT have avatar component", () => {
+    expect(component.avatar).toBeUndefined();
+  });
+
+  it("ALL leaf values exist as semantic keys OR are 'transparent'", () => {
+    const semanticKeys = new Set(Object.keys(semantic));
 
     for (const [componentName, variants] of Object.entries(component)) {
       for (const [variantName, props] of Object.entries(variants)) {
         for (const [propName, value] of Object.entries(props)) {
-          const isValid = value === "transparent" || semanticLightKeys.has(value);
+          const isValid = value === "transparent" || semanticKeys.has(value);
           expect(
             isValid,
-            `component.${componentName}.${variantName}.${propName} = "${value}" is not in semantic.light or "transparent"`
+            `component.${componentName}.${variantName}.${propName} = "${value}" is not in semantic or "transparent"`
           ).toBe(true);
         }
       }

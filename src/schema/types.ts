@@ -229,15 +229,17 @@ export interface ArchetypePreset {
 
 // ═══ Design Tokens — 3-Layer Architecture ═══
 
-/** Layer 1: Raw palette values. No semantic meaning. */
+/** Layer 1: Raw scale values. Each color has 10 steps, each step has light+dark hex. */
 export interface PrimitiveTokens {
-  colors: Record<string, string>;
+  colors: Record<string, Record<string, { light: string; dark: string }>>;
+  // e.g. { gray: { "100": { light: "#fafafa", dark: "#111111" }, ... }, blue: { ... } }
 }
 
-/** Layer 2: Role-based aliases. Every value is a key from PrimitiveTokens.colors */
+/** Layer 2: Role-based references to primitive scale positions. No mode branching — primitives handle modes. */
 export interface SemanticTokens {
-  light: Record<string, string>;
-  dark: Record<string, string>;
+  [role: string]: string;
+  // e.g. { "bg/base": "gray-100", "text/primary": "gray-1000", "brand/primary": "blue-700" }
+  // Format: "{hue}-{step}"
 }
 
 /** Layer 3: Component-scoped. Every value is a key from SemanticTokens */
@@ -250,7 +252,7 @@ export interface ComponentTokens {
 export interface DesignTokens {
   brand: { name: string; mood: MoodArchetype };
   primitive: PrimitiveTokens;
-  semantic: SemanticTokens;
+  semantic: SemanticTokens;  // no longer { light, dark } — just flat map
   component: ComponentTokens;
   typography: {
     families: Record<string, string>;

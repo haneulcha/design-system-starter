@@ -33,25 +33,41 @@ for (const mood of ALL_MOODS) {
       expect(result.designMd).toContain("# Design System: TestBrand");
     });
 
-    it("tokens.primitive.colors has hue-named keys", () => {
-      const keys = Object.keys(result.tokens.primitive.colors);
-      // Should have at least one key ending in a numeric scale value
-      const hasScaleKey = keys.some((k) => /\d+$/.test(k));
-      expect(hasScaleKey).toBe(true);
-      expect(keys.length).toBeGreaterThanOrEqual(10);
-    });
-
-    it("tokens.semantic.light values are keys in primitive.colors", () => {
-      const primitiveKeys = new Set(Object.keys(result.tokens.primitive.colors));
-      for (const val of Object.values(result.tokens.semantic.light)) {
-        expect(primitiveKeys.has(val)).toBe(true);
+    it("tokens.primitive.colors has hue-keyed nested scales", () => {
+      const colors = result.tokens.primitive.colors;
+      // Should have at least gray + brand + status hues
+      expect(Object.keys(colors).length).toBeGreaterThanOrEqual(5);
+      // Each hue should have 10 steps
+      for (const [hue, scale] of Object.entries(colors)) {
+        expect(Object.keys(scale).length, `${hue} should have 10 steps`).toBe(10);
       }
     });
 
-    it("tokens.semantic.dark values are keys in primitive.colors", () => {
-      const primitiveKeys = new Set(Object.keys(result.tokens.primitive.colors));
-      for (const val of Object.values(result.tokens.semantic.dark)) {
-        expect(primitiveKeys.has(val)).toBe(true);
+    it("tokens.primitive.colors each step has light and dark", () => {
+      for (const [hue, scale] of Object.entries(result.tokens.primitive.colors)) {
+        for (const [step, value] of Object.entries(scale)) {
+          expect(value.light, `${hue}-${step}.light should be a hex`).toMatch(/^#[0-9a-f]{6}$/i);
+          expect(value.dark, `${hue}-${step}.dark should be a hex`).toMatch(/^#[0-9a-f]{6}$/i);
+        }
+      }
+    });
+
+    it("tokens.semantic values are all {hue}-{step} format", () => {
+      const pattern = /^[a-z]+-\d{3,4}$/;
+      for (const [role, value] of Object.entries(result.tokens.semantic)) {
+        expect(value, `semantic["${role}"] = "${value}" not {hue}-{step}`).toMatch(pattern);
+      }
+    });
+
+    it("tokens.semantic referenced hues all exist in primitive.colors", () => {
+      const primitiveHues = new Set(Object.keys(result.tokens.primitive.colors));
+      for (const [role, ref] of Object.entries(result.tokens.semantic)) {
+        const lastDash = ref.lastIndexOf("-");
+        const hue = ref.slice(0, lastDash);
+        expect(
+          primitiveHues.has(hue),
+          `semantic["${role}"] = "${ref}" — hue "${hue}" not in primitive`
+        ).toBe(true);
       }
     });
 

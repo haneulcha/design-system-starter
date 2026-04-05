@@ -1,23 +1,13 @@
 // src/generator/tokens.ts
 
-import { formatHex, converter, parse } from "culori";
 import type {
-  ColorPalette,
   DesignSystem,
   DesignTokens,
   PrimitiveTokens,
   SemanticTokens,
   ComponentTokens,
 } from "../schema/types.js";
-import type { ArchetypePreset } from "../schema/types.js";
-import { detectHueName } from "./color.js";
-
-const toOklch = converter("oklch");
-
-function oklchToHex(l: number, c: number, h: number): string {
-  const hex = formatHex({ mode: "oklch", l, c, h });
-  return hex ?? "#000000";
-}
+import type { ColorScales } from "./color.js";
 
 function kebab(s: string): string {
   return s.toLowerCase().replace(/\s+/g, "-");
@@ -30,284 +20,169 @@ function parsePx(s: string): number {
 
 // ─── Layer 1: Primitive ───────────────────────────────────────────────────────
 
-export function generatePrimitive(
-  palette: ColorPalette,
-  primaryHex: string
-): PrimitiveTokens {
-  const base = toOklch(primaryHex);
-  if (!base) throw new Error(`Invalid hex color: ${primaryHex}`);
-  const primaryHue = base.h ?? 0;
-
-  const brandHue = detectHueName(primaryHue);
-
-  const accentHue = (primaryHue + 150) % 360;
-  const accentHueName = detectHueName(accentHue);
-
-  const colors: Record<string, string> = {};
-
-  // Brand: primary[0..2] → {brandHue}500/700/200
-  colors[`${brandHue}500`] = palette.primary[0].hex;
-  colors[`${brandHue}700`] = palette.primary[1].hex;
-  colors[`${brandHue}200`] = palette.primary[2].hex;
-
-  // Accent: accent[0..1] → {accentHue}500/200
-  colors[`${accentHueName}500`] = palette.accent[0].hex;
-  colors[`${accentHueName}200`] = palette.accent[1].hex;
-
-  // Neutral: neutral[0..10] → gray950..gray50
-  const neutralNames = [
-    "gray950", "gray900", "gray800", "gray700", "gray600",
-    "gray500", "gray400", "gray300", "gray200", "gray100", "gray50",
-  ];
-  for (let i = 0; i < Math.min(palette.neutral.length, neutralNames.length); i++) {
-    colors[neutralNames[i]] = palette.neutral[i].hex;
+export function generatePrimitive(scales: ColorScales): PrimitiveTokens {
+  const colors: PrimitiveTokens["colors"] = {};
+  for (const [hue, scale] of Object.entries(scales)) {
+    colors[hue] = {};
+    for (const [step, values] of Object.entries(scale)) {
+      colors[hue][step] = values; // { light, dark }
+    }
   }
-
-  // Semantic main hues: semantic[0..3] → green500, red500, amber500, cyan500
-  const semanticMainKeys = ["green500", "red500", "amber500", "cyan500"];
-  const semanticHues = [145, 25, 80, 250]; // matches color.ts oklch hues
-  for (let i = 0; i < Math.min(palette.semantic.length, semanticMainKeys.length); i++) {
-    colors[semanticMainKeys[i]] = palette.semantic[i].hex;
-  }
-
-  // Semantic light variants: oklch(0.9, 0.04, sameHue) → green200, red200, amber200, cyan200
-  const semanticLightKeys = ["green200", "red200", "amber200", "cyan200"];
-  for (let i = 0; i < semanticHues.length; i++) {
-    colors[semanticLightKeys[i]] = oklchToHex(0.9, 0.04, semanticHues[i]);
-  }
-
-  // Surface: surface[0..3] → surfaceBase/Subtle/Muted/Raised
-  const surfaceNames = ["surfaceBase", "surfaceSubtle", "surfaceMuted", "surfaceRaised"];
-  for (let i = 0; i < Math.min(palette.surface.length, surfaceNames.length); i++) {
-    colors[surfaceNames[i]] = palette.surface[i].hex;
-  }
-
-  // Border: border[0..2] → borderSubtle/Default/Strong
-  const borderNames = ["borderSubtle", "borderDefault", "borderStrong"];
-  for (let i = 0; i < Math.min(palette.border.length, borderNames.length); i++) {
-    colors[borderNames[i]] = palette.border[i].hex;
-  }
-
-  // Dark surface: dark.surface[0..2] → darkBg/darkSubtle/darkRaised
-  colors["darkBg"] = palette.dark.surface[0]?.hex ?? oklchToHex(0.12, 0.005, primaryHue);
-  colors["darkSubtle"] = palette.dark.surface[1]?.hex ?? oklchToHex(0.16, 0.007, primaryHue);
-  colors["darkRaised"] = palette.dark.surface[2]?.hex ?? oklchToHex(0.2, 0.009, primaryHue);
-
-  // Dark text: dark.text[0..2] → darkTextMuted/darkTextDefault/darkTextStrong
-  colors["darkTextMuted"] = palette.dark.text[0]?.hex ?? oklchToHex(0.55, 0.01, primaryHue);
-  colors["darkTextDefault"] = palette.dark.text[1]?.hex ?? oklchToHex(0.75, 0.008, primaryHue);
-  colors["darkTextStrong"] = palette.dark.text[2]?.hex ?? oklchToHex(0.95, 0.003, primaryHue);
-
-  // Dark borders: use culori oklch(l:0.18/0.22/0.28, c:0.008, h:primaryHue)
-  colors["darkBorderSubtle"] = oklchToHex(0.18, 0.008, primaryHue);
-  colors["darkBorderDefault"] = oklchToHex(0.22, 0.008, primaryHue);
-  colors["darkBorderStrong"] = oklchToHex(0.28, 0.008, primaryHue);
-
-  // Constants
-  colors["white"] = "#ffffff";
-  colors["black"] = "#000000";
-
   return { colors };
 }
 
 // ─── Layer 2: Semantic ────────────────────────────────────────────────────────
 
-export function generateSemantic(
-  primitive: PrimitiveTokens,
-  archetype: ArchetypePreset
-): SemanticTokens {
-  // Detect brand hue from primitive: find the non-gray/green/red/amber/cyan *500 key
-  const knownSemanticPrefixes = new Set(["gray", "green", "red", "amber", "cyan"]);
-  let brandHueName = "blue";
-  let accentHueName = "orange";
+export function generateSemantic(primitive: PrimitiveTokens): SemanticTokens {
+  // Detect brand and accent hues from primitive keys
+  // Known fixed hues that are not brand/accent
+  const fixedHues = new Set(["gray", "blue", "red", "amber", "green"]);
 
-  const allKeys = Object.keys(primitive.colors);
-  const keys500 = allKeys.filter((k) => k.endsWith("500"));
-  for (const k of keys500) {
-    const prefix = k.replace("500", "");
-    if (!knownSemanticPrefixes.has(prefix)) {
-      brandHueName = prefix;
-      break;
-    }
+  let brandHue = "blue";
+  let accentHue = "blue";
+
+  const hueNames = Object.keys(primitive.colors);
+  const nonFixed = hueNames.filter((h) => !fixedHues.has(h));
+
+  // First non-fixed hue is brand, second is accent
+  if (nonFixed.length >= 1) brandHue = nonFixed[0];
+  if (nonFixed.length >= 2) accentHue = nonFixed[1];
+  else if (nonFixed.length === 1) {
+    // accent falls back to a fixed hue that isn't the brand
+    accentHue = hueNames.find((h) => fixedHues.has(h) && h !== "gray") ?? "blue";
   }
 
-  // Detect accent: find a *200 or *500 key that is not brand, gray, or semantic
-  const knownFixed = new Set([...knownSemanticPrefixes, brandHueName]);
-  for (const k of keys500) {
-    const prefix = k.replace("500", "");
-    if (!knownFixed.has(prefix)) {
-      accentHueName = prefix;
-      break;
-    }
-  }
+  return {
+    // Background (gray scale)
+    "bg/base": "gray-100",
+    "bg/subtle": "gray-200",
+    "bg/muted": "gray-300",
 
-  const light: Record<string, string> = {
-    // Backgrounds
-    bgBase: "surfaceBase",
-    bgSubtle: "surfaceSubtle",
-    bgMuted: "surfaceMuted",
-    bgRaised: "surfaceRaised",
     // Text
-    textStrong: "gray900",
-    textDefault: "gray600",
-    textMuted: "gray400",
-    // Borders
-    borderSubtle: "borderSubtle",
-    borderDefault: "borderDefault",
-    borderStrong: "borderStrong",
-    // Brand
-    brandPrimary: `${brandHueName}500`,
-    brandHover: `${brandHueName}700`,
-    brandLight: `${brandHueName}200`,
+    "text/primary": "gray-1000",
+    "text/secondary": "gray-900",
+    "text/muted": "gray-700",
+    "text/disabled": "gray-500",
+
+    // Border
+    "border/default": "gray-400",
+    "border/subtle": "gray-300",
+    "border/strong": "gray-600",
+
+    // Brand (from detected brand hue)
+    "brand/primary": `${brandHue}-700`,
+    "brand/secondary": `${brandHue}-800`,
+    "brand/subtle": `${brandHue}-200`,
+    "brand/muted": `${brandHue}-100`,
+
     // Accent
-    accentPrimary: `${accentHueName}500`,
-    accentLight: `${accentHueName}200`,
-    // Semantic
-    success: "green500",
-    successLight: "green200",
-    error: "red500",
-    errorLight: "red200",
-    warning: "amber500",
-    warningLight: "amber200",
-    info: "cyan500",
-    infoLight: "cyan200",
-    // Constants
-    white: "white",
-    black: "black",
-  };
+    "accent/primary": `${accentHue}-700`,
+    "accent/subtle": `${accentHue}-200`,
 
-  const dark: Record<string, string> = {
-    // Backgrounds
-    bgBase: "darkBg",
-    bgSubtle: "darkSubtle",
-    bgRaised: "darkRaised",
-    // Text
-    textStrong: "darkTextStrong",
-    textDefault: "darkTextDefault",
-    textMuted: "darkTextMuted",
-    // Borders
-    borderSubtle: "darkBorderSubtle",
-    borderDefault: "darkBorderDefault",
-    borderStrong: "darkBorderStrong",
-    // Brand (shared with light)
-    brandPrimary: `${brandHueName}500`,
-    brandHover: `${brandHueName}700`,
-    brandLight: `${brandHueName}200`,
-    // Accent (shared with light)
-    accentPrimary: `${accentHueName}500`,
-    accentLight: `${accentHueName}200`,
-    // Semantic (shared with light)
-    success: "green500",
-    successLight: "green200",
-    error: "red500",
-    errorLight: "red200",
-    warning: "amber500",
-    warningLight: "amber200",
-    info: "cyan500",
-    infoLight: "cyan200",
-    // Constants
-    white: "white",
-    black: "black",
-  };
+    // Status — all use the SAME step pattern
+    "status/success": "green-700",
+    "status/success-subtle": "green-200",
+    "status/success-text": "green-900",
+    "status/error": "red-700",
+    "status/error-subtle": "red-200",
+    "status/error-text": "red-900",
+    "status/warning": "amber-700",
+    "status/warning-subtle": "amber-200",
+    "status/warning-text": "amber-900",
+    "status/info": "blue-700",
+    "status/info-subtle": "blue-200",
+    "status/info-text": "blue-900",
 
-  return { light, dark };
+    // Constants
+    "white": "gray-100",   // lightest gray
+    "black": "gray-1000",  // darkest gray
+  };
 }
 
 // ─── Layer 3: Component ───────────────────────────────────────────────────────
 
-export function generateComponent(semantic: SemanticTokens): ComponentTokens {
+export function generateComponent(_semantic: SemanticTokens): ComponentTokens {
   return {
     button: {
       primary: {
-        bg: "brandPrimary",
-        bgHover: "brandHover",
-        bgActive: "brandHover",
-        bgDisabled: "bgMuted",
+        bg: "brand/primary",
+        bgHover: "brand/secondary",
+        bgDisabled: "bg/muted",
         text: "white",
-        textDisabled: "textMuted",
+        textDisabled: "text/disabled",
       },
       secondary: {
-        bg: "bgMuted",
-        bgHover: "bgRaised",
-        bgActive: "borderSubtle",
-        bgDisabled: "bgMuted",
-        text: "textStrong",
-        textDisabled: "textMuted",
+        bg: "bg/subtle",
+        bgHover: "bg/muted",
+        bgDisabled: "bg/subtle",
+        text: "text/primary",
+        textDisabled: "text/disabled",
       },
       ghost: {
         bg: "transparent",
-        bgHover: "bgSubtle",
-        bgActive: "bgMuted",
+        bgHover: "bg/subtle",
         bgDisabled: "transparent",
-        text: "brandPrimary",
-        textDisabled: "textMuted",
-        border: "borderDefault",
-        borderDisabled: "borderSubtle",
+        text: "brand/primary",
+        textDisabled: "text/disabled",
+        border: "border/default",
+        borderDisabled: "border/subtle",
       },
     },
     input: {
       default: {
-        bg: "bgBase",
-        border: "borderDefault",
-        text: "textStrong",
-        placeholder: "textMuted",
-        label: "textStrong",
-        helper: "textDefault",
+        bg: "bg/base",
+        border: "border/default",
+        text: "text/primary",
+        placeholder: "text/muted",
+        label: "text/primary",
+        helper: "text/secondary",
       },
       focus: {
-        border: "brandPrimary",
+        border: "brand/primary",
       },
       error: {
-        border: "error",
-        errorText: "error",
+        border: "status/error",
+        errorText: "status/error-text",
       },
       disabled: {
-        bg: "bgMuted",
-        border: "borderSubtle",
+        bg: "bg/muted",
+        border: "border/subtle",
       },
     },
     card: {
       default: {
-        bg: "bgSubtle",
-        border: "borderSubtle",
-        headerText: "textStrong",
-        bodyText: "textDefault",
+        bg: "bg/subtle",
+        border: "border/subtle",
+        headerText: "text/primary",
+        bodyText: "text/secondary",
       },
     },
     badge: {
       default: {
-        bg: "bgMuted",
-        text: "textDefault",
+        bg: "bg/muted",
+        text: "text/secondary",
       },
       success: {
-        bg: "successLight",
-        text: "success",
+        bg: "status/success-subtle",
+        text: "status/success-text",
       },
       error: {
-        bg: "errorLight",
-        text: "error",
+        bg: "status/error-subtle",
+        text: "status/error-text",
       },
       warning: {
-        bg: "warningLight",
-        text: "warning",
+        bg: "status/warning-subtle",
+        text: "status/warning-text",
       },
       info: {
-        bg: "infoLight",
-        text: "info",
-      },
-    },
-    avatar: {
-      default: {
-        bg: "brandLight",
-        text: "brandPrimary",
-        statusOnline: "success",
-        statusOffline: "textMuted",
+        bg: "status/info-subtle",
+        text: "status/info-text",
       },
     },
     divider: {
       default: {
-        line: "borderSubtle",
-        labelText: "textMuted",
+        line: "border/subtle",
+        labelText: "text/muted",
       },
     },
   };
