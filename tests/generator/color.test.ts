@@ -70,13 +70,5 @@ describe("generateScales", () => {
     expect(vivid.red?.["700"]?.light).not.toBe(muted.red?.["700"]?.light);
   });
 
-  it("accepts custom statusHues and produces different scales", () => {
-    const preciseHues = { red: 26, green: 148, blue: 262, amber: 85 };
-    const modernHues = { red: 12, green: 162, blue: 254, amber: 68 };
-    const precise = generateScales("#5e6ad2", "neutral", "balanced", preciseHues);
-    const modern = generateScales("#5e6ad2", "neutral", "balanced", modernHues);
-    // Different hues should produce different color values
-    expect(precise.red?.["700"]?.light).not.toBe(modern.red?.["700"]?.light);
-    expect(precise.green?.["700"]?.light).not.toBe(modern.green?.["700"]?.light);
-  });
 });
+

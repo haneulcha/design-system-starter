@@ -1,20 +1,18 @@
 import { useColorScales } from "../hooks/useGenerator";
-import type { ColorCharacter, MoodArchetype } from "../hooks/useGenerator";
+import type { ColorCharacter } from "../hooks/useGenerator";
 
 export function StepColor({
   value,
   onChange,
   character,
   onCharacterChange,
-  mood,
 }: {
   value: string;
   onChange: (v: string) => void;
   character: ColorCharacter;
   onCharacterChange: (c: ColorCharacter) => void;
-  mood: MoodArchetype;
 }) {
-  const scales = useColorScales(value, character, mood);
+  const scales = useColorScales(value, character);
 
   return (
     <div>

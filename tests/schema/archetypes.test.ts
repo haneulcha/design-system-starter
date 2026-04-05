@@ -43,14 +43,6 @@ describe("getArchetype", () => {
         expect(getArchetype(mood).suggestedFonts.length).toBeGreaterThanOrEqual(3);
       });
 
-      it("has statusHues with red, green, blue, amber", () => {
-        const p = getArchetype(mood);
-        expect(typeof p.statusHues.red).toBe("number");
-        expect(typeof p.statusHues.green).toBe("number");
-        expect(typeof p.statusHues.blue).toBe("number");
-        expect(typeof p.statusHues.amber).toBe("number");
-      });
-
       it("has 7+ dos and 7+ donts", () => {
         const p = getArchetype(mood);
         expect(p.dos.length).toBeGreaterThanOrEqual(7);

@@ -47,7 +47,7 @@ export function generate(inputs: UserInputs): GenerateResult {
   const archetype = getArchetype(inputs.mood);
 
   // Generate all subsystems
-  const scales = generateScales(inputs.primaryColor, archetype.neutralUndertone, inputs.colorCharacter ?? "balanced", archetype.statusHues);
+  const scales = generateScales(inputs.primaryColor, archetype.neutralUndertone, inputs.colorCharacter ?? "balanced");
   const fontFamily = inputs.fontFamily || archetype.defaultFont;
   const typography = generateTypography(archetype, fontFamily);
   const components = generateComponents(archetype);

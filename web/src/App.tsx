@@ -45,14 +45,12 @@ export function App() {
               onChange={(c: string) => update({ primaryColor: c })}
               character={state.colorCharacter}
               onCharacterChange={(c: ColorCharacter) => update({ colorCharacter: c })}
-              mood={state.mood}
             />
           )}
           {step === 1 && (
             <StepArchetype
               value={state.mood}
               primaryColor={state.primaryColor}
-              colorCharacter={state.colorCharacter}
               onChange={(m: MoodArchetype) => update({ mood: m })}
             />
           )}
