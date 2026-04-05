@@ -132,8 +132,10 @@ export function generateScales(
   // Add brand scale (use the detected name so it merges with status if overlapping)
   scales[brandHueName] = buildScale(baseC, baseH);
 
-  // Add accent scale (always add unless it's the same name as brand)
-  if (accentHueName !== brandHueName) {
+  // Add accent scale — skip if it overlaps with brand OR any status hue (within 30°)
+  const statusHueAngles = STATUS_HUES.map((s) => s.hue);
+  const accentOverlapsStatus = statusHueAngles.some((h) => huesOverlap(accentHue, h, 30));
+  if (accentHueName !== brandHueName && !accentOverlapsStatus) {
     scales[accentHueName] = buildScale(baseC * 0.85 * chromaScale, accentHue);
   }
 
