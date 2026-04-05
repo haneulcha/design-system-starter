@@ -1,7 +1,9 @@
 import type { ArchetypePreset, ColorScales, ElevationSystem } from "../schema/types.js";
+import { oklchToHex } from "../generator/color.js";
 
 export function generateElevation(archetype: ArchetypePreset, scales: ColorScales): ElevationSystem {
-  const border = scales.gray?.["300"]?.light ?? "#d4d4d4";
+  const borderColor = scales.gray?.["300"]?.light;
+  const border = borderColor ? oklchToHex(borderColor) : "#d4d4d4";
   const opMap = {
     whisper: { a: "0.04", b: "0.04", c: "0.06", d: "0.08" },
     subtle:  { a: "0.06", b: "0.06", c: "0.10", d: "0.15" },

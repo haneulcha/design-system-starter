@@ -6,6 +6,7 @@ import type {
   ElevationLevel,
   Breakpoint,
 } from "./types.js";
+import { formatOklch } from "../generator/color.js";
 
 // ─── Section renderers ───────────────────────────────────────────────────────
 
@@ -33,7 +34,7 @@ function renderColors(system: DesignSystem): string {
     lines.push("| Step | Light | Dark |");
     lines.push("|------|-------|------|");
     for (const [step, values] of steps) {
-      lines.push(`| ${step} | \`${values.light}\` | \`${values.dark}\` |`);
+      lines.push(`| ${step} | \`${formatOklch(values.light)}\` | \`${formatOklch(values.dark)}\` |`);
     }
     lines.push("");
   }
