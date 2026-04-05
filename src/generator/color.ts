@@ -58,10 +58,21 @@ const DARK_STEPS: Array<{ step: string; l: number; cMult: number }> = [
   { step: "1000", l: 0.93, cMult: 0.35 },
 ];
 
-function buildScale(baseChroma: number, hue: number): ColorScale {
+function buildScale(baseChroma: number, hue: number, baseLightness?: number): ColorScale {
+  // Default anchor: step 500 = L 0.68 (original fixed midpoint)
+  const anchor = baseLightness ?? 0.68;
+  const defaultAnchor = 0.68;
+
+  // Shift all lightness values so step 500 = anchor,
+  // while clamping to valid range [0.05, 0.99]
+  function shiftL(originalL: number): number {
+    const offset = anchor - defaultAnchor;
+    return Math.min(0.99, Math.max(0.05, originalL + offset));
+  }
+
   const scale: ColorScale = {};
   for (const { step, l, cMult } of LIGHT_STEPS) {
-    const lightHex = oklchToHex(l, baseChroma * cMult, hue);
+    const lightHex = oklchToHex(shiftL(l), baseChroma * cMult, hue);
     const darkEntry = DARK_STEPS.find((d) => d.step === step)!;
     const darkHex = oklchToHex(darkEntry.l, baseChroma * darkEntry.cMult, hue);
     scale[step] = { light: lightHex, dark: darkHex };
@@ -129,8 +140,9 @@ export function generateScales(
     gray: buildGrayScale(undertone),
   };
 
-  // Add brand scale (use the detected name so it merges with status if overlapping)
-  scales[brandHueName] = buildScale(baseC, baseH);
+  // Add brand scale — anchored to user's actual lightness
+  const baseL = base.l ?? 0.68;
+  scales[brandHueName] = buildScale(baseC, baseH, baseL);
 
   // Add accent scale — skip if it overlaps with brand OR any status hue (within 30°)
   const statusHueAngles = STATUS_HUES.map((s) => s.hue);

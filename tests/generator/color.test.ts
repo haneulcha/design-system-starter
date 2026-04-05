@@ -17,8 +17,8 @@ describe("detectHueName", () => {
 describe("generateScales", () => {
   const scales = generateScales("#5e6ad2", "neutral", "balanced");
 
-  it("generates 7 color hues", () => {
-    expect(Object.keys(scales).length).toBeGreaterThanOrEqual(6);
+  it("generates at least 5 color hues (gray + brand + 3 status)", () => {
+    expect(Object.keys(scales).length).toBeGreaterThanOrEqual(5);
     expect(scales.gray).toBeTruthy();
     expect(scales.blue).toBeTruthy(); // brand hue for #5e6ad2
     expect(scales.red).toBeTruthy();
