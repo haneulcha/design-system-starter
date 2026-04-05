@@ -52,6 +52,7 @@ export function App() {
             <StepArchetype
               value={state.mood}
               primaryColor={state.primaryColor}
+              colorCharacter={state.colorCharacter}
               onChange={(m: MoodArchetype) => update({ mood: m })}
             />
           )}

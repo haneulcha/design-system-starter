@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { ARCHETYPES, getArchetype } from "@core/schema/archetypes.js";
 import { generateScales } from "@core/generator/color.js";
-import type { MoodArchetype } from "../hooks/useGenerator";
+import { useColorScales } from "../hooks/useGenerator";
+import type { MoodArchetype, ColorCharacter } from "../hooks/useGenerator";
 
 const REFERENCES: Record<MoodArchetype, string> = {
   precise: "Stripe, IBM, X.ai",
@@ -22,10 +23,12 @@ const ARCHETYPE_KEYS: MoodArchetype[] = ["precise", "confident", "expressive", "
 export function StepArchetype({
   value,
   primaryColor,
+  colorCharacter,
   onChange,
 }: {
   value: MoodArchetype;
   primaryColor: string;
+  colorCharacter: ColorCharacter;
   onChange: (v: MoodArchetype) => void;
 }) {
   const selected = getArchetype(value);
@@ -43,6 +46,11 @@ export function StepArchetype({
   }, [primaryColor, selected.neutralUndertone]);
 
   const shadow = shadowMap[selected.shadowIntensity] ?? shadowMap.subtle;
+
+  const scales = useColorScales(primaryColor, colorCharacter, value);
+  const statusScales = Object.entries(scales).filter(([hue]) => {
+    return ["red", "green", "amber", "blue"].includes(hue);
+  });
 
   return (
     <div>
@@ -170,6 +178,39 @@ export function StepArchetype({
           <div className="text-[11px] text-neutral-400 mt-1">
             input radius: {selected.inputRadius}
           </div>
+        </div>
+      </div>
+
+      {/* Status Colors */}
+      <div className="mt-8">
+        <div className="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-4">
+          Status Colors
+        </div>
+        <div className="space-y-4">
+          {statusScales.map(([hue, scale]) => (
+            <div key={hue}>
+              <div className="text-xs font-medium text-neutral-500 mb-1 capitalize">
+                {hue}
+              </div>
+              <div className="flex gap-0.5">
+                {Object.entries(scale)
+                  .sort(([a], [b]) => Number(a) - Number(b))
+                  .map(([step, vals]) => (
+                    <div
+                      key={step}
+                      className="flex-1 h-8 first:rounded-l last:rounded-r relative group"
+                      style={{ backgroundColor: vals.light }}
+                    >
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="text-[9px] font-mono px-1 py-0.5 rounded bg-black/70 text-white">
+                          {step}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
