@@ -74,10 +74,18 @@ async function main() {
     "utf-8"
   );
 
+  // Write token TS files
+  const tokensDir = join(outDir, "tokens");
+  mkdirSync(tokensDir, { recursive: true });
+  for (const [filename, content] of Object.entries(result.tokenFiles)) {
+    writeFileSync(join(tokensDir, filename), content, "utf-8");
+  }
+
   console.log("  Generated:");
   console.log("    output/DESIGN.md            Design system definition");
   console.log("    output/design-tokens.json   Universal design tokens");
   console.log("    output/figma-system.json    Figma MCP-ready structure");
+  console.log("    output/tokens/              3-layer design tokens (TS)");
   console.log("");
   console.log("  Next steps:");
   console.log("    1. Review and customize output/DESIGN.md");
