@@ -23,14 +23,15 @@ export const DEFAULT_STATE: WizardState = {
   brandName: "Untitled",
 };
 
-export function useColorScales(primaryColor: string, colorCharacter: ColorCharacter): ColorScales {
+export function useColorScales(primaryColor: string, colorCharacter: ColorCharacter, mood: MoodArchetype = "precise"): ColorScales {
   return useMemo(() => {
     try {
-      return generateScales(primaryColor, "neutral", colorCharacter);
+      const archetype = getArchetype(mood);
+      return generateScales(primaryColor, archetype.neutralUndertone, colorCharacter, archetype.statusHues);
     } catch {
       return generateScales("#5e6ad2", "neutral", colorCharacter);
     }
-  }, [primaryColor, colorCharacter]);
+  }, [primaryColor, colorCharacter, mood]);
 }
 
 export interface FullResult extends GenerateResult {

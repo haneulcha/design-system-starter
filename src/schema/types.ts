@@ -203,6 +203,12 @@ export interface ArchetypePreset {
   pillRadius: string;
   shadowIntensity: ShadowIntensity;
   neutralUndertone: NeutralUndertone;
+  statusHues: {
+    red: number;
+    green: number;
+    blue: number;
+    amber: number;
+  };
   dos: string[];
   donts: string[];
   suggestedFonts: { name: string; fallback: string }[];

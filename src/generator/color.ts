@@ -102,7 +102,8 @@ const CHROMA_SCALE: Record<ColorCharacter, number> = {
 export function generateScales(
   primaryHex: string,
   undertone: NeutralUndertone,
-  colorCharacter: ColorCharacter = "balanced"
+  colorCharacter: ColorCharacter = "balanced",
+  statusHues: { red: number; green: number; blue: number; amber: number } = { red: 22, green: 149, blue: 258, amber: 76 }
 ): ColorScales {
   const base = toOklch(primaryHex);
   if (!base) throw new Error(`Invalid hex color: ${primaryHex}`);
@@ -112,12 +113,12 @@ export function generateScales(
 
   const chromaScale = CHROMA_SCALE[colorCharacter];
 
-  // Fixed status hues — hue from median of 10 production systems, chroma from Tailwind
+  // Archetype-driven status hues — positions within data-derived valid ranges
   const STATUS_HUES: Array<{ name: string; hue: number; chroma: number }> = [
-    { name: "blue",  hue: 256, chroma: 0.22 * chromaScale },
-    { name: "red",   hue: 21,  chroma: 0.22 * chromaScale },
-    { name: "amber", hue: 76,  chroma: 0.17 * chromaScale },
-    { name: "green", hue: 149, chroma: 0.19 * chromaScale },
+    { name: "blue",  hue: statusHues.blue,  chroma: 0.22 * chromaScale },
+    { name: "red",   hue: statusHues.red,   chroma: 0.22 * chromaScale },
+    { name: "amber", hue: statusHues.amber, chroma: 0.17 * chromaScale },
+    { name: "green", hue: statusHues.green, chroma: 0.19 * chromaScale },
   ];
 
   // Brand hue name from primary

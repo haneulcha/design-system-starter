@@ -26,6 +26,7 @@ export const ARCHETYPES: Record<MoodArchetype, ArchetypePreset> = {
     defaultFontFallback: FONT_FALLBACK,
     monoFont: "JetBrains Mono",
     monoFontFallback: MONO_FALLBACK,
+    statusHues: { red: 26, green: 148, blue: 262, amber: 85 },
     suggestedFonts: [
       { name: "Inter", fallback: FONT_FALLBACK },
       { name: "Source Sans 3", fallback: FONT_FALLBACK },
@@ -91,6 +92,7 @@ Structured spacing — 16px component grid, 80px section intervals — creates a
     defaultFontFallback: FONT_FALLBACK,
     monoFont: "JetBrains Mono",
     monoFontFallback: MONO_FALLBACK,
+    statusHues: { red: 22, green: 149, blue: 258, amber: 76 },
     suggestedFonts: [
       { name: "Inter", fallback: FONT_FALLBACK },
       { name: "Geist", fallback: FONT_FALLBACK },
@@ -156,6 +158,7 @@ Subtle shadows and restrained rounding (6px buttons, 8px cards) signal modern co
     defaultFontFallback: FONT_FALLBACK,
     monoFont: "JetBrains Mono",
     monoFontFallback: MONO_FALLBACK,
+    statusHues: { red: 16, green: 155, blue: 256, amber: 70 },
     suggestedFonts: [
       { name: "DM Sans", fallback: FONT_FALLBACK },
       { name: "Plus Jakarta Sans", fallback: FONT_FALLBACK },
@@ -221,6 +224,7 @@ Subtle shadows and restrained rounding (6px buttons, 8px cards) signal modern co
     defaultFontFallback: FONT_FALLBACK,
     monoFont: "JetBrains Mono",
     monoFontFallback: MONO_FALLBACK,
+    statusHues: { red: 12, green: 162, blue: 254, amber: 68 },
     suggestedFonts: [
       { name: "Inter", fallback: FONT_FALLBACK },
       { name: "Geist", fallback: FONT_FALLBACK },

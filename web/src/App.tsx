@@ -45,6 +45,7 @@ export function App() {
               onChange={(c: string) => update({ primaryColor: c })}
               character={state.colorCharacter}
               onCharacterChange={(c: ColorCharacter) => update({ colorCharacter: c })}
+              mood={state.mood}
             />
           )}
           {step === 1 && (
