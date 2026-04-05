@@ -15,7 +15,6 @@ export interface UserInputs {
   primaryColor: string;
   mood: MoodArchetype;
   fontFamily: string;
-  colorCharacter: ColorCharacter;
 }
 
 // ═══ Color ═══
@@ -216,10 +215,9 @@ export interface ArchetypePreset {
 
 // ═══ Design Tokens — 3-Layer Architecture ═══
 
-/** Layer 1: Raw scale values. Each color has 10 steps, each step has light+dark hex. */
+/** Layer 1: Raw scale values. Each color has 10 steps, each step has light+dark Oklch. */
 export interface PrimitiveTokens {
-  colors: Record<string, Record<string, { light: string; dark: string }>>;
-  // e.g. { gray: { "100": { light: "#fafafa", dark: "#111111" }, ... }, blue: { ... } }
+  colors: Record<string, Record<string, ColorStep>>;
 }
 
 /** Layer 2: Role-based references to primitive scale positions. No mode branching — primitives handle modes. */
