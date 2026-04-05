@@ -63,45 +63,76 @@ export interface TypographySystem {
 
 // ═══ Components ═══
 
-export interface ButtonVariant {
-  name: string;
-  background: string;
-  text: string;
-  padding: string;
+export interface ComponentSize {
+  height: string;       // spacing token name, e.g. "spacing.xl"
+  paddingX: string;     // spacing token name
+  gap: string;          // spacing token name
+  fontSize: string;     // typography style name
+  iconSize: string;     // spacing token name
+  radius: string;       // radius token name
+}
+
+export interface ButtonSpec {
+  sizes: Record<string, ComponentSize>;  // sm, md, lg
+  variants: string[];                     // ["primary", "secondary", "ghost"]
+}
+
+export interface InputSpec {
+  fieldHeight: string;
+  fieldPaddingX: string;
+  fieldRadius: string;
+  labelFieldGap: string;
+  fieldHelperGap: string;
+  labelFont: string;
+  valueFont: string;
+  helperFont: string;
+  iconSize: string;
+  states: string[];
+}
+
+export interface CardSpec {
   radius: string;
+  contentPadding: string;
+  contentGap: string;
   shadow: string;
-  hoverBg: string;
-  use: string;
+  headerFont: string;
+  bodyFont: string;
+  footerGap: string;
+  variants: string[];
+}
+
+export interface BadgeSpec {
+  sizes: Record<string, {
+    height: string;
+    paddingX: string;
+    radius: string;
+    font: string;
+  }>;
+  variants: string[];
+}
+
+export interface AvatarSpec {
+  sizes: Record<string, {
+    size: string;
+    radius: string;
+    font: string;
+    statusDot: string;
+  }>;
+}
+
+export interface DividerSpec {
+  lineHeight: string;
+  labelPaddingX: string;
+  labelFont: string;
 }
 
 export interface ComponentSpecs {
-  buttons: ButtonVariant[];
-  cards: {
-    background: string;
-    border: string;
-    radius: string;
-    shadow: string;
-    padding: string;
-    hoverEffect: string;
-  };
-  inputs: {
-    background: string;
-    border: string;
-    radius: string;
-    focusBorder: string;
-    focusShadow: string;
-    padding: string;
-    textColor: string;
-    placeholderColor: string;
-  };
-  navigation: {
-    background: string;
-    position: string;
-    linkSize: string;
-    linkWeight: number;
-    linkColor: string;
-    activeIndicator: string;
-  };
+  button: ButtonSpec;
+  input: InputSpec;
+  card: CardSpec;
+  badge: BadgeSpec;
+  avatar: AvatarSpec;
+  divider: DividerSpec;
 }
 
 // ═══ Layout ═══
