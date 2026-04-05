@@ -1,6 +1,8 @@
 // src/generator/color.ts
 
-import { oklch, parse, formatHex } from "culori";
+import { converter, parse, formatHex } from "culori";
+
+const toOklch = converter("oklch");
 import type { Oklch, ColorStep, ColorScales } from "../schema/types.js";
 
 export type { ColorScales };
@@ -65,7 +67,7 @@ const STEP_NUMBERS: readonly number[] = [100, 200, 300, 400, 500, 600, 700, 800,
 // ─── Pure Functions ──────────────────────────────────────────────────────────
 
 export const parsePrimary = (hex: string): Oklch => {
-  const color = oklch(parse(hex));
+  const color = toOklch(parse(hex)!);
   if (!color) throw new Error(`Invalid hex color: ${hex}`);
   return { l: color.l ?? 0, c: color.c ?? 0, h: color.h ?? 0 };
 };
