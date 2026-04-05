@@ -55,6 +55,7 @@ async function main() {
     primaryColor: primaryColor.trim(),
     mood,
     fontFamily: resolvedFont,
+    colorCharacter: "balanced",
   });
 
   const figmaData = transformToFigma(result.tokens);

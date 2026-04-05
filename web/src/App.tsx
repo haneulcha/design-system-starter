@@ -4,7 +4,7 @@ import { StepColor } from "./steps/StepColor";
 import { StepArchetype } from "./steps/StepArchetype";
 import { StepFont } from "./steps/StepFont";
 import { ResultPage } from "./result/ResultPage";
-import { DEFAULT_STATE, type WizardState, type MoodArchetype } from "./hooks/useGenerator";
+import { DEFAULT_STATE, type WizardState, type MoodArchetype, type ColorCharacter } from "./hooks/useGenerator";
 
 type Screen = "wizard" | "result";
 
@@ -43,6 +43,8 @@ export function App() {
             <StepColor
               value={state.primaryColor}
               onChange={(c: string) => update({ primaryColor: c })}
+              character={state.colorCharacter}
+              onCharacterChange={(c: ColorCharacter) => update({ colorCharacter: c })}
             />
           )}
           {step === 1 && (

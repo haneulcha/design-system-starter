@@ -8,11 +8,14 @@ export type MoodArchetype =
   | "expressive"
   | "modern";
 
+export type ColorCharacter = "vivid" | "balanced" | "muted";
+
 export interface UserInputs {
   brandName: string;
   primaryColor: string;
   mood: MoodArchetype;
   fontFamily: string;
+  colorCharacter: ColorCharacter;
 }
 
 // ═══ Color ═══

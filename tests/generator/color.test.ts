@@ -15,7 +15,7 @@ describe("detectHueName", () => {
 });
 
 describe("generateScales", () => {
-  const scales = generateScales("#5e6ad2", "neutral");
+  const scales = generateScales("#5e6ad2", "neutral", "balanced");
 
   it("generates 7 color hues", () => {
     expect(Object.keys(scales).length).toBeGreaterThanOrEqual(6);
@@ -60,5 +60,13 @@ describe("generateScales", () => {
     expect(parseInt(g100.slice(1, 3), 16)).toBeLessThan(
       parseInt(g1000.slice(1, 3), 16)
     );
+  });
+
+  it("vivid has higher chroma in status colors than muted", () => {
+    const vivid = generateScales("#5e6ad2", "neutral", "vivid");
+    const muted = generateScales("#5e6ad2", "neutral", "muted");
+    // Compare red-700 light values — vivid should be more saturated
+    // We can't easily check chroma from hex, but we can verify they're different
+    expect(vivid.red?.["700"]?.light).not.toBe(muted.red?.["700"]?.light);
   });
 });

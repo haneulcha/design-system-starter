@@ -1,7 +1,7 @@
 // src/generator/color.ts
 
 import { formatHex, converter } from "culori";
-import type { NeutralUndertone, ColorScales } from "../schema/types.js";
+import type { NeutralUndertone, ColorScales, ColorCharacter } from "../schema/types.js";
 
 export type { ColorScales };
 
@@ -93,9 +93,16 @@ function huesOverlap(h1: number, h2: number, threshold = 30): boolean {
   return diff < threshold;
 }
 
+const CHROMA_SCALE: Record<ColorCharacter, number> = {
+  vivid: 1.2,    // boost status chroma by 20%
+  balanced: 1.0, // use data-derived defaults as-is
+  muted: 0.8,    // reduce by 20%
+};
+
 export function generateScales(
   primaryHex: string,
-  undertone: NeutralUndertone
+  undertone: NeutralUndertone,
+  colorCharacter: ColorCharacter = "balanced"
 ): ColorScales {
   const base = toOklch(primaryHex);
   if (!base) throw new Error(`Invalid hex color: ${primaryHex}`);
@@ -103,12 +110,14 @@ export function generateScales(
   const baseC = base.c ?? 0.12;
   const baseH = base.h ?? 0;
 
+  const chromaScale = CHROMA_SCALE[colorCharacter];
+
   // Fixed status hues with peak chroma from Tailwind reference scales
   const STATUS_HUES: Array<{ name: string; hue: number; chroma: number }> = [
-    { name: "blue",  hue: 250, chroma: 0.22 },
-    { name: "red",   hue: 25,  chroma: 0.22 },
-    { name: "amber", hue: 75,  chroma: 0.17 },
-    { name: "green", hue: 145, chroma: 0.19 },
+    { name: "blue",  hue: 250, chroma: 0.22 * chromaScale },
+    { name: "red",   hue: 25,  chroma: 0.22 * chromaScale },
+    { name: "amber", hue: 75,  chroma: 0.17 * chromaScale },
+    { name: "green", hue: 145, chroma: 0.19 * chromaScale },
   ];
 
   // Brand hue name from primary
@@ -125,7 +134,7 @@ export function generateScales(
 
   // Add accent scale (always add unless it's the same name as brand)
   if (accentHueName !== brandHueName) {
-    scales[accentHueName] = buildScale(baseC * 0.85, accentHue);
+    scales[accentHueName] = buildScale(baseC * 0.85 * chromaScale, accentHue);
   }
 
   // Add fixed status hues. Skip a status hue only when brand or accent has

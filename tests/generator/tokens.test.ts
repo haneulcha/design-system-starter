@@ -11,7 +11,7 @@ import type {
   ComponentTokens,
 } from "../../src/schema/types.js";
 
-const scales = generateScales("#5e6ad2", "cool");
+const scales = generateScales("#5e6ad2", "cool", "balanced");
 
 let primitive: PrimitiveTokens;
 let semantic: SemanticTokens;

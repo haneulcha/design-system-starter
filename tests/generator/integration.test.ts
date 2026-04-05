@@ -16,6 +16,7 @@ for (const mood of ALL_MOODS) {
       primaryColor: "#5e6ad2",
       mood,
       fontFamily: "Inter",
+      colorCharacter: "balanced",
     });
 
     it("DESIGN.md has all 9 sections", () => {
