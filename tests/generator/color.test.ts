@@ -3,6 +3,7 @@ import {
   generateScales,
   parsePrimary,
   formatOklch,
+  oklchToHex,
   toCssCustomProperties,
 } from "../../src/generator/color.js";
 
@@ -151,5 +152,17 @@ describe("toCssCustomProperties", () => {
 
   it("values are oklch() format", () => {
     expect(css).toMatch(/--color-brand-700:\s*oklch\(/);
+  });
+});
+
+describe("oklchToHex", () => {
+  it("converts oklch to 6-digit hex", () => {
+    const hex = oklchToHex({ l: 0.5, c: 0.15, h: 250 });
+    expect(hex).toMatch(/^#[0-9a-f]{6}$/i);
+  });
+
+  it("black returns near-black hex", () => {
+    const hex = oklchToHex({ l: 0, c: 0, h: 0 });
+    expect(hex).toBe("#000000");
   });
 });

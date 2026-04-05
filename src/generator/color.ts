@@ -1,6 +1,6 @@
 // src/generator/color.ts
 
-import { oklch, parse } from "culori";
+import { oklch, parse, formatHex } from "culori";
 import type { Oklch, ColorStep, ColorScales } from "../schema/types.js";
 
 export type { ColorScales };
@@ -150,6 +150,9 @@ export const generateScales = (
 
 const round = (n: number, digits: number): number =>
   Math.round(n * 10 ** digits) / 10 ** digits;
+
+export const oklchToHex = (color: Oklch): string =>
+  formatHex({ mode: "oklch", l: color.l, c: color.c, h: color.h }) ?? "#000000";
 
 export const formatOklch = (color: Oklch): string =>
   `oklch(${round(color.l, 4)} ${round(color.c, 4)} ${round(color.h, 2)})`;
