@@ -1,56 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generatePalette } from "../../src/generator/color.js";
-import { detectHueName } from "../../src/generator/color.js";
-
-describe("generatePalette", () => {
-  it("generates correct structure from hex + neutral undertone", () => {
-    const p = generatePalette("#5e6ad2", "neutral");
-    expect(p.primary).toHaveLength(3);
-    expect(p.accent).toHaveLength(2);
-    expect(p.neutral.length).toBeGreaterThanOrEqual(8);
-    expect(p.semantic).toHaveLength(4);
-    expect(p.surface.length).toBeGreaterThanOrEqual(3);
-    expect(p.border.length).toBeGreaterThanOrEqual(2);
-    expect(p.dark.surface.length).toBeGreaterThanOrEqual(3);
-    expect(p.dark.text.length).toBeGreaterThanOrEqual(2);
-    expect(p.dark.border.length).toBeGreaterThanOrEqual(2);
-  });
-
-  it("all hex values are valid 6-digit hex", () => {
-    const p = generatePalette("#c96442", "warm");
-    const all = [
-      ...p.primary, ...p.accent, ...p.neutral, ...p.semantic,
-      ...p.surface, ...p.border, ...p.dark.surface, ...p.dark.text,
-    ];
-    for (const c of all) {
-      expect(c.hex, `${c.name} has invalid hex: ${c.hex}`).toMatch(/^#[0-9a-f]{6}$/i);
-    }
-  });
-
-  it("warm undertone neutrals mention warm", () => {
-    const p = generatePalette("#c96442", "warm");
-    expect(p.neutral.some((c) => c.description.toLowerCase().includes("warm"))).toBe(true);
-  });
-
-  it("cool undertone neutrals mention cool", () => {
-    const p = generatePalette("#0a72ef", "cool");
-    expect(p.neutral.some((c) => c.description.toLowerCase().includes("cool"))).toBe(true);
-  });
-
-  it("accent differs from primary", () => {
-    const p = generatePalette("#5e6ad2", "neutral");
-    expect(p.accent[0].hex).not.toBe(p.primary[0].hex);
-  });
-
-  it("semantic has success, error, warning, info", () => {
-    const p = generatePalette("#5e6ad2", "neutral");
-    const names = p.semantic.map((c) => c.name);
-    expect(names).toContain("Success Green");
-    expect(names).toContain("Error Red");
-    expect(names).toContain("Warning Amber");
-    expect(names).toContain("Info Blue");
-  });
-});
+import { generateScales, detectHueName } from "../../src/generator/color.js";
 
 describe("detectHueName", () => {
   it("maps hue ranges to color names", () => {
@@ -62,5 +11,54 @@ describe("detectHueName", () => {
     expect(detectHueName(265)).toBe("blue");
     expect(detectHueName(320)).toBe("purple");
     expect(detectHueName(350)).toBe("red"); // wraps around
+  });
+});
+
+describe("generateScales", () => {
+  const scales = generateScales("#5e6ad2", "neutral");
+
+  it("generates 7 color hues", () => {
+    expect(Object.keys(scales).length).toBeGreaterThanOrEqual(6);
+    expect(scales.gray).toBeTruthy();
+    expect(scales.blue).toBeTruthy(); // brand hue for #5e6ad2
+    expect(scales.red).toBeTruthy();
+    expect(scales.green).toBeTruthy();
+    expect(scales.amber).toBeTruthy();
+  });
+
+  it("each scale has 10 steps", () => {
+    for (const [, scale] of Object.entries(scales)) {
+      const steps = Object.keys(scale);
+      expect(steps).toHaveLength(10);
+      expect(steps).toContain("100");
+      expect(steps).toContain("1000");
+    }
+  });
+
+  it("each step has light and dark hex values", () => {
+    for (const [, scale] of Object.entries(scales)) {
+      for (const [, step] of Object.entries(scale)) {
+        expect(step.light).toMatch(/^#[0-9a-f]{6}$/i);
+        expect(step.dark).toMatch(/^#[0-9a-f]{6}$/i);
+      }
+    }
+  });
+
+  it("light mode: step 100 is lighter than step 1000", () => {
+    // Compare gray scale — step 100 should have higher perceived lightness
+    const g100 = scales.gray["100"].light;
+    const g1000 = scales.gray["1000"].light;
+    // Simple check: first hex char of 100 should be higher (lighter)
+    expect(parseInt(g100.slice(1, 3), 16)).toBeGreaterThan(
+      parseInt(g1000.slice(1, 3), 16)
+    );
+  });
+
+  it("dark mode: step 100 is darker than step 1000", () => {
+    const g100 = scales.gray["100"].dark;
+    const g1000 = scales.gray["1000"].dark;
+    expect(parseInt(g100.slice(1, 3), 16)).toBeLessThan(
+      parseInt(g1000.slice(1, 3), 16)
+    );
   });
 });
