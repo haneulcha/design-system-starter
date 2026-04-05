@@ -101,14 +101,13 @@ for (const mood of ALL_MOODS) {
       expect(Object.keys(result.tokens.breakpoint).length).toBe(4);
     });
 
-    it("system has 6 components", () => {
+    it("system has 5 components", () => {
       const c = result.system.components;
       expect(c.button.sizes).toBeTruthy();
       expect(c.button.variants).toHaveLength(3);
       expect(c.input.states).toHaveLength(4);
       expect(c.card.variants).toHaveLength(2);
       expect(c.badge.variants).toHaveLength(5);
-      expect(Object.keys(c.avatar.sizes)).toHaveLength(3);
       expect(c.divider.labelFont).toMatch(/^typography\./);
     });
   });

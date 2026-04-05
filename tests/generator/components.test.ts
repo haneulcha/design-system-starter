@@ -75,21 +75,6 @@ describe("generateComponents", () => {
     });
   });
 
-  describe("avatar", () => {
-    it("has 3 sizes", () => {
-      expect(Object.keys(specs.avatar.sizes)).toEqual(["sm", "md", "lg"]);
-    });
-
-    it("sizes use token references", () => {
-      for (const [, size] of Object.entries(specs.avatar.sizes)) {
-        expect(size.size).toMatch(/^spacing\./);
-        expect(size.radius).toMatch(/^radius\./);
-        expect(size.font).toMatch(/^typography\./);
-        expect(size.statusDot).toMatch(/^spacing\./);
-      }
-    });
-  });
-
   describe("divider", () => {
     it("dimensions are token references", () => {
       expect(specs.divider.lineHeight).toMatch(/^spacing\./);

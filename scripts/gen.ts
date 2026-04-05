@@ -23,7 +23,7 @@ for (const [filename, content] of Object.entries(result.tokenFiles)) {
 console.log("Generated:");
 console.log(`  DESIGN.md: ${result.designMd.length} chars`);
 console.log(`  Primitive colors: ${Object.keys(result.tokens.primitive.colors).length}`);
-console.log(`  Semantic light keys: ${Object.keys(result.tokens.semantic.light).length}`);
+console.log(`  Semantic keys: ${Object.keys(result.tokens.semantic).length}`);
 console.log(`  Component groups: ${Object.keys(result.tokens.component).length}`);
 console.log(`  Token files: ${Object.keys(result.tokenFiles).length}`);
 console.log(`  Figma collections: ${figma.variableCollections.length}`);

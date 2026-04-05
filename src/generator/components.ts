@@ -41,13 +41,6 @@ export function generateComponents(archetype: ArchetypePreset): ComponentSpecs {
       },
       variants: ["default", "success", "error", "warning", "info"],
     },
-    avatar: {
-      sizes: {
-        sm: { size: "spacing.xl", radius: "radius.pill", font: "typography.caption", statusDot: "spacing.xs" },
-        md: { size: "spacing.2xl", radius: "radius.pill", font: "typography.button", statusDot: "spacing.xs" },
-        lg: { size: "spacing.3xl", radius: "radius.pill", font: "typography.body", statusDot: "spacing.sm" },
-      },
-    },
     divider: {
       lineHeight: "spacing.3xs",
       labelPaddingX: "spacing.sm",

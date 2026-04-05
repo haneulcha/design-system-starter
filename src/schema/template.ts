@@ -202,26 +202,6 @@ function renderComponents(system: DesignSystem): string {
   lines.push("");
   lines.push(`**Variants:** ${badge.variants.join(", ")}`);
 
-  // ── Avatar ──────────────────────────────────────────────────────────────────
-  lines.push("\n### Avatar\n");
-
-  const avatar = system.components.avatar;
-  const avatarSizeNames = Object.keys(avatar.sizes);
-  const avatarRows: Array<[string, (s: typeof avatar.sizes[string]) => string]> = [
-    ["size",      (s) => s.size],
-    ["radius",    (s) => s.radius],
-    ["font",      (s) => s.font],
-    ["statusDot", (s) => s.statusDot],
-  ];
-
-  lines.push("**Sizes:**\n");
-  lines.push(`| | ${avatarSizeNames.join(" | ")} |`);
-  lines.push(`|---|${avatarSizeNames.map(() => "---|").join("")}`);
-  for (const [rowLabel, getter] of avatarRows) {
-    const cells = avatarSizeNames.map((sz) => getter(avatar.sizes[sz])).join(" | ");
-    lines.push(`| ${rowLabel} | ${cells} |`);
-  }
-
   // ── Divider ─────────────────────────────────────────────────────────────────
   lines.push("\n### Divider\n");
 

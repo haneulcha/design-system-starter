@@ -189,13 +189,6 @@ const mockSystem: DesignSystem = {
       },
       variants: ["default", "success", "error", "warning", "info"],
     },
-    avatar: {
-      sizes: {
-        sm: { size: "spacing.xl", radius: "radius.pill", font: "typography.caption", statusDot: "spacing.xs" },
-        md: { size: "spacing.2xl", radius: "radius.pill", font: "typography.button", statusDot: "spacing.xs" },
-        lg: { size: "spacing.3xl", radius: "radius.pill", font: "typography.body", statusDot: "spacing.sm" },
-      },
-    },
     divider: { lineHeight: "spacing.3xs", labelPaddingX: "spacing.sm", labelFont: "typography.caption" },
   },
   layout: {
@@ -362,10 +355,11 @@ describe("renderDesignMd", () => {
       md = output;
     });
 
-    it("section 4 has 6 component sub-sections", () => {
-      for (const sub of ["### Button", "### Input", "### Card", "### Badge", "### Avatar", "### Divider"]) {
+    it("section 4 has 5 component sub-sections", () => {
+      for (const sub of ["### Button", "### Input", "### Card", "### Badge", "### Divider"]) {
         expect(md).toContain(sub);
       }
+      expect(md).not.toContain("### Avatar");
     });
 
     it("button section has size table with token references", () => {

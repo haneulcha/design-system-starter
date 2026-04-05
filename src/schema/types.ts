@@ -111,15 +111,6 @@ export interface BadgeSpec {
   variants: string[];
 }
 
-export interface AvatarSpec {
-  sizes: Record<string, {
-    size: string;
-    radius: string;
-    font: string;
-    statusDot: string;
-  }>;
-}
-
 export interface DividerSpec {
   lineHeight: string;
   labelPaddingX: string;
@@ -131,7 +122,6 @@ export interface ComponentSpecs {
   input: InputSpec;
   card: CardSpec;
   badge: BadgeSpec;
-  avatar: AvatarSpec;
   divider: DividerSpec;
 }
 
