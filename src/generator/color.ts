@@ -29,19 +29,19 @@ export function detectHueName(hue: number): string {
 }
 
 // Chroma curve derived from Tailwind CSS color scales (oklch analysis).
-// Peak chroma at step 700-800, tapering at extremes.
+// Step 500 = user's exact color (cMult 1.0). Peak chroma around 700-800.
 // Light mode: step 100=lightest → step 1000=darkest
 const LIGHT_STEPS: Array<{ step: string; l: number; cMult: number }> = [
-  { step: "100",  l: 0.97, cMult: 0.07 },
-  { step: "200",  l: 0.93, cMult: 0.15 },
-  { step: "300",  l: 0.87, cMult: 0.28 },
-  { step: "400",  l: 0.78, cMult: 0.45 },
-  { step: "500",  l: 0.68, cMult: 0.65 },
-  { step: "600",  l: 0.58, cMult: 0.87 },
-  { step: "700",  l: 0.48, cMult: 0.99 },
-  { step: "800",  l: 0.38, cMult: 1.00 },
-  { step: "900",  l: 0.30, cMult: 0.83 },
-  { step: "1000", l: 0.22, cMult: 0.64 },
+  { step: "100",  l: 0.97, cMult: 0.10 },
+  { step: "200",  l: 0.93, cMult: 0.22 },
+  { step: "300",  l: 0.87, cMult: 0.40 },
+  { step: "400",  l: 0.78, cMult: 0.65 },
+  { step: "500",  l: 0.68, cMult: 1.00 },
+  { step: "600",  l: 0.58, cMult: 1.15 },
+  { step: "700",  l: 0.48, cMult: 1.20 },
+  { step: "800",  l: 0.38, cMult: 1.10 },
+  { step: "900",  l: 0.30, cMult: 0.90 },
+  { step: "1000", l: 0.22, cMult: 0.70 },
 ];
 
 // Dark mode: step 100=darkest → step 1000=lightest
