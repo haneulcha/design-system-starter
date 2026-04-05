@@ -35,27 +35,9 @@ export function generatePrimitive(scales: ColorScales): PrimitiveTokens {
 
 export function generateSemantic(
   primitive: PrimitiveTokens,
-  brandHueName?: string,
-  accentHueName?: string,
 ): SemanticTokens {
-  const hueNames = Object.keys(primitive.colors);
-
-  // Use explicit brand/accent names if provided, otherwise detect
-  let brandHue = brandHueName ?? "blue";
-  let accentHue = accentHueName ?? "blue";
-
-  if (!brandHueName) {
-    const fixedHues = new Set(["gray", "blue", "red", "amber", "green"]);
-    const nonFixed = hueNames.filter((h) => !fixedHues.has(h));
-    if (nonFixed.length >= 1) brandHue = nonFixed[0];
-    if (nonFixed.length >= 2) accentHue = nonFixed[1];
-    else if (nonFixed.length === 1) {
-      accentHue = hueNames.find((h) => fixedHues.has(h) && h !== "gray") ?? "blue";
-    }
-  }
-
   return {
-    // Background (gray scale)
+    // Background
     "bg/base": "gray-100",
     "bg/subtle": "gray-200",
     "bg/muted": "gray-300",
@@ -71,19 +53,19 @@ export function generateSemantic(
     "border/subtle": "gray-300",
     "border/strong": "gray-600",
 
-    // Brand (from detected brand hue)
-    "brand/primary": `${brandHue}-500`,
-    "brand/secondary": `${brandHue}-600`,
-    "brand/subtle": `${brandHue}-200`,
-    "brand/muted": `${brandHue}-100`,
+    // Brand (always "brand" role, anchor at 700)
+    "brand/primary": "brand-700",
+    "brand/secondary": "brand-800",
+    "brand/subtle": "brand-200",
+    "brand/muted": "brand-100",
 
-    // Accent (only if accent hue exists in primitive)
-    ...(primitive.colors[accentHue] ? {
-      "accent/primary": `${accentHue}-700`,
-      "accent/subtle": `${accentHue}-200`,
+    // Accent (always "accent" role)
+    ...(primitive.colors["accent"] ? {
+      "accent/primary": "accent-700",
+      "accent/subtle": "accent-200",
     } : {}),
 
-    // Status — all use the SAME step pattern
+    // Status
     "status/success": "green-700",
     "status/success-subtle": "green-200",
     "status/success-text": "green-900",
@@ -98,8 +80,8 @@ export function generateSemantic(
     "status/info-text": "blue-900",
 
     // Constants
-    "white": "gray-100",   // lightest gray
-    "black": "gray-1000",  // darkest gray
+    "white": "gray-100",
+    "black": "gray-1000",
   };
 }
 
