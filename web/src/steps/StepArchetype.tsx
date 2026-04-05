@@ -1,7 +1,10 @@
 import { useMemo } from "react";
 import { ARCHETYPES, getArchetype } from "@core/schema/archetypes.js";
-import { generateScales } from "@core/generator/color.js";
+import { generateScales, detectHueName } from "@core/generator/color.js";
+import { converter } from "culori";
 import type { MoodArchetype } from "../hooks/useGenerator";
+
+const toOklch = converter("oklch");
 
 const REFERENCES: Record<MoodArchetype, string> = {
   precise: "Stripe, IBM, X.ai",
@@ -32,11 +35,10 @@ export function StepArchetype({
 
   const brandColor = useMemo(() => {
     try {
+      const base = toOklch(primaryColor);
+      const brandHue = detectHueName(base?.h ?? 0);
       const scales = generateScales(primaryColor, selected.neutralUndertone);
-      // Find the brand scale key (not gray, red, amber, green, blue unless it's the brand)
-      const statusNames = new Set(["gray", "red", "amber", "green"]);
-      const brandKey = Object.keys(scales).find((k) => !statusNames.has(k)) ?? "blue";
-      return scales[brandKey]?.["700"]?.light ?? primaryColor;
+      return scales[brandHue]?.["700"]?.light ?? primaryColor;
     } catch {
       return primaryColor;
     }
