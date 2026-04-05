@@ -1,10 +1,5 @@
-import { useMemo } from "react";
 import { ARCHETYPES, getArchetype } from "@core/schema/archetypes.js";
-import { generateScales, detectHueName } from "@core/generator/color.js";
-import { converter } from "culori";
 import type { MoodArchetype } from "../hooks/useGenerator";
-
-const toOklch = converter("oklch");
 
 const REFERENCES: Record<MoodArchetype, string> = {
   precise: "Stripe, IBM, X.ai",
@@ -24,25 +19,14 @@ const ARCHETYPE_KEYS: MoodArchetype[] = ["precise", "confident", "expressive", "
 
 export function StepArchetype({
   value,
-  primaryColor,
+  brandColor,
   onChange,
 }: {
   value: MoodArchetype;
-  primaryColor: string;
+  brandColor: string;
   onChange: (v: MoodArchetype) => void;
 }) {
   const selected = getArchetype(value);
-
-  const brandColor = useMemo(() => {
-    try {
-      const base = toOklch(primaryColor);
-      const brandHue = detectHueName(base?.h ?? 0);
-      const scales = generateScales(primaryColor, selected.neutralUndertone);
-      return scales[brandHue]?.["700"]?.light ?? primaryColor;
-    } catch {
-      return primaryColor;
-    }
-  }, [primaryColor, selected.neutralUndertone]);
 
   const shadow = shadowMap[selected.shadowIntensity] ?? shadowMap.subtle;
 

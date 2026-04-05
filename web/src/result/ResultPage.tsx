@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import type { WizardState, MoodArchetype, ColorCharacter } from "../hooks/useGenerator";
-import { useGenerateResult, ARCHETYPES, getArchetype } from "../hooks/useGenerator";
+import type { WizardState, MoodArchetype, ColorCharacter, FullResult } from "../hooks/useGenerator";
+import { ARCHETYPES, getArchetype } from "../hooks/useGenerator";
 import { ColorPreview } from "./ColorPreview";
 import { ComponentPreview } from "./ComponentPreview";
 import { TypePreview } from "./TypePreview";
@@ -18,14 +18,15 @@ function loadGoogleFont(family: string) {
 
 export function ResultPage({
   state,
+  result,
   onChange,
   onBack,
 }: {
   state: WizardState;
+  result: FullResult | null;
   onChange: (p: Partial<WizardState>) => void;
   onBack: () => void;
 }) {
-  const result = useGenerateResult(state);
   const archetype = getArchetype(state.mood);
   const suggestedFonts = archetype.suggestedFonts;
   const suggestedNames = suggestedFonts.map((f) => f.name);

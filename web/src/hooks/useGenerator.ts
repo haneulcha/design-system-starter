@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { generate } from "@core/generator/index.js";
 import type { GenerateResult } from "@core/generator/index.js";
-import { generateScales } from "@core/generator/color.js";
 import type { ColorScales, MoodArchetype, ColorCharacter } from "@core/schema/types.js";
 import { ARCHETYPES, getArchetype } from "@core/schema/archetypes.js";
 import { transformToFigma } from "@core/figma/transformer.js";
@@ -22,16 +21,6 @@ export const DEFAULT_STATE: WizardState = {
   fontFamily: "Inter",
   brandName: "Untitled",
 };
-
-export function useColorScales(primaryColor: string, colorCharacter: ColorCharacter): ColorScales {
-  return useMemo(() => {
-    try {
-      return generateScales(primaryColor, "neutral", colorCharacter);
-    } catch {
-      return generateScales("#5e6ad2", "neutral", colorCharacter);
-    }
-  }, [primaryColor, colorCharacter]);
-}
 
 export interface FullResult extends GenerateResult {
   figma: FigmaDesignSystem;

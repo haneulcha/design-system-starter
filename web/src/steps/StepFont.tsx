@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getArchetype } from "@core/schema/archetypes.js";
-import { generateTypography } from "@core/generator/typography.js";
 import type { MoodArchetype } from "../hooks/useGenerator";
+import type { TypographySystem } from "@core/schema/types.js";
 
 function loadGoogleFont(family: string) {
   const id = `gf-${family.replace(/\s+/g, "-")}`;
@@ -21,10 +21,12 @@ export function StepFont({
   value,
   mood,
   onChange,
+  typography,
 }: {
   value: string;
   mood: MoodArchetype;
   onChange: (v: string) => void;
+  typography: TypographySystem | null;
 }) {
   const archetype = getArchetype(mood);
   const suggestedFonts = archetype.suggestedFonts;
@@ -49,8 +51,7 @@ export function StepFont({
     }
   }, [mood]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const typography = generateTypography(archetype, value);
-  const previewRows = typography.hierarchy.slice(0, 7);
+  const previewRows = typography?.hierarchy.slice(0, 7) ?? [];
 
   function handleSuggestedSelect(name: string) {
     setShowCustom(false);
