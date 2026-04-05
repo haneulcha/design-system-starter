@@ -112,12 +112,12 @@ export function generateScales(
 
   const chromaScale = CHROMA_SCALE[colorCharacter];
 
-  // Fixed status hues with peak chroma from Tailwind reference scales
+  // Fixed status hues — hue from median of 10 production systems, chroma from Tailwind
   const STATUS_HUES: Array<{ name: string; hue: number; chroma: number }> = [
-    { name: "blue",  hue: 250, chroma: 0.22 * chromaScale },
-    { name: "red",   hue: 25,  chroma: 0.22 * chromaScale },
-    { name: "amber", hue: 75,  chroma: 0.17 * chromaScale },
-    { name: "green", hue: 145, chroma: 0.19 * chromaScale },
+    { name: "blue",  hue: 256, chroma: 0.22 * chromaScale },
+    { name: "red",   hue: 21,  chroma: 0.22 * chromaScale },
+    { name: "amber", hue: 76,  chroma: 0.17 * chromaScale },
+    { name: "green", hue: 149, chroma: 0.19 * chromaScale },
   ];
 
   // Brand hue name from primary
