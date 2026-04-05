@@ -11,7 +11,7 @@ import type {
   ComponentTokens,
 } from "../../src/schema/types.js";
 
-const scales = generateScales("#5e6ad2", "cool", "balanced");
+const scales = generateScales("#5e6ad2");
 
 let primitive: PrimitiveTokens;
 let semantic: SemanticTokens;
@@ -40,27 +40,32 @@ describe("generatePrimitive", () => {
     }
   });
 
-  it("each step has light and dark hex values", () => {
+  it("each step has light and dark Oklch values", () => {
     for (const [hue, scale] of Object.entries(primitive.colors)) {
       for (const [step, value] of Object.entries(scale)) {
-        expect(value, `${hue}-${step} missing light`).toHaveProperty("light");
-        expect(value, `${hue}-${step} missing dark`).toHaveProperty("dark");
-        expect(value.light, `${hue}-${step}.light not hex`).toMatch(/^#[0-9a-f]{6}$/i);
-        expect(value.dark, `${hue}-${step}.dark not hex`).toMatch(/^#[0-9a-f]{6}$/i);
+        expect(value.light, `${hue}-${step}.light`).toHaveProperty("l");
+        expect(value.light, `${hue}-${step}.light`).toHaveProperty("c");
+        expect(value.light, `${hue}-${step}.light`).toHaveProperty("h");
+        expect(value.dark, `${hue}-${step}.dark`).toHaveProperty("l");
+        expect(value.dark, `${hue}-${step}.dark`).toHaveProperty("c");
+        expect(value.dark, `${hue}-${step}.dark`).toHaveProperty("h");
       }
     }
   });
 
-  it("has at least 5 hues (gray + brand + accent + 4 status)", () => {
-    expect(Object.keys(primitive.colors).length).toBeGreaterThanOrEqual(5);
+  it("has at least 7 roles (gray + brand + accent + 4 semantic)", () => {
+    expect(Object.keys(primitive.colors).length).toBeGreaterThanOrEqual(7);
   });
 
-  it("has status hues: green, red, amber, blue", () => {
-    const hues = Object.keys(primitive.colors);
-    expect(hues).toContain("green");
-    expect(hues).toContain("red");
-    expect(hues).toContain("amber");
-    expect(hues).toContain("blue");
+  it("has expected role keys", () => {
+    const roles = Object.keys(primitive.colors);
+    expect(roles).toContain("brand");
+    expect(roles).toContain("accent");
+    expect(roles).toContain("gray");
+    expect(roles).toContain("green");
+    expect(roles).toContain("red");
+    expect(roles).toContain("amber");
+    expect(roles).toContain("blue");
   });
 });
 

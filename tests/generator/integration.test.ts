@@ -16,7 +16,6 @@ for (const mood of ALL_MOODS) {
       primaryColor: "#5e6ad2",
       mood,
       fontFamily: "Inter",
-      colorCharacter: "balanced",
     });
 
     it("DESIGN.md has all 9 sections", () => {
@@ -33,21 +32,21 @@ for (const mood of ALL_MOODS) {
       expect(result.designMd).toContain("# Design System: TestBrand");
     });
 
-    it("tokens.primitive.colors has hue-keyed nested scales", () => {
+    it("tokens.primitive.colors has role-keyed nested scales", () => {
       const colors = result.tokens.primitive.colors;
-      // Should have at least gray + brand + status hues
-      expect(Object.keys(colors).length).toBeGreaterThanOrEqual(5);
-      // Each hue should have 10 steps
-      for (const [hue, scale] of Object.entries(colors)) {
-        expect(Object.keys(scale).length, `${hue} should have 10 steps`).toBe(10);
+      expect(Object.keys(colors).length).toBeGreaterThanOrEqual(7);
+      expect(colors).toHaveProperty("brand");
+      expect(colors).toHaveProperty("gray");
+      for (const [role, scale] of Object.entries(colors)) {
+        expect(Object.keys(scale).length, `${role} should have 10 steps`).toBe(10);
       }
     });
 
-    it("tokens.primitive.colors each step has light and dark", () => {
+    it("tokens.primitive.colors each step has light and dark Oklch", () => {
       for (const [hue, scale] of Object.entries(result.tokens.primitive.colors)) {
         for (const [step, value] of Object.entries(scale)) {
-          expect(value.light, `${hue}-${step}.light should be a hex`).toMatch(/^#[0-9a-f]{6}$/i);
-          expect(value.dark, `${hue}-${step}.dark should be a hex`).toMatch(/^#[0-9a-f]{6}$/i);
+          expect(value.light, `${hue}-${step}.light`).toHaveProperty("l");
+          expect(value.dark, `${hue}-${step}.dark`).toHaveProperty("l");
         }
       }
     });
