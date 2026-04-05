@@ -3,8 +3,7 @@
 import type { UserInputs, DesignSystem, DesignTokens } from "../schema/types.js";
 import { getArchetype } from "../schema/archetypes.js";
 import { renderDesignMd } from "../schema/template.js";
-import { generateScales, detectHueName } from "./color.js";
-import { converter } from "culori";
+import { generateScales, oklchToHex } from "./color.js";
 import { generateTypography } from "./typography.js";
 import { generateComponents } from "./components.js";
 import { generateLayout } from "./layout.js";
@@ -47,7 +46,7 @@ export function generate(inputs: UserInputs): GenerateResult {
   const archetype = getArchetype(inputs.mood);
 
   // Generate all subsystems
-  const scales = generateScales(inputs.primaryColor, archetype.neutralUndertone, inputs.colorCharacter ?? "balanced");
+  const scales = generateScales(inputs.primaryColor);
   const fontFamily = inputs.fontFamily || archetype.defaultFont;
   const typography = generateTypography(archetype, fontFamily);
   const components = generateComponents(archetype);
@@ -71,20 +70,13 @@ export function generate(inputs: UserInputs): GenerateResult {
   const dos = replaceInArray(archetype.dos, vars);
   const donts = replaceInArray(archetype.donts, vars);
 
-  // Build agent guide using scale values directly
-  const toOklch = converter("oklch");
-  const base = toOklch(inputs.primaryColor);
-  const baseH = base?.h ?? 0;
-  const brandHueName = detectHueName(baseH);
-  const accentHueAngle = (baseH + 150) % 360;
-  const accentHueName = detectHueName(accentHueAngle);
-
-  const primaryHex = scales[brandHueName]?.["500"]?.light ?? inputs.primaryColor;
-  const surfaceBase = scales.gray?.["100"]?.light ?? "#f5f5f5";
-  const neutral900 = scales.gray?.["900"]?.light ?? "#212121";
-  const neutral600 = scales.gray?.["600"]?.light ?? "#757575";
-  const borderDefault = scales.gray?.["400"]?.light ?? "#bdbdbd";
-  const accentHex = scales[accentHueName]?.["700"]?.light ?? "#00bfa5";
+  // Build agent guide — convert Oklch to hex for display
+  const primaryHex = oklchToHex(scales.brand["700"].light);
+  const surfaceBase = oklchToHex(scales.gray["100"].light);
+  const neutral900 = oklchToHex(scales.gray["900"].light);
+  const neutral600 = oklchToHex(scales.gray["600"].light);
+  const borderDefault = oklchToHex(scales.gray["400"].light);
+  const accentHex = oklchToHex(scales.accent["700"].light);
 
   const quickColors = [
     { name: "Primary CTA", hex: primaryHex },
@@ -104,7 +96,7 @@ export function generate(inputs: UserInputs): GenerateResult {
   ];
 
   const iterationTips = [
-    `Adjust the neutral undertone (${archetype.neutralUndertone}) by shifting the gray hue — warmer grays feel approachable, cooler grays feel precise.`,
+    `Adjust the gray undertone by changing grayChroma config — higher values make grays warmer/cooler.`,
     `Tweak the border-radius scale starting from the button radius (${archetype.buttonRadius}) to shift the personality from sharp/technical to soft/friendly.`,
     `Change font weights (currently heading: ${archetype.fontWeights.heading}, UI: ${archetype.fontWeights.ui}, body: ${archetype.fontWeights.body}) to increase contrast or reduce hierarchy intensity.`,
     `Modify the shadow intensity (${archetype.shadowIntensity}) to control perceived depth — whisper feels flat/editorial, dramatic feels physical/energetic.`,
@@ -136,7 +128,7 @@ export function generate(inputs: UserInputs): GenerateResult {
 
   // Build 3-layer token system
   const primitive = generatePrimitive(scales);
-  const semantic = generateSemantic(primitive, brandHueName, accentHueName !== brandHueName ? accentHueName : undefined);
+  const semantic = generateSemantic(primitive);
   const component = generateComponent(semantic);
   const tokens = buildDesignTokens(system, primitive, semantic, component);
 
