@@ -1,4 +1,5 @@
 import type { DesignTokens } from "../schema/types.js";
+import { oklchToHex } from "../generator/color.js";
 import type {
   FigmaColor,
   FigmaDesignSystem,
@@ -122,7 +123,7 @@ export function transformToFigma(tokens: DesignTokens): FigmaDesignSystem {
       const step = ref.slice(lastDash + 1);
       const hueMap = primitiveColors[hue];
       if (hueMap && hueMap[step]) {
-        return hueMap[step][mode];
+        return oklchToHex(hueMap[step][mode]);
       }
     }
     return ref; // fallback (e.g. "transparent")
