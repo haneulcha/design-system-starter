@@ -159,6 +159,9 @@ export const oklchToHex = (color: Oklch): string =>
 export const formatOklch = (color: Oklch): string =>
   `oklch(${round(color.l, 4)} ${round(color.c, 4)} ${round(color.h, 2)})`;
 
+export const formatOklchAlpha = (color: Oklch, alpha: number): string =>
+  `oklch(${round(color.l, 4)} ${round(color.c, 4)} ${round(color.h, 2)} / ${round(alpha, 3)})`;
+
 const scaleEntries = (scales: ColorScales, mode: "light" | "dark"): string[] =>
   Object.entries(scales).flatMap(([role, scale]) =>
     Object.entries(scale).map(

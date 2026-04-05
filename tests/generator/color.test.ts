@@ -3,6 +3,7 @@ import {
   generateScales,
   parsePrimary,
   formatOklch,
+  formatOklchAlpha,
   oklchToHex,
   toCssCustomProperties,
 } from "../../src/generator/color.js";
@@ -152,6 +153,20 @@ describe("toCssCustomProperties", () => {
 
   it("values are oklch() format", () => {
     expect(css).toMatch(/--color-brand-700:\s*oklch\(/);
+  });
+});
+
+describe("formatOklchAlpha", () => {
+  it("formats with alpha channel", () => {
+    expect(formatOklchAlpha({ l: 0.36, c: 0.18, h: 250 }, 0.1)).toBe(
+      "oklch(0.36 0.18 250 / 0.1)",
+    );
+  });
+
+  it("rounds alpha to 3 digits", () => {
+    expect(formatOklchAlpha({ l: 0.5, c: 0.1, h: 100 }, 0.09411)).toBe(
+      "oklch(0.5 0.1 100 / 0.094)",
+    );
   });
 });
 
