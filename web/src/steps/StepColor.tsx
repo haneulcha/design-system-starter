@@ -20,7 +20,7 @@ export function StepColor({
         Pick your primary color
       </h2>
       <p className="text-neutral-500 mb-8">
-        Your brand scale and neutral gray. Status colors will appear in the next step.
+        Everything else is derived from this single color.
       </p>
 
       <div className="flex items-center gap-4 mb-8">
@@ -65,9 +65,7 @@ export function StepColor({
       </div>
 
       <div className="space-y-4">
-        {Object.entries(scales).filter(([hue]) => {
-          return hue === "gray" || !["red", "green", "amber", "blue"].includes(hue);
-        }).map(([hue, scale]) => (
+        {Object.entries(scales).map(([hue, scale]) => (
           <div key={hue}>
             <div className="text-xs font-medium text-neutral-500 mb-1 capitalize">
               {hue}
