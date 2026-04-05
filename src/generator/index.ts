@@ -79,7 +79,7 @@ export function generate(inputs: UserInputs): GenerateResult {
   const accentHueAngle = (baseH + 150) % 360;
   const accentHueName = detectHueName(accentHueAngle);
 
-  const primaryHex = scales[brandHueName]?.["700"]?.light ?? inputs.primaryColor;
+  const primaryHex = scales[brandHueName]?.["500"]?.light ?? inputs.primaryColor;
   const surfaceBase = scales.gray?.["100"]?.light ?? "#f5f5f5";
   const neutral900 = scales.gray?.["900"]?.light ?? "#212121";
   const neutral600 = scales.gray?.["600"]?.light ?? "#757575";
@@ -136,7 +136,7 @@ export function generate(inputs: UserInputs): GenerateResult {
 
   // Build 3-layer token system
   const primitive = generatePrimitive(scales);
-  const semantic = generateSemantic(primitive);
+  const semantic = generateSemantic(primitive, brandHueName, accentHueName !== brandHueName ? accentHueName : undefined);
   const component = generateComponent(semantic);
   const tokens = buildDesignTokens(system, primitive, semantic, component);
 

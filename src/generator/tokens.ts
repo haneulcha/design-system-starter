@@ -33,23 +33,25 @@ export function generatePrimitive(scales: ColorScales): PrimitiveTokens {
 
 // ─── Layer 2: Semantic ────────────────────────────────────────────────────────
 
-export function generateSemantic(primitive: PrimitiveTokens): SemanticTokens {
-  // Detect brand and accent hues from primitive keys
-  // Known fixed hues that are not brand/accent
-  const fixedHues = new Set(["gray", "blue", "red", "amber", "green"]);
-
-  let brandHue = "blue";
-  let accentHue = "blue";
-
+export function generateSemantic(
+  primitive: PrimitiveTokens,
+  brandHueName?: string,
+  accentHueName?: string,
+): SemanticTokens {
   const hueNames = Object.keys(primitive.colors);
-  const nonFixed = hueNames.filter((h) => !fixedHues.has(h));
 
-  // First non-fixed hue is brand, second is accent
-  if (nonFixed.length >= 1) brandHue = nonFixed[0];
-  if (nonFixed.length >= 2) accentHue = nonFixed[1];
-  else if (nonFixed.length === 1) {
-    // accent falls back to a fixed hue that isn't the brand
-    accentHue = hueNames.find((h) => fixedHues.has(h) && h !== "gray") ?? "blue";
+  // Use explicit brand/accent names if provided, otherwise detect
+  let brandHue = brandHueName ?? "blue";
+  let accentHue = accentHueName ?? "blue";
+
+  if (!brandHueName) {
+    const fixedHues = new Set(["gray", "blue", "red", "amber", "green"]);
+    const nonFixed = hueNames.filter((h) => !fixedHues.has(h));
+    if (nonFixed.length >= 1) brandHue = nonFixed[0];
+    if (nonFixed.length >= 2) accentHue = nonFixed[1];
+    else if (nonFixed.length === 1) {
+      accentHue = hueNames.find((h) => fixedHues.has(h) && h !== "gray") ?? "blue";
+    }
   }
 
   return {
@@ -75,9 +77,11 @@ export function generateSemantic(primitive: PrimitiveTokens): SemanticTokens {
     "brand/subtle": `${brandHue}-200`,
     "brand/muted": `${brandHue}-100`,
 
-    // Accent
-    "accent/primary": `${accentHue}-700`,
-    "accent/subtle": `${accentHue}-200`,
+    // Accent (only if accent hue exists in primitive)
+    ...(primitive.colors[accentHue] ? {
+      "accent/primary": `${accentHue}-700`,
+      "accent/subtle": `${accentHue}-200`,
+    } : {}),
 
     // Status — all use the SAME step pattern
     "status/success": "green-700",
