@@ -163,64 +163,40 @@ const mockSystem: DesignSystem = {
     ],
   },
   components: {
-    buttons: [
-      {
-        name: "Primary",
-        background: "#0066FF",
-        text: "#FFFFFF",
-        padding: "12px 24px",
-        radius: "6px",
-        shadow: "none",
-        hoverBg: "#0052CC",
-        use: "Main call-to-action",
+    button: {
+      sizes: {
+        sm: { height: "spacing.xl", paddingX: "spacing.sm", gap: "spacing.2xs", fontSize: "typography.caption", iconSize: "spacing.md", radius: "radius.button" },
+        md: { height: "spacing.2xl", paddingX: "spacing.md", gap: "spacing.xs", fontSize: "typography.button", iconSize: "spacing.md", radius: "radius.button" },
+        lg: { height: "spacing.3xl", paddingX: "spacing.lg", gap: "spacing.xs", fontSize: "typography.body", iconSize: "spacing.lg", radius: "radius.button" },
       },
-      {
-        name: "Secondary",
-        background: "transparent",
-        text: "#0066FF",
-        padding: "11px 23px",
-        radius: "6px",
-        shadow: "none",
-        hoverBg: "#F5F5F5",
-        use: "Secondary actions",
+      variants: ["primary", "secondary", "ghost"],
+    },
+    input: {
+      fieldHeight: "spacing.2xl", fieldPaddingX: "spacing.sm", fieldRadius: "radius.input",
+      labelFieldGap: "spacing.2xs", fieldHelperGap: "spacing.2xs",
+      labelFont: "typography.label", valueFont: "typography.body", helperFont: "typography.caption",
+      iconSize: "spacing.md", states: ["default", "focus", "error", "disabled"],
+    },
+    card: {
+      radius: "radius.card", contentPadding: "spacing.lg", contentGap: "spacing.sm",
+      shadow: "elevation.raised", headerFont: "typography.card-title", bodyFont: "typography.body",
+      footerGap: "spacing.xs", variants: ["default", "compact"],
+    },
+    badge: {
+      sizes: {
+        sm: { height: "spacing.lg", paddingX: "spacing.xs", radius: "radius.pill", font: "typography.label" },
+        md: { height: "spacing.xl", paddingX: "spacing.sm", radius: "radius.pill", font: "typography.caption" },
       },
-      {
-        name: "Ghost",
-        background: "transparent",
-        text: "#616161",
-        padding: "11px 23px",
-        radius: "6px",
-        shadow: "none",
-        hoverBg: "#F5F5F5",
-        use: "Tertiary or subtle actions",
+      variants: ["default", "success", "error", "warning", "info"],
+    },
+    avatar: {
+      sizes: {
+        sm: { size: "spacing.xl", radius: "radius.pill", font: "typography.caption", statusDot: "spacing.xs" },
+        md: { size: "spacing.2xl", radius: "radius.pill", font: "typography.button", statusDot: "spacing.xs" },
+        lg: { size: "spacing.3xl", radius: "radius.pill", font: "typography.body", statusDot: "spacing.sm" },
       },
-    ],
-    cards: {
-      background: "#FFFFFF",
-      border: "1px solid #E0E0E0",
-      radius: "8px",
-      shadow: "0 1px 3px rgba(0,0,0,0.06)",
-      padding: "24px",
-      hoverEffect: "shadow: 0 4px 12px rgba(0,0,0,0.08)",
     },
-    inputs: {
-      background: "#FFFFFF",
-      border: "1px solid #E0E0E0",
-      radius: "6px",
-      focusBorder: "#0066FF",
-      focusShadow: "0 0 0 3px rgba(0,102,255,0.12)",
-      padding: "10px 14px",
-      textColor: "#212121",
-      placeholderColor: "#9E9E9E",
-    },
-    navigation: {
-      background: "#FFFFFF",
-      position: "sticky top-0",
-      linkSize: "14px",
-      linkWeight: 500,
-      linkColor: "#616161",
-      activeIndicator: "2px bottom border in #0066FF",
-    },
+    divider: { lineHeight: "spacing.3xs", labelPaddingX: "spacing.sm", labelFont: "typography.caption" },
   },
   layout: {
     spacing: [
@@ -381,17 +357,21 @@ describe("renderDesignMd", () => {
   });
 
   describe("Section 4 — Components", () => {
-    it("has ### Buttons sub-heading", () => {
-      expect(output).toMatch(/^### Buttons$/m);
+    let md: string;
+    beforeAll(() => {
+      md = output;
     });
-    it("has ### Cards & Containers sub-heading", () => {
-      expect(output).toMatch(/^### Cards & Containers$/m);
+
+    it("section 4 has 6 component sub-sections", () => {
+      for (const sub of ["### Button", "### Input", "### Card", "### Badge", "### Avatar", "### Divider"]) {
+        expect(md).toContain(sub);
+      }
     });
-    it("has ### Inputs & Forms sub-heading", () => {
-      expect(output).toMatch(/^### Inputs & Forms$/m);
-    });
-    it("has ### Navigation sub-heading", () => {
-      expect(output).toMatch(/^### Navigation$/m);
+
+    it("button section has size table with token references", () => {
+      expect(md).toContain("spacing.xl");
+      expect(md).toContain("spacing.2xl");
+      expect(md).toContain("typography.button");
     });
   });
 

@@ -3,7 +3,6 @@
 import type {
   DesignSystem,
   ColorRole,
-  ButtonVariant,
   TypeStyle,
   ElevationLevel,
   Breakpoint,
@@ -96,47 +95,141 @@ function renderComponents(system: DesignSystem): string {
   const lines: string[] = [];
   lines.push("## 4. Components\n");
 
-  lines.push("### Buttons\n");
-  for (const btn of system.components.buttons) {
-    lines.push(`**${btn.name}**`);
-    lines.push(`- Background: \`${btn.background}\``);
-    lines.push(`- Text: \`${btn.text}\``);
-    lines.push(`- Padding: ${btn.padding}`);
-    lines.push(`- Radius: ${btn.radius}`);
-    lines.push(`- Shadow: ${btn.shadow}`);
-    lines.push(`- Hover: \`${btn.hoverBg}\``);
-    lines.push(`- Use: ${btn.use}`);
-    lines.push("");
+  // ── Button ──────────────────────────────────────────────────────────────────
+  lines.push("### Button\n");
+
+  const btn = system.components.button;
+  const btnSizeNames = Object.keys(btn.sizes);
+  const btnRows: Array<[string, (s: typeof btn.sizes[string]) => string]> = [
+    ["height",    (s) => s.height],
+    ["paddingX",  (s) => s.paddingX],
+    ["gap",       (s) => s.gap],
+    ["fontSize",  (s) => s.fontSize],
+    ["iconSize",  (s) => s.iconSize],
+    ["radius",    (s) => s.radius],
+  ];
+
+  lines.push("**Sizes:**\n");
+  lines.push(`| | ${btnSizeNames.join(" | ")} |`);
+  lines.push(`|---|${btnSizeNames.map(() => "---|").join("")}`);
+  for (const [rowLabel, getter] of btnRows) {
+    const cells = btnSizeNames.map((sz) => getter(btn.sizes[sz])).join(" | ");
+    lines.push(`| ${rowLabel} | ${cells} |`);
   }
 
-  lines.push("### Cards & Containers\n");
-  const c = system.components.cards;
-  lines.push(`- Background: \`${c.background}\``);
-  lines.push(`- Border: ${c.border}`);
-  lines.push(`- Radius: ${c.radius}`);
-  lines.push(`- Shadow: ${c.shadow}`);
-  lines.push(`- Padding: ${c.padding}`);
-  lines.push(`- Hover Effect: ${c.hoverEffect}`);
+  lines.push("");
+  lines.push(`**Variants:** ${btn.variants.join(", ")}\n`);
+  lines.push("**Colors:** component.button.{variant}.{state} tokens\n");
+  lines.push("**Structure:**");
+  lines.push("```");
+  lines.push("[Button] horizontal auto-layout, center aligned");
+  lines.push("  ├── [IconLeading?] instance swap");
+  lines.push("  ├── [Label] text property");
+  lines.push("  └── [IconTrailing?] instance swap");
+  lines.push("```");
 
-  lines.push("\n### Inputs & Forms\n");
-  const inp = system.components.inputs;
-  lines.push(`- Background: \`${inp.background}\``);
-  lines.push(`- Border: ${inp.border}`);
-  lines.push(`- Radius: ${inp.radius}`);
-  lines.push(`- Focus Border: \`${inp.focusBorder}\``);
-  lines.push(`- Focus Shadow: ${inp.focusShadow}`);
-  lines.push(`- Padding: ${inp.padding}`);
-  lines.push(`- Text Color: \`${inp.textColor}\``);
-  lines.push(`- Placeholder Color: \`${inp.placeholderColor}\``);
+  // ── Input ───────────────────────────────────────────────────────────────────
+  lines.push("\n### Input\n");
 
-  lines.push("\n### Navigation\n");
-  const nav = system.components.navigation;
-  lines.push(`- Background: \`${nav.background}\``);
-  lines.push(`- Position: ${nav.position}`);
-  lines.push(`- Link Size: ${nav.linkSize}`);
-  lines.push(`- Link Weight: ${nav.linkWeight}`);
-  lines.push(`- Link Color: \`${nav.linkColor}\``);
-  lines.push(`- Active Indicator: ${nav.activeIndicator}`);
+  const inp = system.components.input;
+  lines.push("**Dimensions:**\n");
+  lines.push(`- fieldHeight: ${inp.fieldHeight}`);
+  lines.push(`- fieldPaddingX: ${inp.fieldPaddingX}`);
+  lines.push(`- fieldRadius: ${inp.fieldRadius}`);
+  lines.push(`- labelFieldGap: ${inp.labelFieldGap}`);
+  lines.push(`- fieldHelperGap: ${inp.fieldHelperGap}`);
+  lines.push(`- labelFont: ${inp.labelFont}`);
+  lines.push(`- valueFont: ${inp.valueFont}`);
+  lines.push(`- helperFont: ${inp.helperFont}`);
+  lines.push(`- iconSize: ${inp.iconSize}`);
+
+  lines.push("");
+  lines.push(`**States:** ${inp.states.join(", ")}\n`);
+  lines.push("**Structure:**");
+  lines.push("```");
+  lines.push("[Input] vertical auto-layout");
+  lines.push("  ├── [Label] text property");
+  lines.push("  ├── [Field] horizontal auto-layout");
+  lines.push("  │   ├── [IconLeading?] instance swap");
+  lines.push("  │   ├── [Value] text property");
+  lines.push("  │   └── [IconTrailing?] instance swap");
+  lines.push("  └── [HelperText?] text property");
+  lines.push("```");
+
+  // ── Card ────────────────────────────────────────────────────────────────────
+  lines.push("\n### Card\n");
+
+  const card = system.components.card;
+  lines.push("**Dimensions:**\n");
+  lines.push(`- radius: ${card.radius}`);
+  lines.push(`- contentPadding: ${card.contentPadding}`);
+  lines.push(`- contentGap: ${card.contentGap}`);
+  lines.push(`- shadow: ${card.shadow}`);
+  lines.push(`- headerFont: ${card.headerFont}`);
+  lines.push(`- bodyFont: ${card.bodyFont}`);
+  lines.push(`- footerGap: ${card.footerGap}`);
+
+  lines.push("");
+  lines.push(`**Variants:** ${card.variants.join(", ")}\n`);
+  lines.push("**Structure:**");
+  lines.push("```");
+  lines.push("[Card] vertical auto-layout");
+  lines.push("  ├── [Header?] text property");
+  lines.push("  ├── [Body] text property");
+  lines.push("  └── [Footer?] horizontal auto-layout");
+  lines.push("```");
+
+  // ── Badge ───────────────────────────────────────────────────────────────────
+  lines.push("\n### Badge\n");
+
+  const badge = system.components.badge;
+  const badgeSizeNames = Object.keys(badge.sizes);
+  const badgeRows: Array<[string, (s: typeof badge.sizes[string]) => string]> = [
+    ["height",   (s) => s.height],
+    ["paddingX", (s) => s.paddingX],
+    ["radius",   (s) => s.radius],
+    ["font",     (s) => s.font],
+  ];
+
+  lines.push("**Sizes:**\n");
+  lines.push(`| | ${badgeSizeNames.join(" | ")} |`);
+  lines.push(`|---|${badgeSizeNames.map(() => "---|").join("")}`);
+  for (const [rowLabel, getter] of badgeRows) {
+    const cells = badgeSizeNames.map((sz) => getter(badge.sizes[sz])).join(" | ");
+    lines.push(`| ${rowLabel} | ${cells} |`);
+  }
+
+  lines.push("");
+  lines.push(`**Variants:** ${badge.variants.join(", ")}`);
+
+  // ── Avatar ──────────────────────────────────────────────────────────────────
+  lines.push("\n### Avatar\n");
+
+  const avatar = system.components.avatar;
+  const avatarSizeNames = Object.keys(avatar.sizes);
+  const avatarRows: Array<[string, (s: typeof avatar.sizes[string]) => string]> = [
+    ["size",      (s) => s.size],
+    ["radius",    (s) => s.radius],
+    ["font",      (s) => s.font],
+    ["statusDot", (s) => s.statusDot],
+  ];
+
+  lines.push("**Sizes:**\n");
+  lines.push(`| | ${avatarSizeNames.join(" | ")} |`);
+  lines.push(`|---|${avatarSizeNames.map(() => "---|").join("")}`);
+  for (const [rowLabel, getter] of avatarRows) {
+    const cells = avatarSizeNames.map((sz) => getter(avatar.sizes[sz])).join(" | ");
+    lines.push(`| ${rowLabel} | ${cells} |`);
+  }
+
+  // ── Divider ─────────────────────────────────────────────────────────────────
+  lines.push("\n### Divider\n");
+
+  const divider = system.components.divider;
+  lines.push("**Dimensions:**\n");
+  lines.push(`- lineHeight: ${divider.lineHeight}`);
+  lines.push(`- labelPaddingX: ${divider.labelPaddingX}`);
+  lines.push(`- labelFont: ${divider.labelFont}`);
 
   return lines.join("\n");
 }
