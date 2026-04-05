@@ -1,16 +1,13 @@
-import type { ColorCharacter, ColorScales } from "../hooks/useGenerator";
+import type { ColorScales } from "../hooks/useGenerator";
+import { formatOklch } from "@core/generator/color.js";
 
 export function StepColor({
   value,
   onChange,
-  character,
-  onCharacterChange,
   scales,
 }: {
   value: string;
   onChange: (v: string) => void;
-  character: ColorCharacter;
-  onCharacterChange: (c: ColorCharacter) => void;
   scales: ColorScales | null;
 }) {
   return (
@@ -42,27 +39,6 @@ export function StepColor({
         />
       </div>
 
-      <div className="flex gap-3 mb-10">
-        {(["vivid", "balanced", "muted"] as const).map((char) => (
-          <button
-            key={char}
-            onClick={() => onCharacterChange(char)}
-            className={`flex-1 p-3 rounded-lg border text-left transition-all ${
-              character === char
-                ? "border-neutral-900 ring-1 ring-neutral-900"
-                : "border-neutral-200 hover:border-neutral-400"
-            }`}
-          >
-            <div className="text-sm font-medium capitalize">{char}</div>
-            <div className="text-xs text-neutral-500 mt-1">
-              {char === "vivid" && "Bold, assertive colors"}
-              {char === "balanced" && "Present but not aggressive"}
-              {char === "muted" && "Subtle, sophisticated"}
-            </div>
-          </button>
-        ))}
-      </div>
-
       {scales && (
         <div className="space-y-4">
           {Object.entries(scales).map(([hue, scale]) => (
@@ -77,7 +53,7 @@ export function StepColor({
                     <div
                       key={step}
                       className="flex-1 h-8 first:rounded-l last:rounded-r relative group"
-                      style={{ backgroundColor: vals.light }}
+                      style={{ backgroundColor: formatOklch(vals.light) }}
                     >
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <span className="text-[9px] font-mono px-1 py-0.5 rounded bg-black/70 text-white">

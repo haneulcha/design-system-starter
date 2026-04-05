@@ -1,4 +1,5 @@
 import type { ColorScales } from "../hooks/useGenerator";
+import { formatOklch } from "@core/generator/color.js";
 
 export function ColorPreview({ scales }: { scales: ColorScales }) {
   return (
@@ -15,14 +16,14 @@ export function ColorPreview({ scales }: { scales: ColorScales }) {
                   <div
                     key={step}
                     className="flex-1 h-9 first:rounded-l last:rounded-r relative group"
-                    style={{ backgroundColor: vals.light }}
+                    style={{ backgroundColor: formatOklch(vals.light) }}
                   >
                     <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
                       <span className="text-[9px] font-mono px-1 py-0.5 rounded bg-black/70 text-white leading-tight">
                         {step}
                       </span>
                       <span className="text-[8px] font-mono px-1 py-0.5 rounded bg-black/70 text-white leading-tight mt-0.5">
-                        {vals.light}
+                        {formatOklch(vals.light)}
                       </span>
                     </div>
                   </div>
