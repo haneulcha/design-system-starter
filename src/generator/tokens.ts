@@ -70,8 +70,8 @@ export function generateSemantic(primitive: PrimitiveTokens): SemanticTokens {
     "border/strong": "gray-600",
 
     // Brand (from detected brand hue)
-    "brand/primary": `${brandHue}-700`,
-    "brand/secondary": `${brandHue}-800`,
+    "brand/primary": `${brandHue}-500`,
+    "brand/secondary": `${brandHue}-600`,
     "brand/subtle": `${brandHue}-200`,
     "brand/muted": `${brandHue}-100`,
 
