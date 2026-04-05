@@ -18,7 +18,9 @@ export function generatePalette(primaryHex: string, undertone: NeutralUndertone)
   const base = toOklch(primaryHex);
   if (!base) throw new Error(`Invalid hex color: ${primaryHex}`);
 
-  const { l: baseL, c: baseC, h: baseH = 0 } = base;
+  const baseL = base.l ?? 0.5;
+  const baseC = base.c ?? 0;
+  const baseH = base.h ?? 0;
 
   // ── Primary (3 colors) ────────────────────────────────────────────────────
   const primary: ColorRole[] = [
