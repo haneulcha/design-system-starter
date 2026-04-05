@@ -1,74 +1,155 @@
 import { describe, it, expect } from "vitest";
-import { generateScales, detectHueName } from "../../src/generator/color.js";
+import {
+  generateScales,
+  parsePrimary,
+  formatOklch,
+  toCssCustomProperties,
+} from "../../src/generator/color.js";
 
-describe("detectHueName", () => {
-  it("maps hue ranges to color names", () => {
-    expect(detectHueName(10)).toBe("red");
-    expect(detectHueName(50)).toBe("orange");
-    expect(detectHueName(90)).toBe("yellow");
-    expect(detectHueName(145)).toBe("green");
-    expect(detectHueName(200)).toBe("cyan");
-    expect(detectHueName(265)).toBe("blue");
-    expect(detectHueName(320)).toBe("purple");
-    expect(detectHueName(350)).toBe("red"); // wraps around
+describe("parsePrimary", () => {
+  it("extracts oklch components from hex", () => {
+    const color = parsePrimary("#5e6ad2");
+    expect(color.l).toBeGreaterThan(0);
+    expect(color.c).toBeGreaterThan(0);
+    expect(color.h).toBeGreaterThan(0);
+  });
+
+  it("throws on invalid hex", () => {
+    expect(() => parsePrimary("not-a-color")).toThrow("Invalid hex color");
   });
 });
 
 describe("generateScales", () => {
-  const scales = generateScales("#5e6ad2", "neutral", "balanced");
+  const scales = generateScales("#5e6ad2");
 
-  it("generates at least 5 color hues (gray + brand + 3 status)", () => {
-    expect(Object.keys(scales).length).toBeGreaterThanOrEqual(5);
-    expect(scales.gray).toBeTruthy();
-    expect(scales.blue).toBeTruthy(); // brand hue for #5e6ad2
-    expect(scales.red).toBeTruthy();
-    expect(scales.green).toBeTruthy();
-    expect(scales.amber).toBeTruthy();
+  it("returns all 7 roles", () => {
+    const roles = Object.keys(scales);
+    expect(roles).toEqual(
+      expect.arrayContaining(["brand", "accent", "green", "amber", "red", "blue", "gray"]),
+    );
+    expect(roles).toHaveLength(7);
   });
 
-  it("each scale has 10 steps", () => {
-    for (const [, scale] of Object.entries(scales)) {
-      const steps = Object.keys(scale);
-      expect(steps).toHaveLength(10);
-      expect(steps).toContain("100");
-      expect(steps).toContain("1000");
+  it("each scale has 10 steps (100–1000)", () => {
+    const expectedSteps = ["100", "200", "300", "400", "500", "600", "700", "800", "900", "1000"];
+    for (const scale of Object.values(scales)) {
+      expect(Object.keys(scale).sort((a, b) => +a - +b)).toEqual(expectedSteps);
     }
   });
 
-  it("each step has light and dark hex values", () => {
-    for (const [, scale] of Object.entries(scales)) {
-      for (const [, step] of Object.entries(scale)) {
-        expect(step.light).toMatch(/^#[0-9a-f]{6}$/i);
-        expect(step.dark).toMatch(/^#[0-9a-f]{6}$/i);
+  it("each step has light and dark oklch values", () => {
+    for (const scale of Object.values(scales)) {
+      for (const step of Object.values(scale)) {
+        expect(step.light).toHaveProperty("l");
+        expect(step.light).toHaveProperty("c");
+        expect(step.light).toHaveProperty("h");
+        expect(step.dark).toHaveProperty("l");
+        expect(step.dark).toHaveProperty("c");
+        expect(step.dark).toHaveProperty("h");
       }
     }
   });
 
+  it("brand-700 has the default anchor lightness (0.36)", () => {
+    expect(scales.brand["700"].light.l).toBe(0.36);
+  });
+
+  it("brand-700 has cMult 1.0 (full chroma)", () => {
+    const primary = parsePrimary("#5e6ad2");
+    expect(scales.brand["700"].light.c).toBeCloseTo(primary.c, 6);
+  });
+
+  it("preserves input hue across all brand steps", () => {
+    const primary = parsePrimary("#5e6ad2");
+    for (const step of Object.values(scales.brand)) {
+      expect(step.light.h).toBeCloseTo(primary.h, 6);
+    }
+  });
+
+  it("accepts custom brandAnchorL", () => {
+    const custom = generateScales("#5e6ad2", { brandAnchorL: 0.40 });
+    expect(custom.brand["700"].light.l).toBe(0.40);
+  });
+
+  it("accent hue is brand + 150°", () => {
+    const primary = parsePrimary("#5e6ad2");
+    const expectedH = (primary.h + 150) % 360;
+    expect(scales.accent["700"].light.h).toBeCloseTo(expectedH, 6);
+  });
+
+  it("accent chroma is brand × 0.85", () => {
+    const primary = parsePrimary("#5e6ad2");
+    expect(scales.accent["700"].light.c).toBeCloseTo(primary.c * 0.85, 6);
+  });
+
+  it("semantic colors use fixed hues", () => {
+    expect(scales.green["700"].light.h).toBe(142);
+    expect(scales.amber["700"].light.h).toBe(85);
+    expect(scales.red["700"].light.h).toBe(25);
+    expect(scales.blue["700"].light.h).toBe(250);
+  });
+
+  it("semantic chroma derives from brand chroma", () => {
+    const primary = parsePrimary("#5e6ad2");
+    expect(scales.green["700"].light.c).toBeCloseTo(primary.c * 0.90, 6);
+    expect(scales.red["700"].light.c).toBeCloseTo(primary.c * 0.95, 6);
+  });
+
+  it("gray uses brand hue with low chroma", () => {
+    const primary = parsePrimary("#5e6ad2");
+    expect(scales.gray["500"].light.h).toBeCloseTo(primary.h, 6);
+    expect(scales.gray["500"].light.c).toBe(0.012);
+  });
+
+  it("gray accepts custom chroma", () => {
+    const custom = generateScales("#5e6ad2", { grayChroma: 0.02 });
+    expect(custom.gray["500"].light.c).toBe(0.02);
+  });
+
+  it("dark mode is scale inversion: dark-100 = light-1000", () => {
+    expect(scales.brand["100"].dark).toEqual(scales.brand["1000"].light);
+    expect(scales.brand["200"].dark).toEqual(scales.brand["900"].light);
+    expect(scales.brand["500"].dark).toEqual(scales.brand["600"].light);
+  });
+
   it("light mode: step 100 is lighter than step 1000", () => {
-    // Compare gray scale — step 100 should have higher perceived lightness
-    const g100 = scales.gray["100"].light;
-    const g1000 = scales.gray["1000"].light;
-    // Simple check: first hex char of 100 should be higher (lighter)
-    expect(parseInt(g100.slice(1, 3), 16)).toBeGreaterThan(
-      parseInt(g1000.slice(1, 3), 16)
-    );
+    expect(scales.brand["100"].light.l).toBeGreaterThan(scales.brand["1000"].light.l);
+    expect(scales.gray["100"].light.l).toBeGreaterThan(scales.gray["1000"].light.l);
   });
-
-  it("dark mode: step 100 is darker than step 1000", () => {
-    const g100 = scales.gray["100"].dark;
-    const g1000 = scales.gray["1000"].dark;
-    expect(parseInt(g100.slice(1, 3), 16)).toBeLessThan(
-      parseInt(g1000.slice(1, 3), 16)
-    );
-  });
-
-  it("vivid has higher chroma in status colors than muted", () => {
-    const vivid = generateScales("#5e6ad2", "neutral", "vivid");
-    const muted = generateScales("#5e6ad2", "neutral", "muted");
-    // Compare red-700 light values — vivid should be more saturated
-    // We can't easily check chroma from hex, but we can verify they're different
-    expect(vivid.red?.["700"]?.light).not.toBe(muted.red?.["700"]?.light);
-  });
-
 });
 
+describe("formatOklch", () => {
+  it("formats to oklch() CSS string", () => {
+    expect(formatOklch({ l: 0.36, c: 0.18, h: 250 })).toBe("oklch(0.36 0.18 250)");
+  });
+
+  it("rounds to appropriate precision", () => {
+    const result = formatOklch({ l: 0.36123456, c: 0.18765432, h: 250.456 });
+    expect(result).toBe("oklch(0.3612 0.1877 250.46)");
+  });
+});
+
+describe("toCssCustomProperties", () => {
+  const scales = generateScales("#5e6ad2");
+  const css = toCssCustomProperties(scales);
+
+  it("contains :root and dark theme blocks", () => {
+    expect(css).toContain(":root {");
+    expect(css).toContain('[data-theme="dark"] {');
+  });
+
+  it("contains brand custom properties", () => {
+    expect(css).toContain("--color-brand-700:");
+    expect(css).toContain("--color-brand-100:");
+  });
+
+  it("contains all roles", () => {
+    for (const role of ["brand", "accent", "green", "amber", "red", "blue", "gray"]) {
+      expect(css).toContain(`--color-${role}-`);
+    }
+  });
+
+  it("values are oklch() format", () => {
+    expect(css).toMatch(/--color-brand-700:\s*oklch\(/);
+  });
+});

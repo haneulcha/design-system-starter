@@ -20,13 +20,19 @@ export interface UserInputs {
 
 // ═══ Color ═══
 
+export interface Oklch {
+  readonly l: number;
+  readonly c: number;
+  readonly h: number;
+}
+
 export interface ColorStep {
-  light: string;
-  dark: string;
+  readonly light: Oklch;
+  readonly dark: Oklch;
 }
 
 export interface ColorScales {
-  [hue: string]: Record<string, ColorStep>;
+  readonly [role: string]: Record<string, ColorStep>;
 }
 
 // ═══ Typography ═══
