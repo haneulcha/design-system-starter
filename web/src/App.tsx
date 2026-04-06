@@ -37,7 +37,7 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white antialiased">
       <div className="max-w-3xl mx-auto px-4">
         <ProgressBar current={step} />
         <div className="py-8">

@@ -51,7 +51,7 @@ export function ResultPage({
   const borderDefault = resolveColor(tokens, "border/default");
 
   return (
-    <div className="min-h-screen bg-white flex flex-col md:flex-row">
+    <div className="min-h-screen bg-white antialiased flex flex-col md:flex-row">
       {/* Sidebar */}
       <aside className="w-full md:w-80 shrink-0 border-b md:border-b-0 md:border-r border-neutral-200 md:h-screen md:sticky md:top-0 md:overflow-y-auto">
         <div className="p-5 space-y-6">

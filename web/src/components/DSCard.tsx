@@ -4,11 +4,12 @@ import { resolveColor, resolveShadow, buildFontFamily } from "../lib/tokens";
 
 interface DSCardProps {
   children: React.ReactNode;
+  image?: { src: string; alt: string };
   tokens: DesignTokens;
   system: DesignSystem;
 }
 
-function computeStyles(tokens: DesignTokens, system: DesignSystem) {
+function computeStyles(tokens: DesignTokens, system: DesignSystem, hasImage: boolean) {
   const archetype = getArchetype(system.mood);
   const fontFamily = buildFontFamily(system);
 
@@ -22,14 +23,28 @@ function computeStyles(tokens: DesignTokens, system: DesignSystem) {
       border: `1px solid ${borderDefault}`,
       backgroundColor: bgBase,
       boxShadow: shadow,
-      padding: "16px 20px",
+      overflow: "hidden" as const,
       fontFamily,
+    },
+    image: {
+      width: "100%",
+      height: 160,
+      objectFit: "cover" as const,
+      display: "block" as const,
+    },
+    body: {
+      padding: "16px 20px",
     },
   };
 }
 
-export function DSCard({ children, tokens, system }: DSCardProps) {
-  const { container } = computeStyles(tokens, system);
+export function DSCard({ children, image, tokens, system }: DSCardProps) {
+  const styles = computeStyles(tokens, system, !!image);
 
-  return <div style={container}>{children}</div>;
+  return (
+    <div style={styles.container}>
+      {image && <img src={image.src} alt={image.alt} style={styles.image} />}
+      <div style={styles.body}>{children}</div>
+    </div>
+  );
 }
