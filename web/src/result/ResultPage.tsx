@@ -243,7 +243,7 @@ export function ResultPage({
             {/* Card */}
             <div className={sectionClass}>
               <div className={labelClass}>Card</div>
-              <div style={{ maxWidth: 360 }}>
+              <div className="grid grid-cols-2 gap-4" style={{ maxWidth: 720 }}>
                 <DSCard tokens={tokens} system={system}>
                   <div style={{ fontSize: 16, fontWeight: 600, color: textPrimary, marginBottom: 8, fontFamily }}>
                     Card Title
@@ -254,6 +254,18 @@ export function ResultPage({
                   <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${borderDefault}`, display: "flex", gap: 8 }}>
                     <DSButton variant="primary" tokens={tokens} system={system}>Action</DSButton>
                     <DSButton variant="ghost" tokens={tokens} system={system}>Cancel</DSButton>
+                  </div>
+                </DSCard>
+                <DSCard
+                  image={{ src: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&h=320&fit=crop", alt: "Abstract gradient" }}
+                  tokens={tokens}
+                  system={system}
+                >
+                  <div style={{ fontSize: 16, fontWeight: 600, color: textPrimary, marginBottom: 8, fontFamily }}>
+                    Image Card
+                  </div>
+                  <div style={{ fontSize: 14, color: textMuted, lineHeight: 1.6, fontFamily }}>
+                    Card with an optional cover image above the content body.
                   </div>
                 </DSCard>
               </div>
