@@ -1,20 +1,15 @@
 import { useEffect, useState } from "react";
 import type { WizardState, MoodArchetype, FullResult } from "../hooks/useGenerator";
 import { ARCHETYPES, getArchetype } from "../hooks/useGenerator";
-import { ColorPreview } from "./ColorPreview";
-import { ComponentPreview } from "./ComponentPreview";
-import { TypePreview } from "./TypePreview";
+import { ColorScale } from "../components/ColorScale";
+import { DSButton } from "../components/DSButton";
+import { DSInput } from "../components/DSInput";
+import { DSCard } from "../components/DSCard";
+import { DSBadge } from "../components/DSBadge";
+import { DSDivider } from "../components/DSDivider";
+import { TypeScale } from "../components/TypeScale";
 import { DownloadPanel } from "./DownloadPanel";
-
-function loadGoogleFont(family: string) {
-  const id = `gf-${family.replace(/\s+/g, "-")}`;
-  if (document.getElementById(id)) return;
-  const link = document.createElement("link");
-  link.id = id;
-  link.rel = "stylesheet";
-  link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@300;400;500;600;700;800;900&display=swap`;
-  document.head.appendChild(link);
-}
+import { loadGoogleFont, resolveColor, buildFontFamily } from "../lib/tokens";
 
 export function ResultPage({
   state,
@@ -47,13 +42,19 @@ export function ResultPage({
   }
 
   const archetypeEntries = Object.values(ARCHETYPES);
+  const { system, tokens } = result;
+  const sectionClass = "mb-8";
+  const labelClass = "text-xs font-medium text-neutral-400 uppercase tracking-wider mb-3";
+  const textPrimary = resolveColor(tokens, "text/primary");
+  const textMuted = resolveColor(tokens, "text/muted");
+  const fontFamily = buildFontFamily(system);
+  const borderDefault = resolveColor(tokens, "border/default");
 
   return (
     <div className="min-h-screen bg-white flex flex-col md:flex-row">
       {/* Sidebar */}
       <aside className="w-full md:w-80 shrink-0 border-b md:border-b-0 md:border-r border-neutral-200 md:h-screen md:sticky md:top-0 md:overflow-y-auto">
         <div className="p-5 space-y-6">
-          {/* Back button */}
           <button
             onClick={onBack}
             className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors flex items-center gap-1.5"
@@ -64,7 +65,6 @@ export function ResultPage({
             Back to wizard
           </button>
 
-          {/* Brand name */}
           <div>
             <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1.5">
               Brand Name
@@ -78,7 +78,6 @@ export function ResultPage({
             />
           </div>
 
-          {/* Color */}
           <div>
             <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1.5">
               Primary Color
@@ -104,7 +103,6 @@ export function ResultPage({
             </div>
           </div>
 
-          {/* Archetype */}
           <div>
             <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1.5">
               Archetype
@@ -134,7 +132,6 @@ export function ResultPage({
             </div>
           </div>
 
-          {/* Font */}
           <div>
             <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1.5">
               Font Family
@@ -176,7 +173,6 @@ export function ResultPage({
             )}
           </div>
 
-          {/* Download panel */}
           <DownloadPanel result={result} />
         </div>
       </aside>
@@ -197,19 +193,95 @@ export function ResultPage({
             </p>
           </div>
 
-          {/* Color preview */}
+          {/* Color scales */}
           <section>
-            <ColorPreview scales={result.system.colors} />
+            <h2 className="text-lg font-semibold text-neutral-900 mb-4">Color Scales</h2>
+            <ColorScale scales={system.colors} />
           </section>
 
-          {/* Component preview */}
-          <section>
-            <ComponentPreview system={result.system} tokens={result.tokens} />
+          {/* Components */}
+          <section style={{ fontFamily }}>
+            <h2 className="text-lg font-semibold text-neutral-900 mb-6">Components</h2>
+
+            {/* Buttons */}
+            <div className={sectionClass}>
+              <div className={labelClass}>Buttons</div>
+              <div className="flex flex-wrap gap-3 items-center">
+                <DSButton variant="primary" tokens={tokens} system={system}>Primary</DSButton>
+                <DSButton variant="secondary" tokens={tokens} system={system}>Secondary</DSButton>
+                <DSButton variant="ghost" tokens={tokens} system={system}>Ghost</DSButton>
+                <DSButton variant="primary" disabled tokens={tokens} system={system}>Disabled</DSButton>
+              </div>
+            </div>
+
+            {/* Inputs */}
+            <div className={sectionClass}>
+              <div className={labelClass}>Inputs</div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div style={{ fontSize: 11, color: textMuted, marginBottom: 4, fontFamily }}>Default</div>
+                  <DSInput tokens={tokens} system={system} value="Input value" />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: textMuted, marginBottom: 4, fontFamily }}>Focus</div>
+                  <DSInput state="focus" tokens={tokens} system={system} value="Focused input" />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: resolveColor(tokens, "status/error"), marginBottom: 4, fontFamily }}>Error</div>
+                  <DSInput state="error" tokens={tokens} system={system} value="Invalid value" />
+                  <div style={{ fontSize: 11, color: resolveColor(tokens, "status/error"), marginTop: 4, fontFamily }}>
+                    This field has an error
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: textMuted, marginBottom: 4, fontFamily }}>Disabled</div>
+                  <DSInput state="disabled" tokens={tokens} system={system} value="Disabled input" />
+                </div>
+              </div>
+            </div>
+
+            {/* Card */}
+            <div className={sectionClass}>
+              <div className={labelClass}>Card</div>
+              <div style={{ maxWidth: 360 }}>
+                <DSCard tokens={tokens} system={system}>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: textPrimary, marginBottom: 8, fontFamily }}>
+                    Card Title
+                  </div>
+                  <div style={{ fontSize: 14, color: textMuted, lineHeight: 1.6, fontFamily }}>
+                    This is a sample card component showing how content sits within the design system's card container.
+                  </div>
+                  <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${borderDefault}`, display: "flex", gap: 8 }}>
+                    <DSButton variant="primary" tokens={tokens} system={system}>Action</DSButton>
+                    <DSButton variant="ghost" tokens={tokens} system={system}>Cancel</DSButton>
+                  </div>
+                </DSCard>
+              </div>
+            </div>
+
+            {/* Badges */}
+            <div className={sectionClass}>
+              <div className={labelClass}>Badges</div>
+              <div className="flex flex-wrap gap-2">
+                <DSBadge variant="default" tokens={tokens} system={system}>Default</DSBadge>
+                <DSBadge variant="success" tokens={tokens} system={system}>Success</DSBadge>
+                <DSBadge variant="error" tokens={tokens} system={system}>Error</DSBadge>
+                <DSBadge variant="warning" tokens={tokens} system={system}>Warning</DSBadge>
+                <DSBadge variant="info" tokens={tokens} system={system}>Info</DSBadge>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className={sectionClass}>
+              <div className={labelClass}>Divider</div>
+              <DSDivider label="Section label" tokens={tokens} system={system} />
+            </div>
           </section>
 
-          {/* Type preview */}
+          {/* Typography */}
           <section>
-            <TypePreview system={result.system} />
+            <h2 className="text-lg font-semibold text-neutral-900 mb-4">Typography</h2>
+            <TypeScale system={system} />
           </section>
         </div>
       </main>
