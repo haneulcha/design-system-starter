@@ -1,32 +1,20 @@
 import { useEffect, useState } from "react";
 import { getArchetype } from "@core/schema/archetypes.js";
+import type { DesignSystem } from "@core/schema/types.js";
 import type { MoodArchetype } from "../hooks/useGenerator";
-import type { TypographySystem } from "@core/schema/types.js";
-
-function loadGoogleFont(family: string) {
-  const id = `gf-${family.replace(/\s+/g, "-")}`;
-  if (document.getElementById(id)) return;
-  const link = document.createElement("link");
-  link.id = id;
-  link.rel = "stylesheet";
-  link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@300;400;500;600;700;800;900&display=swap`;
-  document.head.appendChild(link);
-}
-
-function parsePx(size: string): number {
-  return parseInt(size, 10);
-}
+import { loadGoogleFont } from "../lib/tokens";
+import { TypeScale } from "../components/TypeScale";
 
 export function StepFont({
   value,
   mood,
   onChange,
-  typography,
+  system,
 }: {
   value: string;
   mood: MoodArchetype;
   onChange: (v: string) => void;
-  typography: TypographySystem | null;
+  system: DesignSystem | null;
 }) {
   const archetype = getArchetype(mood);
   const suggestedFonts = archetype.suggestedFonts;
@@ -37,12 +25,10 @@ export function StepFont({
   const [customInput, setCustomInput] = useState(isCustom ? value : "");
   const [showCustom, setShowCustom] = useState(isCustom);
 
-  // Load font on mount and whenever value changes
   useEffect(() => {
     if (value) loadGoogleFont(value);
   }, [value]);
 
-  // When mood changes, reset to the archetype's default font if current value isn't in new suggested list
   useEffect(() => {
     const newArchetype = getArchetype(mood);
     const newNames = newArchetype.suggestedFonts.map((f) => f.name);
@@ -50,8 +36,6 @@ export function StepFont({
       onChange(newArchetype.defaultFont);
     }
   }, [mood]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const previewRows = typography?.hierarchy.slice(0, 7) ?? [];
 
   function handleSuggestedSelect(name: string) {
     setShowCustom(false);
@@ -82,7 +66,7 @@ export function StepFont({
         Select from fonts suited to your archetype, or enter any Google Fonts family.
       </p>
 
-      {/* Font selector — left panel */}
+      {/* Font selector */}
       <div className="flex flex-col gap-2 mb-8">
         {suggestedFonts.map((font) => {
           const isSelected = !showCustom && value === font.name;
@@ -151,41 +135,8 @@ export function StepFont({
         </label>
       </div>
 
-      {/* Typography specimen preview */}
-      <div className="border border-neutral-200 rounded-xl overflow-hidden">
-        <div className="px-5 py-3 border-b border-neutral-100 bg-neutral-50">
-          <span className="text-xs font-medium text-neutral-400 uppercase tracking-wider">
-            Typography Preview — {value}
-          </span>
-        </div>
-        <div className="divide-y divide-neutral-100">
-          {previewRows.map((entry) => {
-            const px = parsePx(entry.size);
-            return (
-              <div key={entry.role} className="px-5 py-3 flex items-baseline gap-4">
-                <div
-                  className="shrink-0 text-neutral-400 uppercase tracking-wide"
-                  style={{ fontSize: 11, width: 130 }}
-                >
-                  {entry.role}
-                </div>
-                <div
-                  className="truncate text-neutral-900"
-                  style={{
-                    fontFamily: `'${entry.font}', system-ui, sans-serif`,
-                    fontSize: px,
-                    fontWeight: entry.weight,
-                    letterSpacing: entry.letterSpacing,
-                    lineHeight: entry.lineHeight,
-                  }}
-                >
-                  The quick brown fox
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {/* Typography preview */}
+      {system && <TypeScale system={system} />}
     </div>
   );
 }
