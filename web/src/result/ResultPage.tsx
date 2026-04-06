@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { WizardState, MoodArchetype, FullResult } from "../hooks/useGenerator";
-import { ARCHETYPES, getArchetype } from "../hooks/useGenerator";
+import { ARCHETYPES, getArchetype } from "@core/schema/archetypes.js";
 import { ColorScale } from "../components/ColorScale";
 import { DSButton } from "../components/DSButton";
 import { DSInput } from "../components/DSInput";

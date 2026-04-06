@@ -26,7 +26,8 @@ export function resolveColorAlpha(tokens: DesignTokens, key: string, alpha: numb
 export function resolveComponentColor(tokens: DesignTokens, componentPath: string): string {
   const [comp, variant, prop] = componentPath.split(".");
   const semanticKey = tokens.component[comp]?.[variant]?.[prop];
-  if (!semanticKey || semanticKey === "transparent") return semanticKey ?? "oklch(0.8 0 0)";
+  if (!semanticKey) return "oklch(0.8 0 0)";
+  if (semanticKey === "transparent") return "transparent";
   return resolveColor(tokens, semanticKey);
 }
 
