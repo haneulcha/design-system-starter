@@ -1,5 +1,10 @@
 import { ARCHETYPES, getArchetype } from "@core/schema/archetypes.js";
+import type { DesignTokens, DesignSystem } from "@core/schema/types.js";
 import type { MoodArchetype } from "../hooks/useGenerator";
+import { DSButton } from "../components/DSButton";
+import { DSInput } from "../components/DSInput";
+import { DSCard } from "../components/DSCard";
+import { resolveColor, resolveComponentColor, buildFontFamily } from "../lib/tokens";
 
 const REFERENCES: Record<MoodArchetype, string> = {
   precise: "Stripe, IBM, X.ai",
@@ -8,27 +13,21 @@ const REFERENCES: Record<MoodArchetype, string> = {
   modern: "Supabase, Resend, Coinbase",
 };
 
-const shadowMap: Record<string, string> = {
-  whisper: "0 1px 2px rgba(0,0,0,0.04)",
-  subtle: "0 1px 3px rgba(0,0,0,0.08)",
-  medium: "0 4px 12px rgba(0,0,0,0.12)",
-  dramatic: "0 8px 24px rgba(0,0,0,0.2)",
-};
-
 const ARCHETYPE_KEYS: MoodArchetype[] = ["precise", "confident", "expressive", "modern"];
 
 export function StepArchetype({
   value,
-  brandColor,
+  tokens,
+  system,
   onChange,
 }: {
   value: MoodArchetype;
-  brandColor: string;
+  tokens: DesignTokens | null;
+  system: DesignSystem | null;
   onChange: (v: MoodArchetype) => void;
 }) {
   const selected = getArchetype(value);
-
-  const shadow = shadowMap[selected.shadowIntensity] ?? shadowMap.subtle;
+  const brandColor = tokens ? resolveComponentColor(tokens, "button.primary.bg") : "#6b7280";
 
   return (
     <div>
@@ -82,83 +81,47 @@ export function StepArchetype({
         })}
       </div>
 
-      {/* Component preview */}
-      <div className="border border-neutral-200 rounded-xl p-6 bg-neutral-50">
-        <div className="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-4">
-          Component Preview — {selected.label}
-        </div>
+      {/* Component preview using atomic components */}
+      {tokens && system && (
+        <div className="border border-neutral-200 rounded-xl p-6 bg-neutral-50">
+          <div className="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-4">
+            Component Preview — {selected.label}
+          </div>
 
-        {/* Buttons row */}
-        <div className="flex flex-wrap gap-3 mb-5">
-          {/* Primary filled */}
-          <button
-            className="px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
-            style={{
-              borderRadius: selected.buttonRadius,
-              backgroundColor: brandColor,
-              boxShadow: shadow,
-            }}
-          >
-            Primary
-          </button>
+          {/* Buttons row */}
+          <div className="flex flex-wrap gap-3 mb-5">
+            <DSButton variant="primary" tokens={tokens} system={system}>Primary</DSButton>
+            <DSButton variant="secondary" tokens={tokens} system={system}>Secondary</DSButton>
+            <DSButton variant="ghost" tokens={tokens} system={system}>Ghost</DSButton>
+          </div>
 
-          {/* Secondary light */}
-          <button
-            className="px-4 py-2 text-sm font-medium transition-opacity hover:opacity-80"
-            style={{
-              borderRadius: selected.buttonRadius,
-              backgroundColor: brandColor + "18",
-              color: brandColor,
-              boxShadow: shadow,
-            }}
-          >
-            Secondary
-          </button>
+          {/* Card */}
+          <div className="mb-4">
+            <DSCard tokens={tokens} system={system}>
+              <div
+                className="text-sm font-medium mb-1"
+                style={{ color: resolveColor(tokens, "text/primary"), fontFamily: buildFontFamily(system) }}
+              >
+                Card Component
+              </div>
+              <div
+                className="text-xs"
+                style={{ color: resolveColor(tokens, "text/muted"), fontFamily: buildFontFamily(system) }}
+              >
+                radius: {selected.cardRadius} · shadow: {selected.shadowIntensity}
+              </div>
+            </DSCard>
+          </div>
 
-          {/* Ghost outlined */}
-          <button
-            className="px-4 py-2 text-sm font-medium bg-transparent transition-opacity hover:opacity-80"
-            style={{
-              borderRadius: selected.buttonRadius,
-              border: `1.5px solid ${brandColor}`,
-              color: brandColor,
-            }}
-          >
-            Ghost
-          </button>
-        </div>
-
-        {/* Mini card */}
-        <div
-          className="p-4 bg-white mb-4 inline-block w-full"
-          style={{
-            borderRadius: selected.cardRadius,
-            boxShadow: shadow,
-            border: "1px solid rgba(0,0,0,0.06)",
-          }}
-        >
-          <div className="text-sm font-medium text-neutral-800 mb-1">Card Component</div>
-          <div className="text-xs text-neutral-400">
-            radius: {selected.cardRadius} · shadow: {selected.shadowIntensity}
+          {/* Input */}
+          <div>
+            <DSInput tokens={tokens} system={system} value="Input field" />
+            <div className="text-[11px] text-neutral-400 mt-1">
+              input radius: {selected.inputRadius}
+            </div>
           </div>
         </div>
-
-        {/* Mini input */}
-        <div>
-          <input
-            readOnly
-            value="Input field"
-            className="w-full px-3 py-2 text-sm border border-neutral-300 bg-white text-neutral-700 outline-none"
-            style={{
-              borderRadius: selected.inputRadius,
-            }}
-          />
-          <div className="text-[11px] text-neutral-400 mt-1">
-            input radius: {selected.inputRadius}
-          </div>
-        </div>
-      </div>
-
+      )}
     </div>
   );
 }
