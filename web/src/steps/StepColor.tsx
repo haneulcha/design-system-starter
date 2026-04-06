@@ -1,5 +1,5 @@
-import type { ColorScales } from "../hooks/useGenerator";
-import { formatOklch } from "@core/generator/color.js";
+import type { ColorScales } from "@core/schema/types.js";
+import { ColorScale } from "../components/ColorScale";
 
 export function StepColor({
   value,
@@ -39,34 +39,7 @@ export function StepColor({
         />
       </div>
 
-      {scales && (
-        <div className="space-y-4">
-          {Object.entries(scales).map(([hue, scale]) => (
-            <div key={hue}>
-              <div className="text-xs font-medium text-neutral-500 mb-1 capitalize">
-                {hue}
-              </div>
-              <div className="flex gap-0.5">
-                {Object.entries(scale)
-                  .sort(([a], [b]) => Number(a) - Number(b))
-                  .map(([step, vals]) => (
-                    <div
-                      key={step}
-                      className="flex-1 h-8 first:rounded-l last:rounded-r relative group"
-                      style={{ backgroundColor: formatOklch(vals.light) }}
-                    >
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span className="text-[9px] font-mono px-1 py-0.5 rounded bg-black/70 text-white">
-                          {step}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      {scales && <ColorScale scales={scales} />}
     </div>
   );
 }
