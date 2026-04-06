@@ -4,20 +4,9 @@ import { StepColor } from "./steps/StepColor";
 import { StepArchetype } from "./steps/StepArchetype";
 import { StepFont } from "./steps/StepFont";
 import { ResultPage } from "./result/ResultPage";
-import { DEFAULT_STATE, useGenerateResult, type WizardState, type MoodArchetype, type FullResult } from "./hooks/useGenerator";
-import { oklchToHex } from "@core/generator/color.js";
+import { DEFAULT_STATE, useGenerateResult, type WizardState, type MoodArchetype } from "./hooks/useGenerator";
 
 type Screen = "wizard" | "result";
-
-function getBrandColor(result: FullResult): string {
-  const semanticKey = result.tokens.semantic["brand/primary"];
-  if (!semanticKey) return "#666";
-  const parts = semanticKey.split("-");
-  const step = parts[parts.length - 1];
-  const hue = parts.slice(0, -1).join("-");
-  const colorStep = result.tokens.primitive.colors[hue]?.[step];
-  return colorStep ? oklchToHex(colorStep.light) : "#666";
-}
 
 export function App() {
   const [screen, setScreen] = useState<Screen>("wizard");
@@ -62,7 +51,8 @@ export function App() {
           {step === 1 && (
             <StepArchetype
               value={state.mood}
-              brandColor={result ? getBrandColor(result) : state.primaryColor}
+              tokens={result?.tokens ?? null}
+              system={result?.system ?? null}
               onChange={(m: MoodArchetype) => update({ mood: m })}
             />
           )}
@@ -71,7 +61,7 @@ export function App() {
               value={state.fontFamily}
               mood={state.mood}
               onChange={(f: string) => update({ fontFamily: f })}
-              typography={result?.system.typography ?? null}
+              system={result?.system ?? null}
             />
           )}
         </div>
