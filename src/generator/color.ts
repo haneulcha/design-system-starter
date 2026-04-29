@@ -17,8 +17,8 @@ export interface ColorConfig {
 }
 
 const DEFAULT_CONFIG: ColorConfig = {
-  brandAnchorL: 0.45,
-  grayChroma: 0.012,
+  brandAnchorL: 0.5,
+  grayChroma: 0.01,
 };
 
 // ─── Scale Definitions ───────────────────────────────────────────────────────
@@ -30,39 +30,44 @@ interface StepDef {
 }
 
 const CHROMATIC_STEPS: readonly StepDef[] = [
-  { step: "100",  l: 0.96, cMult: 0.30 },
-  { step: "200",  l: 0.91, cMult: 0.45 },
-  { step: "300",  l: 0.84, cMult: 0.60 },
-  { step: "400",  l: 0.74, cMult: 0.75 },
-  { step: "500",  l: 0.64, cMult: 0.90 },
-  { step: "600",  l: 0.55, cMult: 0.97 },
-  { step: "700",  l: 0.45, cMult: 1.00 },
-  { step: "800",  l: 0.35, cMult: 0.95 },
-  { step: "900",  l: 0.23, cMult: 0.65 },
-  { step: "1000", l: 0.14, cMult: 0.50 },
+  { step: "100", l: 0.96, cMult: 0.3 },
+  { step: "200", l: 0.91, cMult: 0.45 },
+  { step: "300", l: 0.84, cMult: 0.6 },
+  { step: "400", l: 0.74, cMult: 0.75 },
+  { step: "500", l: 0.64, cMult: 0.9 },
+  { step: "600", l: 0.55, cMult: 0.97 },
+  { step: "700", l: 0.45, cMult: 1.0 },
+  { step: "800", l: 0.35, cMult: 0.95 },
+  { step: "900", l: 0.23, cMult: 0.65 },
+  { step: "1000", l: 0.14, cMult: 0.5 },
 ];
 
 const GRAY_STEPS: readonly { readonly step: string; readonly l: number }[] = [
-  { step: "100",  l: 0.97 },
-  { step: "200",  l: 0.93 },
-  { step: "300",  l: 0.87 },
-  { step: "400",  l: 0.76 },
-  { step: "500",  l: 0.63 },
-  { step: "600",  l: 0.50 },
-  { step: "700",  l: 0.38 },
-  { step: "800",  l: 0.27 },
-  { step: "900",  l: 0.17 },
-  { step: "1000", l: 0.10 },
+  { step: "100", l: 0.97 },
+  { step: "200", l: 0.93 },
+  { step: "300", l: 0.87 },
+  { step: "400", l: 0.76 },
+  { step: "500", l: 0.63 },
+  { step: "600", l: 0.5 },
+  { step: "700", l: 0.38 },
+  { step: "800", l: 0.27 },
+  { step: "900", l: 0.17 },
+  { step: "1000", l: 0.1 },
 ];
 
-const SEMANTIC_DEFS: Record<string, { readonly h: number; readonly cMult: number }> = {
-  green: { h: 142, cMult: 0.90 },
-  amber: { h: 85,  cMult: 0.85 },
-  red:   { h: 25,  cMult: 0.95 },
-  blue:  { h: 250, cMult: 0.90 },
+const SEMANTIC_DEFS: Record<
+  string,
+  { readonly h: number; readonly cMult: number }
+> = {
+  green: { h: 142, cMult: 0.9 },
+  amber: { h: 85, cMult: 0.85 },
+  red: { h: 25, cMult: 0.95 },
+  blue: { h: 250, cMult: 0.9 },
 };
 
-const STEP_NUMBERS: readonly number[] = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
+const STEP_NUMBERS: readonly number[] = [
+  100, 200, 300, 400, 500, 600, 700, 800, 900, 1000,
+];
 
 // ─── Pure Functions ──────────────────────────────────────────────────────────
 
@@ -91,16 +96,11 @@ const buildChromaticScale = (
 };
 
 const buildGrayScale = (h: number, c: number): Record<string, Oklch> =>
-  Object.fromEntries(
-    GRAY_STEPS.map(({ step, l }) => [step, { l, c, h }]),
-  );
+  Object.fromEntries(GRAY_STEPS.map(({ step, l }) => [step, { l, c, h }]));
 
 const invertScale = (scale: Record<string, Oklch>): Record<string, Oklch> =>
   Object.fromEntries(
-    STEP_NUMBERS.map((step) => [
-      String(step),
-      scale[String(1100 - step)],
-    ]),
+    STEP_NUMBERS.map((step) => [String(step), scale[String(1100 - step)]]),
   );
 
 const withDarkMode = (
@@ -135,7 +135,11 @@ export const generateScales = (
 
   const lightScales: Record<string, Record<string, Oklch>> = {
     brand: buildChromaticScale(brandC, brandH, brandAnchorL),
-    accent: buildChromaticScale(brandC * 0.85, (brandH + 150) % 360, brandAnchorL),
+    accent: buildChromaticScale(
+      brandC * 0.85,
+      (brandH + 150) % 360,
+      brandAnchorL,
+    ),
     ...Object.fromEntries(
       Object.entries(SEMANTIC_DEFS).map(([name, { h, cMult }]) => [
         name,

@@ -33,9 +33,7 @@ export function generatePrimitive(scales: ColorScales): PrimitiveTokens {
 
 // ─── Layer 2: Semantic ────────────────────────────────────────────────────────
 
-export function generateSemantic(
-  primitive: PrimitiveTokens,
-): SemanticTokens {
+export function generateSemantic(primitive: PrimitiveTokens): SemanticTokens {
   return {
     // Background
     "bg/base": "gray-100",
@@ -54,16 +52,18 @@ export function generateSemantic(
     "border/strong": "gray-600",
 
     // Brand (always "brand" role, anchor at 700)
-    "brand/primary": "brand-700",
+    "brand/primary": "brand-500",
     "brand/secondary": "brand-800",
     "brand/subtle": "brand-200",
     "brand/muted": "brand-100",
 
     // Accent (always "accent" role)
-    ...(primitive.colors["accent"] ? {
-      "accent/primary": "accent-700",
-      "accent/subtle": "accent-200",
-    } : {}),
+    ...(primitive.colors["accent"]
+      ? {
+          "accent/primary": "accent-700",
+          "accent/subtle": "accent-200",
+        }
+      : {}),
 
     // Status
     "status/success": "green-700",
@@ -80,8 +80,8 @@ export function generateSemantic(
     "status/info-text": "blue-900",
 
     // Constants
-    "white": "gray-100",
-    "black": "gray-1000",
+    white: "gray-100",
+    black: "gray-1000",
   };
 }
 
@@ -180,7 +180,7 @@ export function buildDesignTokens(
   system: DesignSystem,
   primitive: PrimitiveTokens,
   semantic: SemanticTokens,
-  component: ComponentTokens
+  component: ComponentTokens,
 ): DesignTokens {
   const brand = { name: system.brandName, mood: system.mood };
 

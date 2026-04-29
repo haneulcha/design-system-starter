@@ -52,8 +52,8 @@ describe("generateScales", () => {
     }
   });
 
-  it("brand-700 has the default anchor lightness (0.45)", () => {
-    expect(scales.brand["700"].light.l).toBe(0.45);
+  it("brand-700 has the default anchor lightness (0.5)", () => {
+    expect(scales.brand["700"].light.l).toBe(0.5);
   });
 
   it("brand-700 has peak chroma (cMult 1.0)", () => {
@@ -69,8 +69,8 @@ describe("generateScales", () => {
   });
 
   it("accepts custom brandAnchorL", () => {
-    const custom = generateScales("#5e6ad2", { brandAnchorL: 0.50 });
-    expect(custom.brand["700"].light.l).toBe(0.50);
+    const custom = generateScales("#5e6ad2", { brandAnchorL: 0.6 });
+    expect(custom.brand["700"].light.l).toBe(0.6);
   });
 
   it("accent hue is brand + 150°", () => {
@@ -100,7 +100,7 @@ describe("generateScales", () => {
   it("gray uses brand hue with low chroma", () => {
     const primary = parsePrimary("#5e6ad2");
     expect(scales.gray["500"].light.h).toBeCloseTo(primary.h, 6);
-    expect(scales.gray["500"].light.c).toBe(0.012);
+    expect(scales.gray["500"].light.c).toBe(0.01);
   });
 
   it("gray accepts custom chroma", () => {
