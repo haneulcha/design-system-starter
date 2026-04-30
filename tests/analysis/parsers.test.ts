@@ -13,6 +13,7 @@ import {
   parseGrayChroma,
   parseAccentOffset,
 } from "../../scripts/analysis/parsers/color.js";
+import { parseDarkModePresent } from "../../scripts/analysis/parsers/modes.js";
 
 describe("findSection", () => {
   const sample = `## 1. Theme
@@ -214,6 +215,25 @@ describe("real fixtures — colors (Format A only)", () => {
   it.each(["stripe", "vercel", "linear.app"])("%s yields brand OKLCH", (system) => {
     const md = readFileSync(`tests/analysis/fixtures/${system}.md`, "utf-8");
     expect(parseBrandOklch(md)).not.toBeNull();
+  });
+});
+
+describe("parseDarkModePresent", () => {
+  it("returns true when a Dark Mode subsection exists", () => {
+    const md = `## 2. Color Palette\n\n### Dark Mode\n\nbackgrounds shift to navy.\n`;
+    expect(parseDarkModePresent(md)).toBe(true);
+  });
+  it("returns true when Colors table has a Dark column", () => {
+    const md = `## 2. Color\n\n| Step | Light | Dark |\n|---|---|---|\n| 100 | #fff | #000 |\n`;
+    expect(parseDarkModePresent(md)).toBe(true);
+  });
+  it("returns true when prose mentions 'dark theme' or 'dark mode'", () => {
+    const md = `## 1. Theme\n\nSupports light and dark theme out of the box.\n`;
+    expect(parseDarkModePresent(md)).toBe(true);
+  });
+  it("returns false when no signal is present", () => {
+    const md = `## 1. Theme\n\nA bright clean canvas.\n## 2. Color\n\nPrimary: #5e6ad2\n`;
+    expect(parseDarkModePresent(md)).toBe(false);
   });
 });
 
