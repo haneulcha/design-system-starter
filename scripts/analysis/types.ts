@@ -27,5 +27,5 @@ export type BtnShape = 0 | 1 | 2 | 3;            // sharp | standard | rounded |
 export const SHADOW_LABELS: readonly string[] = ["none", "whisper", "subtle", "medium", "dramatic"];
 export const SHAPE_LABELS: readonly string[] = ["sharp", "standard", "rounded", "pill"];
 
-export const FULL_PILL_THRESHOLD_PX = 999; // values >= this are treated as the "fully pill" sentinel
+export const FULL_PILL_THRESHOLD_PX = 999 as const; // values >= this are treated as the "fully pill" sentinel
 export const LETTER_SPACING_RANGE: readonly [number, number] = [-6, 2]; // px; clip outliers outside
