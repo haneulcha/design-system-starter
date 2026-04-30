@@ -7,6 +7,7 @@ import {
   parseBodyLineHeight,
   parseHeadingLetterSpacing,
 } from "../../scripts/analysis/parsers/typography.js";
+import { parseShadowIntensity, parseBtnShape } from "../../scripts/analysis/parsers/categorical.js";
 
 describe("findSection", () => {
   const sample = `## 1. Theme
@@ -122,6 +123,42 @@ describe("real fixtures — typography (Format A only)", () => {
     expect(parseHeadingWeight(md)).toEqual(expect.any(Number));
     expect(parseBodyLineHeight(md)).toEqual(expect.any(Number));
     expect(parseHeadingLetterSpacing(md)).toEqual(expect.any(Number));
+  });
+});
+
+describe("parseShadowIntensity", () => {
+  it.each<[string, number]>([
+    ["## Elevation\n\nNo shadows used.\n", 0],
+    ["## Elevation\n\nWhisper-light shadows on cards.\n", 1],
+    ["## Elevation\n\nSubtle shadows for elevation.\n", 2],
+    ["## Elevation\n\nMedium shadows.\n", 3],
+    ["## Elevation\n\nDramatic, deep shadows.\n", 4],
+  ])("classifies shadow intensity from %j", (md, expected) => {
+    expect(parseShadowIntensity(md)).toBe(expected);
+  });
+
+  it("returns null on missing section", () => {
+    expect(parseShadowIntensity("## Other\n")).toBeNull();
+  });
+});
+
+describe("parseBtnShape", () => {
+  it("classifies sharp (radius ≤ 2)", () => {
+    expect(parseBtnShape("## Buttons\nradius: 0px\n")).toBe(0);
+    expect(parseBtnShape("## Buttons\nradius: 2px\n")).toBe(0);
+  });
+  it("classifies standard (3-7)", () => {
+    expect(parseBtnShape("## Buttons\nradius: 6px\n")).toBe(1);
+  });
+  it("classifies rounded (8-16)", () => {
+    expect(parseBtnShape("## Buttons\nradius: 12px\n")).toBe(2);
+  });
+  it("classifies pill (≥ 9999 or 'pill' literal)", () => {
+    expect(parseBtnShape("## Buttons\nradius: 9999px\n")).toBe(3);
+    expect(parseBtnShape("## Buttons\npill button\n")).toBe(3);
+  });
+  it("returns null when section missing", () => {
+    expect(parseBtnShape("## Other\n")).toBeNull();
   });
 });
 
