@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { findSection } from "../../scripts/analysis/parsers/section.js";
+import { parseBtnRadius, parseCardRadius } from "../../scripts/analysis/parsers/numeric.js";
 
 describe("findSection", () => {
   const sample = `## 1. Theme
@@ -49,4 +50,41 @@ radius: 12px
     expect(findSection(md, "Display")).toContain("A");
     expect(findSection(md, "Display")).not.toContain("B");
   });
+});
+
+describe("parseBtnRadius", () => {
+  it("extracts the first px value in a Buttons section", () => {
+    const md = "## Buttons\n\nborder-radius: 8px\nheight: 40px\n";
+    expect(parseBtnRadius(md)).toBe(8);
+  });
+
+  it("returns null when section is missing", () => {
+    expect(parseBtnRadius("## Other\n\nnothing here\n")).toBeNull();
+  });
+
+  it("handles 'pill' / 9999px as 9999", () => {
+    expect(parseBtnRadius("## Buttons\n\nradius: 9999px (pill)\n")).toBe(9999);
+  });
+});
+
+describe("parseCardRadius", () => {
+  it("extracts the first px value in a Cards section", () => {
+    const md = "## Cards\n\nborder-radius: 12px\n";
+    expect(parseCardRadius(md)).toBe(12);
+  });
+
+  it("returns null when section is missing", () => {
+    expect(parseCardRadius("## Other\n\nx\n")).toBeNull();
+  });
+});
+
+describe("real fixtures — btn_radius (Format A only)", () => {
+  // Format B (YAML) systems are covered by yaml-extract tests.
+  it.each(["stripe", "vercel", "linear.app"])(
+    "%s yields a numeric btn_radius",
+    (system) => {
+      const md = readFileSync(`tests/analysis/fixtures/${system}.md`, "utf-8");
+      expect(parseBtnRadius(md)).toEqual(expect.any(Number));
+    },
+  );
 });
