@@ -75,7 +75,9 @@ Location: `scripts/analysis/`
 
 Each variable has its own pure parser function (`parseBtnRadius(section: string): number | null`, etc.) so individual extractors can be unit-tested. Acquisition (`fetch.ts`) and parsing (`extract.ts`) stay isolated — extraction only ever touches local files.
 
-**Source acquisition:** `git clone --depth 1 https://github.com/nicepkg/awesome-design-md data/raw-repo` (no rate limit, fast).
+**Source acquisition:** The upstream awesome-design-md repo (`https://github.com/VoltAgent/awesome-design-md`) carries only stub READMEs in `design-md/{system}/`; full DESIGN.md content is fetched per-system via the `getdesign` CLI (`npx -y getdesign@latest add {system}`). `fetch.ts` clones the index repo for the system list, then runs `getdesign add` per system, collecting DESIGN.md files into `data/raw/{system}.md`. ~59 systems × ~5–10s = 5–10 min total runtime.
+
+**Section heading reality (observed 2026-04-30):** The real DESIGN.md format uses numbered headings: `## 2. Color Palette & Roles`, `## 3. Typography Rules`, `## 6. Depth & Elevation`, etc., with subsections like `### Buttons`, `### Cards & Containers`, `### Hierarchy`. The `findSection` helper therefore matches by case-insensitive *substring* on the heading text (after stripping leading numbering), so `"Elevation"` resolves `"Depth & Elevation"` and `"Typography"` resolves `"Typography Rules"`.
 
 **Run:** `npx tsx scripts/analysis/fetch.ts && npx tsx scripts/analysis/extract.ts`
 

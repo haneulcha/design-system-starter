@@ -1,6 +1,6 @@
 # Design System Starter
 
-Generate a complete, cohesive design system from 4 inputs. Outputs a DESIGN.md (compatible with [awesome-design-md](https://github.com/nicepkg/awesome-design-md) format), universal design tokens JSON, and a Figma-ready structure file.
+Generate a complete, cohesive design system from 4 inputs. Outputs a DESIGN.md (compatible with [awesome-design-md](https://github.com/VoltAgent/awesome-design-md) format), universal design tokens JSON, and a Figma-ready structure file.
 
 ## Quick Start
 

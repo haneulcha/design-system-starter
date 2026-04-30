@@ -54,80 +54,95 @@ git commit -m "chore(analysis): scaffold pipeline directories and gitignore data
 **Files:**
 - Create: `scripts/analysis/fetch.ts`
 
-This task has no automated test (thin shell wrapper around `git clone`). Verify by running it.
+This task has no automated test. Verify by running it.
 
-`execFileSync` is used instead of `execSync` to avoid shell-injection risk — args are passed as an array, no shell interpretation.
+The upstream awesome-design-md repo (`VoltAgent/awesome-design-md`) carries only stub READMEs in `design-md/{system}/`; full content is fetched per-system via the `getdesign` CLI. `fetch.ts` clones the index repo for the system list, then runs `npx -y getdesign@latest add {system}` per system, copying each generated `DESIGN.md` into `data/raw/{system}.md`.
+
+`execFileSync` is used (not `execSync`) so arguments are array-passed with no shell interpretation. Runtime: ~5–10 min for ~59 systems.
 
 - [ ] **Step 1: Write `fetch.ts`**
 
 ```ts
 // scripts/analysis/fetch.ts
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readdirSync, copyFileSync, rmSync, statSync } from "node:fs";
-import { join, basename, dirname } from "node:path";
+import { existsSync, mkdirSync, readdirSync, renameSync, rmSync, statSync } from "node:fs";
+import { join } from "node:path";
 
-const REPO_URL = "https://github.com/nicepkg/awesome-design-md";
+const REPO_URL = "https://github.com/VoltAgent/awesome-design-md";
 const REPO_DIR = "data/raw-repo";
 const OUT_DIR = "data/raw";
+const TMP_DIR = "data/.fetch-tmp";
 
 function clone(): void {
   if (existsSync(REPO_DIR)) {
-    console.log(`Removing existing ${REPO_DIR}`);
     rmSync(REPO_DIR, { recursive: true, force: true });
   }
-  console.log(`Shallow-cloning ${REPO_URL} → ${REPO_DIR}`);
+  console.log(`Cloning ${REPO_URL} → ${REPO_DIR}`);
   execFileSync("git", ["clone", "--depth", "1", REPO_URL, REPO_DIR], { stdio: "inherit" });
 }
 
-function findDesignMdFiles(root: string): string[] {
-  const out: string[] = [];
-  const walk = (dir: string): void => {
-    for (const entry of readdirSync(dir)) {
-      const full = join(dir, entry);
-      const st = statSync(full);
-      if (st.isDirectory()) {
-        if (entry === ".git" || entry === "node_modules") continue;
-        walk(full);
-      } else if (entry === "DESIGN.md") {
-        out.push(full);
-      }
-    }
-  };
-  walk(root);
-  return out;
+function listSystems(): string[] {
+  const root = join(REPO_DIR, "design-md");
+  return readdirSync(root)
+    .filter((entry) => statSync(join(root, entry)).isDirectory())
+    .sort();
 }
 
-function systemNameFromPath(path: string): string {
-  return basename(dirname(path));
-}
-
-function copyAll(): number {
-  if (existsSync(OUT_DIR)) {
-    rmSync(OUT_DIR, { recursive: true, force: true });
+function fetchSystem(system: string): boolean {
+  const tmp = join(TMP_DIR, system);
+  rmSync(tmp, { recursive: true, force: true });
+  mkdirSync(tmp, { recursive: true });
+  try {
+    execFileSync("npx", ["-y", "getdesign@latest", "add", system], {
+      cwd: tmp,
+      stdio: ["ignore", "ignore", "pipe"],
+    });
+  } catch {
+    return false;
   }
+  const designPath = join(tmp, "DESIGN.md");
+  if (!existsSync(designPath)) return false;
+  renameSync(designPath, join(OUT_DIR, `${system}.md`));
+  rmSync(tmp, { recursive: true, force: true });
+  return true;
+}
+
+function main(): void {
+  clone();
+  const systems = listSystems();
+  console.log(`Found ${systems.length} systems`);
+
+  if (existsSync(OUT_DIR)) rmSync(OUT_DIR, { recursive: true, force: true });
   mkdirSync(OUT_DIR, { recursive: true });
-  const files = findDesignMdFiles(REPO_DIR);
-  for (const f of files) {
-    const name = systemNameFromPath(f);
-    copyFileSync(f, join(OUT_DIR, `${name}.md`));
+  mkdirSync(TMP_DIR, { recursive: true });
+
+  let ok = 0;
+  for (const [i, system] of systems.entries()) {
+    process.stdout.write(`[${i + 1}/${systems.length}] ${system} ... `);
+    if (fetchSystem(system)) {
+      ok++;
+      console.log("ok");
+    } else {
+      console.log("FAILED");
+    }
   }
-  return files.length;
+
+  rmSync(TMP_DIR, { recursive: true, force: true });
+  console.log(`\nCollected ${ok}/${systems.length} DESIGN.md files into ${OUT_DIR}/`);
 }
 
-clone();
-const count = copyAll();
-console.log(`Collected ${count} DESIGN.md files into ${OUT_DIR}/`);
+main();
 ```
 
 - [ ] **Step 2: Run it to verify**
 
 ```bash
 npx tsx scripts/analysis/fetch.ts
-ls data/raw | head -10
 ls data/raw | wc -l
+head -5 data/raw/stripe.md
 ```
 
-Expected: `Collected N DESIGN.md files` (N ≥ 50). `data/raw/` contains `{system}.md` files.
+Expected: `Collected N/M DESIGN.md files` with N ≥ 50. Each file starts with `# Design System Inspired by {System}`.
 
 - [ ] **Step 3: Commit**
 
@@ -259,7 +274,7 @@ git commit -m "feat(analysis): add ExtractedRecord type"
 - Create: `scripts/analysis/parsers/section.ts`
 - Create: `tests/analysis/parsers.test.ts`
 
-The locator finds a named section in DESIGN.md by heading match, returning its body text up to the next heading of the same or higher level.
+The locator finds a named section in DESIGN.md by heading **substring** match (case-insensitive, ignoring leading numbering), returning its body text up to the next heading of equal or higher level. Substring matching is necessary because the upstream format uses verbose headings like `## 6. Depth & Elevation` that should resolve from the query `"Elevation"`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -304,6 +319,16 @@ radius: 12px
     expect(display).toContain("48px / 700");
     expect(display).not.toContain("16px / 400");
   });
+
+  it("substring-matches verbose headings", () => {
+    const md = `## 6. Depth & Elevation\n\nshadow: subtle\n\n## 7. Other\n`;
+    expect(findSection(md, "Elevation")).toContain("shadow: subtle");
+  });
+
+  it("prefers earliest match when multiple substring hits exist", () => {
+    const md = `## Typography Rules\nA\n## Type Specimens\nB\n`;
+    expect(findSection(md, "Type")).toContain("A");
+  });
 });
 ```
 
@@ -321,9 +346,9 @@ Expected: FAIL with import or "findSection is not defined".
 // scripts/analysis/parsers/section.ts
 
 /**
- * Find a markdown section by heading name (case-insensitive, ignoring leading numbering).
- * Returns the body text from after the heading line to before the next heading of equal or
- * higher level. Returns null if not found.
+ * Find a markdown section whose heading contains `name` (case-insensitive substring,
+ * leading numbering stripped). Returns body text from after the heading to before the
+ * next heading of equal or higher level. Returns null when not found.
  */
 export function findSection(markdown: string, name: string): string | null {
   const lines = markdown.split("\n");
@@ -335,7 +360,7 @@ export function findSection(markdown: string, name: string): string | null {
     const m = lines[i].match(/^(#{1,6})\s+(.+?)\s*$/);
     if (!m) continue;
     const headingText = m[2].toLowerCase().replace(/^\d+(\.\d+)*\.\s*/, "").trim();
-    if (headingText === target) {
+    if (headingText.includes(target)) {
       startIdx = i + 1;
       startLevel = m[1].length;
       break;
@@ -876,22 +901,28 @@ git commit -m "feat(analysis): parse brand OKLCH, gray chroma, and accent offset
 - Create: `scripts/analysis/parsers/modes.ts`
 - Modify: `tests/analysis/parsers.test.ts`
 
+The upstream format does not have a dedicated `## Modes` section. Dark-mode signals are scattered: a `### Dark Mode` subsection inside Color or Theme, a Light/Dark column in a colors table, or "dark theme" mentioned in the prose. Detection is therefore a multi-signal heuristic.
+
 - [ ] **Step 1: Write failing tests**
 
 ```ts
 import { parseDarkModePresent } from "../../scripts/analysis/parsers/modes.js";
 
 describe("parseDarkModePresent", () => {
-  it("returns true when Modes section mentions dark", () => {
-    const md = `## Modes\n\nLight and dark themes supported.\n`;
+  it("returns true when a Dark Mode subsection exists", () => {
+    const md = `## 2. Color Palette\n\n### Dark Mode\n\nbackgrounds shift to navy.\n`;
     expect(parseDarkModePresent(md)).toBe(true);
   });
-  it("returns true when Colors section has dark column", () => {
-    const md = `## Colors\n\n| Step | Light | Dark |\n|---|---|---|\n| 100 | #fff | #000 |\n`;
+  it("returns true when Colors table has a Dark column", () => {
+    const md = `## 2. Color\n\n| Step | Light | Dark |\n|---|---|---|\n| 100 | #fff | #000 |\n`;
     expect(parseDarkModePresent(md)).toBe(true);
   });
-  it("returns false when neither signal is present", () => {
-    const md = `## Colors\n\nPrimary: #5e6ad2\n`;
+  it("returns true when prose mentions 'dark theme' or 'dark mode'", () => {
+    const md = `## 1. Theme\n\nSupports light and dark theme out of the box.\n`;
+    expect(parseDarkModePresent(md)).toBe(true);
+  });
+  it("returns false when no signal is present", () => {
+    const md = `## 1. Theme\n\nA bright clean canvas.\n## 2. Color\n\nPrimary: #5e6ad2\n`;
     expect(parseDarkModePresent(md)).toBe(false);
   });
 });
@@ -905,11 +936,14 @@ describe("parseDarkModePresent", () => {
 // scripts/analysis/parsers/modes.ts
 import { findSection } from "./section.js";
 
+const DARK_MODE_PHRASE = /\b(dark\s+(mode|theme))\b/i;
+const DARK_TABLE_COLUMN = /\|\s*Dark\s*\|/i;
+
 export function parseDarkModePresent(md: string): boolean {
-  const modes = findSection(md, "Modes");
-  if (modes && /\bdark\b/i.test(modes)) return true;
-  const colors = findSection(md, "Colors");
-  if (colors && /\|\s*Dark\s*\|/i.test(colors)) return true;
+  if (findSection(md, "Dark Mode") !== null) return true;
+  if (findSection(md, "Dark Theme") !== null) return true;
+  if (DARK_TABLE_COLUMN.test(md)) return true;
+  if (DARK_MODE_PHRASE.test(md)) return true;
   return false;
 }
 ```
