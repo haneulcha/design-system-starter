@@ -2,6 +2,11 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { findSection } from "../../scripts/analysis/parsers/section.js";
 import { parseBtnRadius, parseCardRadius } from "../../scripts/analysis/parsers/numeric.js";
+import {
+  parseHeadingWeight,
+  parseBodyLineHeight,
+  parseHeadingLetterSpacing,
+} from "../../scripts/analysis/parsers/typography.js";
 
 describe("findSection", () => {
   const sample = `## 1. Theme
@@ -75,6 +80,48 @@ describe("parseCardRadius", () => {
 
   it("returns null when section is missing", () => {
     expect(parseCardRadius("## Other\n\nx\n")).toBeNull();
+  });
+});
+
+describe("typography parsers", () => {
+  const md = `## Typography
+
+| Role | Size | Weight | Line Height | Letter Spacing |
+|---|---|---|---|---|
+| Display Hero | 48px | 700 | 1.10 | -0.70px |
+| Body | 16px | 400 | 1.50 | normal |
+`;
+
+  it("parseHeadingWeight reads the largest-size row", () => {
+    expect(parseHeadingWeight(md)).toBe(700);
+  });
+
+  it("parseBodyLineHeight reads the Body row", () => {
+    expect(parseBodyLineHeight(md)).toBe(1.5);
+  });
+
+  it("parseHeadingLetterSpacing reads negative px from Display Hero", () => {
+    expect(parseHeadingLetterSpacing(md)).toBe(-0.7);
+  });
+
+  it("returns null when Typography section missing", () => {
+    expect(parseHeadingWeight("## Other\n")).toBeNull();
+    expect(parseBodyLineHeight("## Other\n")).toBeNull();
+    expect(parseHeadingLetterSpacing("## Other\n")).toBeNull();
+  });
+
+  it("treats 'normal' letter-spacing as 0", () => {
+    const normal = `## Typography\n| Display Hero | 48px | 400 | 1.10 | normal |\n| Body | 16px | 400 | 1.50 | normal |\n`;
+    expect(parseHeadingLetterSpacing(normal)).toBe(0);
+  });
+});
+
+describe("real fixtures — typography (Format A only)", () => {
+  it.each(["stripe", "vercel", "linear.app"])("%s yields all 3", (system) => {
+    const md = readFileSync(`tests/analysis/fixtures/${system}.md`, "utf-8");
+    expect(parseHeadingWeight(md)).toEqual(expect.any(Number));
+    expect(parseBodyLineHeight(md)).toEqual(expect.any(Number));
+    expect(parseHeadingLetterSpacing(md)).toEqual(expect.any(Number));
   });
 });
 
