@@ -8,6 +8,11 @@ import {
   parseHeadingLetterSpacing,
 } from "../../scripts/analysis/parsers/typography.js";
 import { parseShadowIntensity, parseBtnShape } from "../../scripts/analysis/parsers/categorical.js";
+import {
+  parseBrandOklch,
+  parseGrayChroma,
+  parseAccentOffset,
+} from "../../scripts/analysis/parsers/color.js";
 
 describe("findSection", () => {
   const sample = `## 1. Theme
@@ -159,6 +164,56 @@ describe("parseBtnShape", () => {
   });
   it("returns null when section missing", () => {
     expect(parseBtnShape("## Other\n")).toBeNull();
+  });
+});
+
+describe("color parsers", () => {
+  const SAMPLE_COLORS = `## Colors
+
+### Brand
+Primary: #5e6ad2
+
+### Accent
+Primary: #d29c5e
+
+### Gray
+500: #828282
+`;
+
+  it("parseBrandOklch returns L/C/H for the brand primary", () => {
+    const result = parseBrandOklch(SAMPLE_COLORS);
+    expect(result).not.toBeNull();
+    expect(result!.l).toBeGreaterThan(0);
+    expect(result!.l).toBeLessThan(1);
+    expect(result!.c).toBeGreaterThan(0);
+    expect(result!.h).toBeGreaterThanOrEqual(0);
+    expect(result!.h).toBeLessThan(360);
+  });
+
+  it("parseGrayChroma returns small chroma for neutral gray", () => {
+    const c = parseGrayChroma(SAMPLE_COLORS);
+    expect(c).not.toBeNull();
+    expect(c).toBeLessThan(0.05);
+  });
+
+  it("parseAccentOffset returns hue difference modulo 360", () => {
+    const offset = parseAccentOffset(SAMPLE_COLORS);
+    expect(offset).not.toBeNull();
+    expect(offset).toBeGreaterThanOrEqual(0);
+    expect(offset).toBeLessThan(360);
+  });
+
+  it("returns null when Colors section missing", () => {
+    expect(parseBrandOklch("## Other\n")).toBeNull();
+    expect(parseGrayChroma("## Other\n")).toBeNull();
+    expect(parseAccentOffset("## Other\n")).toBeNull();
+  });
+});
+
+describe("real fixtures — colors (Format A only)", () => {
+  it.each(["stripe", "vercel", "linear.app"])("%s yields brand OKLCH", (system) => {
+    const md = readFileSync(`tests/analysis/fixtures/${system}.md`, "utf-8");
+    expect(parseBrandOklch(md)).not.toBeNull();
   });
 });
 
