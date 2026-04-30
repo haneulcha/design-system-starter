@@ -17,7 +17,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "culori": "^4.0.0"
+    "culori": "^4.0.0",
+    "yaml": "^2.8.3"
   },
   "devDependencies": {
     "@inquirer/prompts": "^7.0.0",

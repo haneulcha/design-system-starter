@@ -14,6 +14,8 @@ import {
   parseAccentOffset,
 } from "../../scripts/analysis/parsers/color.js";
 import { parseDarkModePresent } from "../../scripts/analysis/parsers/modes.js";
+import { detectFormat, extractYamlFrontmatter } from "../../scripts/analysis/parsers/format.js";
+import { extractFromYaml } from "../../scripts/analysis/parsers/yaml-extract.js";
 
 describe("findSection", () => {
   const sample = `## 1. Theme
@@ -234,6 +236,109 @@ describe("parseDarkModePresent", () => {
   it("returns false when no signal is present", () => {
     const md = `## 1. Theme\n\nA bright clean canvas.\n## 2. Color\n\nPrimary: #5e6ad2\n`;
     expect(parseDarkModePresent(md)).toBe(false);
+  });
+});
+
+describe("detectFormat", () => {
+  it("returns 'yaml' for files starting with ---", () => {
+    expect(detectFormat("---\nname: Foo\n---\n")).toBe("yaml");
+  });
+  it("returns 'markdown' for files starting with #", () => {
+    expect(detectFormat("# Design System\n## Colors\n")).toBe("markdown");
+  });
+  it("tolerates leading whitespace before ---", () => {
+    expect(detectFormat("\n  ---\nname: Foo\n---\n")).toBe("yaml");
+  });
+});
+
+describe("extractYamlFrontmatter", () => {
+  it("returns YAML body between --- delimiters", () => {
+    const md = "---\nname: Foo\nx: 1\n---\n# rest\n";
+    expect(extractYamlFrontmatter(md)).toBe("name: Foo\nx: 1");
+  });
+  it("returns null on non-YAML files", () => {
+    expect(extractYamlFrontmatter("# md\n## colors\n")).toBeNull();
+  });
+});
+
+describe("extractFromYaml", () => {
+  const SAMPLE_YAML = `---
+version: alpha
+name: SampleBrand
+description: A clean playful brand using dark theme overlays.
+colors:
+  primary: "#ff385c"
+  luxe: "#460479"
+  body: "#3f3f3f"
+  muted: "#929292"
+  body-on-dark: "#ffffff"
+  canvas: "#ffffff"
+typography:
+  display-xl:
+    fontSize: 48px
+    fontWeight: 700
+    lineHeight: 1.10
+    letterSpacing: -0.7px
+  body-md:
+    fontSize: 16px
+    fontWeight: 400
+    lineHeight: 1.50
+    letterSpacing: 0
+rounded:
+  none: 0px
+  sm: 8px
+  md: 14px
+  lg: 20px
+  full: 9999px
+components:
+  button-primary:
+    rounded: "{rounded.sm}"
+  card:
+    rounded: "{rounded.md}"
+---
+
+# rest
+`;
+
+  it("returns ExtractedRecord with all 13 variables non-null where derivable", () => {
+    const rec = extractFromYaml("samplebrand", SAMPLE_YAML);
+    expect(rec).not.toBeNull();
+    expect(rec!.system).toBe("samplebrand");
+    expect(rec!.btn_radius).toBe(8);
+    expect(rec!.card_radius).toBe(14);
+    expect(rec!.heading_weight).toBe(700);
+    expect(rec!.body_line_height).toBeCloseTo(1.5, 5);
+    expect(rec!.heading_letter_spacing).toBe(-0.7);
+    expect(rec!.brand_l).toBeGreaterThan(0);
+    expect(rec!.brand_c).toBeGreaterThan(0);
+    expect(rec!.brand_h).toBeGreaterThanOrEqual(0);
+    expect(rec!.brand_h).toBeLessThan(360);
+    expect(rec!.gray_chroma).not.toBeNull();
+    expect(rec!.gray_chroma!).toBeLessThan(0.05);
+    expect(rec!.accent_offset).not.toBeNull();
+    expect(rec!.dark_mode_present).toBe(true);
+    expect(rec!.btn_shape).toBe(2);
+  });
+
+  it("returns null for non-YAML input", () => {
+    expect(extractFromYaml("foo", "# Plain markdown\n")).toBeNull();
+  });
+
+  it("handles missing accent — returns null for accent_offset", () => {
+    const minimal = `---\nname: Mono\ncolors:\n  primary: "#0066cc"\n  ink: "#1d1d1f"\n  body: "#1d1d1f"\n  canvas: "#ffffff"\n---\n`;
+    const rec = extractFromYaml("mono", minimal);
+    expect(rec!.accent_offset).toBeNull();
+  });
+});
+
+describe("extractFromYaml — real systems", () => {
+  it.each(["airbnb", "apple"])("%s yields ≥ 8 non-null variables", (system) => {
+    const path = `data/raw/${system}.md`;
+    const fs = readFileSync(path, "utf-8");
+    const rec = extractFromYaml(system, fs);
+    expect(rec).not.toBeNull();
+    const nonNull = Object.entries(rec!).filter(([k, v]) => k !== "system" && v !== null);
+    expect(nonNull.length).toBeGreaterThanOrEqual(8);
   });
 });
 
