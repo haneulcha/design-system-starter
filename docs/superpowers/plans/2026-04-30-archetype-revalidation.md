@@ -959,6 +959,416 @@ git commit -m "feat(analysis): parse dark mode presence"
 
 ---
 
+### Task 10A: Format B (YAML) extraction + format detector
+
+**Files:**
+- Modify: `package.json` (add `yaml` dep)
+- Create: `scripts/analysis/parsers/format.ts` (detector)
+- Create: `scripts/analysis/parsers/yaml-extract.ts` (Format B → ExtractedRecord)
+- Modify: `tests/analysis/parsers.test.ts`
+
+The corpus contains two formats. ~74% of systems are Format A (numbered Markdown prose with pipe tables) — handled by the parsers built in Tasks 5–10. ~26% are Format B (YAML frontmatter delimited by `---`) — handled here. A format detector decides which path to take.
+
+**Format B schema (consistent across observed YAML systems):**
+
+```yaml
+---
+version: alpha
+name: <System>
+description: <prose>
+colors:
+  primary: "<hex>"
+  primary-active: "<hex>"
+  ... (other named tokens like luxe, plus, ink, body, muted, canvas, surface-*, hairline, ...)
+typography:
+  display-xl:
+    fontFamily: "<...>"
+    fontSize: <Npx>
+    fontWeight: <100-900>
+    lineHeight: <number>
+    letterSpacing: <Npx | 0 | normal>
+  display-lg: { ... }
+  body-md: { ... }
+  body-sm: { ... }
+  ... (more roles)
+rounded:
+  none: 0px
+  xs: 4px
+  sm: 8px
+  md: 14px
+  lg: 20px
+  xl: 32px
+  full: 9999px
+spacing: { ... }
+components:
+  button-primary:
+    rounded: "{rounded.sm}"   # token reference
+  card:
+    rounded: "{rounded.md}"
+  ...
+---
+```
+
+**Field mappings (Format B → 13 variables):**
+
+| Variable | YAML path | Notes |
+|---|---|---|
+| `brand_l/c/h` | `colors.primary` | culori → OKLCH |
+| `gray_chroma` | first hex chosen from `colors.muted` → `colors.body` → `colors.ink` (whichever exists) | OKLCH chroma |
+| `accent_offset` | first non-neutral chromatic hex from `colors.{accent, secondary, luxe, plus, ...}` (chroma > 0.05, not the primary). `null` if none | hue diff mod 360 |
+| `btn_radius` | resolve `components.button-primary.rounded` (or `components.{button, button-default}.rounded`) via `rounded.<token>` | `9999` for full/pill |
+| `card_radius` | resolve `components.card.rounded` (or `card-product`, `card-listing`) via `rounded.<token>` | first card-ish key |
+| `heading_weight` | `typography.display-xl.fontWeight` (or largest display by fontSize if `display-xl` missing) | numeric |
+| `body_line_height` | `typography.body-md.lineHeight` (or `body`, `body-base`) | numeric |
+| `heading_letter_spacing` | `typography.display-xl.letterSpacing` | parse `Npx`, `-Npx`, `0`, `normal` (→ 0) |
+| `shadow_intensity` | inspect `effects.shadow*` keys if present, else scan `description` for `dramatic / heavy / no shadow` keywords; default `null` | best-effort |
+| `btn_shape` | derived from `btn_radius` (same thresholds: 0–2 sharp, 3–7 standard, 8–16 rounded, ≥9999 pill) | reused logic |
+| `dark_mode_present` | `true` if any color key ends in `-on-dark`/`-dark`/`dark-*`, or top-level `dark` block exists | heuristic |
+
+- [ ] **Step 1: Add `yaml` dependency**
+
+```bash
+pnpm add yaml
+```
+
+Verify `package.json` shows `"yaml": "..."` under dependencies.
+
+- [ ] **Step 2: Write the format detector**
+
+```ts
+// scripts/analysis/parsers/format.ts
+
+export type DesignFormat = "yaml" | "markdown";
+
+export function detectFormat(md: string): DesignFormat {
+  return md.trimStart().startsWith("---") ? "yaml" : "markdown";
+}
+
+export function extractYamlFrontmatter(md: string): string | null {
+  const trimmed = md.trimStart();
+  if (!trimmed.startsWith("---")) return null;
+  const rest = trimmed.slice(3).replace(/^\n/, "");
+  const closeIdx = rest.indexOf("\n---");
+  if (closeIdx === -1) return null;
+  return rest.slice(0, closeIdx);
+}
+```
+
+- [ ] **Step 3: Write failing tests for the format detector**
+
+Append to `tests/analysis/parsers.test.ts`:
+
+```ts
+import { detectFormat, extractYamlFrontmatter } from "../../scripts/analysis/parsers/format.js";
+
+describe("detectFormat", () => {
+  it("returns 'yaml' for files starting with ---", () => {
+    expect(detectFormat("---\nname: Foo\n---\n")).toBe("yaml");
+  });
+  it("returns 'markdown' for files starting with #", () => {
+    expect(detectFormat("# Design System\n## Colors\n")).toBe("markdown");
+  });
+  it("tolerates leading whitespace before ---", () => {
+    expect(detectFormat("\n  ---\nname: Foo\n---\n")).toBe("yaml");
+  });
+});
+
+describe("extractYamlFrontmatter", () => {
+  it("returns YAML body between --- delimiters", () => {
+    const md = "---\nname: Foo\nx: 1\n---\n# rest\n";
+    expect(extractYamlFrontmatter(md)).toBe("name: Foo\nx: 1");
+  });
+  it("returns null on non-YAML files", () => {
+    expect(extractYamlFrontmatter("# md\n## colors\n")).toBeNull();
+  });
+});
+```
+
+Run, verify failure, then run again after writing format.ts to confirm pass.
+
+- [ ] **Step 4: Write the YAML extractor (TDD)**
+
+Failing test first:
+
+```ts
+import { extractFromYaml } from "../../scripts/analysis/parsers/yaml-extract.js";
+
+const SAMPLE_YAML = `---
+version: alpha
+name: SampleBrand
+description: A clean playful brand using dark theme overlays.
+colors:
+  primary: "#ff385c"
+  luxe: "#460479"
+  body: "#3f3f3f"
+  muted: "#929292"
+  body-on-dark: "#ffffff"
+  canvas: "#ffffff"
+typography:
+  display-xl:
+    fontSize: 48px
+    fontWeight: 700
+    lineHeight: 1.10
+    letterSpacing: -0.7px
+  body-md:
+    fontSize: 16px
+    fontWeight: 400
+    lineHeight: 1.50
+    letterSpacing: 0
+rounded:
+  none: 0px
+  sm: 8px
+  md: 14px
+  lg: 20px
+  full: 9999px
+components:
+  button-primary:
+    rounded: "{rounded.sm}"
+  card:
+    rounded: "{rounded.md}"
+---
+
+# rest
+`;
+
+describe("extractFromYaml", () => {
+  it("returns ExtractedRecord with all 13 variables non-null where derivable", () => {
+    const rec = extractFromYaml("samplebrand", SAMPLE_YAML);
+    expect(rec).not.toBeNull();
+    expect(rec!.system).toBe("samplebrand");
+    expect(rec!.btn_radius).toBe(8);
+    expect(rec!.card_radius).toBe(14);
+    expect(rec!.heading_weight).toBe(700);
+    expect(rec!.body_line_height).toBeCloseTo(1.5, 5);
+    expect(rec!.heading_letter_spacing).toBe(-0.7);
+    expect(rec!.brand_l).toBeGreaterThan(0);
+    expect(rec!.brand_c).toBeGreaterThan(0);
+    expect(rec!.brand_h).toBeGreaterThanOrEqual(0);
+    expect(rec!.brand_h).toBeLessThan(360);
+    expect(rec!.gray_chroma).not.toBeNull();
+    expect(rec!.gray_chroma!).toBeLessThan(0.05);
+    expect(rec!.accent_offset).not.toBeNull();
+    expect(rec!.dark_mode_present).toBe(true);
+    expect(rec!.btn_shape).toBe(2); // 8 → rounded
+  });
+
+  it("returns null for non-YAML input", () => {
+    expect(extractFromYaml("foo", "# Plain markdown\n")).toBeNull();
+  });
+
+  it("handles missing accent — returns null for accent_offset", () => {
+    const minimal = `---\nname: Mono\ncolors:\n  primary: "#0066cc"\n  ink: "#1d1d1f"\n  body: "#1d1d1f"\n  canvas: "#ffffff"\n---\n`;
+    const rec = extractFromYaml("mono", minimal);
+    expect(rec!.accent_offset).toBeNull();
+  });
+});
+```
+
+Implementation (`scripts/analysis/parsers/yaml-extract.ts`):
+
+```ts
+import { parse as parseYaml } from "yaml";
+import { converter } from "culori";
+import type { ExtractedRecord, ShadowIntensity, BtnShape } from "../types.js";
+import type { Oklch } from "../../../src/schema/types.js";
+import { extractYamlFrontmatter } from "./format.js";
+
+const toOklch = converter("oklch");
+
+interface YamlDoc {
+  colors?: Record<string, string>;
+  typography?: Record<string, {
+    fontSize?: string | number;
+    fontWeight?: number;
+    lineHeight?: number;
+    letterSpacing?: string | number;
+  }>;
+  rounded?: Record<string, string | number>;
+  components?: Record<string, { rounded?: string }>;
+  effects?: Record<string, unknown>;
+}
+
+const NEUTRAL_KEYS = new Set([
+  "ink", "body", "muted", "muted-soft", "hairline", "hairline-soft",
+  "canvas", "border-strong", "scrim",
+]);
+
+function hexToOklch(hex: string): Oklch | null {
+  const o = toOklch(hex);
+  if (!o) return null;
+  return { l: o.l ?? 0, c: o.c ?? 0, h: o.h ?? 0 };
+}
+
+function parsePxNumber(v: string | number | undefined): number | null {
+  if (v === undefined || v === null) return null;
+  if (typeof v === "number") return v;
+  if (typeof v !== "string") return null;
+  const trimmed = v.trim().toLowerCase();
+  if (trimmed === "normal") return 0;
+  const m = trimmed.match(/^(-?\d+(?:\.\d+)?)\s*(px)?$/);
+  return m ? Number(m[1]) : null;
+}
+
+function resolveTokenRef(ref: string | undefined, table: Record<string, string | number> | undefined): string | number | null {
+  if (!ref || !table) return null;
+  const m = ref.match(/^\{([^.]+)\.([^}]+)\}$/);
+  if (!m) return null;
+  const [, group, key] = m;
+  if (group !== "rounded") return null;
+  return table[key] ?? null;
+}
+
+function findFirstKey<T>(obj: Record<string, T> | undefined, candidates: string[]): T | undefined {
+  if (!obj) return undefined;
+  for (const c of candidates) if (c in obj) return obj[c];
+  return undefined;
+}
+
+function pickComponentRadius(doc: YamlDoc, candidates: string[]): number | null {
+  const components = doc.components ?? {};
+  for (const key of candidates) {
+    if (key in components) {
+      const ref = components[key].rounded;
+      const resolved = resolveTokenRef(ref, doc.rounded);
+      const px = parsePxNumber(resolved as string | number | undefined);
+      if (px !== null) return px;
+    }
+  }
+  return null;
+}
+
+function pickAccentHex(colors: Record<string, string>, primaryHex: string): string | null {
+  const candidates = ["accent", "secondary", "luxe", "plus", "highlight"];
+  for (const k of candidates) if (k in colors) return colors[k];
+  // Fallback: first chromatic non-primary
+  for (const [k, hex] of Object.entries(colors)) {
+    if (hex.toLowerCase() === primaryHex.toLowerCase()) continue;
+    if (NEUTRAL_KEYS.has(k)) continue;
+    if (k.startsWith("primary") || k.startsWith("on-")) continue;
+    if (k.startsWith("surface-") || k.startsWith("hairline")) continue;
+    const o = hexToOklch(hex);
+    if (o && o.c > 0.05) return hex;
+  }
+  return null;
+}
+
+function pickGrayHex(colors: Record<string, string>): string | null {
+  for (const k of ["muted", "muted-soft", "body", "ink", "border-strong", "hairline"]) {
+    if (k in colors) return colors[k];
+  }
+  return null;
+}
+
+function pickDisplayRole(typography: Record<string, { fontSize?: string | number }>): string | null {
+  if ("display-xl" in typography) return "display-xl";
+  if ("display-lg" in typography) return "display-lg";
+  let best: { name: string; size: number } | null = null;
+  for (const [name, val] of Object.entries(typography)) {
+    const size = parsePxNumber(val.fontSize);
+    if (size !== null && (best === null || size > best.size)) best = { name, size };
+  }
+  return best?.name ?? null;
+}
+
+function pickBodyRole(typography: Record<string, unknown>): string | null {
+  for (const k of ["body-md", "body", "body-base", "body-sm"]) if (k in typography) return k;
+  return null;
+}
+
+function classifyBtnShape(radius: number | null): BtnShape | null {
+  if (radius === null) return null;
+  if (radius >= 9999) return 3;
+  if (radius >= 8) return 2;
+  if (radius >= 3) return 1;
+  return 0;
+}
+
+function detectDarkMode(doc: YamlDoc, raw: string): boolean {
+  const colors = doc.colors ?? {};
+  for (const k of Object.keys(colors)) {
+    if (/-on-dark$|^dark-|-dark$/.test(k)) return true;
+  }
+  if (/\b(dark\s+(mode|theme))\b/i.test(raw)) return true;
+  return false;
+}
+
+export function extractFromYaml(system: string, md: string): ExtractedRecord | null {
+  const fm = extractYamlFrontmatter(md);
+  if (fm === null) return null;
+  let doc: YamlDoc;
+  try {
+    doc = (parseYaml(fm) as YamlDoc) ?? {};
+  } catch {
+    return null;
+  }
+
+  const colors = doc.colors ?? {};
+  const primaryHex = colors.primary ?? null;
+  const brand = primaryHex ? hexToOklch(primaryHex) : null;
+  const accentHex = primaryHex ? pickAccentHex(colors, primaryHex) : null;
+  const accentOklch = accentHex ? hexToOklch(accentHex) : null;
+  const grayHex = pickGrayHex(colors);
+  const grayOklch = grayHex ? hexToOklch(grayHex) : null;
+
+  const typography = doc.typography ?? {};
+  const displayKey = pickDisplayRole(typography);
+  const display = displayKey ? typography[displayKey] : undefined;
+  const bodyKey = pickBodyRole(typography);
+  const body = bodyKey ? typography[bodyKey] : undefined;
+
+  const btnRadius = pickComponentRadius(doc, ["button-primary", "button", "button-default"]);
+  const cardRadius = pickComponentRadius(doc, ["card", "card-product", "card-listing", "card-default"]);
+
+  return {
+    system,
+    btn_radius: btnRadius,
+    card_radius: cardRadius,
+    heading_weight: display?.fontWeight ?? null,
+    body_line_height: typeof body?.lineHeight === "number" ? body.lineHeight : null,
+    heading_letter_spacing: parsePxNumber(display?.letterSpacing),
+    shadow_intensity: null, // Format B rarely encodes this directly; left null
+    btn_shape: classifyBtnShape(btnRadius),
+    brand_l: brand?.l ?? null,
+    brand_c: brand?.c ?? null,
+    brand_h: brand?.h ?? null,
+    dark_mode_present: detectDarkMode(doc, md),
+    gray_chroma: grayOklch?.c ?? null,
+    accent_offset: brand && accentOklch ? ((accentOklch.h - brand.h) % 360 + 360) % 360 : null,
+  };
+}
+```
+
+Run tests, verify pass.
+
+- [ ] **Step 5: Real-fixture sanity check**
+
+Add a real-fixture test (requires Format B fixtures created in a follow-up — for now, smoke-test against `data/raw/airbnb.md` and `data/raw/apple.md` directly):
+
+```ts
+import { readFileSync, existsSync } from "node:fs";
+
+describe("extractFromYaml — real systems", () => {
+  it.each(["airbnb", "apple"])("%s yields ≥ 8 non-null variables", (system) => {
+    const path = `data/raw/${system}.md`;
+    if (!existsSync(path)) return; // skip when corpus not fetched
+    const md = readFileSync(path, "utf-8");
+    const rec = extractFromYaml(system, md);
+    expect(rec).not.toBeNull();
+    const nonNull = Object.entries(rec!).filter(([k, v]) => k !== "system" && v !== null);
+    expect(nonNull.length).toBeGreaterThanOrEqual(8);
+  });
+});
+```
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add package.json pnpm-lock.yaml scripts/analysis/parsers/format.ts scripts/analysis/parsers/yaml-extract.ts tests/analysis/parsers.test.ts
+git commit -m "feat(analysis): add Format B (YAML) extraction and format detector"
+```
+
+---
+
 ### Task 11: Extraction orchestrator + integration smoke test
 
 **Files:**
@@ -966,6 +1376,8 @@ git commit -m "feat(analysis): parse dark mode presence"
 - Create: `tests/analysis/extract.test.ts`
 
 - [ ] **Step 1: Write the orchestrator**
+
+The orchestrator routes each file by detected format: Markdown (Format A) goes through the prose parsers from Tasks 5–10; YAML (Format B) goes through `extractFromYaml` from Task 10A.
 
 ```ts
 // scripts/analysis/extract.ts
@@ -981,8 +1393,10 @@ import {
 import { parseShadowIntensity, parseBtnShape } from "./parsers/categorical.js";
 import { parseBrandOklch, parseGrayChroma, parseAccentOffset } from "./parsers/color.js";
 import { parseDarkModePresent } from "./parsers/modes.js";
+import { detectFormat } from "./parsers/format.js";
+import { extractFromYaml } from "./parsers/yaml-extract.js";
 
-export function extractOne(system: string, md: string): ExtractedRecord {
+function extractMarkdown(system: string, md: string): ExtractedRecord {
   const brand = parseBrandOklch(md);
   return {
     system,
@@ -1000,6 +1414,25 @@ export function extractOne(system: string, md: string): ExtractedRecord {
     gray_chroma: parseGrayChroma(md),
     accent_offset: parseAccentOffset(md),
   };
+}
+
+function emptyRecord(system: string): ExtractedRecord {
+  return {
+    system,
+    btn_radius: null, card_radius: null, heading_weight: null,
+    body_line_height: null, heading_letter_spacing: null,
+    shadow_intensity: null, btn_shape: null,
+    brand_l: null, brand_c: null, brand_h: null,
+    dark_mode_present: null, gray_chroma: null, accent_offset: null,
+  };
+}
+
+export function extractOne(system: string, md: string): ExtractedRecord {
+  const format = detectFormat(md);
+  if (format === "yaml") {
+    return extractFromYaml(system, md) ?? emptyRecord(system);
+  }
+  return extractMarkdown(system, md);
 }
 
 export function extractAll(rawDir: string): ExtractedRecord[] {
