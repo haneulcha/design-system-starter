@@ -2,8 +2,9 @@
 
 export interface ExtractedRecord {
   system: string;
-  // Original 7
+  // Original 7 (btn_radius semantics changed: null when fully pill)
   btn_radius: number | null;
+  is_fully_pill: boolean | null;
   card_radius: number | null;
   heading_weight: number | null;
   body_line_height: number | null;
@@ -25,3 +26,6 @@ export type BtnShape = 0 | 1 | 2 | 3;            // sharp | standard | rounded |
 
 export const SHADOW_LABELS: readonly string[] = ["none", "whisper", "subtle", "medium", "dramatic"];
 export const SHAPE_LABELS: readonly string[] = ["sharp", "standard", "rounded", "pill"];
+
+export const FULL_PILL_THRESHOLD_PX = 999; // values >= this are treated as the "fully pill" sentinel
+export const LETTER_SPACING_RANGE: readonly [number, number] = [-6, 2]; // px; clip outliers outside
