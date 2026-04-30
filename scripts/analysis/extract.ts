@@ -18,6 +18,7 @@ function extractMarkdown(system: string, md: string): ExtractedRecord {
   return {
     system,
     btn_radius: parseBtnRadius(md),
+    is_fully_pill: null,
     card_radius: parseCardRadius(md),
     heading_weight: parseHeadingWeight(md),
     body_line_height: parseBodyLineHeight(md),
@@ -36,7 +37,7 @@ function extractMarkdown(system: string, md: string): ExtractedRecord {
 function emptyRecord(system: string): ExtractedRecord {
   return {
     system,
-    btn_radius: null, card_radius: null, heading_weight: null,
+    btn_radius: null, is_fully_pill: null, card_radius: null, heading_weight: null,
     body_line_height: null, heading_letter_spacing: null,
     shadow_intensity: null, btn_shape: null,
     brand_l: null, brand_c: null, brand_h: null,
