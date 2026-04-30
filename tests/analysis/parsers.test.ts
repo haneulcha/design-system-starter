@@ -352,3 +352,52 @@ describe("real fixtures — btn_radius (Format A only)", () => {
     },
   );
 });
+
+describe("parseHeadingLetterSpacing — clip range", () => {
+  const md = (ls: string) => `## Typography\n\n| Role | Size | Weight | LH | LS |\n|---|---|---|---|---|\n| Display Hero | 56px | 700 | 1.2 | ${ls} |\n`;
+
+  it("returns null for letter-spacing > 2 px", () => {
+    expect(parseHeadingLetterSpacing(md("70px"))).toBeNull();
+    expect(parseHeadingLetterSpacing(md("53.2px"))).toBeNull();
+  });
+
+  it("returns null for letter-spacing < -6 px", () => {
+    expect(parseHeadingLetterSpacing(md("-7.5px"))).toBeNull();
+  });
+
+  it("keeps in-range values unchanged", () => {
+    expect(parseHeadingLetterSpacing(md("-2.4px"))).toBe(-2.4);
+    expect(parseHeadingLetterSpacing(md("0px"))).toBe(0);
+    expect(parseHeadingLetterSpacing(md("1.4px"))).toBe(1.4);
+  });
+
+  it("treats boundary values as in-range", () => {
+    expect(parseHeadingLetterSpacing(md("-6px"))).toBe(-6);
+    expect(parseHeadingLetterSpacing(md("2px"))).toBe(2);
+  });
+});
+
+describe("extractFromYaml — letter_spacing clip", () => {
+  const yamlMd = (ls: string) => `---
+name: Demo
+typography:
+  hero-display:
+    fontSize: 56px
+    fontWeight: 600
+    lineHeight: 1.1
+    letterSpacing: ${ls}
+colors:
+  primary: "#0066cc"
+---
+`;
+
+  it("clips out-of-range letter-spacing", () => {
+    const r = extractFromYaml("demo", yamlMd("70px"));
+    expect(r?.heading_letter_spacing).toBeNull();
+  });
+
+  it("keeps in-range letter-spacing", () => {
+    const r = extractFromYaml("demo", yamlMd("-0.28px"));
+    expect(r?.heading_letter_spacing).toBeCloseTo(-0.28);
+  });
+});

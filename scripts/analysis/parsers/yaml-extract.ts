@@ -1,6 +1,7 @@
 import { parse as parseYaml } from "yaml";
 import { converter } from "culori";
 import type { ExtractedRecord, BtnShape } from "../types.js";
+import { LETTER_SPACING_RANGE } from "../types.js";
 import type { Oklch } from "../../../src/schema/types.js";
 import { extractYamlFrontmatter } from "./format.js";
 
@@ -120,6 +121,12 @@ function detectDarkMode(doc: YamlDoc, raw: string): boolean {
   return false;
 }
 
+function clipLetterSpacing(v: number | null): number | null {
+  if (v === null) return null;
+  const [lo, hi] = LETTER_SPACING_RANGE;
+  return v >= lo && v <= hi ? v : null;
+}
+
 export function extractFromYaml(system: string, md: string): ExtractedRecord | null {
   const fm = extractYamlFrontmatter(md);
   if (fm === null) return null;
@@ -150,10 +157,11 @@ export function extractFromYaml(system: string, md: string): ExtractedRecord | n
   return {
     system,
     btn_radius: btnRadius,
+    is_fully_pill: null, // TODO(Task 3): replace with real pill detection
     card_radius: cardRadius,
     heading_weight: display?.fontWeight ?? null,
     body_line_height: typeof body?.lineHeight === "number" ? body.lineHeight : null,
-    heading_letter_spacing: parsePxNumber(display?.letterSpacing),
+    heading_letter_spacing: clipLetterSpacing(parsePxNumber(display?.letterSpacing)),
     shadow_intensity: null,
     btn_shape: classifyBtnShape(btnRadius),
     brand_l: brand?.l ?? null,

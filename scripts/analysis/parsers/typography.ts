@@ -1,4 +1,5 @@
 import { findSection } from "./section.js";
+import { LETTER_SPACING_RANGE } from "../types.js";
 
 interface TypeRow {
   role: string;
@@ -91,5 +92,8 @@ export function parseHeadingLetterSpacing(md: string): number | null {
   const rows = parseRows(section);
   if (rows.length === 0) return null;
   const display = rows.reduce((a, b) => (a.size >= b.size ? a : b));
-  return display.letterSpacing;
+  const ls = display.letterSpacing;
+  if (ls === null) return null;
+  const [lo, hi] = LETTER_SPACING_RANGE;
+  return ls >= lo && ls <= hi ? ls : null;
 }
