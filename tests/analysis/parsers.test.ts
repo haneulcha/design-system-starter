@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { findSection } from "../../scripts/analysis/parsers/section.js";
-import { parseBtnRadius, parseCardRadius } from "../../scripts/analysis/parsers/numeric.js";
+import { parseBtnRadius, parseCardRadius, parseBtnRadiusInfo } from "../../scripts/analysis/parsers/numeric.js";
 import {
   parseHeadingWeight,
   parseBodyLineHeight,
@@ -76,8 +76,8 @@ describe("parseBtnRadius", () => {
     expect(parseBtnRadius("## Other\n\nnothing here\n")).toBeNull();
   });
 
-  it("handles 'pill' / 9999px as 9999", () => {
-    expect(parseBtnRadius("## Buttons\n\nradius: 9999px (pill)\n")).toBe(9999);
+  it("returns null for fully-pill sentinel (9999px) — px is null, use parseBtnRadiusInfo for isPill", () => {
+    expect(parseBtnRadius("## Buttons\n\nradius: 9999px (pill)\n")).toBeNull();
   });
 });
 
@@ -161,9 +161,14 @@ describe("parseBtnShape", () => {
   it("classifies rounded (8-16)", () => {
     expect(parseBtnShape("## Buttons\nradius: 12px\n")).toBe(2);
   });
-  it("classifies pill (≥ 9999 or 'pill' literal)", () => {
-    expect(parseBtnShape("## Buttons\nradius: 9999px\n")).toBe(3);
+  it("classifies pill via 'pill' keyword (radius-based 9999 path removed — use extract.ts override)", () => {
+    // 9999px: parseBtnRadius now returns null → parseBtnShape cannot classify from radius alone.
+    // The extract.ts layer overrides btn_shape=3 when btnInfo.isPill is true.
     expect(parseBtnShape("## Buttons\npill button\n")).toBe(3);
+  });
+
+  it("returns null when only 9999px present and no pill keyword (rely on extract.ts override)", () => {
+    expect(parseBtnShape("## Buttons\nradius: 9999px\n")).toBeNull();
   });
   it("returns null when section missing", () => {
     expect(parseBtnShape("## Other\n")).toBeNull();
@@ -399,6 +404,26 @@ colors:
   it("keeps in-range letter-spacing", () => {
     const r = extractFromYaml("demo", yamlMd("-0.28px"));
     expect(r?.heading_letter_spacing).toBeCloseTo(-0.28);
+  });
+});
+
+describe("parseBtnRadiusInfo — markdown pill detection", () => {
+  it("flags '9999px' as fully pill and returns null px", () => {
+    const md = `## Buttons\n\nradius: 9999px\nshape: pill\n`;
+    const info = parseBtnRadiusInfo(md);
+    expect(info?.isPill).toBe(true);
+    expect(info?.px).toBeNull();
+  });
+
+  it("returns finite px for non-pill", () => {
+    const md = `## Buttons\n\nradius: 8px\nshape: rounded\n`;
+    const info = parseBtnRadiusInfo(md);
+    expect(info?.isPill).toBe(false);
+    expect(info?.px).toBe(8);
+  });
+
+  it("returns null when section is absent", () => {
+    expect(parseBtnRadiusInfo(`## Other\n\nfoo\n`)).toBeNull();
   });
 });
 
