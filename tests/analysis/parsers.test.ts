@@ -401,3 +401,46 @@ colors:
     expect(r?.heading_letter_spacing).toBeCloseTo(-0.28);
   });
 });
+
+describe("extractFromYaml — pill detection", () => {
+  const ymd = (roundedPill: string, btnRef: string) => `---
+name: Demo
+colors:
+  primary: "#0066cc"
+typography:
+  display-lg:
+    fontSize: 40px
+    fontWeight: 600
+    lineHeight: 1.1
+    letterSpacing: 0
+rounded:
+  sm: 4px
+  md: 8px
+  pill: ${roundedPill}
+components:
+  button-primary:
+    rounded: "${btnRef}"
+---
+`;
+
+  it("flags fully-pill buttons (rounded.pill = 9999px) and zeroes btn_radius", () => {
+    const r = extractFromYaml("demo", ymd("9999px", "{rounded.pill}"));
+    expect(r?.is_fully_pill).toBe(true);
+    expect(r?.btn_radius).toBeNull();
+    expect(r?.btn_shape).toBe(3); // pill
+  });
+
+  it("returns the resolved px and is_fully_pill=false for finite pill (e.g., 32px)", () => {
+    const r = extractFromYaml("demo", ymd("32px", "{rounded.pill}"));
+    expect(r?.is_fully_pill).toBe(false);
+    expect(r?.btn_radius).toBe(32);
+    expect(r?.btn_shape).toBe(2); // rounded (32 >= 8 and < 999)
+  });
+
+  it("returns the resolved px and is_fully_pill=false for non-pill rounded refs", () => {
+    const r = extractFromYaml("demo", ymd("9999px", "{rounded.md}"));
+    expect(r?.is_fully_pill).toBe(false);
+    expect(r?.btn_radius).toBe(8);
+    expect(r?.btn_shape).toBe(2);
+  });
+});
