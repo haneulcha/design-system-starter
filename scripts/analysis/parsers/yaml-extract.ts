@@ -1,8 +1,15 @@
 import { parse as parseYaml } from "yaml";
 import { converter } from "culori";
 import type { ExtractedRecord, BtnShape } from "../types.js";
+import { LETTER_SPACING_RANGE, FULL_PILL_THRESHOLD_PX } from "../types.js";
 import type { Oklch } from "../../../src/schema/types.js";
 import { extractYamlFrontmatter } from "./format.js";
+import {
+  parseTypographyHasSerif,
+  parseFontFamilyCount,
+  parseColorPaletteSize,
+  parseSpacingRangeRatio,
+} from "./extras.js";
 
 const toOklch = converter("oklch");
 
@@ -53,14 +60,21 @@ function resolveTokenRef(
   return table[key] ?? null;
 }
 
-function pickComponentRadius(doc: YamlDoc, candidates: string[]): number | null {
+interface RadiusInfo {
+  px: number | null;
+  isPill: boolean;
+}
+
+function pickComponentRadiusInfo(doc: YamlDoc, candidates: string[]): RadiusInfo | null {
   const components = doc.components ?? {};
   for (const key of candidates) {
     if (key in components) {
       const ref = components[key].rounded;
       const resolved = resolveTokenRef(ref, doc.rounded);
       const px = parsePxNumber(resolved as string | number | undefined);
-      if (px !== null) return px;
+      if (px === null) continue;
+      const isPill = px >= FULL_PILL_THRESHOLD_PX;
+      return { px: isPill ? null : px, isPill };
     }
   }
   return null;
@@ -103,11 +117,13 @@ function pickBodyRole(typography: Record<string, YamlTypographyRole>): string | 
   return null;
 }
 
-function classifyBtnShape(radius: number | null): BtnShape | null {
-  if (radius === null) return null;
-  if (radius >= 9999) return 3;
-  if (radius >= 8) return 2;
-  if (radius >= 3) return 1;
+function classifyBtnShape(info: RadiusInfo | null): BtnShape | null {
+  if (info === null) return null;
+  if (info.isPill) return 3;
+  const r = info.px;
+  if (r === null) return null;
+  if (r >= 8) return 2;
+  if (r >= 3) return 1;
   return 0;
 }
 
@@ -118,6 +134,12 @@ function detectDarkMode(doc: YamlDoc, raw: string): boolean {
   }
   if (/\b(dark\s+(mode|theme))\b/i.test(raw)) return true;
   return false;
+}
+
+function clipLetterSpacing(v: number | null): number | null {
+  if (v === null) return null;
+  const [lo, hi] = LETTER_SPACING_RANGE;
+  return v >= lo && v <= hi ? v : null;
 }
 
 export function extractFromYaml(system: string, md: string): ExtractedRecord | null {
@@ -144,23 +166,28 @@ export function extractFromYaml(system: string, md: string): ExtractedRecord | n
   const bodyKey = pickBodyRole(typography);
   const body = bodyKey ? typography[bodyKey] : undefined;
 
-  const btnRadius = pickComponentRadius(doc, ["button-primary", "button", "button-default"]);
-  const cardRadius = pickComponentRadius(doc, ["card", "card-product", "card-listing", "card-default"]);
+  const btnInfo = pickComponentRadiusInfo(doc, ["button-primary", "button", "button-default"]);
+  const cardInfo = pickComponentRadiusInfo(doc, ["card", "card-product", "card-listing", "card-default"]);
 
   return {
     system,
-    btn_radius: btnRadius,
-    card_radius: cardRadius,
+    btn_radius: btnInfo?.px ?? null,
+    is_fully_pill: btnInfo ? btnInfo.isPill : null,
+    card_radius: cardInfo?.px ?? null,
     heading_weight: display?.fontWeight ?? null,
     body_line_height: typeof body?.lineHeight === "number" ? body.lineHeight : null,
-    heading_letter_spacing: parsePxNumber(display?.letterSpacing),
+    heading_letter_spacing: clipLetterSpacing(parsePxNumber(display?.letterSpacing)),
     shadow_intensity: null,
-    btn_shape: classifyBtnShape(btnRadius),
+    btn_shape: classifyBtnShape(btnInfo),
     brand_l: brand?.l ?? null,
     brand_c: brand?.c ?? null,
     brand_h: brand?.h ?? null,
     dark_mode_present: detectDarkMode(doc, md),
     gray_chroma: grayOklch?.c ?? null,
     accent_offset: brand && accentOklch ? ((accentOklch.h - brand.h) % 360 + 360) % 360 : null,
+    typography_has_serif: parseTypographyHasSerif(md),
+    font_family_count: parseFontFamilyCount(md),
+    color_palette_size: parseColorPaletteSize(md),
+    spacing_range_ratio: parseSpacingRangeRatio(md),
   };
 }
