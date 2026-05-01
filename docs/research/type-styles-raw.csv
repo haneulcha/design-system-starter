@@ -1,0 +1,800 @@
+system,rawRole,font,sizePx,weight,weightRange,lineHeight,lineHeightRange,letterSpacingPx,letterSpacingRange,uppercase,features,notes,rowIndex
+airbnb,rating-display,,64,700,,1.1,,-1,,,,"Listing detail rating display (""4.81"")",0
+airbnb,display-xl,,28,700,,1.43,,0,,,,"Homepage h1 (""Inspiration for future getaways"")",1
+airbnb,display-lg,,22,500,,1.18,,-0.44,,,,"Listing detail h1 (""Close to Fethiye Aliyah Bali Beach…"")",2
+airbnb,display-md,,21,700,,1.43,,0,,,,"Section heads inside listing detail (""What this place offers"")",3
+airbnb,display-sm,,20,600,,1.2,,-0.18,,,,"Sub-section titles (""Things to know"")",4
+airbnb,title-md,,16,600,,1.25,,0,,,,"City link block titles (""Wilmington"", ""Athens"")",5
+airbnb,title-sm,,16,500,,1.25,,0,,,,"Footer column heads (""Support"", ""Hosting"", ""Airbnb"")",6
+airbnb,body-md,,16,400,,1.5,,0,,,,Default running-text inside listing copy,7
+airbnb,body-sm,,14,400,,1.43,,0,,,,"Card meta lines, dates, prices, distance text",8
+airbnb,caption,,14,500,,1.29,,0,,,,"Search field segment labels (""Where"", ""When"", ""Who"")",9
+airbnb,caption-sm,,13,400,,1.23,,0,,,,"Footer legal line (""© 2026 Airbnb, Inc."")",10
+airbnb,badge,,11,600,,1.18,,0,,,,"""Guest favorite"" floating badge text",11
+airbnb,micro-label,,12,700,,1.33,,0,,,,"Card amenity micro-labels (""Inline 6"")",12
+airbnb,uppercase-tag,,8,700,,1.25,,0.32,,true,,"""NEW"" badge on product nav tabs",13
+airbnb,button-md,,16,500,,1.25,,0,,,,Primary CTA button labels,14
+airbnb,button-sm,,14,500,,1.29,,0,,,,Pill button labels (category strip),15
+airbnb,link,,14,400,,1.43,,0,,,,Inline body links,16
+airbnb,nav-link,,16,600,,1.25,,0,,,,"Top product-nav labels (Homes, Experiences, Services)",17
+airtable,display-xl,,48,500,,1.1,,0,,,,Articles page h2 — second-tier editorial headline,0
+airtable,display-lg,,40,400,,1.2,,0,,,,Homepage h1 hero,1
+airtable,display-md,,32,400,,1.2,,0,,,,Platform-page h2 — feature-section headlines,2
+airtable,title-lg,,24,400,,1.35,,0.12,,,,Section titles,3
+airtable,title-md,,20,400,,1.5,,0,,,,Sub-section titles in tabbed feature cards,4
+airtable,title-sm,,18,500,,1.4,,0,,,,Article-card titles,5
+airtable,label-md,,16,500,,1.4,,0,,,,"Demo-card titles, list labels",6
+airtable,button,,16,500,,1.4,,0,,,,Standard CTA button labels,7
+airtable,body-md,,14,400,,1.25,,0,,,,"Body copy, footer links, top-nav items",8
+airtable,caption,,14,500,,1.35,,0.16,,,,Light captions and meta text,9
+airtable,legal,,13.12,600,,1.2,,0,,,,Cookie/legal CTA buttons,10
+airtable,pricing-display,,44.8,475,,1.1,,0,,,,Pricing-page h1,11
+airtable,pricing-section,,28,475,,1.2,,0,,,,Pricing-page section heads,12
+airtable,pricing-card-title,,20,475,,1.3,,0,,,,Pricing tier card plan name,13
+apple,hero-display,,56,600,,1.07,,-0.28,,,,"Hero headline; the signature ""Apple tight"" tracking",0
+apple,display-lg,,40,600,,1.1,,0,,,,Tile headlines atop every product tile,1
+apple,display-md,,34,600,,1.47,,-0.374,,,,Section heads (SF Pro Text at display proportions),2
+apple,lead,,28,400,,1.14,,0.196,,,,Product tile subcopy,3
+apple,lead-airy,,24,300,,1.5,,0,,,,Environment-page lead paragraphs (the rare weight 300),4
+apple,tagline,,21,600,,1.19,,0.231,,,,Sub-tile tagline; sub-nav category name,5
+apple,body-strong,,17,600,,1.24,,-0.374,,,,Inline strong emphasis,6
+apple,body,,17,400,,1.47,,-0.374,,,,Default paragraph,7
+apple,dense-link,,17,400,,2.41,,0,,,,Footer / store utility link lists (relaxed leading),8
+apple,caption,,14,400,,1.43,,-0.224,,,,"Secondary captions, button text",9
+apple,caption-strong,,14,600,,1.29,,-0.224,,,,Emphasized captions,10
+apple,button-large,,18,300,,1,,0,,,,Store hero CTAs (the rare weight 300),11
+apple,button-utility,,14,400,,1.29,,-0.224,,,,Utility/nav button labels,12
+apple,fine-print,,12,400,,1,,-0.12,,,,"Fine-print, footer body",13
+apple,micro-legal,,10,400,,1.3,,-0.08,,,,Micro legal disclaimers,14
+apple,nav-link,,12,400,,1,,-0.12,,,,Global nav menu items,15
+bmw,display-xl,,64,700,,1.05,,0,,,,"Hero h1 (""iX3"", model name)",0
+bmw,display-lg,,48,700,,1.1,,0,,,,Section heads,1
+bmw,display-md,,32,700,,1.15,,0,,,,Sub-section heads,2
+bmw,display-sm,,24,700,,1.25,,0,,,,CTA-band headlines,3
+bmw,title-lg,,20,700,,1.3,,0,,,,Card group titles,4
+bmw,title-md,,18,700,,1.4,,0,,,,"Model card title, intro paragraphs",5
+bmw,title-sm,,16,700,,1.4,,0,,,,"Inventory card title, list label",6
+bmw,body-md,,16,300,,1.55,,0,,,,Default body — BMW Type Next Latin Light,7
+bmw,body-sm,,14,300,,1.55,,0,,,,"Footer body, fine-print",8
+bmw,caption,,12,400,,1.4,,0.5,,,,"Photo captions, meta",9
+bmw,label-uppercase,,13,700,,1.3,,1.5,,,,"""LEARN MORE"" inline links, category tabs",10
+bmw,button,,14,700,,1,,0.5,,,,Standard CTA button label,11
+bmw,nav-link,,14,400,,1.4,,0.3,,,,Top-nav menu items,12
+cal,display-xl,,64,600,,1.05,,-2,,,,"Homepage h1 (""The better way to schedule your meetings"") — Cal Sans",0
+cal,display-lg,,48,600,,1.1,,-1.5,,,,"Section heads (""Your all-purpose scheduling app"") — Cal Sans",1
+cal,display-md,,36,600,,1.15,,-1,,,,"Sub-section heads, card titles — Cal Sans",2
+cal,display-sm,,28,600,,1.2,,-0.5,,,,"CTA-band heads, pricing tier prices — Cal Sans",3
+cal,title-lg,,22,600,,1.3,,-0.3,,,,Pricing plan names — Inter,4
+cal,title-md,,18,600,,1.4,,0,,,,"Feature card titles, intro paragraphs",5
+cal,title-sm,,16,600,,1.4,,0,,,,"Small card titles, list labels",6
+cal,body-md,,16,400,,1.5,,0,,,,Default running-text,7
+cal,body-sm,,14,400,,1.5,,0,,,,"Footer body, fine-print",8
+cal,caption,,13,500,,1.4,,0,,,,"Badge labels, captions",9
+cal,code,,14,400,,1.5,,0,,,,"Code snippets, API examples — JetBrains Mono",10
+cal,button,,14,600,,1,,0,,,,Standard button labels,11
+cal,nav-link,,14,500,,1.4,,0,,,,Top-nav menu items,12
+claude,display-xl,,64,400,,1.05,,-1.5,,,,"Homepage h1 (""Meet your thinking partner"") — Copernicus serif",0
+claude,display-lg,,48,400,,1.1,,-1,,,,Section heads — Copernicus,1
+claude,display-md,,36,400,,1.15,,-0.5,,,,"Sub-section heads, model names — Copernicus",2
+claude,display-sm,,28,400,,1.2,,-0.3,,,,"Pricing tier names, callout headlines — Copernicus",3
+claude,title-lg,,22,500,,1.3,,0,,,,Pricing plan size labels — StyreneB,4
+claude,title-md,,18,500,,1.4,,0,,,,"Feature card titles, intro paragraphs",5
+claude,title-sm,,16,500,,1.4,,0,,,,"Connector tile titles, list labels",6
+claude,body-md,,16,400,,1.55,,0,,,,Default running-text — StyreneB,7
+claude,body-sm,,14,400,,1.55,,0,,,,"Footer body, fine-print",8
+claude,caption,,13,500,,1.4,,0,,,,"Badge labels, captions",9
+claude,caption-uppercase,,12,500,,1.4,,1.5,,,,"Category tags, ""NEW"" badges",10
+claude,code,,14,400,,1.6,,0,,,,Code blocks — JetBrains Mono,11
+claude,button,,14,500,,1,,0,,,,Standard button labels,12
+claude,nav-link,,14,500,,1.4,,0,,,,Top-nav menu items,13
+clay,display-xl,,72,500,,1,,-2.5,,,,"Homepage h1 (""Go to market with unique data"") — Plain Black",0
+clay,display-lg,,56,500,,1.05,,-2,,,,Section heads — Plain Black,1
+clay,display-md,,40,500,,1.1,,-1,,,,"Sub-section heads, product names",2
+clay,display-sm,,32,500,,1.15,,-0.5,,,,"CTA-band heads, feature card titles",3
+clay,title-lg,,24,600,,1.3,,-0.3,,,,"Pricing plan names, larger feature titles",4
+clay,title-md,,18,600,,1.4,,0,,,,"Card titles, intro paragraphs",5
+clay,title-sm,,16,600,,1.4,,0,,,,"Small card titles, list labels",6
+clay,body-md,,16,400,,1.55,,0,,,,Default running-text,7
+clay,body-sm,,14,400,,1.55,,0,,,,"Footer body, fine-print",8
+clay,caption,,13,500,,1.4,,0,,,,"Badge labels, captions",9
+clay,caption-uppercase,,12,600,,1.4,,1.5,,,,"Section labels, ""FEATURED"" badges",10
+clay,button,,14,600,,1,,0,,,,Standard button labels,11
+clay,nav-link,,14,500,,1.4,,0,,,,Top-nav menu items,12
+clickhouse,display-xl,,72,700,,1.05,,-2.5,,,,"Homepage h1 (""The leading database for AI"")",0
+clickhouse,display-lg,,56,700,,1.1,,-2,,,,Section heads,1
+clickhouse,display-md,,40,700,,1.15,,-1.5,,,,"Sub-section heads, CTA-band heads",2
+clickhouse,display-sm,,32,700,,1.2,,-1,,,,"Card titles, pricing tier prices",3
+clickhouse,title-lg,,24,700,,1.3,,-0.3,,,,"Pricing plan names, larger feature titles",4
+clickhouse,title-md,,18,600,,1.4,,0,,,,"Card titles, intro paragraphs",5
+clickhouse,title-sm,,16,600,,1.4,,0,,,,"Small card titles, list labels",6
+clickhouse,stat-display,,56,700,,1,,-1.5,,,,"Stat callouts (""779+"", ""47k+"") — ALWAYS yellow",7
+clickhouse,body-md,,16,400,,1.55,,0,,,,Default running-text,8
+clickhouse,body-sm,,14,400,,1.55,,0,,,,"Footer body, fine-print",9
+clickhouse,caption,,13,500,,1.4,,0,,,,"Badge labels, captions",10
+clickhouse,caption-uppercase,,12,600,,1.4,,1.5,,,,"Section labels, ""NEW"" badges",11
+clickhouse,code,,14,400,,1.55,,0,,,,Code blocks — JetBrains Mono,12
+clickhouse,button,,14,600,,1,,0,,,,Standard button labels,13
+clickhouse,nav-link,,14,500,,1.4,,0,,,,Top-nav menu items,14
+cohere,Hero Display,CohereText,96,400,,1,,-1.92,,,,Home page declaration scale.,0
+cohere,Product Display,CohereText,72,400,,1,,-1.44,,,,Product and research hero headlines.,1
+cohere,Section Display,Unica77,60,400,,1,,-1.2,,,,Large product-page headings.,2
+cohere,Section Heading,Unica77,48,400,,1.2,,-0.48,,,,Split hero and CTA headings.,3
+cohere,Card Heading,Unica77,32,400,,1.2,,-0.32,,,,Feature card and list section titles.,4
+cohere,Feature Heading,Unica77,24,400,,1.3,,0,,,,"Cards, filters, and article titles.",5
+cohere,Body Large,Unica77,18,400,,1.4,,0,,,,Lead text and larger paragraphs.,6
+cohere,Body,Unica77,16,400,,1.5,,0,,,,Default copy and link text.,7
+cohere,Button,Unica77,14,500,,1.71,,0,,,,Compact CTA labels.,8
+cohere,Caption,Unica77,14,400,,1.4,,0,,,,Metadata and small explanatory text.,9
+cohere,Mono Label,CohereMono,14,400,,1.4,,0.28,,,,Uppercase technical labels.,10
+cohere,Micro,Unica77,12,400,,1.4,,0,,,,"Footer, nav microcopy, and small links.",11
+coinbase,display-mega,,80,400,,1,,-2,,,,Homepage hero h1,0
+coinbase,display-xl,,64,400,,1,,-1.6,,,,Subsidiary heroes,1
+coinbase,display-lg,,52,400,,1,,-1.3,,,,Section heads,2
+coinbase,display-md,,44,400,,1.09,,-1,,,,CTA-band headlines,3
+coinbase,display-sm,,36,400,,1.11,,-0.5,,,,Sub-section heads — CoinbaseSans,4
+coinbase,title-lg,,32,400,,1.13,,-0.4,,,,Card group titles,5
+coinbase,title-md,,18,600,,1.33,,0,,,,"Component titles, asset row primary",6
+coinbase,title-sm,,16,600,,1.25,,0,,,,List labels,7
+coinbase,body-md,,16,400,,1.5,,0,,,,Default body,8
+coinbase,body-strong,,16,700,,1.5,,0,,,,Emphasized body,9
+coinbase,body-sm,,14,400,,1.5,,0,,,,Footer body,10
+coinbase,caption,,13,400,,1.5,,0,,,,Photo captions,11
+coinbase,caption-strong,,12,600,,1.5,,0,,,,Badge pill labels,12
+coinbase,number-display,,18,500,,1.4,,0,,,,"Asset prices, percent changes — CoinbaseMono",13
+coinbase,button,,16,600,,1.15,,0,,,,Standard CTA pill,14
+coinbase,nav-link,,14,500,,1.4,,0,,,,Top-nav menu items,15
+composio,display-mega,,72,500,,1.05,,-2.16,,,,Homepage hero h1,0
+composio,display-xl,,56,500,,1.05,,-1.68,,,,Subsidiary heroes,1
+composio,display-lg,,44,500,,1.1,,-1.32,,,,Section heads,2
+composio,display-md,,32,500,,1.15,,-0.96,,,,Sub-section heads,3
+composio,display-sm,,24,500,,1.25,,-0.5,,,,Card group titles,4
+composio,title-md,,18,600,,1.4,,0,,,,Component titles,5
+composio,title-sm,,16,600,,1.4,,0,,,,Toolkit card titles,6
+composio,body-md,,16,400,,1.5,,0,,,,Default body,7
+composio,body-sm,,14,400,,1.5,,0,,,,Footer body,8
+composio,caption,,13,400,,1.4,,0,,,,Photo captions,9
+composio,caption-uppercase,,11,600,,1.4,,0.88,,,,"Section labels, badge pills",10
+composio,code,,13,400,,1.5,,0,,,,Code blocks — JetBrains Mono,11
+composio,button,,14,500,,1,,0,,,,CTA pill labels,12
+composio,nav-link,,14,500,,1.4,,0,,,,Top-nav menu,13
+cursor,display-mega,,72,400,,1.1,,-2.16,,,,Homepage hero h1,0
+cursor,display-lg,,36,400,,1.2,,-0.72,,,,Section heads,1
+cursor,display-md,,26,400,,1.25,,-0.325,,,,Sub-section heads,2
+cursor,display-sm,,22,400,,1.3,,-0.11,,,,Card group titles,3
+cursor,title-md,,18,600,,1.4,,0,,,,Component titles,4
+cursor,title-sm,,16,600,,1.4,,0,,,,List labels,5
+cursor,body-md,,16,400,,1.5,,0,,,,Default body,6
+cursor,body-tracked,,16,400,,1.5,,0.08,,,,Tracked editorial body,7
+cursor,body-sm,,14,400,,1.5,,0,,,,Footer body,8
+cursor,caption,,13,400,,1.4,,0,,,,Photo captions,9
+cursor,caption-uppercase,,11,600,,1.4,,0.88,,,,"Section labels, timeline pill labels",10
+cursor,code,,13,400,,1.5,,0,,,,Code blocks — JetBrains Mono,11
+cursor,button,,14,500,,1,,0,,,,CTA pill labels,12
+cursor,nav-link,,14,500,,1.4,,0,,,,Top-nav menu,13
+elevenlabs,display-mega,,64,300,,1.05,,-1.92,,,,Homepage hero h1,0
+elevenlabs,display-xl,,48,300,,1.08,,-0.96,,,,Subsidiary heroes,1
+elevenlabs,display-lg,,36,300,,1.17,,-0.36,,,,Section heads,2
+elevenlabs,display-md,,32,300,,1.13,,-0.32,,,,Sub-section heads,3
+elevenlabs,display-sm,,24,300,,1.2,,0,,,,Card group titles,4
+elevenlabs,title-md,,20,500,,1.35,,0,,,,Component titles — Inter,5
+elevenlabs,title-sm,,18,500,,1.44,,0.18,,,,List labels,6
+elevenlabs,body-md,,16,400,,1.5,,0.16,,,,Default body — Inter,7
+elevenlabs,body-strong,,16,500,,1.5,,0.16,,,,Emphasized body,8
+elevenlabs,body-sm,,15,400,,1.47,,0.15,,,,Footer body,9
+elevenlabs,caption,,14,400,,1.5,,0,,,,Photo captions,10
+elevenlabs,caption-uppercase,,12,600,,1.4,,0.96,,,,"Section labels, badges",11
+elevenlabs,button,,15,500,,1,,0,,,,CTA pill,12
+elevenlabs,nav-link,,15,500,,1.4,,0,,,,Top-nav menu,13
+expo,display-mega,,64,600,,1.05,,-1.92,,,,Homepage hero h1,0
+expo,display-xl,,48,600,,1.1,,-1.44,,,,Subsidiary heroes,1
+expo,display-lg,,36,600,,1.15,,-1.08,,,,Section heads,2
+expo,display-md,,28,600,,1.2,,-0.84,,,,Sub-section heads,3
+expo,display-sm,,22,600,,1.25,,-0.5,,,,Card group titles,4
+expo,title-md,,18,600,,1.4,,0,,,,Component titles,5
+expo,title-sm,,16,600,,1.4,,0,,,,List labels,6
+expo,body-md,,16,400,,1.5,,0,,,,Default body,7
+expo,body-sm,,14,400,,1.5,,0,,,,Footer body,8
+expo,caption,,13,400,,1.4,,0,,,,Photo captions,9
+expo,caption-uppercase,,11,600,,1.4,,0.88,,,,"Section labels, badges",10
+expo,code,,13,400,,1.5,,0,,,,Code blocks — JetBrains Mono,11
+expo,button,,14,500,,1,,0,,,,CTA labels,12
+expo,nav-link,,14,500,,1.4,,0,,,,Top-nav menu,13
+ferrari,display-mega,,80,500,,1.05,,-1.6,,,,Homepage hero h1,0
+ferrari,display-xl,,56,500,,1.1,,-1.12,,,,Subsidiary heroes,1
+ferrari,display-lg,,36,500,,1.2,,-0.36,,,,"Section heads, livery band",2
+ferrari,display-md,,26,500,,1.5,,0.195,,,,Sub-section heads,3
+ferrari,title-md,,18,700,,1.2,,0,,,,Component titles,4
+ferrari,title-sm,,16,500,,1.4,,0.08,,,,List labels,5
+ferrari,body-md,,14,400,,1.5,,0,,,,Default body,6
+ferrari,body-sm,,13,400,,1.5,,0,,,,Footer body,7
+ferrari,caption,,12,400,,1.4,,0,,,,Photo captions,8
+ferrari,caption-uppercase,,11,600,,1.4,,1.1,,,,"Section labels, badges",9
+ferrari,button,,14,700,,1,,1.4,,true,,CTA pill labels,10
+ferrari,nav-link,,13,600,,1.4,,0.65,,true,,Top-nav menu items,11
+ferrari,number-display,,80,700,,1,,-1.6,,,,"Race position highlights, spec values",12
+figma,Display / Hero,figmaSans,86,400,,1,,-1.72,,,,"Maximum impact, extreme tracking",0
+figma,Section Heading,figmaSans,64,400,,1.1,,-0.96,,,,Feature section titles,1
+figma,Sub-heading,figmaSans,26,540,,1.35,,-0.26,,,,Emphasized section text,2
+figma,Sub-heading Light,figmaSans,26,340,,1.35,,-0.26,,,,Light-weight section text,3
+figma,Feature Title,figmaSans,24,700,,1.45,,0,,,,Bold card headings,4
+figma,Body Large,figmaSans,20,,330-450,,1.3-1.4,,-0.14--0.1,,,"Descriptions, intros",5
+figma,Body / Button,figmaSans,16,,330-400,,1.4-1.45,-0.14,,,,"Standard body, nav, buttons",6
+figma,Body Light,figmaSans,18,320,,1.45,,-0.26,,,,Light-weight body text,7
+figma,Mono Label,figmaMono,18,400,,1.3,,0.54,,,,Uppercase section labels,8
+figma,Mono Small,figmaMono,12,400,,1,,0.6,,,,Uppercase tiny tags,9
+framer,Display Hero,GT Walsheim Framer Medium,110,500,,0.85,,-5.5,,,,"Extreme negative tracking, compressed impact",0
+framer,Section Display,GT Walsheim Medium,85,500,,0.95,,-4.25,,,,"OpenType: ss02, tnum",1
+framer,Section Heading,GT Walsheim Medium,62,500,,1,,-3.1,,,,OpenType: ss02,2
+framer,Feature Heading,GT Walsheim Medium,32,500,,1.13,,-1,,,,Tightest of the smaller headings,3
+framer,Accent Display,Mona Sans,61.5,100,,1,,-3.1,,,,"Ultra-light weight, ethereal",4
+framer,Card Title,Inter Variable,24,400,,1.3,,-0.01,,,,"OpenType: cv01, cv05, cv09, cv11, ss03, ss07",5
+framer,Feature Title,Inter,22,700,,1.2,,-0.8,,,,OpenType: cv05,6
+framer,Sub-heading,Inter,20,600,,1.2,,-0.8,,,,"OpenType: cv01, cv09",7
+framer,Body Large,Inter Variable,18,400,,1.3,,-0.01,,,,"OpenType: cv01, cv05, cv09, cv11, ss03, ss07",8
+framer,Body,Inter Variable,15,400,,1.3,,-0.01,,,,OpenType: cv11,9
+framer,Nav/UI,Inter Variable,15,400,,1,,-0.15,,,,"OpenType: cv06, cv11, dlig, ss03",10
+framer,Body Readable,Inter Framer Regular,14,400,,1.6,,0,,,,Long-form body text,11
+framer,Caption,Inter Variable,14,400,,1.4,,0,,,,"OpenType: cv01, cv06, cv09, cv11, ss03, ss07",12
+framer,Label,Inter,13,500,,1.6,,0,,,,"OpenType: cv06, cv11, ss03",13
+framer,Small Caption,Inter Variable,12,400,,1.4,,0,,,,"OpenType: cv01, cv06, cv09, cv11, ss03, ss07",14
+framer,Micro Code,Azeret Mono,10.4,400,,1.6,,0,,,,"OpenType: cv06, cv11, ss03",15
+framer,Badge,Open Runde,9,600,,1.11,,0,,,,"OpenType: cv01, cv09",16
+framer,Micro Uppercase,Inter Variable,7,400,,1,,0.21,,,,uppercase transform,17
+hashicorp,Display Hero,HashiCorp Sans,82,600,,1.17,,0,,,,"`""kern""` enabled",0
+hashicorp,Section Heading,HashiCorp Sans,52,600,,1.19,,0,,,,"`""kern""` enabled",1
+hashicorp,Feature Heading,HashiCorp Sans,42,700,,1.19,,-0.42,,,,Negative tracking,2
+hashicorp,Sub-heading,HashiCorp Sans,34,,600-700,1.18,,0,,,,Feature blocks,3
+hashicorp,Card Title,HashiCorp Sans,26,700,,1.19,,0,,,,Card and panel headings,4
+hashicorp,Small Title,HashiCorp Sans,19,700,,1.21,,0,,,,Compact headings,5
+hashicorp,Body Emphasis,HashiCorp Sans,17,,600-700,,1.18-1.35,0,,,,Bold body text,6
+hashicorp,Body Large,system-ui,20,,400-600,1.5,,0,,,,Hero descriptions,7
+hashicorp,Body,system-ui,16,,400-500,,1.63-1.69,0,,,,Standard body text,8
+hashicorp,Nav Link,system-ui,15,500,,1.6,,0,,,,Navigation items,9
+hashicorp,Small Body,system-ui,14,,400-500,,1.29-1.71,0,,,,Secondary content,10
+hashicorp,Caption,system-ui,13,,400-500,,1.23-1.69,0,,,,"Metadata, footer links",11
+hashicorp,Uppercase Label,HashiCorp Sans,13,600,,1.69,,1.3,,,,`text-transform: uppercase`,12
+ibm,Display 01,IBM Plex Sans,60,300,,1.17,,0,,,,"Maximum impact, light weight for elegance",0
+ibm,Display 02,IBM Plex Sans,48,300,,1.17,,0,,,,"Secondary hero, responsive fallback",1
+ibm,Heading 01,IBM Plex Sans,42,300,,1.19,,0,,,,Expressive heading,2
+ibm,Heading 02,IBM Plex Sans,32,400,,1.25,,0,,,,Section headings,3
+ibm,Heading 03,IBM Plex Sans,24,400,,1.33,,0,,,,Sub-section titles,4
+ibm,Heading 04,IBM Plex Sans,20,600,,1.4,,0,,,,"Card titles, feature headers",5
+ibm,Heading 05,IBM Plex Sans,20,400,,1.4,,0,,,,Lighter card headings,6
+ibm,Body Long 01,IBM Plex Sans,16,400,,1.5,,0,,,,Standard reading text,7
+ibm,Body Long 02,IBM Plex Sans,16,600,,1.5,,0,,,,"Emphasized body, labels",8
+ibm,Body Short 01,IBM Plex Sans,14,400,,1.29,,0.16,,,,"Compact body, captions",9
+ibm,Body Short 02,IBM Plex Sans,14,600,,1.29,,0.16,,,,"Bold captions, nav items",10
+ibm,Caption 01,IBM Plex Sans,12,400,,1.33,,0.32,,,,"Metadata, timestamps",11
+ibm,Code 01,IBM Plex Mono,14,400,,1.43,,0.16,,,,"Inline code, terminal",12
+ibm,Code 02,IBM Plex Mono,16,400,,1.5,,0,,,,Code blocks,13
+ibm,Mono Display,IBM Plex Mono,42,400,,1.19,,0,,,,Hero mono decorative,14
+intercom,Display Hero,Saans,80,400,,1,,-2.4,,,,,0
+intercom,Section Heading,Saans,54,400,,1,,-1.6,,,,,1
+intercom,Sub-heading,Saans,40,400,,1,,-1.2,,,,,2
+intercom,Card Title,Saans,32,400,,1,,-0.96,,,,,3
+intercom,Feature Title,Saans,24,400,,1,,-0.48,,,,,4
+intercom,Body Emphasis,Saans,20,400,,0.95,,-0.2,,,,,5
+intercom,Nav / UI,Saans,18,400,,1,,0,,,,,6
+intercom,Body,Saans,16,400,,1.5,,0,,,,,7
+intercom,Body Light,Saans,14,300,,1.4,,0,,,,,8
+intercom,Button,Saans,16,400,,1.5,,0,,,,,9
+intercom,Button Bold,LLMedium,16,700,,1.2,,0.16,,,,,10
+intercom,Serif Body,Serrif,16,300,,1.4,,-0.16,,,,,11
+intercom,Mono Label,SaansMono,12,,400-500,,1-1.3,0.6,,,,,12
+kraken,Display Hero,Kraken-Brand,48,700,,1.17,,-1,,,,,0
+kraken,Section Heading,Kraken-Brand,36,700,,1.22,,-0.5,,,,,1
+kraken,Sub-heading,Kraken-Brand,28,700,,1.29,,-0.5,,,,,2
+kraken,Feature Title,Kraken-Product,22,600,,1.2,,0,,,,,3
+kraken,Body,Kraken-Product,16,400,,1.38,,0,,,,,4
+kraken,Body Medium,Kraken-Product,16,500,,1.38,,0,,,,,5
+kraken,Button,Kraken-Product,16,,500-600,1.38,,0,,,,,6
+kraken,Caption,Kraken-Product,14,,400-700,,1.43-1.71,0,,,,,7
+kraken,Small,Kraken-Product,12,,400-500,1.33,,0,,,,,8
+kraken,Micro,Kraken-Product,7,500,,1,,,,,,,9
+lamborghini,Hero Display,,120,400,,0.92,,0,,,,"LamboType, uppercase, maximum impact",0
+lamborghini,Display 2,,80,400,,1.13,,0,,,,"LamboType, uppercase, major section titles",1
+lamborghini,Section Title,,54,400,,1.19,,0,,,,"LamboType, uppercase",2
+lamborghini,Sub-section,,40,400,,1.15,,0,,,,"LamboType, uppercase",3
+lamborghini,Feature Heading,,27,400,,1.37,,0,,,,"LamboType, uppercase",4
+lamborghini,Card Title,,24,400,,,,0,,,,LamboType,5
+lamborghini,Body Large,,18,400,,1.56,,0,,,,"LamboType, mixed case and uppercase variants",6
+lamborghini,Body / UI,,16,400,,1.5,,0,,,,"LamboType, primary body text",7
+lamborghini,Button Large,,16,400,,1.5,,0,,,,Gold CTA buttons,8
+lamborghini,Button Standard,,14.4,300,,1,,0.2,,,,"LamboType, uppercase, ghost buttons",9
+lamborghini,Button Small,,13,300,,1.2,,0.2,,,,"LamboType, compact button variant",10
+lamborghini,Caption,,14,600,,,1.14-1.5,-0.42,,,,"LamboType, uppercase, negative tracking",11
+lamborghini,Label,,12,400,,1.83,,0.96,,,,"LamboType, uppercase badges and micro labels",12
+lamborghini,Micro,,10,400,,,1-2,0.225,,,,"LamboType, uppercase, smallest text",13
+linear.app,Display XL,Inter Variable,72,510,,1,,-1.584,,,,"Hero headlines, maximum impact",0
+linear.app,Display Large,Inter Variable,64,510,,1,,-1.408,,,,Secondary hero text,1
+linear.app,Display,Inter Variable,48,510,,1,,-1.056,,,,Section headlines,2
+linear.app,Heading 1,Inter Variable,32,400,,1.13,,-0.704,,,,Major section titles,3
+linear.app,Heading 2,Inter Variable,24,400,,1.33,,-0.288,,,,Sub-section headings,4
+linear.app,Heading 3,Inter Variable,20,590,,1.33,,-0.24,,,,"Feature titles, card headers",5
+linear.app,Body Large,Inter Variable,18,400,,1.6,,-0.165,,,,"Introduction text, feature descriptions",6
+linear.app,Body Emphasis,Inter Variable,17,590,,1.6,,0,,,,"Emphasized body, sub-headings in content",7
+linear.app,Body,Inter Variable,16,400,,1.5,,0,,,,Standard reading text,8
+linear.app,Body Medium,Inter Variable,16,510,,1.5,,0,,,,"Navigation, labels",9
+linear.app,Body Semibold,Inter Variable,16,590,,1.5,,0,,,,Strong emphasis,10
+linear.app,Small,Inter Variable,15,400,,1.6,,-0.165,,,,Secondary body text,11
+linear.app,Small Medium,Inter Variable,15,510,,1.6,,-0.165,,,,Emphasized small text,12
+linear.app,Small Semibold,Inter Variable,15,590,,1.6,,-0.165,,,,Strong small text,13
+linear.app,Small Light,Inter Variable,15,300,,1.47,,-0.165,,,,De-emphasized body,14
+linear.app,Caption Large,Inter Variable,14,,510-590,1.5,,-0.182,,,,"Sub-labels, category headers",15
+linear.app,Caption,Inter Variable,13,,400-510,1.5,,-0.13,,,,"Metadata, timestamps",16
+linear.app,Label,Inter Variable,12,,400-590,1.4,,0,,,,"Button text, small labels",17
+linear.app,Micro,Inter Variable,11,510,,1.4,,0,,,,Tiny labels,18
+linear.app,Tiny,Inter Variable,10,,400-510,1.5,,-0.15,,,,"Overline text, sometimes uppercase",19
+linear.app,Link Large,Inter Variable,16,400,,1.5,,0,,,,Standard links,20
+linear.app,Link Medium,Inter Variable,15,510,,2.67,,0,,,,Spaced navigation links,21
+linear.app,Link Small,Inter Variable,14,510,,1.5,,0,,,,Compact links,22
+linear.app,Link Caption,Inter Variable,13,,400-510,1.5,,-0.13,,,,"Footer, metadata links",23
+linear.app,Mono Body,Berkeley Mono,14,400,,1.5,,0,,,,Code blocks,24
+linear.app,Mono Caption,Berkeley Mono,13,400,,1.5,,0,,,,Code labels,25
+linear.app,Mono Label,Berkeley Mono,12,400,,1.4,,0,,,,"Code metadata, sometimes uppercase",26
+lovable,Display Hero,Camera Plain Variable,60,600,,,1-1.1,-1.5,,,,"Maximum impact, editorial",0
+lovable,Display Alt,Camera Plain Variable,60,480,,1,,0,,,,Lighter hero variant,1
+lovable,Section Heading,Camera Plain Variable,48,600,,1,,-1.2,,,,Feature section titles,2
+lovable,Sub-heading,Camera Plain Variable,36,600,,1.1,,-0.9,,,,Sub-sections,3
+lovable,Card Title,Camera Plain Variable,20,400,,1.25,,0,,,,Card headings,4
+lovable,Body Large,Camera Plain Variable,18,400,,1.38,,0,,,,Introductions,5
+lovable,Body,Camera Plain Variable,16,400,,1.5,,0,,,,Standard reading text,6
+lovable,Button,Camera Plain Variable,16,400,,1.5,,0,,,,Button labels,7
+lovable,Button Small,Camera Plain Variable,14,400,,1.5,,0,,,,Compact buttons,8
+lovable,Link,Camera Plain Variable,16,400,,1.5,,0,,,,Underline decoration,9
+lovable,Link Small,Camera Plain Variable,14,400,,1.5,,0,,,,Footer links,10
+lovable,Caption,Camera Plain Variable,14,400,,1.5,,0,,,,"Metadata, small text",11
+minimax,Display Hero,DM Sans / Outfit,80,500,,1.1,,,,,,Hero headlines,0
+minimax,Section Heading,Outfit,31,600,,1.5,,,,,,Feature section titles,1
+minimax,Section Heading Alt,Roboto / DM Sans,32,600,,0.88,,,,,,Compact headers,2
+minimax,Card Title,Outfit,28,,500-600,1.71,,,,,,Product card headings,3
+minimax,Sub-heading,Poppins,24,500,,1.5,,,,,,Mid-tier headings,4
+minimax,Feature Label,Poppins,18,500,,1.5,,,,,,Feature names,5
+minimax,Body Large,DM Sans,20,500,,1.5,,,,,,Emphasized body,6
+minimax,Body,DM Sans,16,,400-500,1.5,,,,,,Standard body text,7
+minimax,Body Bold,DM Sans,16,700,,1.5,,,,,,Strong emphasis,8
+minimax,Nav/Link,DM Sans,14,,400-500,1.5,,,,,,"Navigation, links",9
+minimax,Button Small,DM Sans,13,600,,1.5,,,,,,Compact buttons,10
+minimax,Caption,DM Sans / Poppins,13,400,,1.7,,,,,,Metadata,11
+minimax,Small Label,DM Sans,12,,500-600,,1.25-1.5,,,,,"Tags, badges",12
+minimax,Micro,DM Sans / Outfit,10,,400-500,,1.5-1.8,,,,,Tiny annotations,13
+mintlify,Display Hero,Inter,64,600,,1.15,,-1.28,,,,"Maximum impact, hero headlines",0
+mintlify,Section Heading,Inter,40,600,,1.1,,-0.8,,,,Feature section titles,1
+mintlify,Sub-heading,Inter,24,500,,1.3,,-0.24,,,,"Card headings, sub-sections",2
+mintlify,Card Title,Inter,20,600,,1.3,,-0.2,,,,Feature card titles,3
+mintlify,Card Title Light,Inter,20,500,,1.3,,-0.2,,,,Secondary card headings,4
+mintlify,Body Large,Inter,18,400,,1.5,,0,,,,"Hero descriptions, introductions",5
+mintlify,Body,Inter,16,400,,1.5,,0,,,,Standard reading text,6
+mintlify,Body Medium,Inter,16,500,,1.5,,0,,,,"Navigation, emphasized text",7
+mintlify,Button,Inter,15,500,,1.5,,0,,,,Button labels,8
+mintlify,Link,Inter,14,500,,1.5,,0,,,,"Navigation links, small CTAs",9
+mintlify,Caption,Inter,14,,400-500,,1.5-1.71,0,,,,"Metadata, descriptions",10
+mintlify,Label Uppercase,Inter,13,500,,1.5,,0.65,,,,"`text-transform: uppercase`, section labels",11
+mintlify,Small,Inter,13,,400-500,1.5,,-0.26,,,,Small body text,12
+mintlify,Mono Code,Geist Mono,12,500,,1.5,,0.6,,,,"`text-transform: uppercase`, technical labels",13
+mintlify,Mono Badge,Geist Mono,12,600,,1.5,,0.6,,,,"`text-transform: uppercase`, status badges",14
+mintlify,Mono Micro,Geist Mono,10,500,,1.5,,0,,,,"`text-transform: uppercase`, tiny labels",15
+miro,Display Hero,Roobert PRO Medium,56,400,,1.15,,-1.68,,,,,0
+miro,Section Heading,Roobert PRO Medium,48,400,,1.15,,-1.44,,,,,1
+miro,Card Title,Roobert PRO Medium,24,400,,1.15,,-0.72,,,,,2
+miro,Sub-heading,Noto Sans,22,400,,1.35,,-0.44,,,,,3
+miro,Feature,Roobert PRO Medium,18,600,,1.35,,0,,,,,4
+miro,Body,Noto Sans,18,400,,1.45,,0,,,,,5
+miro,Body Standard,Noto Sans,16,,400-600,1.5,,-0.16,,,,,6
+miro,Button,Roobert PRO Medium,17.5,700,,1.29,,0.175,,,,,7
+miro,Caption,Roobert PRO Medium,14,400,,1.71,,0,,,,,8
+miro,Small,Roobert PRO Medium,12,400,,1.15,,-0.36,,,,,9
+miro,Micro Uppercase,Roobert PRO,10.5,400,,0.9,,,,,,,10
+mistral.ai,Display / Hero,Arial (custom),82,400,,1,,-2.05,,,,"Maximum impact, billboard scale",0
+mistral.ai,Section Heading,Arial (custom),56,400,,0.95,,0,,,,Feature section anchors,1
+mistral.ai,Sub-heading Large,Arial (custom),48,400,,0.95,,0,,,,Secondary section titles,2
+mistral.ai,Sub-heading,Arial (custom),32,400,,1.15,,0,,,,"Card headings, feature names",3
+mistral.ai,Card Title,Arial (custom),30,400,,1.2,,0,,,,Mid-level headings,4
+mistral.ai,Feature Title,Arial (custom),24,400,,1.33,,0,,,,Small headings,5
+mistral.ai,Body / Button,Arial (custom),16,400,,1.5,,0,,,,"Standard body, button text",6
+mistral.ai,Button Uppercase,Arial (custom),16,400,,1.5,,0,,,,Uppercase CTA labels,7
+mistral.ai,Caption / Link,Arial (custom),14,400,,1.43,,0,,,,"Metadata, secondary links",8
+mongodb,Display Hero,MongoDB Value Serif,96,400,,1.2,,0,,,,Serif authority,0
+mongodb,Display Secondary,MongoDB Value Serif,64,400,,1,,0,,,,Serif sub-hero,1
+mongodb,Section Heading,Euclid Circular A,36,500,,1.33,,0,,,,Geometric precision,2
+mongodb,Sub-heading,Euclid Circular A,24,500,,1.33,,0,,,,Feature titles,3
+mongodb,Body Large,Euclid Circular A,20,400,,1.6,,0,,,,Introductions,4
+mongodb,Body,Euclid Circular A,18,400,,1.33,,0,,,,Standard body,5
+mongodb,Body Light,Euclid Circular A,16,300,,,1.5-2,0,,,,Light-weight reading text,6
+mongodb,Nav / UI,Euclid Circular A,16,500,,,1-1.88,0.16,,,,"Navigation, emphasized",7
+mongodb,Body Bold,Euclid Circular A,15,700,,1.5,,0,,,,Strong emphasis,8
+mongodb,Button,Euclid Circular A,13.5,,500-700,1,,0.135,,,,CTA labels,9
+mongodb,Caption,Euclid Circular A,14,400,,1.71,,0,,,,Metadata,10
+mongodb,Small,Euclid Circular A,11,600,,1.82,,0.2,,,,"Tags, annotations",11
+mongodb,Code Heading,Source Code Pro,40,400,,1.6,,0,,,,Code showcase titles,12
+mongodb,Code Body,Source Code Pro,16,400,,1.5,,0,,,,Code blocks,13
+mongodb,Code Label,Source Code Pro,14,,400-500,1.14,,1,,,,`text-transform: uppercase`,14
+mongodb,Code Micro,Source Code Pro,9,600,,2.67,,2.5,,,,`text-transform: uppercase`,15
+notion,Display Hero,NotionInter,64,700,,1,,-2.125,,,,"Maximum compression, billboard headlines",0
+notion,Display Secondary,NotionInter,54,700,,1.04,,-1.875,,,,"Secondary hero, feature headlines",1
+notion,Section Heading,NotionInter,48,700,,1,,-1.5,,,,"Feature section titles, with `""lnum""`",2
+notion,Sub-heading Large,NotionInter,40,700,,1.5,,0,,,,"Card headings, feature sub-sections",3
+notion,Sub-heading,NotionInter,26,700,,1.23,,-0.625,,,,"Section sub-titles, content headers",4
+notion,Card Title,NotionInter,22,700,,1.27,,-0.25,,,,"Feature cards, list titles",5
+notion,Body Large,NotionInter,20,600,,1.4,,-0.125,,,,"Introductions, feature descriptions",6
+notion,Body,NotionInter,16,400,,1.5,,0,,,,Standard reading text,7
+notion,Body Medium,NotionInter,16,500,,1.5,,0,,,,"Navigation, emphasized UI text",8
+notion,Body Semibold,NotionInter,16,600,,1.5,,0,,,,"Strong labels, active states",9
+notion,Body Bold,NotionInter,16,700,,1.5,,0,,,,Headlines at body size,10
+notion,Nav / Button,NotionInter,15,600,,1.33,,0,,,,"Navigation links, button text",11
+notion,Caption,NotionInter,14,500,,1.43,,0,,,,"Metadata, secondary labels",12
+notion,Caption Light,NotionInter,14,400,,1.43,,0,,,,"Body captions, descriptions",13
+notion,Badge,NotionInter,12,600,,1.33,,0.125,,,,"Pill badges, tags, status labels",14
+notion,Micro Label,NotionInter,12,400,,1.33,,0.125,,,,"Small metadata, timestamps",15
+nvidia,Display Hero,NVIDIA-EMEA,36,700,,1.25,,0,,,,Maximum impact headlines,0
+nvidia,Section Heading,NVIDIA-EMEA,24,700,,1.25,,0,,,,"Section titles, card headings",1
+nvidia,Sub-heading,NVIDIA-EMEA,22,400,,1.75,,0,,,,"Feature descriptions, subtitles",2
+nvidia,Card Title,NVIDIA-EMEA,20,700,,1.25,,0,,,,Card and module headings,3
+nvidia,Body Large,NVIDIA-EMEA,18,700,,1.67,,0,,,,"Emphasized body, lead paragraphs",4
+nvidia,Body,NVIDIA-EMEA,16,400,,1.5,,0,,,,Standard reading text,5
+nvidia,Body Bold,NVIDIA-EMEA,16,700,,1.5,,0,,,,"Strong labels, nav items",6
+nvidia,Body Small,NVIDIA-EMEA,15,400,,1.67,,0,,,,"Secondary content, descriptions",7
+nvidia,Body Small Bold,NVIDIA-EMEA,15,700,,1.5,,0,,,,Emphasized secondary content,8
+nvidia,Button Large,NVIDIA-EMEA,18,700,,1.25,,0,,,,Primary CTA buttons,9
+nvidia,Button,NVIDIA-EMEA,16,700,,1.25,,0,,,,Standard buttons,10
+nvidia,Button Compact,NVIDIA-EMEA,14.4,700,,1,,0.144,,,,Small/compact buttons,11
+nvidia,Link,NVIDIA-EMEA,14,700,,1.43,,0,,,,Navigation links,12
+nvidia,Link Uppercase,NVIDIA-EMEA,14,700,,1.43,,0,,,,"`text-transform: uppercase`, nav labels",13
+nvidia,Caption,NVIDIA-EMEA,14,600,,1.5,,0,,,,"Metadata, timestamps",14
+nvidia,Caption Small,NVIDIA-EMEA,12,400,,1.25,,0,,,,"Fine print, legal",15
+nvidia,Micro Label,NVIDIA-EMEA,10,700,,1.5,,0,,,,"`text-transform: uppercase`, tiny badges",16
+nvidia,Micro,NVIDIA-EMEA,11,700,,1,,0,,,,Smallest UI text,17
+ollama,Display / Hero,SF Pro Rounded,48,500,,1,,0,,,,"Maximum impact, rounded letterforms",0
+ollama,Section Heading,SF Pro Rounded,36,500,,1.11,,0,,,,Feature section titles,1
+ollama,Sub-heading,SF Pro Rounded / ui-sans-serif,30,,400-500,1.2,,0,,,,"Card headings, feature names",2
+ollama,Card Title,ui-sans-serif,24,400,,1.33,,0,,,,Medium emphasis headings,3
+ollama,Body Large,ui-sans-serif,18,,400-500,1.56,,0,,,,"Hero descriptions, button text",4
+ollama,Body / Link,ui-sans-serif,16,,400-500,1.5,,0,,,,"Standard body text, navigation",5
+ollama,Caption,ui-sans-serif,14,400,,1.43,,0,,,,"Metadata, descriptions",6
+ollama,Small,ui-sans-serif,12,400,,1.33,,0,,,,Smallest sans-serif text,7
+ollama,Code Body,ui-monospace,16,400,,1.5,,0,,,,"Inline code, commands",8
+ollama,Code Caption,ui-monospace,14,400,,1.43,,0,,,,"Code snippets, secondary",9
+ollama,Code Small,ui-monospace,12,,400-700,1.63,,0,,,,"Tags, labels",10
+opencode.ai,Heading 1,,38,700,,1.5,,,,,,"Hero headlines, page titles",0
+opencode.ai,Heading 2,,16,700,,1.5,,,,,,"Section titles, bold emphasis",1
+opencode.ai,Body,,16,400,,1.5,,,,,,"Standard body text, paragraphs",2
+opencode.ai,Body Medium,,16,500,,1.5,,,,,,"Links, button text, nav items",3
+opencode.ai,Body Tight,,16,500,,1,,,,,,"Compact labels, tab items",4
+opencode.ai,Caption,,14,400,,2,,,,,,"Footnotes, metadata, small labels",5
+pinterest,Display Hero,Pin Sans,70,600,,,,0,,,,Maximum impact,0
+pinterest,Section Heading,Pin Sans,28,700,,,,-1.2,,,,Negative tracking,1
+pinterest,Body,Pin Sans,16,400,,1.4,,0,,,,Standard reading,2
+pinterest,Caption Bold,Pin Sans,14,700,,,,0,,,,Strong metadata,3
+pinterest,Caption,Pin Sans,12,,400-500,1.5,,0,,,,"Small text, tags",4
+pinterest,Button,Pin Sans,12,400,,,,0,,,,Button labels,5
+posthog,Display Hero,IBM Plex Sans Variable,30,800,,1.2,,-0.75,,,,"Extra-bold, tight, maximum impact",0
+posthog,Section Heading,IBM Plex Sans Variable,36,700,,1.5,,0,,,,Large but generous line-height,1
+posthog,Feature Heading,IBM Plex Sans Variable,24,700,,1.33,,0,,,,Feature section titles,2
+posthog,Card Heading,IBM Plex Sans Variable,21.4,700,,1.4,,-0.54,,,,Slightly unusual size (scaled),3
+posthog,Sub-heading,IBM Plex Sans Variable,20,700,,1.4,,-0.5,,,,Content sub-sections,4
+posthog,Sub-heading Uppercase,IBM Plex Sans Variable,20,700,,1.4,,0,,,,Uppercase transform for labels,5
+posthog,Body Emphasis,IBM Plex Sans Variable,19.3,600,,1.56,,-0.48,,,,Semi-bold callout text,6
+posthog,Label Uppercase,IBM Plex Sans Variable,18,700,,1.5,,0,,,,Uppercase category labels,7
+posthog,Body Semi,IBM Plex Sans Variable,18,600,,1.56,,0,,,,Semi-bold body text,8
+posthog,Body,IBM Plex Sans Variable,16,400,,1.5,,0,,,,Standard reading text,9
+posthog,Body Medium,IBM Plex Sans Variable,16,500,,1.5,,0,,,,Medium-weight body,10
+posthog,Body Relaxed,IBM Plex Sans Variable,15,400,,1.71,,0,,,,Relaxed line-height for long reads,11
+posthog,Nav / UI,IBM Plex Sans Variable,15,600,,1.5,,0,,,,Navigation and UI labels,12
+posthog,Caption,IBM Plex Sans Variable,14,,400-700,1.43,,0,,,,"Small text, various weights",13
+posthog,Small Label,IBM Plex Sans Variable,13,,500-700,,1-1.5,0,,,,"Tags, badges, micro labels",14
+posthog,Micro,IBM Plex Sans Variable,12,,400-700,1.33,,0,,,,"Smallest text, some uppercase",15
+posthog,Code,Source Code Pro,14,500,,1.43,,0,,,,Code snippets and terminal,16
+raycast,Display Hero,,64,600,,1.1,,0,,,,"OpenType: liga 0, ss02, ss08",0
+raycast,Section Display,,56,400,,1.17,,0.2,,,,"OpenType: calt, kern, liga, ss03",1
+raycast,Section Heading,,24,500,,,,0.2,,,,"OpenType: calt, kern, liga, ss03",2
+raycast,Card Heading,,22,400,,1.15,,0,,,,"OpenType: calt, kern, liga, ss03",3
+raycast,Sub-heading,,20,500,,1.6,,0.2,,,,Relaxed line-height for readability,4
+raycast,Body Large,,18,400,,1.15,,0.2,,,,"OpenType: calt, kern, liga, ss03",5
+raycast,Body,,16,500,,1.6,,0.2,,,,"Primary body text, relaxed rhythm",6
+raycast,Body Tight,,16,400,,1.15,,0.1,,,,"UI labels, compact contexts",7
+raycast,Button,,16,600,,1.15,,0.3,,,,"Semibold, slightly wider tracking",8
+raycast,Nav Link,,16,500,,1.4,,0.3,,,,Links in navigation,9
+raycast,Caption,,14,500,,1.14,,0.2,,,,"Small labels, metadata",10
+raycast,Caption Bold,,14,600,,1.4,,0,,,,Emphasized captions,11
+raycast,Small,,12,600,,1.33,,0,,,,"Badges, tags, micro-labels",12
+raycast,Small Link,,12,400,,1.5,,0.4,,,,"Footer links, fine print",13
+raycast,Code,,14,500,,1.6,,0.3,,,,"Code blocks, technical content",14
+raycast,Code Small,,12,400,,1.6,,0.2,,,,"Inline code, terminal output",15
+renault,Hero Title,,56,700,,0.95,,0,,,,"NouvelR, white on dark hero, all-caps model names",0
+renault,Section Heading,,40,700,,0.95,,0,,,,"NouvelR, PromoCard headings on dark/light sections",1
+renault,Card Heading,,32,700,,0.95,,0,,,,"NouvelR, medium-scale card headings",2
+renault,Subheading,,24,700,,0.95,,0,,,,"NouvelR, section sub-titles",3
+renault,Module Title,,21.92,600,,1.2,,0,,,,"NouvelR, component headings",4
+renault,Content Title,,20,700,,0.95,,0,,,,"NouvelR, smaller section titles",5
+renault,UI Heading,,19.2,600,,1.3,,0,,,,"NouvelR, card UI headings",6
+renault,Emphasis,,18,700,,1,,0,,,,"NouvelR, emphasized inline text and links",7
+renault,Body Heading,,16,700,,1.4,,0,,,,"NouvelR, paragraph-level headings",8
+renault,Body Text,,14,400,,1.4,,0,,,,"NouvelR, paragraph and descriptive content",9
+renault,Body Bold,,14,700,,1.57,,0,,,,"NouvelR, emphasized body text",10
+renault,Button Label,,14.4,700,,1,,0.144,,,,"NouvelR, primary button text",11
+renault,Nav Link,,13,700,,1.5,,0,,,,"NouvelR, navigation and footer links",12
+renault,Caption,,12.8,400,,1.1,,0,,,,"NouvelR, small descriptive text",13
+renault,Small Label,,12,700,,1,,0,,,,"NouvelR, labels and tags",14
+renault,Micro Text,,10,700,,1.45,,0,,,,"NouvelR, smallest UI text, legal fine print",15
+renault,Micro Caption,,8.5,400,,,,0,,,,"NouvelR, absolute smallest text (legal)",16
+replicate,Display Mega,rb-freigeist-neue,128,700,,1,,0,,,,The maximum: closing manifesto,0
+replicate,Display / Hero,rb-freigeist-neue,72,700,,1,,-1.8,,,,Hero section headline,1
+replicate,Section Heading,rb-freigeist-neue,48,,400-700,1,,0,,,,Feature section titles,2
+replicate,Sub-heading,rb-freigeist-neue,30,600,,1.2,,0,,,,Card headings,3
+replicate,Sub-heading Sans,basier-square,38.4,400,,0.83,,0,,,,Large body headings,4
+replicate,Feature Title,basier-square / rb-freigeist-neue,18,600,,1.56,,0,,,,"Small section titles, labels",5
+replicate,Body Large,basier-square,20,400,,1.4,,0,,,,Intro paragraphs,6
+replicate,Body / Button,basier-square,18,,400-600,,1.5-1.56,0,,,,"Standard text, buttons",7
+replicate,Caption,basier-square,14,,400-600,1.43,,-0.35,,,,"Metadata, descriptions",8
+replicate,Small / Tag,basier-square,12,400,,1.33,,0,,,,Tags (lowercase transform),9
+replicate,Code,jetbrains-mono,14,400,,1.43,,0,,,,"Code snippets, API examples",10
+replicate,Code Small,jetbrains-mono,11,400,,1.5,,0,,,,Tiny code references,11
+resend,Display Hero,domaine,96,400,,1,,-0.96,,,,"`""ss01"", ""ss04"", ""ss11""`",0
+resend,Display Hero Mobile,domaine,76.8,400,,1,,-0.768,,,,Scaled for mobile,1
+resend,Section Heading,aBCFavorit,56,400,,1.2,,-2.8,,,,"`""ss01"", ""ss04"", ""ss11""`",2
+resend,Sub-heading,aBCFavorit,20,400,,1.3,,0,,,,"`""ss01"", ""ss04"", ""ss11""`",3
+resend,Sub-heading Compact,aBCFavorit,16,400,,1.5,,-0.8,,,,"`""ss01"", ""ss04"", ""ss11""`",4
+resend,Feature Title,inter,24,500,,1.5,,0,,,,Section sub-headings,5
+resend,Body Large,inter,18,400,,1.5,,0,,,,Introductions,6
+resend,Body,inter,16,400,,1.5,,0,,,,Standard body text,7
+resend,Body Semibold,inter,16,600,,1.5,,0,,,,"Emphasis, active states",8
+resend,Nav Link,aBCFavorit,14,500,,1.43,,0.35,,,,"`""ss01"", ""ss03"", ""ss04""` — positive tracking",9
+resend,Button / Link,inter,14,,500-600,1.43,,0,,,,"Buttons, nav, CTAs",10
+resend,Caption,inter,14,400,,1.6,,0,,,,Descriptions,11
+resend,Helvetica Caption,Helvetica,14,,400-600,,1-1.71,0,,,,UI elements,12
+resend,Small,inter,12,,400-500,1.33,,0,,,,"Tags, meta, fine print",13
+resend,Small Uppercase,inter,12,500,,1.33,,0,,,,`text-transform: uppercase`,14
+resend,Small Capitalize,inter,12,500,,1.33,,0,,,,`text-transform: capitalize`,15
+resend,Code Body,commitMono,16,400,,1.5,,0,,,,Code blocks,16
+resend,Code Small,commitMono,14,400,,1.43,,0,,,,Inline code,17
+resend,Code Tiny,commitMono,12,400,,1.33,,0,,,,Small code labels,18
+resend,Heading (Helvetica),Helvetica,24,400,,1.4,,0,,,,Alternate heading context,19
+revolut,Display Mega,Aeonik Pro,136,500,,1,,-2.72,,,,Stadium-scale hero,0
+revolut,Display Hero,Aeonik Pro,80,500,,1,,-0.8,,,,Primary hero,1
+revolut,Section Heading,Aeonik Pro,48,500,,1.21,,-0.48,,,,Feature sections,2
+revolut,Sub-heading,Aeonik Pro,40,500,,1.2,,-0.4,,,,Sub-sections,3
+revolut,Card Title,Aeonik Pro,32,500,,1.19,,-0.32,,,,Card headings,4
+revolut,Feature Title,Aeonik Pro,24,400,,1.33,,0,,,,Light headings,5
+revolut,Nav / UI,Aeonik Pro,20,500,,1.4,,0,,,,"Navigation, buttons",6
+revolut,Body Large,Inter,18,400,,1.56,,-0.09,,,,Introductions,7
+revolut,Body,Inter,16,400,,1.5,,0.24,,,,Standard reading,8
+revolut,Body Semibold,Inter,16,600,,1.5,,0.16,,,,Emphasized body,9
+revolut,Body Bold Link,Inter,16,700,,1.5,,0.24,,,,Bold links,10
+runwayml,Display / Hero,abcNormal,48,400,,1,,-1.2,,,,"Maximum size, film-title presence",0
+runwayml,Section Heading,abcNormal,40,400,,,1-1.1,,-1-0,,,Feature section titles,1
+runwayml,Sub-heading,abcNormal,36,400,,1,,-0.9,,,,Secondary section markers,2
+runwayml,Card Title,abcNormal,24,400,,1,,0,,,,Article and card headings,3
+runwayml,Feature Title,abcNormal,20,400,,1,,0,,,,Small headings,4
+runwayml,Body / Button,abcNormal,16,,400-600,,1.3-1.5,-0.16,,,,"Standard body, nav links",5
+runwayml,Caption / Label,abcNormal,14,,500-600,,1.25-1.43,0.35,,true,,"Metadata, section labels",6
+runwayml,Small,abcNormal,13,400,,1.3,,,-0.26--0.16,,,Compact descriptions,7
+runwayml,Micro / Tag,abcNormal,11,450,,1.3,,0,,,,"Uppercase tags, tiny labels",8
+sanity,Display / Hero,waldenburgNormal,112,400,,1,,-4.48,,,,"Maximum impact, compressed tracking",0
+sanity,Hero Secondary,waldenburgNormal,72,400,,1.05,,-2.88,,,,Large section headers,1
+sanity,Section Heading,waldenburgNormal,48,400,,1.08,,-1.68,,,,Primary section anchors,2
+sanity,Heading Large,waldenburgNormal,38,400,,1.1,,-1.14,,,,Feature section titles,3
+sanity,Heading Medium,waldenburgNormal,32,425,,1.24,,-0.32,,,,"Card titles, subsection headers",4
+sanity,Heading Small,waldenburgNormal,24,425,,1.24,,-0.24,,,,Smaller feature headings,5
+sanity,Subheading,waldenburgNormal,20,425,,1.13,,-0.2,,,,Sub-section markers,6
+sanity,Body Large,waldenburgNormal,18,400,,1.5,,-0.18,,,,"Intro paragraphs, descriptions",7
+sanity,Body,waldenburgNormal,16,400,,1.5,,0,,,,Standard body text,8
+sanity,Body Small,waldenburgNormal,15,400,,1.5,,-0.15,,,,Compact body text,9
+sanity,Caption,waldenburgNormal,13,,400-500,,1.3-1.5,-0.13,,,,"Metadata, descriptions, tags",10
+sanity,Small Caption,waldenburgNormal,12,400,,1.5,,-0.12,,,,"Footnotes, timestamps",11
+sanity,Micro / Label,waldenburgNormal,11,,500-600,,1-1.5,0,,,,"Uppercase labels, tiny badges",12
+sanity,Code Body,IBM Plex Mono,15,400,,1.5,,0,,,,"Code blocks, technical content",13
+sanity,Code Caption,IBM Plex Mono,13,,400-500,,1.3-1.5,0,,,,"Inline code, small technical labels",14
+sanity,Code Micro,IBM Plex Mono,-12,400,,,1.3-1.5,0,,,,"Tiny code labels, uppercase tags",15
+sentry,Display Hero,Dammit Sans,88,700,,1.2,,0,,,,"Maximum impact, brand voice",0
+sentry,Display Secondary,Dammit Sans,60,500,,1.1,,0,,,,Secondary hero text,1
+sentry,Section Heading,Rubik,30,400,,1.2,,0,,,,Major section titles,2
+sentry,Sub-heading,Rubik,27,500,,1.25,,0,,,,Feature section headers,3
+sentry,Card Title,Rubik,24,500,,1.25,,0,,,,Card and block headings,4
+sentry,Feature Title,Rubik,20,600,,1.25,,0,,,,Emphasized feature names,5
+sentry,Body,Rubik,16,400,,1.5,,0,,,,Standard body text,6
+sentry,Body Emphasis,Rubik,16,,500-600,1.5,,0,,,,"Bold body, nav items",7
+sentry,Nav Label,Rubik,15,500,,1.4,,0,,,,Navigation links,8
+sentry,Uppercase Label,Rubik,15,500,,1.25,,0,,,,`text-transform: uppercase`,9
+sentry,Button Text,Rubik,14,,500-700,,1.14-1.29,0.2,,,,`text-transform: uppercase`,10
+sentry,Caption,Rubik,14,,500-700,,1-1.43,0.2,,,,Often uppercase,11
+sentry,Small Caption,Rubik,12,600,,2,,0,,,,Subtle annotations,12
+sentry,Micro Label,Rubik,10,600,,1.8,,0.25,,,,`text-transform: uppercase`,13
+sentry,Code,Monaco,16,,400-700,1.5,,0,,,,"Code blocks, technical text",14
+spacex,Display Hero,D-DIN-Bold,48,700,,1,,0.96,,,,`text-transform: uppercase`,0
+spacex,Body,D-DIN,16,400,,,1.5-1.7,0,,,,Standard reading text,1
+spacex,Nav Link Bold,D-DIN,13,700,,0.94,,1.17,,,,`text-transform: uppercase`,2
+spacex,Nav Link,D-DIN,12,400,,2,,0,,,,`text-transform: uppercase`,3
+spacex,Caption Bold,D-DIN,13,700,,0.94,,1.17,,,,`text-transform: uppercase`,4
+spacex,Caption,D-DIN,12,400,,1,,0,,,,`text-transform: uppercase`,5
+spacex,Micro,D-DIN,10,400,,0.94,,1,,,,`text-transform: uppercase`,6
+spotify,Section Title,SpotifyMixUITitle,24,700,,,,0,,,,Bold title weight,0
+spotify,Feature Heading,SpotifyMixUI,18,600,,1.3,,0,,,,Semibold section heads,1
+spotify,Body Bold,SpotifyMixUI,16,700,,,,0,,,,Emphasized text,2
+spotify,Body,SpotifyMixUI,16,400,,,,0,,,,Standard body,3
+spotify,Button Uppercase,SpotifyMixUI,14,,600-700,1,,1.4,,,,`text-transform: uppercase`,4
+spotify,Button,SpotifyMixUI,14,700,,,,0.14,,,,Standard button,5
+spotify,Nav Link Bold,SpotifyMixUI,14,700,,,,0,,,,Navigation,6
+spotify,Nav Link,SpotifyMixUI,14,400,,,,0,,,,Inactive nav,7
+spotify,Caption Bold,SpotifyMixUI,14,700,,,1.5-1.54,0,,,,Bold metadata,8
+spotify,Caption,SpotifyMixUI,14,400,,,,0,,,,Metadata,9
+spotify,Small Bold,SpotifyMixUI,12,700,,1.5,,0,,,,"Tags, counts",10
+spotify,Small,SpotifyMixUI,12,400,,,,0,,,,Fine print,11
+spotify,Badge,SpotifyMixUI,10.5,600,,1.33,,0,,,,`text-transform: capitalize`,12
+spotify,Micro,SpotifyMixUI,10,400,,,,0,,,,Smallest text,13
+stripe,Display Hero,sohne-var,56,300,,1.03,,-1.4,,,ss01,"Maximum size, whisper-weight authority",0
+stripe,Display Large,sohne-var,48,300,,1.15,,-0.96,,,ss01,Secondary hero headlines,1
+stripe,Section Heading,sohne-var,32,300,,1.1,,-0.64,,,ss01,Feature section titles,2
+stripe,Sub-heading Large,sohne-var,26,300,,1.12,,-0.26,,,ss01,"Card headings, sub-sections",3
+stripe,Sub-heading,sohne-var,22,300,,1.1,,-0.22,,,ss01,Smaller section heads,4
+stripe,Body Large,sohne-var,18,300,,1.4,,0,,,ss01,"Feature descriptions, intro text",5
+stripe,Body,sohne-var,16,,300-400,1.4,,0,,,ss01,Standard reading text,6
+stripe,Button,sohne-var,16,400,,1,,0,,,ss01,Primary button text,7
+stripe,Button Small,sohne-var,14,400,,1,,0,,,ss01,Secondary/compact buttons,8
+stripe,Link,sohne-var,14,400,,1,,0,,,ss01,Navigation links,9
+stripe,Caption,sohne-var,13,400,,,,0,,,ss01,"Small labels, metadata",10
+stripe,Caption Small,sohne-var,12,,300-400,,1.33-1.45,0,,,ss01,"Fine print, timestamps",11
+stripe,Caption Tabular,sohne-var,12,,300-400,1.33,,-0.36,,,tnum,"Financial data, numbers",12
+stripe,Micro,sohne-var,10,300,,1.15,,0.1,,,ss01,"Tiny labels, axis markers",13
+stripe,Micro Tabular,sohne-var,10,300,,1.15,,-0.3,,,tnum,"Chart data, small numbers",14
+stripe,Nano,sohne-var,8,300,,1.07,,0,,,ss01,Smallest labels,15
+stripe,Code Body,SourceCodePro,12,500,,2,,0,,,--,"Code blocks, syntax",16
+stripe,Code Bold,SourceCodePro,12,700,,2,,0,,,--,"Bold code, keywords",17
+stripe,Code Label,SourceCodePro,12,500,,2,,0,,,uppercase,Technical labels,18
+stripe,Code Micro,SourceCodePro,9,500,,1,,0,,,ss01,Tiny code annotations,19
+supabase,Display Hero,Circular,72,400,,1,,0,,,,"Maximum density, zero waste",0
+supabase,Section Heading,Circular,36,400,,1.25,,0,,,,Feature section titles,1
+supabase,Card Title,Circular,24,400,,1.33,,-0.16,,,,Slight negative tracking,2
+supabase,Sub-heading,Circular,18,400,,1.56,,0,,,,Secondary headings,3
+supabase,Body,Circular,16,400,,1.5,,0,,,,Standard body text,4
+supabase,Nav Link,Circular,14,500,,,1-1.43,0,,,,Navigation items,5
+supabase,Button,Circular,14,500,,1.14,,0,,,,Button labels,6
+supabase,Caption,Circular,14,,400-500,1.43,,0,,,,"Metadata, tags",7
+supabase,Small,Circular,12,400,,1.33,,0,,,,"Fine print, footer links",8
+supabase,Code Label,Source Code Pro,12,400,,1.33,,1.2,,,,`text-transform: uppercase`,9
+superhuman,Display Hero,Super Sans VF,64,540,,0.96,,0,,,,"Maximum compression, powerful block headlines",0
+superhuman,Section Display,Super Sans VF,48,460,,0.96,,-1.32,,,,Lighter weight for section introductions,1
+superhuman,Section Heading,Super Sans VF,48,460,,0.96,,0,,,,Alternate section heading without tracking,2
+superhuman,Feature Title,Super Sans VF,28,540,,1.14,,-0.63,,,,"Feature block headlines, tighter",3
+superhuman,Sub-heading Large,Super Sans VF,26,460,,1.3,,0,,,,Content sub-sections,4
+superhuman,Card Heading,Super Sans VF,22,460,,0.76,,-0.315,,,,Card title with extreme compression,5
+superhuman,Body Heading,Super Sans VF,20,460,,1.2,,0,,,,Bold content intros,6
+superhuman,Body Heading Alt,Super Sans VF,20,460,,1.1,,-0.55,,,,Tighter variant for emphasis,7
+superhuman,Body Heading Relaxed,Super Sans VF,20,460,,1.25,,-0.4,,,,More breathing room variant,8
+superhuman,Emphasis Body,Super Sans VF,18,540,,1.5,,-0.135,,,,Medium-weight body for callouts,9
+superhuman,Body,Super Sans VF,16,460,,1.5,,0,,,,Standard reading text — generous line-height,10
+superhuman,Button / UI Bold,Super Sans VF,16,700,,1,,0,,,,Bold UI elements,11
+superhuman,Button / UI Semi,Super Sans VF,16,600,,1,,0,,,,Semi-bold navigation and labels,12
+superhuman,Nav Link,Super Sans VF,16,460,,1.2,,0,,,,Navigation items,13
+superhuman,Caption,Super Sans VF,14,500,,1.2,,-0.315,,,,"Small labels, metadata",14
+superhuman,Caption Semi,Super Sans VF,14,600,,1.29,,0,,,,Emphasized small text,15
+superhuman,Caption Body,Super Sans VF,14,460,,1.5,,0,,,,Small body text,16
+superhuman,Micro Label,Super Sans VF,12,700,,1.5,,0,,,,"Smallest text — badges, tags",17
+tesla,Hero Title,,40,500,,48,,0,,,,"Universal Sans Display, white on dark hero imagery",0
+tesla,Product Name,,17,500,,20,,0,,,,"Universal Sans Text, model names in nav panel and cards",1
+tesla,Nav Item,,14,500,,16.8,,0,,,,"Universal Sans Text, primary navigation labels",2
+tesla,Body Text,,14,400,,20,,0,,,,"Universal Sans Text, paragraph and descriptive content",3
+tesla,Button Label,,14,500,,16.8,,0,,,,"Universal Sans Text, CTA button text",4
+tesla,Sub-link,,14,400,,20,,0,,,,"Tertiary links (Learn, Order, Experience)",5
+tesla,Promo Text,,22,400,,20,,0,,,,"White promotional text on hero (""0% APR Available"")",6
+tesla,Category Label,,16,500,,,,0,,,,"White text labels on category cards (""Sport Sedan"")",7
+together.ai,Display / Hero,The Future,64,,400-500,,1-1.1,-1.92,,,,"Maximum impact, dense blocks",0
+together.ai,Section Heading,The Future,40,500,,1.2,,-0.8,,,,Feature section titles,1
+together.ai,Sub-heading,The Future,28,500,,1.15,,-0.42,,,,Card headings,2
+together.ai,Feature Title,The Future,22,500,,1.15,,-0.22,,,,Small feature headings,3
+together.ai,Body Large,The Future,18,,400-500,1.3,,-0.18,,,,"Descriptions, sections",4
+together.ai,Body / Button,The Future,16,,400-500,,1.25-1.3,-0.16,,,,"Standard body, nav, buttons",5
+together.ai,Caption,The Future,14,,400-500,1.4,,0,,,,"Metadata, descriptions",6
+together.ai,Mono Label,PP Neue Montreal Mono,16,500,,1,,0.08,,,,Uppercase section labels,7
+together.ai,Mono Small,PP Neue Montreal Mono,11,500,,,1-1.4,0.08,,,,Small uppercase tags,8
+together.ai,Mono Micro,PP Neue Montreal Mono,10,400,,1.4,,0.05,,,,Smallest uppercase labels,9
+uber,Display / Hero,UberMove,52,700,,1.23,,,,,,"Maximum impact, billboard presence",0
+uber,Section Heading,UberMove,36,700,,1.22,,,,,,Major section anchors,1
+uber,Card Title,UberMove,32,700,,1.25,,,,,,Card and feature headings,2
+uber,Sub-heading,UberMove,24,700,,1.33,,,,,,Secondary section headers,3
+uber,Small Heading,UberMove,20,700,,1.4,,,,,,"Compact headings, list titles",4
+uber,Nav / UI Large,UberMoveText,18,500,,1.33,,,,,,"Navigation links, prominent UI text",5
+uber,Body / Button,UberMoveText,16,,400-500,,1.25-1.5,,,,,"Standard body text, button labels",6
+uber,Caption,UberMoveText,14,,400-500,,1.14-1.43,,,,,"Metadata, descriptions, small links",7
+uber,Micro,UberMoveText,12,400,,1.67,,,,,,"Fine print, legal text",8
+vercel,Display Hero,Geist,48,600,,,1-1.17,,-2.88--2.4,,,"Maximum compression, billboard impact",0
+vercel,Section Heading,Geist,40,600,,1.2,,-2.4,,,,Feature section titles,1
+vercel,Sub-heading Large,Geist,32,600,,1.25,,-1.28,,,,"Card headings, sub-sections",2
+vercel,Sub-heading,Geist,32,400,,1.5,,-1.28,,,,Lighter sub-headings,3
+vercel,Card Title,Geist,24,600,,1.33,,-0.96,,,,Feature cards,4
+vercel,Card Title Light,Geist,24,500,,1.33,,-0.96,,,,Secondary card headings,5
+vercel,Body Large,Geist,20,400,,1.8,,0,,,,"Introductions, feature descriptions",6
+vercel,Body,Geist,18,400,,1.56,,0,,,,Standard reading text,7
+vercel,Body Small,Geist,16,400,,1.5,,0,,,,Standard UI text,8
+vercel,Body Medium,Geist,16,500,,1.5,,0,,,,"Navigation, emphasized text",9
+vercel,Body Semibold,Geist,16,600,,1.5,,-0.32,,,,"Strong labels, active states",10
+vercel,Button / Link,Geist,14,500,,1.43,,0,,,,"Buttons, links, captions",11
+vercel,Button Small,Geist,14,400,,1,,0,,,,Compact buttons,12
+vercel,Caption,Geist,12,,400-500,1.33,,0,,,,"Metadata, tags",13
+vercel,Mono Body,Geist Mono,16,400,,1.5,,0,,,,Code blocks,14
+vercel,Mono Caption,Geist Mono,13,500,,1.54,,0,,,,Code labels,15
+vercel,Mono Small,Geist Mono,12,500,,1,,0,,,,"`text-transform: uppercase`, technical labels",16
+vercel,Micro Badge,Geist,7,700,,1,,0,,,,"`text-transform: uppercase`, tiny badges",17
+voltagent,Display / Hero,system-ui,60,400,,1,,-0.65,,,,"Maximum impact, compressed blocks",0
+voltagent,Section Heading,system-ui,36,400,,1.11,,-0.9,,,,Tightest letter-spacing in the system,1
+voltagent,Sub-heading,system-ui,24,700,,1.33,,-0.6,,,,Bold weight for emphasis at this size,2
+voltagent,Sub-heading Light,system-ui / Inter,24,,300-400,1.33,,-0.6,,,,Light weight variant for softer hierarchy,3
+voltagent,Overline,system-ui,20,600,,1.4,,0.5,,,,"Uppercase transform, positive letter-spacing",4
+voltagent,Feature Title,Inter,20,,500-600,1.4,,0,,,,"Card headings, feature names",5
+voltagent,Overline Small,Inter,18,600,,1.56,,0.45,,,,Uppercase section labels,6
+voltagent,Body / Button,Inter,16,,400-600,,1.5-1.65,0,,,,"Standard text, nav links, buttons",7
+voltagent,Nav Link,Inter,14.45,500,,1.65,,0,,,,Navigation-specific sizing,8
+voltagent,Caption / Label,Inter,14,,400-600,,1.43-1.65,0,,,,"Descriptions, metadata, badge text",9
+voltagent,Tag / Overline Tiny,system-ui,14,600,,1.43,,2.52,,,,Widest letter-spacing — reserved for uppercase tags,10
+voltagent,Micro,Inter,12,,400-500,1.33,,0,,,,Smallest sans-serif text,11
+voltagent,Code Body,SFMono-Regular,14,,400-686,,1.23-1.43,0,,,,"Inline code, terminal output, variable weight for syntax",12
+voltagent,Code Small,SFMono-Regular,12,400,,,1.33-1.45,0,,,,"Tiny code references, line numbers",13
+voltagent,Code Button,monospace,13,700,,1.65,,0,,,,Copy-to-clipboard button labels,14
+warp,Display Hero,Matter Regular,80,400,,1,,-2.4,,,,"Maximum compression, hero impact",0
+warp,Section Display,Matter Regular,56,400,,1.2,,-0.56,,,,Feature section headings,1
+warp,Section Heading,Matter Regular,48,400,,1.2,,,-0.96--0.48,,,Alternate heading weight,2
+warp,Feature Heading,Matter Regular,40,400,,1.1,,-0.4,,,,Feature block titles,3
+warp,Sub-heading Large,Matter Regular,36,400,,1.15,,-0.72,,,,Sub-section headers,4
+warp,Card Display,Matter SQ Regular,42,400,,1,,0,,,,Squared variant for special display,5
+warp,Sub-heading,Matter Regular,32,400,,1.19,,0,,,,Content sub-headings,6
+warp,Body Heading,Matter Regular,24,400,,1.2,,,-0.72-0,,,Bold content intros,7
+warp,Card Title,Matter Medium,22,500,,1.14,,0,,,,Emphasized card headers,8
+warp,Body Large,Matter Regular,20,400,,1.4,,-0.2,,,,"Primary body text, relaxed",9
+warp,Body,Matter Regular,18,400,,1.3,,-0.18,,,,Standard body paragraphs,10
+warp,Nav/UI,Matter Regular,16,400,,1.2,,0,,,,"Navigation links, UI text",11
+warp,Button Text,Matter Medium,16,500,,1.2,,0,,,,Button labels,12
+warp,Caption,Matter Regular,14,400,,1,,1.4,,,,Uppercase labels (transform: uppercase),13
+warp,Small Label,Matter Regular,12,400,,1.35,,2.4,,,,Uppercase micro-labels (transform: uppercase),14
+warp,Micro,Matter Regular,11,400,,1.2,,0,,,,Smallest text elements,15
+warp,Code UI,Geist Mono,16,400,,1,,0,,,,Terminal/code display,16
+warp,Code Body,Matter Mono Regular,16,400,,1,,-0.2,,,,Code content,17
+warp,UI Supplement,Inter,16,500,,1,,-0.2,,,,Specific UI elements,18
+webflow,Display Hero,,80,600,,1.04,,-0.8,,,,,0
+webflow,Section Heading,,56,600,,1.04,,0,,,,,1
+webflow,Sub-heading,,32,500,,1.3,,0,,,,,2
+webflow,Feature Title,,24,,500-600,1.3,,0,,,,,3
+webflow,Body,,20,,400-500,,1.4-1.5,0,,,,,4
+webflow,Body Standard,,16,,400-500,1.6,,-0.16,,,,,5
+webflow,Button,,16,500,,1.6,,-0.16,,,,,6
+webflow,Uppercase Label,,15,500,,1.3,,1.5,,,,uppercase,7
+webflow,Caption,,14,,400-500,,1.4-1.6,0,,,,,8
+webflow,Badge Uppercase,,12.8,550,,1.2,,0,,,,uppercase,9
+webflow,Micro Uppercase,,10,,500-600,1.3,,1,,,,uppercase,10
+wise,Display Mega,Wise Sans,126,900,,0.85,,0,,,,"`""calt""`",0
+wise,Display Hero,Wise Sans,96,900,,0.85,,0,,,,"`""calt""`",1
+wise,Section Heading,Wise Sans,64,900,,0.85,,0,,,,"`""calt""`",2
+wise,Sub-heading,Wise Sans,40,900,,0.85,,0,,,,"`""calt""`",3
+wise,Alt Heading,Inter,78,600,,1.1,,-2.34,,,,"`""calt""`",4
+wise,Card Title,Inter,26,600,,1.23,,-0.39,,,,"`""calt""`",5
+wise,Feature Title,Inter,22,600,,1.25,,-0.396,,,,"`""calt""`",6
+wise,Body,Inter,18,400,,1.44,,0.18,,,,"`""calt""`",7
+wise,Body Semibold,Inter,18,600,,1.44,,-0.108,,,,"`""calt""`",8
+wise,Button,Inter,18,600,,,1-1.44,-0.108,,,,"`""calt""`",9
+wise,Caption,Inter,14,,400-600,,1.5-1.86,,-0.108--0.084,,,"`""calt""`",10
+wise,Small,Inter,12,,400-600,,1-2.17,,-0.108--0.084,,,"`""calt""`",11
+x.ai,Display Hero,GeistMono,320,300,,1.5,,0,,,,"Extreme scale, monospace luxury",0
+x.ai,Section Heading,universalSans,30,400,,1.2,,0,,,,Clean sans-serif contrast,1
+x.ai,Body,universalSans,16,400,,1.5,,0,,,,Standard reading text,2
+x.ai,Button,GeistMono,14,400,,1.43,,1.4,,,,"Tracked monospace, commanding",3
+x.ai,Label / Caption,universalSans,14,400,,1.5,,0,,,,Supporting text,4
+x.ai,Small / Meta,universalSans,12,400,,1.5,,0,,,,"Timestamps, footnotes",5
+zapier,Display Hero XL,Degular Display,80,500,,0.9,,0,,,,"Maximum impact, compressed block",0
+zapier,Display Hero,Degular Display,56,500,,,0.9-1.1,-1.12,,,,Primary hero headlines,1
+zapier,Display Hero SM,Degular Display,40,500,,0.9,,0,,,,Smaller hero variant,2
+zapier,Display Button,Degular Display,24,600,,1,,1,,,,Large CTA button text,3
+zapier,Section Heading,Inter,48,500,,1.04,,0,,,,Major section titles,4
+zapier,Editorial Heading,GT Alpina,48,250,,,,-1.92,,,,Thin editorial headlines,5
+zapier,Editorial Sub,GT Alpina,40,300,,1.08,,-1.6,,,,Editorial subheadings,6
+zapier,Sub-heading LG,Inter,36,500,,,,-1,,,,Large sub-sections,7
+zapier,Sub-heading,Inter,32,400,,1.25,,0,,,,Standard sub-sections,8
+zapier,Sub-heading MD,Inter,28,500,,,,0,,,,Medium sub-headings,9
+zapier,Card Title,Inter,24,600,,,,-0.48,,,,Card headings,10
+zapier,Body Large,Inter,20,,400-500,,1-1.2,-0.2,,,,Feature descriptions,11
+zapier,Body Emphasis,Inter,18,600,,1,,0,,,,Emphasized body text,12
+zapier,Body,Inter,16,,400-500,,1.2-1.25,-0.16,,,,Standard reading text,13
+zapier,Body Semibold,Inter,16,600,,1.16,,0,,,,Strong labels,14
+zapier,Button,Inter,16,600,,,,0,,,,Standard buttons,15
+zapier,Button SM,Inter,14,600,,,,0,,,,Small buttons,16
+zapier,Caption,Inter,14,500,,,1.25-1.43,0,,,,"Labels, metadata",17
+zapier,Caption Upper,Inter,14,600,,,,0.5,,,,Uppercase section labels,18
+zapier,Micro,Inter,12,600,,,0.9-1.33,0.5,,,,"Tiny labels, often uppercase",19
+zapier,Micro SM,Inter,13,500,,,1-1.54,0,,,,Small metadata text,20

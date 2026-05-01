@@ -14,7 +14,9 @@
     "dev": "tsx src/cli/index.ts",
     "build": "tsc",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "color-roles": "tsx scripts/analysis/color-roles.ts",
+    "type-styles": "tsx scripts/analysis/type-styles.ts"
   },
   "dependencies": {
     "culori": "^4.0.0",
