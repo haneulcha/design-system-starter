@@ -7,10 +7,13 @@ interface YamlExtras {
   spacing?: Record<string, string | number>;
 }
 
+// Distinctive serif family names — chosen to avoid matching common prose words.
+// Each entry is matched with word boundaries (see SERIF_FAMILY_REGEX below).
 const SERIF_FAMILY_NAMES = [
-  "playfair", "merriweather", "lora", "tiempos", "gt sectra", "source serif",
-  "cormorant", "spectral", "noto serif", "pt serif", "crimson", "garamond",
-  "minion", "georgia", "times", "didot", "bodoni", "freight", "publico",
+  "playfair display", "merriweather", "tiempos", "gt sectra", "source serif",
+  "cormorant garamond", "pt serif", "crimson text", "noto serif",
+  "didot", "bodoni moda", "freight text", "publico", "fraunces", "lyon",
+  "canela", "ivypresto", "ivy presto", "redaction", "stix two",
 ];
 
 const KNOWN_SANS_FAMILY_NAMES = [
@@ -73,21 +76,21 @@ export function parseTypographyHasSerif(md: string): boolean | null {
     }
     if (sawAny) return false;
   }
-  // Markdown fallback: scan body for explicit font-family declarations
+  // Markdown fallback: scan body for explicit font-family declarations.
+  // We deliberately do NOT use the bare word "serif" as a positive signal —
+  // many sans-only systems mention "sans-serif fallback" or reference a serif
+  // family in prose without using one as their primary face.
   const matches = md.match(/font-family\s*:\s*[^;\n]+/gi);
   if (matches && matches.length > 0) {
     if (matches.some(looksSerif)) return true;
     return false;
   }
-  // Last-resort: walk the prose for known family names (case-insensitive)
   const lower = md.toLowerCase();
+  // Match only specific named serif families, not the generic "serif" keyword
   const hasSerif = SERIF_FAMILY_NAMES.some((n) => lower.includes(n));
   const hasSans = KNOWN_SANS_FAMILY_NAMES.some((n) => lower.includes(n));
   if (hasSerif) return true;
   if (hasSans) return false;
-  // Plain `serif` keyword (excluding sans-serif) anywhere in the doc
-  const stripped = lower.replace(/sans-?serif/g, "");
-  if (/\bserif\b/.test(stripped)) return true;
   return null;
 }
 
