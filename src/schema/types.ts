@@ -3,10 +3,11 @@
 // ═══ User Inputs ═══
 
 export type MoodArchetype =
-  | "precise"
-  | "confident"
-  | "expressive"
-  | "modern";
+  | "clean-minimal"
+  | "warm-friendly"
+  | "bold-energetic"
+  | "professional"
+  | "playful-creative";
 
 export type ColorCharacter = "vivid" | "balanced" | "muted";
 

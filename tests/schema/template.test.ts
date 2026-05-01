@@ -6,7 +6,7 @@ import type { DesignSystem } from "../../src/schema/types.js";
 
 const mockSystem: DesignSystem = {
   brandName: "MockBrand",
-  mood: "precise",
+  mood: "professional",
   theme: {
     atmosphere:
       "MockBrand lives in a restrained world where whitespace is the primary design material.",

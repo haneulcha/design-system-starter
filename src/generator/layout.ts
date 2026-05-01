@@ -2,10 +2,11 @@ import type { ArchetypePreset, LayoutSystem } from "../schema/types.js";
 
 export function generateLayout(archetype: ArchetypePreset): LayoutSystem {
   const whitespaceMap: Record<string, string> = {
-    "precise": "Structured, purposeful spacing. Every margin serves information hierarchy. Dense enough to convey seriousness, open enough to breathe.",
-    "confident": "Whitespace is not decoration — it is the frame that makes bold typographic moments land harder by contrast. Section breaks are generous and deliberate.",
-    "expressive": "Generous, atmospheric spacing throughout. Nothing feels crowded or urgent — the whitespace amplifies the sense of depth and considered presence.",
-    "modern": "Airy, startup-product rhythm. Flat surfaces need generous spacing to breathe; the layout feels light and expansive rather than dense.",
+    "professional": "Structured, purposeful spacing. Every margin serves information hierarchy. Dense enough to convey seriousness, open enough to breathe.",
+    "bold-energetic": "Whitespace is not decoration — it is the frame that makes bold typographic moments land harder by contrast. Section breaks are generous and deliberate.",
+    "warm-friendly": "Generous, atmospheric spacing throughout. Nothing feels crowded or urgent — the whitespace amplifies the sense of depth and considered presence.",
+    "clean-minimal": "Airy, startup-product rhythm. Flat surfaces need generous spacing to breathe; the layout feels light and expansive rather than dense.",
+    "playful-creative": "Generous, unhurried rhythm with room for expressive moments. Section breaks feel intentional and inviting, never crowded — whitespace gives every element space to express itself.",
   };
 
   return {
