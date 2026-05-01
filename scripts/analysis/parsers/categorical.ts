@@ -26,7 +26,6 @@ export function parseBtnShape(md: string): BtnShape | null {
   if (/\bpill\b/i.test(section)) return 3;
   const radius = parseBtnRadius(md);
   if (radius === null) return null;
-  if (radius >= 9999) return 3;
   if (radius >= 8) return 2;
   if (radius >= 3) return 1;
   return 0;

@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join, basename } from "node:path";
 import type { ExtractedRecord } from "./types.js";
-import { parseBtnRadius, parseCardRadius } from "./parsers/numeric.js";
+import { parseBtnRadiusInfo, parseCardRadius } from "./parsers/numeric.js";
 import {
   parseHeadingWeight,
   parseBodyLineHeight,
@@ -15,15 +15,18 @@ import { extractFromYaml } from "./parsers/yaml-extract.js";
 
 function extractMarkdown(system: string, md: string): ExtractedRecord {
   const brand = parseBrandOklch(md);
+  const btnInfo = parseBtnRadiusInfo(md);
+  const rawShape = parseBtnShape(md);
   return {
     system,
-    btn_radius: parseBtnRadius(md),
+    btn_radius: btnInfo?.px ?? null,
+    is_fully_pill: btnInfo ? btnInfo.isPill : null,
     card_radius: parseCardRadius(md),
     heading_weight: parseHeadingWeight(md),
     body_line_height: parseBodyLineHeight(md),
     heading_letter_spacing: parseHeadingLetterSpacing(md),
     shadow_intensity: parseShadowIntensity(md),
-    btn_shape: parseBtnShape(md),
+    btn_shape: btnInfo?.isPill ? 3 : rawShape,
     brand_l: brand?.l ?? null,
     brand_c: brand?.c ?? null,
     brand_h: brand?.h ?? null,
@@ -36,7 +39,7 @@ function extractMarkdown(system: string, md: string): ExtractedRecord {
 function emptyRecord(system: string): ExtractedRecord {
   return {
     system,
-    btn_radius: null, card_radius: null, heading_weight: null,
+    btn_radius: null, is_fully_pill: null, card_radius: null, heading_weight: null,
     body_line_height: null, heading_letter_spacing: null,
     shadow_intensity: null, btn_shape: null,
     brand_l: null, brand_c: null, brand_h: null,
