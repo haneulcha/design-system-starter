@@ -4,6 +4,12 @@ import type { ExtractedRecord, BtnShape } from "../types.js";
 import { LETTER_SPACING_RANGE, FULL_PILL_THRESHOLD_PX } from "../types.js";
 import type { Oklch } from "../../../src/schema/types.js";
 import { extractYamlFrontmatter } from "./format.js";
+import {
+  parseTypographyHasSerif,
+  parseFontFamilyCount,
+  parseColorPaletteSize,
+  parseSpacingRangeRatio,
+} from "./extras.js";
 
 const toOklch = converter("oklch");
 
@@ -179,5 +185,9 @@ export function extractFromYaml(system: string, md: string): ExtractedRecord | n
     dark_mode_present: detectDarkMode(doc, md),
     gray_chroma: grayOklch?.c ?? null,
     accent_offset: brand && accentOklch ? ((accentOklch.h - brand.h) % 360 + 360) % 360 : null,
+    typography_has_serif: parseTypographyHasSerif(md),
+    font_family_count: parseFontFamilyCount(md),
+    color_palette_size: parseColorPaletteSize(md),
+    spacing_range_ratio: parseSpacingRangeRatio(md),
   };
 }

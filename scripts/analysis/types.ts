@@ -19,6 +19,11 @@ export interface ExtractedRecord {
   dark_mode_present: boolean | null;
   gray_chroma: number | null;
   accent_offset: number | null;
+  // Phase C lean (4 new variables)
+  typography_has_serif: boolean | null;
+  font_family_count: number | null;
+  color_palette_size: number | null;
+  spacing_range_ratio: number | null;
 }
 
 export type ShadowIntensity = 0 | 1 | 2 | 3 | 4; // none | whisper | subtle | medium | dramatic

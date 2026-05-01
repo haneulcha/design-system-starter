@@ -12,6 +12,12 @@ import { parseBrandOklch, parseGrayChroma, parseAccentOffset } from "./parsers/c
 import { parseDarkModePresent } from "./parsers/modes.js";
 import { detectFormat } from "./parsers/format.js";
 import { extractFromYaml } from "./parsers/yaml-extract.js";
+import {
+  parseTypographyHasSerif,
+  parseFontFamilyCount,
+  parseColorPaletteSize,
+  parseSpacingRangeRatio,
+} from "./parsers/extras.js";
 
 function extractMarkdown(system: string, md: string): ExtractedRecord {
   const brand = parseBrandOklch(md);
@@ -33,6 +39,10 @@ function extractMarkdown(system: string, md: string): ExtractedRecord {
     dark_mode_present: parseDarkModePresent(md),
     gray_chroma: parseGrayChroma(md),
     accent_offset: parseAccentOffset(md),
+    typography_has_serif: parseTypographyHasSerif(md),
+    font_family_count: parseFontFamilyCount(md),
+    color_palette_size: parseColorPaletteSize(md),
+    spacing_range_ratio: parseSpacingRangeRatio(md),
   };
 }
 
@@ -44,6 +54,8 @@ function emptyRecord(system: string): ExtractedRecord {
     shadow_intensity: null, btn_shape: null,
     brand_l: null, brand_c: null, brand_h: null,
     dark_mode_present: null, gray_chroma: null, accent_offset: null,
+    typography_has_serif: null, font_family_count: null,
+    color_palette_size: null, spacing_range_ratio: null,
   };
 }
 
