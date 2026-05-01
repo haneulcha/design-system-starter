@@ -13,6 +13,18 @@ const SERIF_FAMILY_NAMES = [
   "minion", "georgia", "times", "didot", "bodoni", "freight", "publico",
 ];
 
+const KNOWN_SANS_FAMILY_NAMES = [
+  "inter", "sf pro", "helvetica", "roboto", "circular", "neue haas", "neue",
+  "graphik", "söhne", "soehne", "founders", "general sans", "untitled sans",
+  "ibm plex sans", "ibm plex", "manrope", "geist", "cabinet grotesk",
+  "system-ui", "geist mono", "monaspace", "noto sans", "open sans", "work sans",
+  "rubik", "satoshi", "supreme", "switzer", "raleway", "poppins", "neuemontreal",
+  "neuehaas", "spacegrotesk", "space grotesk", "azeret", "twkeverett",
+  "matter", "haas grotesk", "ttcommons", "tt commons", "univers",
+  "instrument sans", "neuetelegraf", "söhne", "redaction",
+  "notioninter", "cereal", "faktum", "sailec", "sf mono",
+];
+
 const SANS_SUFFIX = /sans-?serif/i;
 const SERIF_SUFFIX = /(?<!sans[-\s]?)serif/i;
 
@@ -67,8 +79,15 @@ export function parseTypographyHasSerif(md: string): boolean | null {
     if (matches.some(looksSerif)) return true;
     return false;
   }
-  // Last-resort: known serif family names anywhere in the doc
-  if (SERIF_FAMILY_NAMES.some((n) => md.toLowerCase().includes(n))) return true;
+  // Last-resort: walk the prose for known family names (case-insensitive)
+  const lower = md.toLowerCase();
+  const hasSerif = SERIF_FAMILY_NAMES.some((n) => lower.includes(n));
+  const hasSans = KNOWN_SANS_FAMILY_NAMES.some((n) => lower.includes(n));
+  if (hasSerif) return true;
+  if (hasSans) return false;
+  // Plain `serif` keyword (excluding sans-serif) anywhere in the doc
+  const stripped = lower.replace(/sans-?serif/g, "");
+  if (/\bserif\b/.test(stripped)) return true;
   return null;
 }
 
@@ -91,7 +110,13 @@ export function parseFontFamilyCount(md: string): number | null {
     }
     if (families.size > 0) return families.size;
   }
-  return null;
+  // Markdown prose fallback: count distinct known family-name mentions
+  const lower = md.toLowerCase();
+  const found = new Set<string>();
+  for (const n of [...SERIF_FAMILY_NAMES, ...KNOWN_SANS_FAMILY_NAMES]) {
+    if (lower.includes(n)) found.add(n);
+  }
+  return found.size > 0 ? found.size : null;
 }
 
 export function parseColorPaletteSize(md: string): number | null {
@@ -106,13 +131,18 @@ export function parseColorPaletteSize(md: string): number | null {
   return distinct.size > 0 ? distinct.size : null;
 }
 
+// Plausible spacing token range (px). Excludes radii sentinels (9999) and
+// outlier "section" gaps that aren't part of the spacing scale.
+const SPACING_MIN_PX = 1;
+const SPACING_MAX_PX = 200;
+
 export function parseSpacingRangeRatio(md: string): number | null {
   const doc = parseYamlDoc(md);
   const values: number[] = [];
   if (doc?.spacing) {
     for (const v of Object.values(doc.spacing)) {
       const px = typeof v === "number" ? v : parsePxLoose(v);
-      if (px !== null && px > 0) values.push(px);
+      if (px !== null && px >= SPACING_MIN_PX && px <= SPACING_MAX_PX) values.push(px);
     }
   }
   if (values.length === 0) {
@@ -121,7 +151,7 @@ export function parseSpacingRangeRatio(md: string): number | null {
     if (spacingMatch) {
       for (const m of spacingMatch[0].matchAll(/(\d+(?:\.\d+)?)\s*px/g)) {
         const n = Number(m[1]);
-        if (n > 0) values.push(n);
+        if (n >= SPACING_MIN_PX && n <= SPACING_MAX_PX) values.push(n);
       }
     }
   }
