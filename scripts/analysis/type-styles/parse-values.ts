@@ -35,6 +35,9 @@ export function parseLineHeight(input: string): ParsedValue<number> {
     if (lo >= 0.5 && lo <= 3 && hi >= 0.5 && hi <= 3) {
       return { value: null, range: [lo, hi] };
     }
+    // Range syntax was detected but values are outside plausible LH bounds —
+    // treat as unparseable rather than silently extracting just the lower number.
+    return { value: null };
   }
   const n = input.match(LH_NUM_RE);
   if (n) return { value: Number(n[1]) };

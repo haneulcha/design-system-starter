@@ -53,6 +53,9 @@ describe("parseLineHeight", () => {
   it("treats 'normal' as null", () => {
     expect(parseLineHeight("normal")).toEqual({ value: null });
   });
+  it("returns null when range syntax matches but values are out of plausible LH bounds", () => {
+    expect(parseLineHeight("0.3-4.5")).toEqual({ value: null });
+  });
 });
 
 describe("parseLetterSpacing", () => {
