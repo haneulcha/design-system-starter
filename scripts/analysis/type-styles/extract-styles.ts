@@ -61,6 +61,66 @@ function emptyFontFamily(): FontFamilyMetadata {
   };
 }
 
+function findSubsection(section: string, name: string): string | null {
+  const lines = section.split("\n");
+  const target = name.toLowerCase().trim();
+  let startIdx = -1;
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(/^###\s+(.+?)\s*$/);
+    if (m && m[1].toLowerCase().trim() === target) {
+      startIdx = i + 1;
+      break;
+    }
+  }
+  if (startIdx === -1) return null;
+  let endIdx = lines.length;
+  for (let i = startIdx; i < lines.length; i++) {
+    if (/^#{1,3}\s+/.test(lines[i])) {
+      endIdx = i;
+      break;
+    }
+  }
+  return lines.slice(startIdx, endIdx).join("\n").trim();
+}
+
+function extractBacktickedNames(s: string): string[] {
+  return [...s.matchAll(/`([^`]+)`/g)].map((m) => m[1]);
+}
+
+function parseFontFamilySubsection(sub: string | null): FontFamilyMetadata {
+  const ff = emptyFontFamily();
+  if (!sub) return ff;
+  for (const line of sub.split("\n")) {
+    const m = line.match(/^\s*[-*]\s+\*\*([^*]+)\*\*\s*:?\s*(.*)$/);
+    if (!m) continue;
+    const label = m[1].toLowerCase().trim();
+    const body = m[2];
+    const names = extractBacktickedNames(body);
+    if (label === "primary") {
+      ff.primary = names[0] ?? null;
+      if (names.length > 1) {
+        ff.primaryFallbacks = names.slice(1).flatMap((n) =>
+          n.split(/,\s*/).map((s) => s.trim()).filter(Boolean),
+        );
+      }
+    } else if (label === "monospace" || label === "mono") {
+      ff.mono = names[0] ?? null;
+      if (names.length > 1) {
+        ff.monoFallbacks = names.slice(1).flatMap((n) =>
+          n.split(/,\s*/).map((s) => s.trim()).filter(Boolean),
+        );
+      }
+    } else if (label === "display") {
+      ff.display = names[0] ?? null;
+    } else if (label === "opentype features" || label === "features") {
+      ff.openTypeFeatures = names.flatMap((n) =>
+        n.split(/,\s*/).map((s) => s.replace(/^"|"$/g, "").trim()).filter(Boolean),
+      );
+    }
+  }
+  return ff;
+}
+
 export function extractFromSystem(system: string, md: string): SystemResult {
   const section = findSection(md, "Typography");
   if (section === null) {
@@ -129,11 +189,14 @@ export function extractFromSystem(system: string, md: string): SystemResult {
     });
   }
 
+  const fontFamily = parseFontFamilySubsection(findSubsection(section, "Font Family"));
+  const principlesText = findSubsection(section, "Principles") ?? "";
+
   return {
     system,
     hasTypographySection: true,
     rows,
-    fontFamily: emptyFontFamily(),
-    principlesText: "",
+    fontFamily,
+    principlesText,
   };
 }

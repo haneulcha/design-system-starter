@@ -81,3 +81,30 @@ it("extracts at least 30 systems from the live corpus without throwing", () => {
   expect(withSection).toBeGreaterThanOrEqual(30);
   expect(totalRows).toBeGreaterThanOrEqual(300);
 });
+
+const FF_MD = `## Typography
+
+### Font Family
+- **Primary**: \`Inter Variable\`, with fallbacks: \`system-ui, -apple-system\`
+- **Monospace**: \`JetBrains Mono\`, with fallbacks: \`ui-monospace, SF Mono\`
+- **OpenType Features**: \`"ss01", "tnum"\` enabled globally
+
+### Hierarchy
+| Role | Size | Weight | Line Height | Letter Spacing |
+|---|---|---|---|---|
+| Body | 16px | 400 | 1.5 | 0 |
+
+### Principles
+- Light weight is the signature.
+- ss01 always on.
+`;
+
+it("extracts primary, mono families, fallbacks, OpenType features, principles text", () => {
+  const r = extractFromSystem("a", FF_MD);
+  expect(r.fontFamily.primary).toBe("Inter Variable");
+  expect(r.fontFamily.primaryFallbacks).toEqual(["system-ui", "-apple-system"]);
+  expect(r.fontFamily.mono).toBe("JetBrains Mono");
+  expect(r.fontFamily.monoFallbacks).toEqual(["ui-monospace", "SF Mono"]);
+  expect(r.fontFamily.openTypeFeatures).toEqual(["ss01", "tnum"]);
+  expect(r.principlesText).toContain("Light weight is the signature.");
+});
