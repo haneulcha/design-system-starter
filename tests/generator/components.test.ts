@@ -3,7 +3,7 @@ import { generateComponents } from "../../src/generator/components.js";
 import { getArchetype } from "../../src/schema/archetypes.js";
 
 describe("generateComponents", () => {
-  const archetype = getArchetype("precise");
+  const archetype = getArchetype("professional");
   const specs = generateComponents(archetype);
 
   describe("button", () => {
