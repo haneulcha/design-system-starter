@@ -469,3 +469,134 @@ components:
     expect(r?.btn_shape).toBe(2);
   });
 });
+
+import {
+  parseTypographyHasSerif,
+  parseFontFamilyCount,
+  parseColorPaletteSize,
+  parseSpacingRangeRatio,
+} from "../../scripts/analysis/parsers/extras.js";
+
+describe("parseTypographyHasSerif", () => {
+  it("returns true for explicit serif fontFamily in YAML typography", () => {
+    const md = `---
+name: D
+typography:
+  hero:
+    fontFamily: "'Playfair Display', Georgia, serif"
+  body:
+    fontFamily: "Inter, sans-serif"
+---
+`;
+    expect(parseTypographyHasSerif(md)).toBe(true);
+  });
+
+  it("returns false when only sans-serif is present", () => {
+    const md = `---
+name: D
+typography:
+  hero:
+    fontFamily: "Inter, sans-serif"
+---
+`;
+    expect(parseTypographyHasSerif(md)).toBe(false);
+  });
+
+  it("returns null when no typography is detected", () => {
+    expect(parseTypographyHasSerif("# nothing relevant")).toBeNull();
+  });
+
+  it("recognizes a known serif family name even without explicit `serif` keyword", () => {
+    const md = `---
+typography:
+  hero:
+    fontFamily: "Playfair Display"
+---
+`;
+    expect(parseTypographyHasSerif(md)).toBe(true);
+  });
+});
+
+describe("parseFontFamilyCount", () => {
+  it("counts distinct first-token families across YAML roles", () => {
+    const md = `---
+typography:
+  hero:
+    fontFamily: "'Inter', sans-serif"
+  display:
+    fontFamily: "'Playfair Display', serif"
+  body:
+    fontFamily: "'Inter', sans-serif"
+---
+`;
+    expect(parseFontFamilyCount(md)).toBe(2);
+  });
+
+  it("returns 1 when all roles use the same family", () => {
+    const md = `---
+typography:
+  hero:
+    fontFamily: "Inter"
+  body:
+    fontFamily: "Inter"
+---
+`;
+    expect(parseFontFamilyCount(md)).toBe(1);
+  });
+
+  it("returns null when no fontFamily is present", () => {
+    expect(parseFontFamilyCount("# none")).toBeNull();
+  });
+});
+
+describe("parseColorPaletteSize", () => {
+  it("counts color keys in YAML colors block", () => {
+    const md = `---
+colors:
+  primary: "#000"
+  secondary: "#111"
+  ink: "#222"
+---
+`;
+    expect(parseColorPaletteSize(md)).toBe(3);
+  });
+
+  it("falls back to distinct hex codes for markdown-only docs", () => {
+    const md = "## Colors\nprimary #FF0000\nbody #00ff00\nbody-alt #00FF00\nink #000000";
+    expect(parseColorPaletteSize(md)).toBe(3);
+  });
+
+  it("returns null when no colors found", () => {
+    expect(parseColorPaletteSize("no colors here")).toBeNull();
+  });
+});
+
+describe("parseSpacingRangeRatio", () => {
+  it("returns max/min ratio of YAML spacing tokens", () => {
+    const md = `---
+spacing:
+  xxs: 2px
+  xxl: 48px
+---
+`;
+    expect(parseSpacingRangeRatio(md)).toBe(24);
+  });
+
+  it("returns null with fewer than 2 spacing values", () => {
+    const md = `---
+spacing:
+  base: 16px
+---
+`;
+    expect(parseSpacingRangeRatio(md)).toBeNull();
+  });
+
+  it("falls back to a markdown Spacing section", () => {
+    const md = "## 8. Spacing\n\n- xxs: 4px\n- xxl: 64px\n";
+    expect(parseSpacingRangeRatio(md)).toBe(16);
+  });
+
+  it("returns null when no spacing data", () => {
+    expect(parseSpacingRangeRatio("# nothing")).toBeNull();
+  });
+});
