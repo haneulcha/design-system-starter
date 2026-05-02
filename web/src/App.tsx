@@ -4,7 +4,7 @@ import { StepColor } from "./steps/StepColor";
 import { StepArchetype } from "./steps/StepArchetype";
 import { StepFont } from "./steps/StepFont";
 import { ResultPage } from "./result/ResultPage";
-import { DEFAULT_STATE, useGenerateResult, type WizardState, type MoodArchetype } from "./hooks/useGenerator";
+import { DEFAULT_STATE, useGenerateResult, type WizardState, type PresetName } from "./hooks/useGenerator";
 
 type Screen = "wizard" | "result";
 
@@ -28,13 +28,8 @@ export function App() {
     );
   }
 
-  const next = () => {
-    if (step < 2) setStep(step + 1);
-    else setScreen("result");
-  };
-  const back = () => {
-    if (step > 0) setStep(step - 1);
-  };
+  const next = () => { if (step < 2) setStep(step + 1); else setScreen("result"); };
+  const back = () => { if (step > 0) setStep(step - 1); };
 
   return (
     <div className="min-h-screen bg-white antialiased">
@@ -43,23 +38,23 @@ export function App() {
         <div className="py-8">
           {step === 0 && (
             <StepColor
-              value={state.primaryColor}
-              onChange={(c: string) => update({ primaryColor: c })}
+              value={state.brandColor}
+              onChange={(c: string) => update({ brandColor: c })}
               scales={result?.system.colors ?? null}
             />
           )}
           {step === 1 && (
             <StepArchetype
-              value={state.mood}
+              value={state.preset}
               tokens={result?.tokens ?? null}
               system={result?.system ?? null}
-              onChange={(m: MoodArchetype) => update({ mood: m })}
+              onChange={(p: PresetName) => update({ preset: p })}
             />
           )}
           {step === 2 && (
             <StepFont
               value={state.fontFamily}
-              mood={state.mood}
+              preset={state.preset}
               onChange={(f: string) => update({ fontFamily: f })}
               system={result?.system ?? null}
             />
@@ -69,9 +64,7 @@ export function App() {
           <button
             onClick={back}
             className={`px-6 py-2 rounded text-sm transition-colors ${
-              step === 0
-                ? "invisible"
-                : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+              step === 0 ? "invisible" : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
             }`}
           >
             Back

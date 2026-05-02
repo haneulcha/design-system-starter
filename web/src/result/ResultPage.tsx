@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import type { WizardState, MoodArchetype, FullResult } from "../hooks/useGenerator";
-import { ARCHETYPES, getArchetype } from "@core/schema/archetypes.js";
+import type { WizardState, FullResult, PresetName } from "../hooks/useGenerator";
+import { ARCHETYPES } from "@core/schema/archetypes.js";
 import { ColorScale } from "../components/ColorScale";
 import { DSButton } from "../components/DSButton";
 import { DSInput } from "../components/DSInput";
@@ -10,6 +10,14 @@ import { DSDivider } from "../components/DSDivider";
 import { TypeScale } from "../components/TypeScale";
 import { DownloadPanel } from "./DownloadPanel";
 import { loadGoogleFont, resolveColor, buildFontFamily } from "../lib/tokens";
+
+const SUGGESTED_FONTS: Record<PresetName, string[]> = {
+  "clean-minimal":    ["Inter", "Geist", "Manrope"],
+  "warm-friendly":    ["Inter", "DM Sans", "Plus Jakarta Sans"],
+  "bold-energetic":   ["Inter", "Space Grotesk", "Sora"],
+  "professional":     ["Inter", "IBM Plex Sans", "Source Sans 3"],
+  "playful-creative": ["Inter", "Outfit", "Quicksand"],
+};
 
 export function ResultPage({
   state,
@@ -22,9 +30,7 @@ export function ResultPage({
   onChange: (p: Partial<WizardState>) => void;
   onBack: () => void;
 }) {
-  const archetype = getArchetype(state.mood);
-  const suggestedFonts = archetype.suggestedFonts;
-  const suggestedNames = suggestedFonts.map((f) => f.name);
+  const suggestedNames = SUGGESTED_FONTS[state.preset];
   const isCustom = !suggestedNames.includes(state.fontFamily);
   const [customFontInput, setCustomFontInput] = useState(isCustom ? state.fontFamily : "");
   const [showCustomFont, setShowCustomFont] = useState(isCustom);
@@ -85,17 +91,17 @@ export function ResultPage({
             <div className="flex items-center gap-2">
               <input
                 type="color"
-                value={state.primaryColor}
-                onChange={(e) => onChange({ primaryColor: e.target.value })}
+                value={state.brandColor}
+                onChange={(e) => onChange({ brandColor: e.target.value })}
                 className="w-9 h-9 rounded cursor-pointer border border-neutral-200 p-0.5 bg-white"
               />
               <input
                 type="text"
-                value={state.primaryColor}
+                value={state.brandColor}
                 onChange={(e) => {
                   const v = e.target.value;
-                  if (/^#[0-9a-fA-F]{6}$/.test(v)) onChange({ primaryColor: v });
-                  else if (v.length <= 7) onChange({ primaryColor: v });
+                  if (/^#[0-9a-fA-F]{6}$/.test(v)) onChange({ brandColor: v });
+                  else if (v.length <= 7) onChange({ brandColor: v });
                 }}
                 className="flex-1 font-mono text-sm px-3 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-neutral-500"
                 placeholder="#5e6ad2"
@@ -110,20 +116,20 @@ export function ResultPage({
             <div className="grid grid-cols-2 gap-1.5">
               {archetypeEntries.map((a) => (
                 <label
-                  key={a.mood}
+                  key={a.preset}
                   className={[
                     "flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all text-sm",
-                    state.mood === a.mood
+                    state.preset === a.preset
                       ? "border-neutral-900 bg-neutral-900 text-white"
                       : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-400",
                   ].join(" ")}
                 >
                   <input
                     type="radio"
-                    name="result-mood"
-                    value={a.mood}
-                    checked={state.mood === a.mood}
-                    onChange={() => onChange({ mood: a.mood as MoodArchetype })}
+                    name="result-preset"
+                    value={a.preset}
+                    checked={state.preset === a.preset}
+                    onChange={() => onChange({ preset: a.preset as PresetName })}
                     className="sr-only"
                   />
                   {a.label}
@@ -150,9 +156,9 @@ export function ResultPage({
               }}
               className="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:border-neutral-500 bg-white appearance-none"
             >
-              {suggestedFonts.map((f) => (
-                <option key={f.name} value={f.name}>
-                  {f.name}
+              {suggestedNames.map((f) => (
+                <option key={f} value={f}>
+                  {f}
                 </option>
               ))}
               <option value="custom">Custom…</option>
@@ -189,7 +195,7 @@ export function ResultPage({
               {state.brandName || "Untitled"} Design System
             </h1>
             <p className="text-neutral-500 text-sm capitalize">
-              {state.mood} archetype — {state.fontFamily}
+              {state.preset} archetype — {state.fontFamily}
             </p>
           </div>
 
