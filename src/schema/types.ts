@@ -3,9 +3,11 @@
 import type { ColorCategoryTokens } from "../generator/color-category.js";
 import type { TypographyCategoryTokens } from "../generator/typography-category.js";
 import type { SpacingCategoryTokens } from "../generator/spacing-category.js";
+import type { RadiusCategoryTokens } from "../generator/radius-category.js";
 import type { PartialColorKnobs } from "./color.js";
 import type { TypographyInput } from "./typography.js";
 import type { SpacingInput } from "./spacing.js";
+import type { RadiusInput } from "./radius.js";
 
 // ═══ User Inputs ═══
 
@@ -33,6 +35,7 @@ export interface UserInputs {
   colorKnobs?: PartialColorKnobs;
   typographyKnobs?: TypographyInput;
   spacingKnobs?: SpacingInput;
+  radiusKnobs?: RadiusInput;
 }
 
 // ═══ Color ═══
@@ -173,6 +176,8 @@ export interface DesignSystem {
   typographyTokens: TypographyCategoryTokens;
   /** New per-category spacing output. Source of truth for spacing rendering. */
   spacingTokens: SpacingCategoryTokens;
+  /** New per-category radius output. Source of truth for radius rendering. */
+  radiusTokens: RadiusCategoryTokens;
   components: ComponentSpecs;
   layout: LayoutSystem;
   elevation: ElevationSystem;
@@ -197,10 +202,6 @@ export interface ArchetypePreset {
   description: string;
   atmosphereTemplate: string;
   characteristics: string[];
-  buttonRadius: string;
-  cardRadius: string;
-  inputRadius: string;
-  pillRadius: string;
   shadowIntensity: ShadowIntensity;
   neutralUndertone: NeutralUndertone;
   dos: string[];

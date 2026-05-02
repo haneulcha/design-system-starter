@@ -1,15 +1,18 @@
 import type { ArchetypePreset, LayoutSystem } from "../schema/types.js";
 import type { SpacingCategoryTokens } from "./spacing-category.js";
+import type { RadiusCategoryTokens, RadiusTokenValue } from "./radius-category.js";
 
 /**
  * Build the LayoutSystem (spacing array, grid, border-radius, philosophy) for
- * the markdown template. Spacing entries are derived from the new spacing
- * category (proposal §3); border-radius and grid still consume archetype until
- * those categories complete their per-category inductive analyses.
+ * the markdown template. Spacing entries derive from the spacing category
+ * (proposal §3); border-radius entries derive from the radius category
+ * (proposal §3). Grid still uses static defaults; whitespace philosophy still
+ * comes from the archetype.
  */
 export function generateLayout(
   archetype: ArchetypePreset,
   spacingTokens: SpacingCategoryTokens,
+  radiusTokens: RadiusCategoryTokens,
 ): LayoutSystem {
   const whitespaceMap: Record<string, string> = {
     "professional": "Structured, purposeful spacing. Every margin serves information hierarchy. Dense enough to convey seriousness, open enough to breathe.",
@@ -19,8 +22,7 @@ export function generateLayout(
     "playful-creative": "Generous, unhurried rhythm with room for expressive moments. Section breaks feel intentional and inviting, never crowded — whitespace gives every element space to express itself.",
   };
 
-  // Emit the 8 named aliases in semantic order. Reserved scale stops are not
-  // surfaced here — consumers needing them go through spacingTokens.scale.
+  // ── Spacing aliases (proposal §3) ───────────────────────────────────────────
   const aliasOrder: Array<keyof SpacingCategoryTokens["aliases"]> = [
     "xxs", "xs", "sm", "md", "lg", "xl", "xxl", "section",
   ];
@@ -29,24 +31,30 @@ export function generateLayout(
     value: `${spacingTokens.aliases[name]}px`,
   }));
 
+  // ── Border radius tokens (proposal §3) ──────────────────────────────────────
+  const formatRadius = (v: RadiusTokenValue): string =>
+    typeof v === "number" ? `${v}px` : v;
+
+  const r = radiusTokens.tokens;
+  const borderRadius = [
+    { name: "None",   value: formatRadius(r.none),   use: "Sharp-edged elements" },
+    { name: "Subtle", value: formatRadius(r.subtle), use: "Small interactive elements" },
+    { name: "Button", value: formatRadius(r.button), use: "Buttons, form actions" },
+    { name: "Input",  value: formatRadius(r.input),  use: "Form inputs, selects" },
+    { name: "Card",   value: formatRadius(r.card),   use: "Cards, containers" },
+    { name: "Large",  value: formatRadius(r.large),  use: "Large containers, hero/feature" },
+    { name: "Pill",   value: formatRadius(r.pill),   use: "Badges, tags, pill CTAs" },
+    { name: "Circle", value: formatRadius(r.circle), use: "Avatars, icon buttons" },
+  ];
+
   return {
     spacing,
     grid: {
       maxWidth: "1200px",
       columns: 12,
-      // Grid gutter consumes the md alias — corpus mode for card-grid gutters.
       gutter: `${spacingTokens.aliases.md}px`,
     },
-    borderRadius: [
-      { name: "None", value: "0px", use: "Sharp-edged elements" },
-      { name: "Subtle", value: "4px", use: "Small interactive elements" },
-      { name: "Button", value: archetype.buttonRadius, use: "Buttons, form actions" },
-      { name: "Input", value: archetype.inputRadius, use: "Form inputs, selects" },
-      { name: "Card", value: archetype.cardRadius, use: "Cards, containers" },
-      { name: "Large", value: "24px", use: "Large containers, sections" },
-      { name: "Pill", value: archetype.pillRadius, use: "Badges, tags, pills" },
-      { name: "Circle", value: "50%", use: "Avatars, icon buttons" },
-    ],
+    borderRadius,
     whitespacePhilosophy: whitespaceMap[archetype.mood],
   };
 }
