@@ -18,7 +18,8 @@ import { generateTypographyCategory } from "./typography-category.js";
 import { generateSpacingCategory } from "./spacing-category.js";
 import { generateRadiusCategory } from "./radius-category.js";
 import { generateElevationCategory } from "./elevation-category.js";
-import { generateComponents } from "./components.js";
+import { generateComponentCategory } from "./components-category.js";
+import { toLegacyComponentSpecs } from "./components.js";
 import { generateLayout } from "./layout.js";
 import { generateElevation } from "./elevation.js";
 import { generateResponsive } from "./responsive.js";
@@ -134,7 +135,13 @@ export function generate(
   // Extract the resolved sans primary for use in agentGuide example prompts.
   // Strip surrounding quotes if the font name contains spaces (e.g. "Mona Sans" → Mona Sans).
   const fontFamily = typographyTokens.fontChains.sans.split(",")[0].trim().replace(/^"|"$/g, "");
-  const components = generateComponents(archetype);
+
+  // Components: new per-category pipeline (proposal §6). Archetype is no
+  // longer consulted; the rich tokens flow downstream and the legacy
+  // ComponentSpecs shape is derived via the adapter for template/tokens/figma.
+  const componentTokens = generateComponentCategory(inputs.componentKnobs);
+  const components = toLegacyComponentSpecs(componentTokens);
+
   const layout = generateLayout(archetype, spacingTokens, radiusTokens);
   const elevation = generateElevation(elevationTokens);
   const responsive = generateResponsive();
@@ -161,6 +168,7 @@ export function generate(
     spacingTokens,
     radiusTokens,
     elevationTokens,
+    componentTokens,
     components,
     layout,
     elevation,
