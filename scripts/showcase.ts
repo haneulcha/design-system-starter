@@ -7,9 +7,9 @@ import { generate } from "../src/generator/index.js";
 import { getArchetype } from "../src/schema/archetypes.js";
 import { renderShowcaseHtml, renderIndexHtml } from "./render-html.js";
 import { writeFileSync, mkdirSync } from "node:fs";
-import type { MoodArchetype } from "../src/schema/types.js";
+import type { PresetName } from "../src/schema/presets.js";
 
-const MOODS: MoodArchetype[] = [
+const PRESET_KEYS: PresetName[] = [
   "clean-minimal",
   "warm-friendly",
   "bold-energetic",
@@ -19,8 +19,8 @@ const MOODS: MoodArchetype[] = [
 
 mkdirSync("output/showcase", { recursive: true });
 
-const summaries = MOODS.map((mood) => {
-  const archetype = getArchetype(mood);
+const summaries = PRESET_KEYS.map((preset) => {
+  const archetype = getArchetype(preset);
   const result = generate(
     {
       brandName: "Acme",
@@ -29,11 +29,11 @@ const summaries = MOODS.map((mood) => {
     },
     archetype,
   );
-  const html = renderShowcaseHtml(mood, archetype, result);
-  writeFileSync(`output/showcase/${mood}.html`, html);
-  console.log(`  ${mood}: ${html.length.toLocaleString()} chars`);
-  return { mood, archetype, primary: "#5e6ad2" };
+  const html = renderShowcaseHtml(preset, archetype, result);
+  writeFileSync(`output/showcase/${preset}.html`, html);
+  console.log(`  ${preset}: ${html.length.toLocaleString()} chars`);
+  return { preset, archetype, primary: "#5e6ad2" };
 });
 
 writeFileSync("output/showcase/index.html", renderIndexHtml(summaries));
-console.log(`Generated ${MOODS.length + 1} showcase pages → output/showcase/`);
+console.log(`Generated ${PRESET_KEYS.length + 1} showcase pages → output/showcase/`);

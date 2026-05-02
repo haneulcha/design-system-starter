@@ -11,7 +11,7 @@ import { DEFAULT_ARCHETYPE } from "../../src/schema/archetypes.js";
 const ALL_ARCHETYPES: ArchetypePreset[] = Object.values(ARCHETYPES);
 
 for (const archetype of ALL_ARCHETYPES) {
-  describe(`generate (archetype: ${archetype.mood})`, () => {
+  describe(`generate (archetype: ${archetype.preset})`, () => {
     const result = generate(
       {
         brandName: "TestBrand",

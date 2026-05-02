@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { getArchetype, ARCHETYPES } from "../../src/schema/archetypes.js";
-import type { MoodArchetype } from "../../src/schema/types.js";
+import type { PresetName } from "../../src/schema/presets.js";
 
-const ALL_MOODS: MoodArchetype[] = [
+const ALL_PRESETS: PresetName[] = [
   "clean-minimal",
   "warm-friendly",
   "bold-energetic",
@@ -17,31 +17,31 @@ describe("ARCHETYPES", () => {
 });
 
 describe("getArchetype", () => {
-  for (const mood of ALL_MOODS) {
-    describe(mood, () => {
-      it("returns preset with matching mood", () => {
-        expect(getArchetype(mood).mood).toBe(mood);
+  for (const preset of ALL_PRESETS) {
+    describe(preset, () => {
+      it("returns preset with matching preset", () => {
+        expect(getArchetype(preset).preset).toBe(preset);
       });
 
       it("has non-empty label and description", () => {
-        const p = getArchetype(mood);
+        const p = getArchetype(preset);
         expect(p.label.length).toBeGreaterThan(0);
         expect(p.description.length).toBeGreaterThan(0);
       });
 
       it("atmosphere template contains placeholders", () => {
-        const p = getArchetype(mood);
+        const p = getArchetype(preset);
         expect(p.atmosphereTemplate).toContain("{{brandName}}");
         expect(p.atmosphereTemplate).toContain("{{primaryHex}}");
         expect(p.atmosphereTemplate).toContain("{{fontFamily}}");
       });
 
       it("has 5+ characteristics", () => {
-        expect(getArchetype(mood).characteristics.length).toBeGreaterThanOrEqual(5);
+        expect(getArchetype(preset).characteristics.length).toBeGreaterThanOrEqual(5);
       });
 
       it("has 7+ dos and 7+ donts", () => {
-        const p = getArchetype(mood);
+        const p = getArchetype(preset);
         expect(p.dos.length).toBeGreaterThanOrEqual(7);
         expect(p.donts.length).toBeGreaterThanOrEqual(7);
       });

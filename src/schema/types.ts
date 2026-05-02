@@ -16,20 +16,6 @@ import type { PresetName } from "./presets.js";
 
 // ═══ User Inputs ═══
 
-/**
- * Internal-only archetype identifiers. The 5-mood vocabulary is no longer a
- * user-facing input — see docs/research/color-analysis-notes.md §1 for the
- * pivot rationale. Typography/components/layout/elevation generation still
- * consumes a single fixed archetype (DEFAULT_ARCHETYPE) until those categories
- * complete their per-category inductive analyses.
- */
-export type MoodArchetype =
-  | "clean-minimal"
-  | "warm-friendly"
-  | "bold-energetic"
-  | "professional"
-  | "playful-creative";
-
 export type ColorCharacter = "vivid" | "balanced" | "muted";
 
 export interface UserInputs {
@@ -144,7 +130,7 @@ export interface DesignSystem {
 export type NeutralUndertone = "cool" | "warm" | "neutral";
 
 export interface ArchetypePreset {
-  mood: MoodArchetype;
+  preset: PresetName;
   label: string;
   description: string;
   atmosphereTemplate: string;
