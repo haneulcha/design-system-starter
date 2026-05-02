@@ -9,6 +9,7 @@ import { DSBadge } from "../components/DSBadge";
 import { DSDivider } from "../components/DSDivider";
 import { TypeScale } from "../components/TypeScale";
 import { DownloadPanel } from "./DownloadPanel";
+import { Inspector } from "../inspector/Inspector";
 import { loadGoogleFont, resolveColor, buildFontFamily } from "../lib/tokens";
 
 const SUGGESTED_FONTS: Record<PresetName, string[]> = {
@@ -57,9 +58,9 @@ export function ResultPage({
   const borderDefault = resolveColor(tokens, "bg/hairline");
 
   return (
-    <div className="min-h-screen bg-white antialiased flex flex-col md:flex-row">
+    <div className="min-h-screen bg-white antialiased flex flex-col lg:flex-row">
       {/* Sidebar */}
-      <aside className="w-full md:w-80 shrink-0 border-b md:border-b-0 md:border-r border-neutral-200 md:h-screen md:sticky md:top-0 md:overflow-y-auto">
+      <aside className="w-full lg:w-80 shrink-0 border-b lg:border-b-0 lg:border-r border-neutral-200 lg:h-screen lg:sticky lg:top-0 lg:overflow-y-auto">
         <div className="p-5 space-y-6">
           <button
             onClick={onBack}
@@ -303,6 +304,7 @@ export function ResultPage({
           </section>
         </div>
       </main>
+      <Inspector state={state} onChange={onChange} />
     </div>
   );
 }
