@@ -35,7 +35,234 @@ This is what we're fixing. No commit.
 
 ---
 
-## Task 2: Fix `lib/tokens.ts` — typography read + remove dead shadow helper
+## Task 2: Schema-wide naming alignment — `MoodArchetype` → `PresetName`, `mood` → `preset`
+
+**Files:**
+- Modify: `src/schema/types.ts`
+- Modify: `src/schema/archetypes.ts`
+- Modify: `src/generator/layout.ts`
+- Modify: `tests/schema/archetypes.test.ts`
+- Modify: `tests/generator/integration.test.ts`
+- Modify: `tests/scripts/render-html.test.ts`
+- Modify: `scripts/showcase.ts`
+- Modify: `scripts/render-html.ts`
+
+Background: `docs/research/_category-analysis-playbook.md` §"Rejected: Mood-based generation" settled on **`preset`** as the canonical term for the cross-category bundle concept. `PresetName` already lives in `src/schema/presets.ts` (and `types.ts` already imports it). The parallel `MoodArchetype` type plus the `ArchetypePreset.mood` field are leftover legacy. This task makes `PresetName`/`preset` the single vocabulary across `src/`, `tests/`, and `scripts/`. After this task `src/` is tsc-clean; `web/` remains broken (Tasks 3–10 fix it).
+
+- [ ] **Step 1: `src/schema/types.ts` — drop `MoodArchetype`, rename field**
+
+(a) Delete the entire `MoodArchetype` block (the doc comment + `export type MoodArchetype = …;` — currently lines 19–31).
+
+(b) In `interface ArchetypePreset`, change the field:
+
+```ts
+export interface ArchetypePreset {
+  preset: PresetName;     // was: mood: MoodArchetype
+  label: string;
+  description: string;
+  atmosphereTemplate: string;
+  characteristics: string[];
+  neutralUndertone: NeutralUndertone;
+  dos: string[];
+  donts: string[];
+}
+```
+
+The existing `import type { PresetName } from "./presets.js";` at the top of the file is already there — keep it.
+
+- [ ] **Step 2: `src/schema/archetypes.ts` — switch to `PresetName`, rename field**
+
+Update the imports and signature:
+
+```ts
+// src/schema/archetypes.ts
+
+import type { ArchetypePreset } from "./types.js";
+import type { PresetName } from "./presets.js";
+
+export const ARCHETYPES: Record<PresetName, ArchetypePreset> = {
+  "clean-minimal": {
+    preset: "clean-minimal",
+    label: "Clean & Minimal",
+    …
+  },
+  "warm-friendly": { preset: "warm-friendly", … },
+  "bold-energetic": { preset: "bold-energetic", … },
+  "professional": { preset: "professional", … },
+  "playful-creative": { preset: "playful-creative", … },
+};
+
+export function getArchetype(preset: PresetName): ArchetypePreset {
+  return ARCHETYPES[preset];
+}
+
+export const DEFAULT_ARCHETYPE: ArchetypePreset = ARCHETYPES.professional;
+```
+
+(For each of the 5 entries, only the first field changes: `mood: "<key>"` → `preset: "<key>"`. All other fields — `label`, `atmosphereTemplate`, `characteristics`, `dos`, `donts`, etc. — are untouched.)
+
+- [ ] **Step 3: `src/generator/layout.ts` — one reference**
+
+Find:
+
+```ts
+whitespacePhilosophy: whitespaceMap[archetype.mood],
+```
+
+Change to:
+
+```ts
+whitespacePhilosophy: whitespaceMap[archetype.preset],
+```
+
+- [ ] **Step 4: `tests/schema/archetypes.test.ts` — rename test fixtures**
+
+Replace the `MoodArchetype` import + `ALL_MOODS` constant + every `mood` local:
+
+```ts
+import { describe, expect, it } from "vitest";
+import { ARCHETYPES, getArchetype } from "../../src/schema/archetypes.js";
+import type { PresetName } from "../../src/schema/presets.js";
+
+const ALL_PRESETS: PresetName[] = [
+  "clean-minimal",
+  "warm-friendly",
+  "bold-energetic",
+  "professional",
+  "playful-creative",
+];
+
+describe("ARCHETYPES", () => {
+  for (const preset of ALL_PRESETS) {
+    describe(preset, () => {
+      it("returns preset with matching identifier", () => {
+        expect(getArchetype(preset).preset).toBe(preset);
+      });
+
+      it("has a non-empty label and description", () => {
+        const p = getArchetype(preset);
+        expect(p.label.length).toBeGreaterThan(0);
+        expect(p.description.length).toBeGreaterThan(0);
+      });
+
+      // …keep the rest of the existing assertions, replacing every `mood` → `preset`.
+    });
+  }
+});
+```
+
+Inspect the existing file to preserve all original assertions; only rename `MoodArchetype` → `PresetName`, `ALL_MOODS` → `ALL_PRESETS`, the loop variable `mood` → `preset`, and `getArchetype(mood).mood` → `getArchetype(preset).preset`.
+
+- [ ] **Step 5: `tests/generator/integration.test.ts` — fix property read**
+
+Change:
+
+```ts
+describe(`generate (archetype: ${archetype.mood})`, () => {
+```
+
+to:
+
+```ts
+describe(`generate (archetype: ${archetype.preset})`, () => {
+```
+
+The other line — `it("brand object has no mood field", () => {` — concerns a property on `tokens.brand`, not `archetype`. Open the test body: if it asserts something like `expect(tokens.brand).not.toHaveProperty("mood")`, the assertion is unaffected by this task and stays as-is. (No code in `src/generator/tokens.ts` writes a `mood` field to `tokens.brand`, so the test continues to pass.)
+
+- [ ] **Step 6: `tests/scripts/render-html.test.ts` — rename test fixtures**
+
+Apply the same pattern as Step 4: import `PresetName` from `../../src/schema/presets.js`; `ALL_MOODS` → `ALL_PRESETS`; loop variable `mood` → `preset`; helper signature `function gen(mood: MoodArchetype)` → `function gen(preset: PresetName)`. Inside the helper, `getArchetype(mood)` → `getArchetype(preset)`. Anchor strings — e.g. `it(\`renders a non-empty page with key markers for ${mood}\`)` and `expect(html).toContain(\`href="${mood}.html"\`)` — become `${preset}` accordingly.
+
+If any assertion checks for the literal CSS class strings `mood-badge` / `mood-card` etc., update them to `preset-badge` / `preset-card` (renamed in Step 8).
+
+- [ ] **Step 7: `scripts/showcase.ts` — rename**
+
+```ts
+import type { PresetName } from "../src/schema/presets.js";
+
+const PRESET_KEYS: PresetName[] = [
+  "clean-minimal",
+  "warm-friendly",
+  "bold-energetic",
+  "professional",
+  "playful-creative",
+];
+
+const summaries = PRESET_KEYS.map((preset) => {
+  const archetype = getArchetype(preset);
+  // … existing body, with every `mood` → `preset`
+  const html = renderShowcaseHtml(preset, archetype, result);
+  writeFileSync(`output/showcase/${preset}.html`, html);
+  console.log(`  ${preset}: ${html.length.toLocaleString()} chars`);
+  return { preset, archetype, primary: "#5e6ad2" };
+});
+```
+
+Output filenames stay identical (`professional.html`, etc.) because the key strings are unchanged.
+
+- [ ] **Step 8: `scripts/render-html.ts` — rename types, params, and CSS classes**
+
+Two kinds of edits:
+
+(a) Type + variable renames:
+- `MoodArchetype` import → `PresetName` from `../src/schema/presets.js`
+- `mood: MoodArchetype` (the summary record's field) → `preset: PresetName`
+- `renderShowcaseHtml(mood: MoodArchetype, …)` → `renderShowcaseHtml(preset: PresetName, …)`
+- Inside function bodies: every `mood` local → `preset`; every `s.mood` → `s.preset`.
+
+(b) HTML class + visible-prose renames (these become user-visible in the rendered HTML):
+- CSS class names: `mood-badge` → `preset-badge`; `mood-card`, `mood-card-head`, `mood-card-swatch`, `mood-card-title`, `mood-card-desc`, `mood-card-meta` → all `preset-*`; `mood-grid` → `preset-grid`.
+- Visible prose: `← Back to all moods` → `← Back to all presets`; `"Five moods, one brand."` → `"Five presets, one brand."`; `"The shadow follows the mood's elevation system."` → `"The shadow follows the preset's elevation system."`.
+
+A safe one-shot for the bulk replacements (run from repo root):
+
+```bash
+sed -i '' \
+  -e 's/mood-badge/preset-badge/g' \
+  -e 's/mood-card/preset-card/g' \
+  -e 's/mood-grid/preset-grid/g' \
+  -e 's/Back to all moods/Back to all presets/g' \
+  -e 's/Five moods/Five presets/g' \
+  -e "s/follows the mood's/follows the preset's/g" \
+  scripts/render-html.ts
+```
+
+Then manually open `scripts/render-html.ts` and confirm:
+- All `MoodArchetype` references replaced with `PresetName` (sed didn't catch this — do it via Edit).
+- `s.mood` replaced with `s.preset` and the field rename in the summary type matches.
+- No stray `mood` words remain in user-visible prose unless intentional.
+
+- [ ] **Step 9: Type-check and run tests**
+
+```bash
+pnpm exec tsc --noEmit -p .
+pnpm test
+```
+Expected: `src/` tsc clean; all tests pass. (Test count unchanged; only identifiers and CSS strings shift.)
+
+- [ ] **Step 10: Verify the legacy vocabulary is gone**
+
+```bash
+grep -rn "MoodArchetype" src/ tests/ scripts/ web/
+grep -rnE "\.mood\b" src/ tests/ scripts/
+```
+
+Expected: both empty. (Matches inside `docs/superpowers/memory/` or `docs/research/` are documentation and stay.)
+
+- [ ] **Step 11: Commit**
+
+```bash
+git add src/schema/types.ts src/schema/archetypes.ts src/generator/layout.ts \
+        tests/schema/archetypes.test.ts tests/generator/integration.test.ts tests/scripts/render-html.test.ts \
+        scripts/showcase.ts scripts/render-html.ts
+git commit -m "refactor: align legacy mood/MoodArchetype with corpus 'preset' vocabulary"
+```
+
+After this task, every reference to the cross-category bundle concept uses `preset`/`PresetName`. `web/` still fails type-check — it's about to be repaired in Tasks 3–10, where the type re-exports already use `PresetName`.
+
+---
+
+## Task 3: Fix `lib/tokens.ts` — typography read + remove dead shadow helper
 
 **Files:**
 - Modify: `web/src/lib/tokens.ts`
@@ -131,7 +358,7 @@ git commit -m "refactor(web/lib): read typographyTokens; drop dead resolveShadow
 
 ---
 
-## Task 3: Fix `DSButton`
+## Task 4: Fix `DSButton`
 
 **Files:**
 - Modify: `web/src/components/DSButton.tsx`
@@ -221,7 +448,7 @@ git commit -m "refactor(web/DSButton): read tokens.borderRadius/elevation; drop 
 
 ---
 
-## Task 4: Fix `DSInput`, `DSCard`, `DSBadge`, `DSDivider`
+## Task 5: Fix `DSInput`, `DSCard`, `DSBadge`, `DSDivider`
 
 **Files:**
 - Modify: `web/src/components/DSInput.tsx`
@@ -385,7 +612,7 @@ git commit -m "refactor(web/DS): read tokens.borderRadius/elevation; drop archet
 
 ---
 
-## Task 5: Fix `TypeScale`
+## Task 6: Fix `TypeScale`
 
 **Files:**
 - Modify: `web/src/components/TypeScale.tsx`
@@ -472,7 +699,7 @@ git commit -m "refactor(web/TypeScale): read typographyTokens.profiles"
 
 ---
 
-## Task 6: Reshape `useGenerator.ts`
+## Task 7: Reshape `useGenerator.ts`
 
 **Files:**
 - Modify: `web/src/hooks/useGenerator.ts`
@@ -552,7 +779,7 @@ git commit -m "refactor(web/useGenerator): reshape WizardState to current UserIn
 
 ---
 
-## Task 7: Fix `StepArchetype`
+## Task 8: Fix `StepArchetype`
 
 **Files:**
 - Modify: `web/src/steps/StepArchetype.tsx`
@@ -736,7 +963,7 @@ git commit -m "refactor(web/StepArchetype): preset vocabulary; derive preview ra
 
 ---
 
-## Task 8: Fix `StepFont`
+## Task 9: Fix `StepFont`
 
 **Files:**
 - Modify: `web/src/steps/StepFont.tsx`
@@ -889,7 +1116,7 @@ git commit -m "refactor(web/StepFont): preset vocabulary; static suggested-fonts
 
 ---
 
-## Task 9: Fix `App.tsx` and `ResultPage` to use new state names; verify whole-app type-check
+## Task 10: Fix `App.tsx` and `ResultPage` to use new state names; verify whole-app type-check
 
 **Files:**
 - Modify: `web/src/App.tsx`
@@ -1043,7 +1270,7 @@ git commit -m "refactor(web): rename primaryColor→brandColor, mood→preset; t
 
 ---
 
-## Task 10: Build inspector skeleton (`Inspector`, `CategoryTabs`, `KnobRow`, `ResetButton`)
+## Task 11: Build inspector skeleton (`Inspector`, `CategoryTabs`, `KnobRow`, `ResetButton`)
 
 **Files:**
 - Create: `web/src/inspector/Inspector.tsx`
@@ -1201,7 +1428,7 @@ export function Inspector({ state, onChange }: InspectorProps) {
 - [ ] **Step 5: Type-check (RadiusPanel doesn't exist yet — error expected)**
 
 Run: `cd web && pnpm exec tsc --noEmit 2>&1 | grep "Inspector\|CategoryTabs\|KnobRow\|ResetButton"`
-Expected: only errors about missing `./panels/RadiusPanel` — Task 11 fixes this.
+Expected: only errors about missing `./panels/RadiusPanel` — Task 12 fixes this.
 
 - [ ] **Step 6: Commit (skeleton not yet wired)**
 
@@ -1212,7 +1439,7 @@ git commit -m "feat(web/inspector): skeleton — Inspector, CategoryTabs, KnobRo
 
 ---
 
-## Task 11: Build `RadiusPanel`
+## Task 12: Build `RadiusPanel`
 
 **Files:**
 - Create: `web/src/inspector/panels/RadiusPanel.tsx`
@@ -1328,7 +1555,7 @@ git commit -m "feat(web/inspector): RadiusPanel — first knob with sticky-prese
 
 ---
 
-## Task 12: Wire `ResultPage` to 3-column layout
+## Task 13: Wire `ResultPage` to 3-column layout
 
 **Files:**
 - Modify: `web/src/result/ResultPage.tsx`
@@ -1384,7 +1611,7 @@ git commit -m "feat(web/ResultPage): 3-column layout with inspector rail"
 
 ---
 
-## Task 13: Final verification + push
+## Task 14: Final verification + push
 
 **Files:** none modified
 
@@ -1406,8 +1633,8 @@ Expected: build succeeds with no type or runtime errors.
 - [ ] **Step 4: DoD check (from spec §EC-4)**
 
 - [x] `pnpm exec tsc --noEmit` (web/) passes — confirmed in Step 1.
-- [ ] All 4 radius styles render visually different in main preview — confirmed via Step 4 of Task 12.
-- [ ] ↺ Reset returns preview to active preset's radius — confirmed via Step 4 of Task 12.
+- [ ] All 4 radius styles render visually different in main preview — confirmed via Step 4 of Task 13.
+- [ ] ↺ Reset returns preview to active preset's radius — confirmed via Step 4 of Task 13.
 
 - [ ] **Step 5: Push the branch**
 
