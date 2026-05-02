@@ -15,6 +15,7 @@ import {
   type ColorCategoryTokens,
 } from "./color-category.js";
 import { generateTypography } from "./typography.js";
+import { generateTypographyCategory } from "./typography-category.js";
 import { generateComponents } from "./components.js";
 import { generateLayout } from "./layout.js";
 import { generateElevation } from "./elevation.js";
@@ -108,7 +109,19 @@ export function generate(
   });
   const scales = toLegacyColorScales(colorTokens);
 
-  const fontFamily = inputs.fontFamily || archetype.defaultFont;
+  // Typography: new per-category pipeline.
+  // If the caller supplies only the legacy fontFamily field (not typographyKnobs),
+  // synthesize a TypographyInput so the font flows through the new schema too.
+  const effectiveTypographyInput = inputs.typographyKnobs ?? (
+    inputs.fontFamily ? { fontFamily: { sans: inputs.fontFamily } } : undefined
+  );
+  const typographyTokens = generateTypographyCategory(effectiveTypographyInput);
+
+  // Extract the resolved sans primary from the new tokens to flow into the legacy hierarchy.
+  // Strip surrounding quotes if the font name contains spaces (e.g. "Mona Sans" → Mona Sans).
+  const sansPrimary = typographyTokens.fontChains.sans.split(",")[0].trim().replace(/^"|"$/g, "");
+  // fontFamily for legacy hierarchy: use the resolved sans primary (so both pipelines stay in sync)
+  const fontFamily = sansPrimary || archetype.defaultFont;
   const typography = generateTypography(archetype, fontFamily);
   const components = generateComponents(archetype);
   const layout = generateLayout(archetype);
@@ -136,6 +149,7 @@ export function generate(
     theme: { atmosphere, characteristics },
     colorTokens,
     colors: scales,
+    typographyTokens,
     typography,
     components,
     layout,

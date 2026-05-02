@@ -1,7 +1,9 @@
 // src/schema/types.ts
 
 import type { ColorCategoryTokens } from "../generator/color-category.js";
+import type { TypographyCategoryTokens } from "../generator/typography-category.js";
 import type { PartialColorKnobs } from "./color.js";
+import type { TypographyInput } from "./typography.js";
 
 // ═══ User Inputs ═══
 
@@ -27,6 +29,7 @@ export interface UserInputs {
   brandColorSecondary?: string;
   fontFamily: string;
   colorKnobs?: PartialColorKnobs;
+  typographyKnobs?: TypographyInput;
 }
 
 // ═══ Color ═══
@@ -186,6 +189,13 @@ export interface DesignSystem {
    * consumers migrate to colorTokens directly.
    */
   colors: ColorScales;
+  /** New per-category typography output. Source of truth for typography rendering. */
+  typographyTokens: TypographyCategoryTokens;
+  /**
+   * Legacy 14-style typography hierarchy, derived from the archetype and resolved
+   * sans primary. Still consumed by template, tokens, and figma transformer until
+   * those consumers migrate to typographyTokens directly.
+   */
   typography: TypographySystem;
   components: ComponentSpecs;
   layout: LayoutSystem;

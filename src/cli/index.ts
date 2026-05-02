@@ -3,13 +3,13 @@ import { input, select } from "@inquirer/prompts";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { generate } from "../generator/index.js";
-import { DEFAULT_ARCHETYPE } from "../schema/archetypes.js";
 import { transformToFigma } from "../figma/transformer.js";
+import type { HeadingStyle } from "../schema/typography.js";
 
 async function main() {
   console.log("\n  Design System Starter\n");
   console.log(
-    "  Answer 3 questions to generate a complete design system.\n",
+    "  Answer a few questions to generate a complete design system.\n",
   );
 
   const brandName = await input({
@@ -24,28 +24,39 @@ async function main() {
       /^#[0-9a-fA-F]{6}$/.test(v.trim()) || "Enter a valid hex (e.g. #5e6ad2)",
   });
 
-  const fontChoice = await select({
-    message: "Primary font:",
-    choices: [
-      ...DEFAULT_ARCHETYPE.suggestedFonts.map((f) => ({
-        value: f.name,
-        name: `${f.name} (${f.fallback})`,
-      })),
-      { value: "__custom__", name: "Custom (type your own)" },
-    ],
+  const sansRaw = await input({
+    message: "Sans font (optional, leave blank for default):",
+    default: "",
   });
 
-  const resolvedFont =
-    fontChoice === "__custom__"
-      ? await input({ message: "Font family name:" })
-      : fontChoice;
+  const monoRaw = await input({
+    message: "Mono font (optional, leave blank for default):",
+    default: "",
+  });
+
+  const headingStyle = await select<HeadingStyle>({
+    message: "Heading style:",
+    choices: [
+      { value: "default", name: "Default (medium weight)" },
+      { value: "flat", name: "Flat (regular weight, editorial)" },
+      { value: "bold", name: "Bold (heavy weight, impactful)" },
+    ],
+    default: "default",
+  });
+
+  const sans = sansRaw.trim() || null;
+  const mono = monoRaw.trim() || null;
 
   console.log("\n  Generating...\n");
 
   const result = generate({
     brandName: brandName.trim(),
     brandColor: brandColor.trim(),
-    fontFamily: resolvedFont,
+    fontFamily: sans ?? "Inter",
+    typographyKnobs: {
+      fontFamily: { sans, mono },
+      headingStyle,
+    },
   });
 
   const figmaData = transformToFigma(result.tokens);

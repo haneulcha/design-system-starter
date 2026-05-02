@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { generate } from "../../src/generator/index.js";
 import { ARCHETYPES } from "../../src/schema/archetypes.js";
 import type { ArchetypePreset } from "../../src/schema/types.js";
+import { DEFAULT_ARCHETYPE } from "../../src/schema/archetypes.js";
 
 // Mood is no longer a user input but the 5 archetype presets remain as the
 // internal driver for typography/components/layout/elevation. Iterate over
@@ -128,5 +129,85 @@ for (const archetype of ALL_ARCHETYPES) {
     it("brand object has no mood field", () => {
       expect(result.tokens.brand).not.toHaveProperty("mood");
     });
+
+    it("system.typographyTokens exists with 20 profiles", () => {
+      expect(result.system.typographyTokens).toBeDefined();
+      expect(Object.keys(result.system.typographyTokens.profiles)).toHaveLength(20);
+    });
+
+    it("system.typographyTokens has all three font chains", () => {
+      expect(result.system.typographyTokens.fontChains).toHaveProperty("sans");
+      expect(result.system.typographyTokens.fontChains).toHaveProperty("mono");
+      expect(result.system.typographyTokens.fontChains).toHaveProperty("serif");
+    });
+
+    it("system.typography (legacy) still has 14-style hierarchy", () => {
+      expect(result.system.typography.hierarchy).toHaveLength(14);
+    });
   });
 }
+
+// ─── Font propagation tests ───────────────────────────────────────────────────
+
+describe("generate — typographyKnobs.fontFamily.sans propagation", () => {
+  const result = generate(
+    {
+      brandName: "PropTest",
+      brandColor: "#5e6ad2",
+      fontFamily: "Inter",
+      typographyKnobs: { fontFamily: { sans: "Mona Sans" } },
+    },
+    DEFAULT_ARCHETYPE,
+  );
+
+  it("(a) typographyTokens.fontChains.sans starts with Mona Sans", () => {
+    expect(result.system.typographyTokens.fontChains.sans).toMatch(/^"?Mona Sans"?,/);
+  });
+
+  it("(b) typography.families.primary is Mona Sans (legacy hierarchy carries override)", () => {
+    expect(result.system.typography.families.primary).toBe("Mona Sans");
+  });
+
+  it("(c) typography.hierarchy[0].font includes Mona Sans", () => {
+    expect(result.system.typography.hierarchy[0].font).toContain("Mona Sans");
+  });
+});
+
+describe("generate — typographyKnobs.fontFamily.mono propagation", () => {
+  const result = generate(
+    {
+      brandName: "MonoTest",
+      brandColor: "#5e6ad2",
+      fontFamily: "Inter",
+      typographyKnobs: { fontFamily: { mono: "Fira Code" } },
+    },
+    DEFAULT_ARCHETYPE,
+  );
+
+  it("typographyTokens.fontChains.mono starts with Fira Code", () => {
+    expect(result.system.typographyTokens.fontChains.mono).toMatch(/^"?Fira Code"?,/);
+  });
+});
+
+describe("generate — typographyKnobs omitted (default behavior)", () => {
+  const result = generate(
+    {
+      brandName: "DefaultTest",
+      brandColor: "#5e6ad2",
+      fontFamily: "Roboto",
+    },
+    DEFAULT_ARCHETYPE,
+  );
+
+  it("fontFamily input still drives legacy hierarchy when typographyKnobs is absent", () => {
+    expect(result.system.typography.families.primary).toBe("Roboto");
+  });
+
+  it("typographyTokens.fontChains.sans reflects fontFamily input", () => {
+    expect(result.system.typographyTokens.fontChains.sans).toContain("Roboto");
+  });
+
+  it("typographyTokens still has 20 profiles", () => {
+    expect(Object.keys(result.system.typographyTokens.profiles)).toHaveLength(20);
+  });
+});
