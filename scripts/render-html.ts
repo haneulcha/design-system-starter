@@ -261,7 +261,7 @@ function renderTypography(system: DesignSystem): string {
 function renderButtons(tokens: DesignTokens, system: DesignSystem): string {
   const sizes = ["sm", "md", "lg"] as const;
   const variants = ["primary", "secondary", "ghost"] as const;
-  const sizesSpec = system.components.button.sizes;
+  const sizesSpec = system.componentTokens.button.sizes;
 
   const rows = variants
     .map((variant) => {
@@ -321,10 +321,10 @@ function renderButtons(tokens: DesignTokens, system: DesignSystem): string {
 }
 
 function renderInputs(tokens: DesignTokens, system: DesignSystem): string {
-  const inp = system.components.input;
-  const heightPx = pxFromTokenSpacing(tokens, inp.fieldHeight) ?? 40;
-  const padXPx = pxFromTokenSpacing(tokens, inp.fieldPaddingX) ?? 12;
-  const radius = pxFromTokenRadius(tokens, inp.fieldRadius) ?? "6px";
+  const inpMd = system.componentTokens.input.sizes.md;
+  const heightPx = pxFromTokenSpacing(tokens, inpMd.height) ?? 40;
+  const padXPx = pxFromTokenSpacing(tokens, inpMd.paddingX) ?? 12;
+  const radius = pxFromTokenRadius(tokens, inpMd.radius) ?? "6px";
 
   const states = [
     {
@@ -389,10 +389,10 @@ function renderInputs(tokens: DesignTokens, system: DesignSystem): string {
 }
 
 function renderCards(tokens: DesignTokens, system: DesignSystem): string {
-  const c = system.components.card;
-  const radius = pxFromTokenRadius(tokens, c.radius) ?? "8px";
-  const padPx = pxFromTokenSpacing(tokens, c.contentPadding) ?? 24;
-  const gapPx = pxFromTokenSpacing(tokens, c.contentGap) ?? 12;
+  const cardMd = system.componentTokens.card.sizes.md;
+  const radius = pxFromTokenRadius(tokens, cardMd.radius) ?? "8px";
+  const padPx = pxFromTokenSpacing(tokens, cardMd.contentPadding) ?? 24;
+  const gapPx = pxFromTokenSpacing(tokens, cardMd.contentGap) ?? 12;
 
   const cardBg = componentHex(tokens, "card", "default", "bg") ?? "var(--color-bg-subtle)";
   const cardBorder = componentHex(tokens, "card", "default", "border") ?? "var(--color-border-subtle)";
@@ -441,7 +441,7 @@ function renderCards(tokens: DesignTokens, system: DesignSystem): string {
 
 function renderBadges(tokens: DesignTokens, system: DesignSystem): string {
   const variants = ["default", "success", "error", "warning", "info"] as const;
-  const sizes = system.components.badge.sizes;
+  const sizes = system.componentTokens.badge.sizes;
   const sizeKeys = Object.keys(sizes);
 
   const rows = variants

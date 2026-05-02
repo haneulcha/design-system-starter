@@ -61,70 +61,6 @@ export interface ColorScales {
   readonly [role: string]: Record<string, ColorStep>;
 }
 
-// ═══ Components ═══
-
-export interface ComponentSize {
-  height: string;       // spacing token name, e.g. "spacing.xl"
-  paddingX: string;     // spacing token name
-  gap: string;          // spacing token name
-  fontSize: string;     // typography style name
-  iconSize: string;     // spacing token name
-  radius: string;       // radius token name
-}
-
-export interface ButtonSpec {
-  sizes: Record<string, ComponentSize>;  // sm, md, lg
-  variants: string[];                     // ["primary", "secondary", "ghost"]
-}
-
-export interface InputSpec {
-  fieldHeight: string;
-  fieldPaddingX: string;
-  fieldRadius: string;
-  labelFieldGap: string;
-  fieldHelperGap: string;
-  labelFont: string;
-  valueFont: string;
-  helperFont: string;
-  iconSize: string;
-  states: string[];
-}
-
-export interface CardSpec {
-  radius: string;
-  contentPadding: string;
-  contentGap: string;
-  shadow: string;
-  headerFont: string;
-  bodyFont: string;
-  footerGap: string;
-  variants: string[];
-}
-
-export interface BadgeSpec {
-  sizes: Record<string, {
-    height: string;
-    paddingX: string;
-    radius: string;
-    font: string;
-  }>;
-  variants: string[];
-}
-
-export interface DividerSpec {
-  lineHeight: string;
-  labelPaddingX: string;
-  labelFont: string;
-}
-
-export interface ComponentSpecs {
-  button: ButtonSpec;
-  input: InputSpec;
-  card: CardSpec;
-  badge: BadgeSpec;
-  divider: DividerSpec;
-}
-
 // ═══ Layout ═══
 
 export interface LayoutSystem {
@@ -187,7 +123,6 @@ export interface DesignSystem {
   /** New per-category elevation output. Source of truth for elevation rendering. */
   elevationTokens: ElevationCategoryTokens;
   componentTokens: ComponentCategoryTokens;
-  components: ComponentSpecs;
   layout: LayoutSystem;
   elevation: ElevationSystem;
   responsive: ResponsiveSystem;
