@@ -5,11 +5,13 @@ import type { TypographyCategoryTokens } from "../generator/typography-category.
 import type { SpacingCategoryTokens } from "../generator/spacing-category.js";
 import type { RadiusCategoryTokens } from "../generator/radius-category.js";
 import type { ElevationCategoryTokens } from "../generator/elevation-category.js";
+import type { ComponentCategoryTokens } from "../generator/components-category.js";
 import type { PartialColorKnobs } from "./color.js";
 import type { TypographyInput } from "./typography.js";
 import type { SpacingInput } from "./spacing.js";
 import type { RadiusInput } from "./radius.js";
 import type { ElevationInput } from "./elevation.js";
+import type { ComponentInput } from "./components.js";
 
 // ═══ User Inputs ═══
 
@@ -39,6 +41,7 @@ export interface UserInputs {
   spacingKnobs?: SpacingInput;
   radiusKnobs?: RadiusInput;
   elevationKnobs?: ElevationInput;
+  componentKnobs?: ComponentInput;
 }
 
 // ═══ Color ═══
@@ -183,6 +186,7 @@ export interface DesignSystem {
   radiusTokens: RadiusCategoryTokens;
   /** New per-category elevation output. Source of truth for elevation rendering. */
   elevationTokens: ElevationCategoryTokens;
+  componentTokens: ComponentCategoryTokens;
   components: ComponentSpecs;
   layout: LayoutSystem;
   elevation: ElevationSystem;

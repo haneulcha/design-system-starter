@@ -16,7 +16,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "color-roles": "tsx scripts/analysis/color-roles.ts",
-    "type-styles": "tsx scripts/analysis/type-styles.ts"
+    "type-styles": "tsx scripts/analysis/type-styles.ts",
+    "component-roles": "tsx scripts/analysis/component-roles.ts"
   },
   "dependencies": {
     "culori": "^4.0.0",
