@@ -14,13 +14,13 @@ function computeStyles(state: InputState, tokens: DesignTokens, system: DesignSy
   const fontFamily = buildFontFamily(system);
   const borderRadius = tokens.borderRadius.input;
 
-  const bgBase = resolveColor(tokens, "bg/base");
-  const bgSubtle = resolveColor(tokens, "bg/subtle");
-  const textPrimary = resolveColor(tokens, "text/primary");
+  const bgBase = resolveColor(tokens, "bg/canvas");
+  const bgSubtle = resolveColor(tokens, "bg/soft");
+  const textPrimary = resolveColor(tokens, "text/ink");
   const textMuted = resolveColor(tokens, "text/muted");
-  const borderDefault = resolveColor(tokens, "border/default");
-  const brandPrimary = resolveColor(tokens, "brand/primary");
-  const errorColor = resolveColor(tokens, "status/error");
+  const borderDefault = resolveColor(tokens, "bg/hairline");
+  const brandPrimary = resolveColor(tokens, "accent/primary");
+  const errorColor = resolveColor(tokens, "status/error-text");
 
   const base = {
     width: "100%", padding: "8px 12px", borderRadius, fontSize: 14,

@@ -9,7 +9,7 @@ interface DSDividerProps {
 
 function computeStyles(tokens: DesignTokens, system: DesignSystem) {
   const fontFamily = buildFontFamily(system);
-  const borderDefault = resolveColor(tokens, "border/default");
+  const borderDefault = resolveColor(tokens, "bg/hairline");
   const textMuted = resolveColor(tokens, "text/muted");
 
   return {

@@ -22,9 +22,9 @@ function computeStyles(
   const shadow = tokens.elevation.raised ?? "none";
 
   const brandPrimary = resolveComponentColor(tokens, "button.primary.bg");
-  const bgSubtle = resolveColor(tokens, "bg/subtle");
+  const bgSubtle = resolveColor(tokens, "bg/soft");
   const textMuted = resolveColor(tokens, "text/muted");
-  const borderDefault = resolveColor(tokens, "border/default");
+  const borderDefault = resolveColor(tokens, "bg/hairline");
 
   const base = {
     borderRadius,

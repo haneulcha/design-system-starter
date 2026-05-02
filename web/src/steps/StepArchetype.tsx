@@ -82,9 +82,9 @@ export function StepArchetype({
 
       {tokens && system && (() => {
         const fontFamily = buildFontFamily(system);
-        const textPrimary = resolveColor(tokens, "text/primary");
+        const textPrimary = resolveColor(tokens, "text/ink");
         const textMuted = resolveColor(tokens, "text/muted");
-        const borderDefault = resolveColor(tokens, "border/default");
+        const borderDefault = resolveColor(tokens, "bg/hairline");
         const sectionClass = "mb-6";
         const labelClass = "text-xs font-medium text-neutral-400 uppercase tracking-wider mb-3";
 

@@ -51,10 +51,10 @@ export function ResultPage({
   const { system, tokens } = result;
   const sectionClass = "mb-8";
   const labelClass = "text-xs font-medium text-neutral-400 uppercase tracking-wider mb-3";
-  const textPrimary = resolveColor(tokens, "text/primary");
+  const textPrimary = resolveColor(tokens, "text/ink");
   const textMuted = resolveColor(tokens, "text/muted");
   const fontFamily = buildFontFamily(system);
-  const borderDefault = resolveColor(tokens, "border/default");
+  const borderDefault = resolveColor(tokens, "bg/hairline");
 
   return (
     <div className="min-h-screen bg-white antialiased flex flex-col md:flex-row">
@@ -233,9 +233,9 @@ export function ResultPage({
                   <DSInput state="focus" tokens={tokens} system={system} value="Focused input" />
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: resolveColor(tokens, "status/error"), marginBottom: 4, fontFamily }}>Error</div>
+                  <div style={{ fontSize: 11, color: resolveColor(tokens, "status/error-text"), marginBottom: 4, fontFamily }}>Error</div>
                   <DSInput state="error" tokens={tokens} system={system} value="Invalid value" />
-                  <div style={{ fontSize: 11, color: resolveColor(tokens, "status/error"), marginTop: 4, fontFamily }}>
+                  <div style={{ fontSize: 11, color: resolveColor(tokens, "status/error-text"), marginTop: 4, fontFamily }}>
                     This field has an error
                   </div>
                 </div>

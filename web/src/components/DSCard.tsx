@@ -10,8 +10,8 @@ interface DSCardProps {
 
 function computeStyles(tokens: DesignTokens, system: DesignSystem) {
   const fontFamily = buildFontFamily(system);
-  const bgBase = resolveColor(tokens, "bg/base");
-  const borderDefault = resolveColor(tokens, "border/default");
+  const bgBase = resolveColor(tokens, "bg/canvas");
+  const borderDefault = resolveColor(tokens, "bg/hairline");
   const shadow = tokens.elevation.raised ?? "none";
 
   return {
