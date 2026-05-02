@@ -116,14 +116,15 @@ for (const archetype of ALL_ARCHETYPES) {
       expect(Object.keys(result.tokens.breakpoint).length).toBe(4);
     });
 
-    it("system has 5 components", () => {
-      const c = result.system.components;
+    it("system has 6 component primitives via componentTokens", () => {
+      const c = result.system.componentTokens;
       expect(c.button.sizes).toBeTruthy();
-      expect(c.button.variants).toHaveLength(3);
-      expect(c.input.states).toHaveLength(4);
-      expect(c.card.variants).toHaveLength(2);
-      expect(c.badge.variants).toHaveLength(5);
-      expect(c.divider.labelFont).toMatch(/^typography\./);
+      expect(c.button.variants).toHaveLength(6);
+      expect(c.input.states).toHaveLength(5);
+      expect(c.card.variants).toHaveLength(4);
+      expect(c.badge.variants).toHaveLength(2);
+      expect(c.tab.variants).toHaveLength(2);
+      expect(c.avatar.variants).toEqual(["circle"]);
     });
 
     it("brand object has no mood field", () => {

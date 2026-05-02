@@ -133,15 +133,32 @@ describe("renderDesignMd", () => {
   });
 
   describe("Section 4 — Components", () => {
-    it("section 4 has 5 component sub-sections", () => {
-      for (const sub of ["### Button", "### Input", "### Card", "### Badge", "### Divider"]) {
+    it("section 4 has 6 component sub-sections covering v1 primitives", () => {
+      for (const sub of ["### Button", "### Input", "### Card", "### Badge", "### Tab", "### Avatar"]) {
         expect(output).toContain(sub);
       }
-      expect(output).not.toContain("### Avatar");
+      expect(output).not.toContain("### Divider");
     });
     it("button section has size table with token references", () => {
       expect(output).toContain("spacing.xl");
       expect(output).toContain("spacing.xxl");
+    });
+    it("section 4 echoes the component knobs and philosophy", () => {
+      expect(output).toMatch(/cardSurface=\w+/);
+      expect(output).toMatch(/buttonShape=\w+/);
+    });
+    it("avatar section emits all 5 sizes (xs through xl)", () => {
+      const idxAvatar = output.indexOf("### Avatar");
+      const tail = output.slice(idxAvatar);
+      for (const sz of ["xs", "sm", "md", "lg", "xl"]) {
+        expect(tail).toContain(` ${sz} `);
+      }
+    });
+    it("tab section lists underline and pill variants", () => {
+      const idxTab = output.indexOf("### Tab");
+      const tail = output.slice(idxTab, output.indexOf("### Avatar"));
+      expect(tail).toContain("underline");
+      expect(tail).toContain("pill");
     });
   });
 
