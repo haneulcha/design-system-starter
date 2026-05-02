@@ -23,7 +23,7 @@ function gen(mood: MoodArchetype) {
     {
       brandName: "Acme",
       brandColor: PRIMARY,
-      fontFamily: archetype.defaultFont,
+      fontFamily: "Inter",
     },
     archetype,
   );
@@ -42,7 +42,6 @@ describe("renderShowcaseHtml", () => {
       const escapedLabel = archetype.label.replace(/&/g, "&amp;");
       expect(html).toContain(escapedLabel);
       expect(html).toContain("Acme");
-      expect(html).toContain(archetype.defaultFont);
       // Section headings
       expect(html).toContain("Color");
       expect(html).toContain("Typography");
@@ -77,7 +76,7 @@ describe("renderIndexHtml", () => {
     }
   });
 
-  it("includes the primary color chip and font name on each card", () => {
+  it("includes the primary color chip on each card", () => {
     const summaries = ALL_MOODS.map((mood) => ({
       mood,
       archetype: getArchetype(mood),
@@ -85,8 +84,5 @@ describe("renderIndexHtml", () => {
     }));
     const html = renderIndexHtml(summaries);
     expect(html).toContain(PRIMARY);
-    for (const mood of ALL_MOODS) {
-      expect(html).toContain(getArchetype(mood).defaultFont);
-    }
   });
 });

@@ -140,10 +140,6 @@ for (const archetype of ALL_ARCHETYPES) {
       expect(result.system.typographyTokens.fontChains).toHaveProperty("mono");
       expect(result.system.typographyTokens.fontChains).toHaveProperty("serif");
     });
-
-    it("system.typography (legacy) still has 14-style hierarchy", () => {
-      expect(result.system.typography.hierarchy).toHaveLength(14);
-    });
   });
 }
 
@@ -160,16 +156,8 @@ describe("generate — typographyKnobs.fontFamily.sans propagation", () => {
     DEFAULT_ARCHETYPE,
   );
 
-  it("(a) typographyTokens.fontChains.sans starts with Mona Sans", () => {
+  it("typographyTokens.fontChains.sans starts with Mona Sans", () => {
     expect(result.system.typographyTokens.fontChains.sans).toMatch(/^"?Mona Sans"?,/);
-  });
-
-  it("(b) typography.families.primary is Mona Sans (legacy hierarchy carries override)", () => {
-    expect(result.system.typography.families.primary).toBe("Mona Sans");
-  });
-
-  it("(c) typography.hierarchy[0].font includes Mona Sans", () => {
-    expect(result.system.typography.hierarchy[0].font).toContain("Mona Sans");
   });
 });
 
@@ -198,10 +186,6 @@ describe("generate — typographyKnobs omitted (default behavior)", () => {
     },
     DEFAULT_ARCHETYPE,
   );
-
-  it("fontFamily input still drives legacy hierarchy when typographyKnobs is absent", () => {
-    expect(result.system.typography.families.primary).toBe("Roboto");
-  });
 
   it("typographyTokens.fontChains.sans reflects fontFamily input", () => {
     expect(result.system.typographyTokens.fontChains.sans).toContain("Roboto");

@@ -2,9 +2,6 @@
 
 import type { MoodArchetype, ArchetypePreset } from "./types.js";
 
-const FONT_FALLBACK = "system-ui, -apple-system, sans-serif";
-const MONO_FALLBACK = "ui-monospace, SFMono-Regular, Consolas, monospace";
-
 export const ARCHETYPES: Record<MoodArchetype, ArchetypePreset> = {
   "clean-minimal": {
     mood: "clean-minimal",
@@ -12,26 +9,12 @@ export const ARCHETYPES: Record<MoodArchetype, ArchetypePreset> = {
     description: "Restrained rounding, whisper shadow, contemporary lightness",
     neutralUndertone: "neutral",
     shadowIntensity: "whisper",
-    fontWeights: { heading: 400, ui: 500, body: 400 },
-    headingLetterSpacing: "-1.1px",
-    bodyLineHeight: "1.50",
-    headingLineHeight: "1.10",
     sectionSpacing: "80px",
     componentSpacing: "24px",
     buttonRadius: "6px",
     cardRadius: "8px",
     inputRadius: "6px",
     pillRadius: "9999px",
-    defaultFont: "Inter",
-    defaultFontFallback: FONT_FALLBACK,
-    monoFont: "JetBrains Mono",
-    monoFontFallback: MONO_FALLBACK,
-    suggestedFonts: [
-      { name: "Inter", fallback: FONT_FALLBACK },
-      { name: "Geist", fallback: FONT_FALLBACK },
-      { name: "Sora", fallback: FONT_FALLBACK },
-      { name: "Space Grotesk", fallback: FONT_FALLBACK },
-    ],
     atmosphereTemplate: `{{brandName}} pursues clarity through subtraction. Light weight headings (400), neutral gray surfaces, and a whisper-level shadow system create an interface that feels almost weightless — the Vercel and Linear register where every removed pixel makes the remaining ones count more. Restraint is the entire design move.
 
 Buttons sit at a tight 6px radius — near-rectangular, intentionally undecorated. {{fontFamily}} at weight 400 with −1.1px letter-spacing on headings gives display copy contemporary lightness without any editorial heaviness. Cards at 8px rounding match the buttons' restraint, and inputs share the same 6px radius for a consistent, quiet geometry.
@@ -77,26 +60,12 @@ Surfaces are nearly flat, separated only by whisper shadows that suggest hierarc
     description: "Subtle warm depth, generous rounding, atmospheric presence",
     neutralUndertone: "warm",
     shadowIntensity: "subtle",
-    fontWeights: { heading: 500, ui: 500, body: 400 },
-    headingLetterSpacing: "-1.0px",
-    bodyLineHeight: "1.50",
-    headingLineHeight: "1.15",
     sectionSpacing: "72px",
     componentSpacing: "24px",
     buttonRadius: "8px",
     cardRadius: "12px",
     inputRadius: "8px",
     pillRadius: "9999px",
-    defaultFont: "DM Sans",
-    defaultFontFallback: FONT_FALLBACK,
-    monoFont: "JetBrains Mono",
-    monoFontFallback: MONO_FALLBACK,
-    suggestedFonts: [
-      { name: "DM Sans", fallback: FONT_FALLBACK },
-      { name: "Plus Jakarta Sans", fallback: FONT_FALLBACK },
-      { name: "Nunito Sans", fallback: FONT_FALLBACK },
-      { name: "Source Sans 3", fallback: FONT_FALLBACK },
-    ],
     atmosphereTemplate: `{{brandName}} creates an atmosphere before it communicates a message. The warm neutral undertone wraps the interface in a quality that feels considered and human — the Airbnb and Claude register where every surface invites rather than instructs. Subtle, warm-tinted shadows give cards and panels gentle lift without theatrical depth, keeping the system grounded in approachability.
 
 {{fontFamily}} at weight 500 with −1.0px letter-spacing on headings achieves the balance between confident and approachable — present without overpowering. Generous rounding (8px buttons, 12px cards) softens every interaction without tipping into childishness. The 1.15 heading line-height allows display text to breathe slightly, giving it room to feel expressive rather than compressed.
@@ -142,26 +111,12 @@ Surfaces are nearly flat, separated only by whisper shadows that suggest hierarc
     description: "Bold typography, pill geometry, dramatic depth, commanding presence",
     neutralUndertone: "neutral",
     shadowIntensity: "dramatic",
-    fontWeights: { heading: 700, ui: 500, body: 400 },
-    headingLetterSpacing: "-2.0px",
-    bodyLineHeight: "1.50",
-    headingLineHeight: "1.10",
     sectionSpacing: "80px",
     componentSpacing: "24px",
     buttonRadius: "9999px",
     cardRadius: "12px",
     inputRadius: "9999px",
     pillRadius: "9999px",
-    defaultFont: "Inter",
-    defaultFontFallback: FONT_FALLBACK,
-    monoFont: "JetBrains Mono",
-    monoFontFallback: MONO_FALLBACK,
-    suggestedFonts: [
-      { name: "Inter", fallback: FONT_FALLBACK },
-      { name: "Geist", fallback: FONT_FALLBACK },
-      { name: "IBM Plex Sans", fallback: FONT_FALLBACK },
-      { name: "Satoshi", fallback: FONT_FALLBACK },
-    ],
     atmosphereTemplate: `{{brandName}} makes its presence known through typographic authority. Bold headings at weight 700 with aggressive −2.0px letter-spacing compress display copy into powerful, commanding blocks — the kind of type that stops the eye and demands attention. This is the Spotify and Coinbase register: a system that has nothing to prove and everything to say.
 
 {{fontFamily}} carries the weight with authority. The neutral palette — neither warm nor cool — refuses to distract from the typographic statement. Whitespace is not decoration; it is the frame that makes the bold moments land harder by contrast. Eighty-pixel section breaks create the breathing room that lets each statement resonate.
@@ -207,26 +162,12 @@ Dramatic shadows and pill-radius confidence (9999px buttons and inputs, 12px car
     description: "Sharp edges, light typography, structured restraint, anchored depth",
     neutralUndertone: "cool",
     shadowIntensity: "medium",
-    fontWeights: { heading: 400, ui: 400, body: 300 },
-    headingLetterSpacing: "-0.7px",
-    bodyLineHeight: "1.45",
-    headingLineHeight: "1.10",
     sectionSpacing: "80px",
     componentSpacing: "16px",
     buttonRadius: "4px",
     cardRadius: "6px",
     inputRadius: "4px",
     pillRadius: "9999px",
-    defaultFont: "Inter",
-    defaultFontFallback: FONT_FALLBACK,
-    monoFont: "JetBrains Mono",
-    monoFontFallback: MONO_FALLBACK,
-    suggestedFonts: [
-      { name: "Inter", fallback: FONT_FALLBACK },
-      { name: "Source Sans 3", fallback: FONT_FALLBACK },
-      { name: "Instrument Sans", fallback: FONT_FALLBACK },
-      { name: "Switzer", fallback: FONT_FALLBACK },
-    ],
     atmosphereTemplate: `{{brandName}} operates in the register of precision engineering — every decision deliberate, every pixel justified. Light weight (400 headings, 300 body) is the primary signal: here, restraint communicates confidence rather than boldness. The canvas is cool and calm, with {{primaryHex}} deployed surgically as the single chromatic statement. This is the Stripe and IBM register, where institutional trust is built through structural exactitude.
 
 {{fontFamily}} at weight 400 with −0.7px letter-spacing on headings achieves the taut, considered tension of infrastructure design. Where other systems shout with weight, this one whispers with exactitude. Sharp corners (4px buttons, 6px cards) signal that nothing here is accidental — every edge is intentional.
@@ -272,26 +213,12 @@ Structured spacing — 16px component grid, 80px section intervals — creates a
     description: "Generous rounding, tactile depth, expressive multi-color rhythm",
     neutralUndertone: "warm",
     shadowIntensity: "medium",
-    fontWeights: { heading: 600, ui: 500, body: 400 },
-    headingLetterSpacing: "-0.4px",
-    bodyLineHeight: "1.55",
-    headingLineHeight: "1.15",
     sectionSpacing: "96px",
     componentSpacing: "24px",
     buttonRadius: "12px",
     cardRadius: "16px",
     inputRadius: "10px",
     pillRadius: "9999px",
-    defaultFont: "DM Sans",
-    defaultFontFallback: FONT_FALLBACK,
-    monoFont: "JetBrains Mono",
-    monoFontFallback: MONO_FALLBACK,
-    suggestedFonts: [
-      { name: "DM Sans", fallback: FONT_FALLBACK },
-      { name: "Sora", fallback: FONT_FALLBACK },
-      { name: "Plus Jakarta Sans", fallback: FONT_FALLBACK },
-      { name: "Manrope", fallback: FONT_FALLBACK },
-    ],
     atmosphereTemplate: `{{brandName}} treats the interface as a place to play. Generous 12px button rounding feels human and inviting — corners soft enough to read as friendly, restrained enough to stay grown-up. Cards lean further into the language at 16px, and inputs at 10px keep the rounded rhythm consistent across every interactive surface. This is the Figma and Clay register, where expressiveness is the entire point and design itself becomes part of the experience.
 
 {{fontFamily}} at weight 600 with a mild −0.4px letter-spacing gives headings a confident, approachable presence — present and warm, never aggressive. The 1.15 heading line-height and 1.55 body line-height create unhurried, readable rhythm. Medium shadows give cards a tactile, slightly toy-like presence — surfaces feel like objects you could pick up, without ever tipping into cartoonish territory.

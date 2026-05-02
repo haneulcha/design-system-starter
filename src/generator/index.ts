@@ -14,7 +14,6 @@ import {
   toLegacyColorScales,
   type ColorCategoryTokens,
 } from "./color-category.js";
-import { generateTypography } from "./typography.js";
 import { generateTypographyCategory } from "./typography-category.js";
 import { generateComponents } from "./components.js";
 import { generateLayout } from "./layout.js";
@@ -117,12 +116,9 @@ export function generate(
   );
   const typographyTokens = generateTypographyCategory(effectiveTypographyInput);
 
-  // Extract the resolved sans primary from the new tokens to flow into the legacy hierarchy.
+  // Extract the resolved sans primary for use in agentGuide example prompts.
   // Strip surrounding quotes if the font name contains spaces (e.g. "Mona Sans" → Mona Sans).
-  const sansPrimary = typographyTokens.fontChains.sans.split(",")[0].trim().replace(/^"|"$/g, "");
-  // fontFamily for legacy hierarchy: use the resolved sans primary (so both pipelines stay in sync)
-  const fontFamily = sansPrimary || archetype.defaultFont;
-  const typography = generateTypography(archetype, fontFamily);
+  const fontFamily = typographyTokens.fontChains.sans.split(",")[0].trim().replace(/^"|"$/g, "");
   const components = generateComponents(archetype);
   const layout = generateLayout(archetype);
   const elevation = generateElevation(archetype, scales);
@@ -132,9 +128,6 @@ export function generate(
     brandName: inputs.brandName,
     primaryHex: inputs.brandColor,
     fontFamily,
-    "fontWeights.heading": String(archetype.fontWeights.heading),
-    "fontWeights.ui": String(archetype.fontWeights.ui),
-    "fontWeights.body": String(archetype.fontWeights.body),
   };
 
   const atmosphere = replacePlaceholders(archetype.atmosphereTemplate, vars);
@@ -150,7 +143,6 @@ export function generate(
     colorTokens,
     colors: scales,
     typographyTokens,
-    typography,
     components,
     layout,
     elevation,

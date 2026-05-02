@@ -25,7 +25,7 @@ const summaries = MOODS.map((mood) => {
     {
       brandName: "Acme",
       brandColor: "#5e6ad2",
-      fontFamily: archetype.defaultFont,
+      fontFamily: "Inter",
     },
     archetype,
   );

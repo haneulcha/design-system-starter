@@ -40,10 +40,6 @@ describe("getArchetype", () => {
         expect(getArchetype(mood).characteristics.length).toBeGreaterThanOrEqual(5);
       });
 
-      it("has 3+ suggested fonts", () => {
-        expect(getArchetype(mood).suggestedFonts.length).toBeGreaterThanOrEqual(3);
-      });
-
       it("has 7+ dos and 7+ donts", () => {
         const p = getArchetype(mood);
         expect(p.dos.length).toBeGreaterThanOrEqual(7);

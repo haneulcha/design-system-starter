@@ -9,7 +9,6 @@ import type {
   DesignTokens,
   MoodArchetype,
   Oklch,
-  TypeStyle,
 } from "../src/schema/types.js";
 import type { GenerateResult } from "../src/generator/index.js";
 import { oklchToHex } from "../src/generator/color.js";
@@ -75,12 +74,6 @@ const componentHex = (
   return semanticHex(tokens, ref);
 };
 
-const styleSpec = (style: TypeStyle): string =>
-  `font-family: ${JSON.stringify(style.font)}, ${JSON.stringify("system-ui")}, sans-serif; ` +
-  `font-size: ${style.size}; ` +
-  `font-weight: ${style.weight}; ` +
-  `line-height: ${style.lineHeight}; ` +
-  `letter-spacing: ${style.letterSpacing};`;
 
 const pxFromTokenSpacing = (
   tokens: DesignTokens,
@@ -222,24 +215,35 @@ function renderColorPalette(tokens: DesignTokens): string {
 }
 
 function renderTypography(system: DesignSystem): string {
-  const samples = system.typography.hierarchy
-    .map((t) => {
-      const sentence = "The quick brown fox jumps over the lazy dog.";
-      const spec = `${t.size} / weight ${t.weight} / lh ${t.lineHeight} / ls ${t.letterSpacing}`;
+  const { profiles } = system.typographyTokens;
+  const sentence = "The quick brown fox jumps over the lazy dog.";
+
+  const samples = Object.entries(profiles)
+    .map(([name, token]) => {
+      const spec = `${token.size}px / weight ${token.weight} / lh ${token.lineHeight} / ls ${token.letterSpacing}`;
+      const inlineStyle =
+        `font-family: ${JSON.stringify(token.fontFamily)}, system-ui, sans-serif; ` +
+        `font-size: ${token.size}px; ` +
+        `font-weight: ${token.weight}; ` +
+        `line-height: ${token.lineHeight}; ` +
+        `letter-spacing: ${token.letterSpacing};`;
       return `
       <div class="type-row">
-        <div class="type-sample" style="${escapeHtml(styleSpec(t))}">${sentence}</div>
+        <div class="type-sample" style="${escapeHtml(inlineStyle)}">${sentence}</div>
         <div class="type-meta">
-          <span class="type-role">${escapeHtml(t.role)}</span>
+          <span class="type-role">${escapeHtml(name)}</span>
           <span class="type-spec"><code>${escapeHtml(spec)}</code></span>
         </div>
       </div>`;
     })
     .join("\n");
 
-  const principles = system.typography.principles
-    .map((p) => `<li>${escapeHtml(p)}</li>`)
-    .join("\n");
+  const chains = system.typographyTokens.fontChains;
+  const principles = [
+    `Sans chain: ${chains.sans}`,
+    `Mono chain: ${chains.mono}`,
+    `Serif chain: ${chains.serif}`,
+  ].map((p) => `<li>${escapeHtml(p)}</li>`).join("\n");
 
   return `
 <section class="section">
@@ -247,7 +251,7 @@ function renderTypography(system: DesignSystem): string {
   <div class="type-list">
     ${samples}
   </div>
-  <h3>Principles</h3>
+  <h3>Font chains</h3>
   <ul class="type-principles">
     ${principles}
   </ul>
@@ -713,7 +717,11 @@ export function renderShowcaseHtml(
   result: GenerateResult,
 ): string {
   const { system, tokens } = result;
-  const fontFamily = system.typography.families.primary;
+  // Resolve the primary sans font from the new typography tokens.
+  const fontFamily = system.typographyTokens.fontChains.sans
+    .split(",")[0]
+    .trim()
+    .replace(/^"|"$/g, "");
   const primaryHex = semanticHex(tokens, "brand/primary");
 
   const cssVars = buildCssVariables(tokens);
@@ -767,7 +775,6 @@ export function renderIndexHtml(summaries: ShowcaseSummary[]): string {
       </div>
       <p class="mood-card-desc">${escapeHtml(s.archetype.description)}</p>
       <div class="mood-card-meta">
-        <span><strong>Font:</strong> ${escapeHtml(s.archetype.defaultFont)}</span>
         <span><strong>Primary:</strong> <code>${escapeHtml(s.primary)}</code></span>
       </div>
     </a>`,

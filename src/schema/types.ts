@@ -49,29 +49,6 @@ export interface ColorScales {
   readonly [role: string]: Record<string, ColorStep>;
 }
 
-// ═══ Typography ═══
-
-export interface TypeStyle {
-  role: string;
-  font: string;
-  size: string;
-  weight: number;
-  lineHeight: string;
-  letterSpacing: string;
-  notes: string;
-}
-
-export interface TypographySystem {
-  families: {
-    primary: string;
-    primaryFallback: string;
-    mono: string;
-    monoFallback: string;
-  };
-  hierarchy: TypeStyle[];
-  principles: string[];
-}
-
 // ═══ Components ═══
 
 export interface ComponentSize {
@@ -191,12 +168,6 @@ export interface DesignSystem {
   colors: ColorScales;
   /** New per-category typography output. Source of truth for typography rendering. */
   typographyTokens: TypographyCategoryTokens;
-  /**
-   * Legacy 14-style typography hierarchy, derived from the archetype and resolved
-   * sans primary. Still consumed by template, tokens, and figma transformer until
-   * those consumers migrate to typographyTokens directly.
-   */
-  typography: TypographySystem;
   components: ComponentSpecs;
   layout: LayoutSystem;
   elevation: ElevationSystem;
@@ -221,14 +192,6 @@ export interface ArchetypePreset {
   description: string;
   atmosphereTemplate: string;
   characteristics: string[];
-  defaultFont: string;
-  defaultFontFallback: string;
-  monoFont: string;
-  monoFontFallback: string;
-  fontWeights: { heading: number; ui: number; body: number };
-  headingLetterSpacing: string;
-  bodyLineHeight: string;
-  headingLineHeight: string;
   sectionSpacing: string;
   componentSpacing: string;
   buttonRadius: string;
@@ -239,7 +202,6 @@ export interface ArchetypePreset {
   neutralUndertone: NeutralUndertone;
   dos: string[];
   donts: string[];
-  suggestedFonts: { name: string; fallback: string }[];
 }
 
 // ═══ Design Tokens — 3-Layer Architecture ═══
