@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { WizardState } from "../hooks/useGenerator";
 import { CategoryTabs, type InspectorCategory } from "./CategoryTabs";
+import { ColorPanel } from "./panels/ColorPanel";
 import { RadiusPanel } from "./panels/RadiusPanel";
 
 interface InspectorProps {
@@ -19,8 +20,9 @@ export function Inspector({ state, onChange }: InspectorProps) {
         </div>
         <CategoryTabs active={active} onChange={setActive} />
         <div className="pt-2">
+          {active === "color"  && <ColorPanel  state={state} onChange={onChange} />}
           {active === "radius" && <RadiusPanel state={state} onChange={onChange} />}
-          {active !== "radius" && (
+          {active !== "color" && active !== "radius" && (
             <div className="text-[12px] text-neutral-400 italic px-1 py-8 text-center">
               Coming soon — this category panel ships in a follow-up slice.
             </div>

@@ -1,7 +1,7 @@
 export type InspectorCategory = "color" | "typography" | "spacing" | "radius" | "elevation" | "component";
 
 const TABS: { key: InspectorCategory; label: string; enabled: boolean }[] = [
-  { key: "color",      label: "Color",      enabled: false },
+  { key: "color",      label: "Color",      enabled: true  },
   { key: "typography", label: "Type",       enabled: false },
   { key: "spacing",    label: "Spacing",    enabled: false },
   { key: "radius",     label: "Radius",     enabled: true  },
