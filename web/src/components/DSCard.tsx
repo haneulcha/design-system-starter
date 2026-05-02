@@ -1,6 +1,5 @@
 import type { DesignTokens, DesignSystem } from "@core/schema/types.js";
-import { getArchetype } from "@core/schema/archetypes.js";
-import { resolveColor, resolveShadow, buildFontFamily } from "../lib/tokens";
+import { resolveColor, buildFontFamily } from "../lib/tokens";
 
 interface DSCardProps {
   children: React.ReactNode;
@@ -9,38 +8,28 @@ interface DSCardProps {
   system: DesignSystem;
 }
 
-function computeStyles(tokens: DesignTokens, system: DesignSystem, hasImage: boolean) {
-  const archetype = getArchetype(system.mood);
+function computeStyles(tokens: DesignTokens, system: DesignSystem) {
   const fontFamily = buildFontFamily(system);
-
   const bgBase = resolveColor(tokens, "bg/base");
   const borderDefault = resolveColor(tokens, "border/default");
-  const shadow = resolveShadow(archetype.shadowIntensity);
+  const shadow = tokens.elevation.raised ?? "none";
 
   return {
     container: {
-      borderRadius: archetype.cardRadius,
+      borderRadius: tokens.borderRadius.card,
       border: `1px solid ${borderDefault}`,
       backgroundColor: bgBase,
       boxShadow: shadow,
       overflow: "hidden" as const,
       fontFamily,
     },
-    image: {
-      width: "100%",
-      height: 160,
-      objectFit: "cover" as const,
-      display: "block" as const,
-    },
-    body: {
-      padding: "16px 20px",
-    },
+    image: { width: "100%", height: 160, objectFit: "cover" as const, display: "block" as const },
+    body: { padding: "16px 20px" },
   };
 }
 
 export function DSCard({ children, image, tokens, system }: DSCardProps) {
-  const styles = computeStyles(tokens, system, !!image);
-
+  const styles = computeStyles(tokens, system);
   return (
     <div style={styles.container}>
       {image && <img src={image.src} alt={image.alt} style={styles.image} />}
