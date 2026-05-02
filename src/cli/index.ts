@@ -44,8 +44,8 @@ async function main() {
     default: "default",
   });
 
-  const sans = sansRaw.trim() || null;
-  const mono = monoRaw.trim() || null;
+  const sans = sansRaw.trim() || undefined;
+  const mono = monoRaw.trim() || undefined;
 
   console.log("\n  Generating...\n");
 
