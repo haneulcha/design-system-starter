@@ -50,9 +50,14 @@ describe("generatePrimitive", () => {
     }
   });
 
-  it("does NOT contain legacy hue keys", () => {
+  it("also exposes the 'neutral' hue (9 base scale stops) for downstream display", () => {
+    expect(primitive.colors).toHaveProperty("neutral");
+    expect(Object.keys(primitive.colors.neutral)).toHaveLength(9);
+  });
+
+  it("does NOT contain the per-role hue keys from the prior derivation pipeline", () => {
     const keys = Object.keys(primitive.colors);
-    for (const legacy of ["neutral", "accent", "error", "success", "warning", "info"]) {
+    for (const legacy of ["error", "success", "warning", "info"]) {
       expect(keys, `legacy key "${legacy}" should be gone`).not.toContain(legacy);
     }
   });

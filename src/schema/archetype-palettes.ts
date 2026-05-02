@@ -3,29 +3,30 @@
 // Per-archetype color palettes — corpus-curated, hand-picked.
 //
 // Source of truth: docs/research/color-roles-normalized.md (corpus hex by
-// brand × role). Each archetype's palette draws from one signature exemplar
-// brand (per ARCHETYPES.cue), with status colors held universal across
-// archetypes (red error, green success, etc. — the corpus shows ~95%
-// convergence on these hues regardless of brand personality).
+// brand × role) + neutral-baseline.md / accent-baseline.md.
 //
-// This file replaces the prior ColorKnobs derivation pipeline (brandColor →
-// computed scales). Palettes are now the single source of truth; the user
-// picks an archetype and optionally overrides individual slots.
+// Shape (v3):
+//   - 9-stop neutral base scale per archetype (the gray foundation).
+//   - Surface/text slots are REFERENCES into the base scale (canvas →
+//     neutral.50, etc.). Editing a base stop cascades to every slot that
+//     references it.
+//   - Accent: one default + 3 corpus-curated alternatives the inspector
+//     surfaces as recommendation chips.
+//   - Status: 8 slots, per-archetype curated (warm-friendly's red is warmer,
+//     bold-energetic's red is more saturated, etc. Not universal.)
 
 import type { PresetName } from "./presets.js";
 
-// ─── Palette slot enum ──────────────────────────────────────────────────────
+// ─── Slot taxonomies ────────────────────────────────────────────────────────
 
-/** Surface tokens — page background, cards/inputs, borders. */
+export type NeutralStop = "50" | "100" | "200" | "300" | "400" | "500" | "600" | "800" | "900";
+export const NEUTRAL_STOPS: readonly NeutralStop[] = [
+  "50", "100", "200", "300", "400", "500", "600", "800", "900",
+];
+
 export type SurfaceSlot = "canvas" | "soft" | "hairline";
-
-/** Text tokens — headlines, body, secondary copy. */
-export type TextSlot = "ink" | "body" | "muted";
-
-/** Brand accent — primary CTA / focus / link color. */
-export type AccentSlot = "accent";
-
-/** Status tokens — 4 roles × 2 variants (bg, text). Border variant deferred. */
+export type TextSlot    = "ink" | "body" | "muted";
+export type AccentSlot  = "accent";
 export type StatusSlot =
   | "error-bg"   | "error-text"
   | "success-bg" | "success-text"
@@ -48,99 +49,214 @@ export const PALETTE_SLOTS: readonly PaletteSlot[] = [
   ...SURFACE_SLOTS, ...TEXT_SLOTS, ...ACCENT_SLOTS, ...STATUS_SLOTS,
 ];
 
-export type ArchetypePalette = Record<PaletteSlot, string>;
+/** Resolved flat palette — the shape downstream consumers (generator,
+ *  figma transformer, web ColorPalette) read. Each slot is a hex string. */
+export type ResolvedPalette = Record<PaletteSlot, string>;
 
-// ─── Status palette — universal across archetypes ───────────────────────────
-//
-// Corpus shows red/green/orange/blue convergence regardless of personality
-// (Airbnb, Spotify, Linear, Stripe all use the same hue families for status).
-// Held constant so a "warm-friendly" success badge still reads as success.
+// ─── Archetype palette spec ─────────────────────────────────────────────────
 
-const STATUS_UNIVERSAL: Record<StatusSlot, string> = {
-  "error-bg":     "#fef2f2",
-  "error-text":   "#b91c1c",
-  "success-bg":   "#f0fdf4",
-  "success-text": "#15803d",
-  "warning-bg":   "#fffbeb",
-  "warning-text": "#b45309",
-  "info-bg":      "#eff6ff",
-  "info-text":    "#1d4ed8",
+export interface ArchetypePalette {
+  /** 9-stop neutral base scale. */
+  baseScale: Record<NeutralStop, string>;
+  /** Surface slots reference into the base scale. */
+  surfaceRefs: Record<SurfaceSlot, NeutralStop>;
+  /** Text slots reference into the base scale. */
+  textRefs: Record<TextSlot, NeutralStop>;
+  /** Default brand accent. */
+  accent: string;
+  /** 3 corpus-curated alternative accents the inspector exposes as chips. */
+  recommendedAccents: readonly [string, string, string];
+  /** 8 status slots, per-archetype curated. */
+  status: Record<StatusSlot, string>;
+}
+
+// ─── Default ref mapping (shared across archetypes) ─────────────────────────
+
+const DEFAULT_SURFACE_REFS: Record<SurfaceSlot, NeutralStop> = {
+  canvas:   "50",
+  soft:     "100",
+  hairline: "300",
 };
 
-// ─── 5 archetype palettes ───────────────────────────────────────────────────
+const DEFAULT_TEXT_REFS: Record<TextSlot, NeutralStop> = {
+  ink:   "900",
+  body:  "800",
+  muted: "500",
+};
+
+// ─── Per-archetype curation ─────────────────────────────────────────────────
 
 export const ARCHETYPE_PALETTES: Record<PresetName, ArchetypePalette> = {
-  // Linear — restrained, near-achromatic neutral, blurple accent
+  // Linear-inspired — cool slate, low chroma. canvas pure white for crispness.
   "clean-minimal": {
-    canvas:   "#ffffff",
-    soft:     "#f7f8f8",
-    hairline: "#e6e8eb",
-    ink:      "#08090a",
-    body:     "#3c4149",
-    muted:    "#6b7280",
-    accent:   "#5e6ad2",
-    ...STATUS_UNIVERSAL,
+    baseScale: {
+      "50":  "#ffffff",
+      "100": "#f7f8f8",
+      "200": "#ebedef",
+      "300": "#e0e3e7",
+      "400": "#b1b5be",
+      "500": "#6b7280",
+      "600": "#4b5563",
+      "800": "#1f2329",
+      "900": "#08090a",
+    },
+    surfaceRefs: DEFAULT_SURFACE_REFS,
+    textRefs: DEFAULT_TEXT_REFS,
+    accent: "#5e6ad2",
+    recommendedAccents: ["#5e6ad2", "#000000", "#0070f3"],
+    status: {
+      "error-bg":     "#fef2f2",  "error-text":   "#b91c1c",
+      "success-bg":   "#f0fdf4",  "success-text": "#166534",
+      "warning-bg":   "#fefce8",  "warning-text": "#a16207",
+      "info-bg":      "#eff6ff",  "info-text":    "#1e40af",
+    },
   },
 
-  // Claude — warm cream canvas, near-black ink, coral accent
+  // Claude-inspired — warm cream. Every neutral stop carries a cream/sand undertone.
   "warm-friendly": {
-    canvas:   "#faf9f5",
-    soft:     "#f0eee6",
-    hairline: "#e3dfd3",
-    ink:      "#141413",
-    body:     "#2c2b28",
-    muted:    "#6b6960",
-    accent:   "#cc785c",
-    ...STATUS_UNIVERSAL,
+    baseScale: {
+      "50":  "#ffffff",
+      "100": "#faf9f5",
+      "200": "#f0eee6",
+      "300": "#e3dfd3",
+      "400": "#b6b1a3",
+      "500": "#6b6960",
+      "600": "#4a4842",
+      "800": "#2c2b28",
+      "900": "#141413",
+    },
+    surfaceRefs: DEFAULT_SURFACE_REFS,
+    textRefs: DEFAULT_TEXT_REFS,
+    accent: "#cc785c",
+    recommendedAccents: ["#cc785c", "#ff385c", "#635bff"],
+    status: {
+      "error-bg":     "#fef0ee",  "error-text":   "#c2410c",
+      "success-bg":   "#f1fbef",  "success-text": "#4d7c0f",
+      "warning-bg":   "#fff5e6",  "warning-text": "#ad6209",
+      "info-bg":      "#eff6ff",  "info-text":    "#3b5cb8",
+    },
   },
 
-  // Spotify-inspired — high-energy green on near-black surface (light variant)
+  // Spotify-inspired — pure achromatic, hard contrast.
   "bold-energetic": {
-    canvas:   "#ffffff",
-    soft:     "#f3f3f3",
-    hairline: "#d9d9d9",
-    ink:      "#000000",
-    body:     "#1a1a1a",
-    muted:    "#535353",
-    accent:   "#1db954",
-    ...STATUS_UNIVERSAL,
+    baseScale: {
+      "50":  "#ffffff",
+      "100": "#f3f3f3",
+      "200": "#e0e0e0",
+      "300": "#d9d9d9",
+      "400": "#a0a0a0",
+      "500": "#707070",
+      "600": "#535353",
+      "800": "#1a1a1a",
+      "900": "#000000",
+    },
+    surfaceRefs: DEFAULT_SURFACE_REFS,
+    textRefs: DEFAULT_TEXT_REFS,
+    accent: "#1db954",
+    recommendedAccents: ["#1db954", "#0052ff", "#3ecf8e"],
+    status: {
+      "error-bg":     "#fee2e2",  "error-text":   "#dc2626",
+      "success-bg":   "#dcfce7",  "success-text": "#16a34a",
+      "warning-bg":   "#fef3c7",  "warning-text": "#d97706",
+      "info-bg":      "#dbeafe",  "info-text":    "#2563eb",
+    },
   },
 
-  // Stripe — cool slate ink, blurple accent, near-white canvas
+  // Stripe-inspired — cool slate blue undertones throughout the scale.
   "professional": {
-    canvas:   "#fafafa",
-    soft:     "#f6f9fc",
-    hairline: "#e3e8ee",
-    ink:      "#0a2540",
-    body:     "#425466",
-    muted:    "#8898aa",
-    accent:   "#635bff",
-    ...STATUS_UNIVERSAL,
+    baseScale: {
+      "50":  "#ffffff",
+      "100": "#fafafa",
+      "200": "#f6f9fc",
+      "300": "#e3e8ee",
+      "400": "#aab7c4",
+      "500": "#8898aa",
+      "600": "#66738a",
+      "800": "#1a3554",
+      "900": "#0a2540",
+    },
+    surfaceRefs: DEFAULT_SURFACE_REFS,
+    textRefs: DEFAULT_TEXT_REFS,
+    accent: "#635bff",
+    recommendedAccents: ["#635bff", "#0f62fe", "#18181b"],
+    status: {
+      "error-bg":     "#fef2f2",  "error-text":   "#b91c1c",
+      "success-bg":   "#f0fdf4",  "success-text": "#15803d",
+      "warning-bg":   "#fffbeb",  "warning-text": "#b45309",
+      "info-bg":      "#eff6ff",  "info-text":    "#1d4ed8",
+    },
   },
 
-  // Figma — clean white canvas, expressive purple accent
+  // Figma-inspired — clean achromatic, expressive accent.
   "playful-creative": {
-    canvas:   "#ffffff",
-    soft:     "#f5f5f5",
-    hairline: "#e5e5e5",
-    ink:      "#1e1e1e",
-    body:     "#333333",
-    muted:    "#757575",
-    accent:   "#a259ff",
-    ...STATUS_UNIVERSAL,
+    baseScale: {
+      "50":  "#ffffff",
+      "100": "#f5f5f5",
+      "200": "#ebebeb",
+      "300": "#e5e5e5",
+      "400": "#c2c2c2",
+      "500": "#757575",
+      "600": "#525252",
+      "800": "#333333",
+      "900": "#1e1e1e",
+    },
+    surfaceRefs: DEFAULT_SURFACE_REFS,
+    textRefs: DEFAULT_TEXT_REFS,
+    accent: "#a259ff",
+    recommendedAccents: ["#a259ff", "#ff5733", "#ff7a59"],
+    status: {
+      "error-bg":     "#fee2e2",  "error-text":   "#e11d48",
+      "success-bg":   "#d1fae5",  "success-text": "#059669",
+      "warning-bg":   "#fef3c7",  "warning-text": "#d97706",
+      "info-bg":      "#e0e7ff",  "info-text":    "#4f46e5",
+    },
   },
 };
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// ─── Overrides shape ────────────────────────────────────────────────────────
 
-export type PaletteOverrides = Partial<Record<PaletteSlot, string>>;
+export interface PaletteOverrides {
+  /** Override individual base scale stops. Cascades to every surface/text
+   *  slot that references the stop. */
+  baseScale?: Partial<Record<NeutralStop, string>>;
+  /** Replace the accent slot directly (no scale cascade). */
+  accent?: string;
+  /** Override individual status slots directly. */
+  status?: Partial<Record<StatusSlot, string>>;
+}
 
-/** Apply per-slot overrides on top of an archetype palette. */
+// ─── Resolution ─────────────────────────────────────────────────────────────
+
+/** Compute the flat 15-slot palette from an archetype + overrides. */
 export function resolvePalette(
   preset: PresetName,
   overrides?: PaletteOverrides,
-): ArchetypePalette {
+): ResolvedPalette {
   const base = ARCHETYPE_PALETTES[preset];
-  if (!overrides) return base;
-  return { ...base, ...overrides };
+
+  // Effective base scale: per-stop overrides applied.
+  const effectiveBase: Record<NeutralStop, string> = { ...base.baseScale, ...overrides?.baseScale };
+
+  const surface = Object.fromEntries(
+    SURFACE_SLOTS.map((slot) => [slot, effectiveBase[base.surfaceRefs[slot]]]),
+  ) as Record<SurfaceSlot, string>;
+
+  const text = Object.fromEntries(
+    TEXT_SLOTS.map((slot) => [slot, effectiveBase[base.textRefs[slot]]]),
+  ) as Record<TextSlot, string>;
+
+  const accent = overrides?.accent ?? base.accent;
+
+  const status: Record<StatusSlot, string> = { ...base.status, ...overrides?.status };
+
+  return { ...surface, ...text, accent, ...status };
+}
+
+/** Resolve the effective base scale (after overrides). */
+export function resolveBaseScale(
+  preset: PresetName,
+  overrides?: PaletteOverrides,
+): Record<NeutralStop, string> {
+  const base = ARCHETYPE_PALETTES[preset];
+  return { ...base.baseScale, ...overrides?.baseScale };
 }

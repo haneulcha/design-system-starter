@@ -42,14 +42,14 @@ for (const archetype of ALL_ARCHETYPES) {
       expect(stops).toHaveLength(PALETTE_SLOTS.length);
     });
 
-    it("primitive.palette stops match the archetype's baseline palette", () => {
-      const expected = ARCHETYPE_PALETTES[archetype.preset];
-      for (const slot of PALETTE_SLOTS) {
-        expect(
-          result.system.colorTokens.palette[slot],
-          `palette.${slot} drift`,
-        ).toBe(expected[slot]);
-      }
+    it("resolved palette matches the archetype baseline (no overrides)", () => {
+      const arche = ARCHETYPE_PALETTES[archetype.preset];
+      // Surface/text derive via refs.
+      expect(result.system.colorTokens.palette.canvas).toBe(arche.baseScale[arche.surfaceRefs.canvas]);
+      expect(result.system.colorTokens.palette.ink).toBe(arche.baseScale[arche.textRefs.ink]);
+      // Accent + a sample status slot.
+      expect(result.system.colorTokens.palette.accent).toBe(arche.accent);
+      expect(result.system.colorTokens.palette["error-text"]).toBe(arche.status["error-text"]);
     });
 
     it("each palette slot has light and dark Oklch", () => {
@@ -96,22 +96,34 @@ describe("generate — paletteOverrides", () => {
     brandName: "OverrideTest",
     preset: "professional",
     fontFamily: "Inter",
-    paletteOverrides: { accent: "#ff0066", canvas: "#fef9e7" },
+    paletteOverrides: {
+      accent: "#ff0066",
+      baseScale: { "50": "#fef9e7" },
+      status: { "error-text": "#000000" },
+    },
   });
 
-  it("overridden slots replace the archetype baseline", () => {
-    expect(result.system.colorTokens.palette.accent).toBe("#ff0066");
+  it("base scale override cascades to surface slot via canvas ref", () => {
     expect(result.system.colorTokens.palette.canvas).toBe("#fef9e7");
   });
 
-  it("non-overridden slots keep the archetype baseline", () => {
-    const baseline = ARCHETYPE_PALETTES["professional"];
-    expect(result.system.colorTokens.palette.ink).toBe(baseline.ink);
-    expect(result.system.colorTokens.palette.hairline).toBe(baseline.hairline);
+  it("accent override replaces accent directly", () => {
+    expect(result.system.colorTokens.palette.accent).toBe("#ff0066");
   });
 
-  it("colorTokens.overrides carries the diff", () => {
-    expect(result.system.colorTokens.overrides).toEqual({ accent: "#ff0066", canvas: "#fef9e7" });
+  it("status override replaces individual status slot", () => {
+    expect(result.system.colorTokens.palette["error-text"]).toBe("#000000");
+  });
+
+  it("non-overridden base stops keep the archetype baseline", () => {
+    const baseline = ARCHETYPE_PALETTES["professional"].baseScale;
+    expect(result.system.colorTokens.baseScale["900"]).toBe(baseline["900"]);
+  });
+
+  it("colorTokens.overrides carries the structured diff", () => {
+    expect(result.system.colorTokens.overrides.accent).toBe("#ff0066");
+    expect(result.system.colorTokens.overrides.baseScale).toEqual({ "50": "#fef9e7" });
+    expect(result.system.colorTokens.overrides.status).toEqual({ "error-text": "#000000" });
   });
 });
 

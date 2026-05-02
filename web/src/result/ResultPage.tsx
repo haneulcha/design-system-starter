@@ -178,7 +178,11 @@ export function ResultPage({
           {/* Palette */}
           <section>
             <h2 className="text-lg font-semibold text-neutral-900 mb-4">Color Palette</h2>
-            <ColorPalette palette={system.colorTokens.palette} preset={system.colorTokens.preset} />
+            <ColorPalette
+              palette={system.colorTokens.palette}
+              baseScale={system.colorTokens.baseScale}
+              preset={system.colorTokens.preset}
+            />
           </section>
 
           {/* Components */}
