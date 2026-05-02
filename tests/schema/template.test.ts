@@ -8,6 +8,9 @@ import type { DesignSystem } from "../../src/schema/types.js";
 let system: DesignSystem;
 let output: string;
 
+let systemOverride: DesignSystem;
+let outputOverride: string;
+
 beforeAll(() => {
   const result = generate({
     brandName: "MockBrand",
@@ -16,6 +19,14 @@ beforeAll(() => {
   });
   system = result.system;
   output = result.designMd;
+
+  const resultOverride = generate({
+    brandName: "OverrideBrand",
+    brandColor: "#5e6ad2",
+    typographyKnobs: { fontFamily: { sans: "Mona Sans" } },
+  });
+  systemOverride = resultOverride.system;
+  outputOverride = resultOverride.designMd;
 });
 
 describe("renderDesignMd", () => {
@@ -65,10 +76,59 @@ describe("renderDesignMd", () => {
   });
 
   describe("Section 3 — Typography", () => {
-    it("has a 7-column table header", () => {
-      expect(output).toMatch(
-        /\| Role \| Font \| Size \| Weight \| Line Height \| Letter Spacing \| Notes \|/,
-      );
+    it("has the ## 3. Typography heading", () => {
+      expect(output).toMatch(/^## 3\. Typography$/m);
+    });
+
+    it("has Font Family Chains subsection", () => {
+      expect(output).toMatch(/^### Font Family Chains$/m);
+    });
+
+    it("has Scales subsection", () => {
+      expect(output).toMatch(/^### Scales$/m);
+    });
+
+    it("has category subsections for all 5 multi-variant categories", () => {
+      for (const cat of ["Heading", "Body", "Caption", "Button"]) {
+        expect(output).toMatch(new RegExp(`^#### ${cat}$`, "m"));
+      }
+      // Code category has a family annotation in the label
+      expect(output).toMatch(/^#### Code \(mono family\)$/m);
+    });
+
+    it("has the single-variant table with correct header", () => {
+      expect(output).toMatch(/\| category \| family \| size \| weight \| line-height \| letter-spacing \|/);
+    });
+
+    it("heading.xl row has size 64", () => {
+      // The xl row in the Heading table contains 64
+      expect(output).toMatch(/\| xl\s*\|\s*64\s*\|/);
+    });
+
+    it("badge row has letter-spacing 0.05em", () => {
+      expect(output).toContain("0.05em");
+    });
+
+    it("font chains include Korean fallback markers", () => {
+      expect(output).toContain("Pretendard");
+      expect(output).toContain("D2Coding");
+      expect(output).toContain("Noto Serif KR");
+    });
+
+    it("does not contain legacy role names", () => {
+      expect(output).not.toContain("Display Hero");
+      expect(output).not.toContain("Section Heading");
+      expect(output).not.toContain("Body Large");
+      expect(output).not.toContain("Card Title");
+      expect(output).not.toContain("Mono Body");
+    });
+
+    it("does not contain legacy Principles subsection", () => {
+      expect(output).not.toMatch(/^### Principles$/m);
+    });
+
+    it("font override: sans override appears in rendered Sans chain", () => {
+      expect(outputOverride).toContain("Mona Sans");
     });
   });
 

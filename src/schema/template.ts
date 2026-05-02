@@ -8,6 +8,13 @@ import {
   TEXT_ALIASES_STANDARD,
 } from "./color.js";
 import type { ColorCategoryTokens } from "../generator/color-category.js";
+import {
+  SIZE_SCALE,
+  WEIGHT_SCALE,
+  LINE_HEIGHT_SCALE,
+  LETTER_SPACING_VALUES,
+} from "./typography.js";
+import type { TypographyCategoryTokens, TypographyToken } from "../generator/typography-category.js";
 
 // ─── Section renderers ───────────────────────────────────────────────────────
 
@@ -118,30 +125,85 @@ function renderColors(system: DesignSystem): string {
   return lines.join("\n");
 }
 
+function renderFontChains(tokens: TypographyCategoryTokens): string[] {
+  const lines: string[] = [];
+  lines.push("### Font Family Chains\n");
+  lines.push(`- **Sans:** ${tokens.fontChains.sans}`);
+  lines.push(`- **Mono:** ${tokens.fontChains.mono}`);
+  lines.push(`- **Serif:** ${tokens.fontChains.serif}`);
+  return lines;
+}
+
+function renderScales(): string[] {
+  const lines: string[] = [];
+  lines.push("### Scales\n");
+  lines.push(`**Size scale (px):** ${SIZE_SCALE.join(", ")}`);
+  lines.push(`**Weight scale:** ${WEIGHT_SCALE.join(", ")}`);
+  lines.push(`**Line-height scale:** ${LINE_HEIGHT_SCALE.join(", ")}`);
+  lines.push(`**Letter-spacing values:** ${LETTER_SPACING_VALUES.join(", ")}`);
+  return lines;
+}
+
+function renderCategoryTable(
+  label: string,
+  category: string,
+  variantKeys: string[],
+  profiles: Record<string, TypographyToken>,
+): string[] {
+  const lines: string[] = [];
+  lines.push(`#### ${label}\n`);
+  lines.push("| variant | size | weight | line-height | letter-spacing |");
+  lines.push("| --- | ---: | ---: | ---: | --- |");
+  for (const variant of variantKeys) {
+    const key = `${category}.${variant}`;
+    const t = profiles[key];
+    if (!t) continue;
+    lines.push(`| ${variant} | ${t.size} | ${t.weight} | ${t.lineHeight} | ${t.letterSpacing} |`);
+  }
+  return lines;
+}
+
+function renderSingleVariantTable(profiles: Record<string, TypographyToken>): string[] {
+  const lines: string[] = [];
+  lines.push("#### Single-variant categories\n");
+  lines.push("| category | family | size | weight | line-height | letter-spacing |");
+  lines.push("| --- | --- | ---: | ---: | ---: | --- |");
+  const singleKeys = ["card", "nav", "link", "badge"];
+  for (const key of singleKeys) {
+    const t = profiles[key];
+    if (!t) continue;
+    // Derive slot name from fontFamily chain: mono chain means "mono", serif means "serif", else "sans"
+    const familySlot = t.fontFamily.startsWith('"Geist Mono"') || t.fontFamily.startsWith("Geist Mono")
+      ? "mono"
+      : t.fontFamily.startsWith("Georgia") || t.fontFamily.startsWith('"Georgia"')
+        ? "serif"
+        : "sans";
+    lines.push(`| ${key} | ${familySlot} | ${t.size} | ${t.weight} | ${t.lineHeight} | ${t.letterSpacing} |`);
+  }
+  return lines;
+}
+
 function renderTypography(system: DesignSystem): string {
+  const tokens = system.typographyTokens;
   const lines: string[] = [];
   lines.push("## 3. Typography\n");
 
-  lines.push("### Font Families\n");
-  const f = system.typography.families;
-  lines.push(`- **Primary:** ${f.primary}, ${f.primaryFallback}`);
-  lines.push(`- **Mono:** ${f.mono}, ${f.monoFallback}`);
-
-  lines.push("\n### Type Scale\n");
-  lines.push(
-    "| Role | Font | Size | Weight | Line Height | Letter Spacing | Notes |"
-  );
-  lines.push("| --- | --- | --- | --- | --- | --- | --- |");
-  for (const t of system.typography.hierarchy) {
-    lines.push(
-      `| ${t.role} | ${t.font} | ${t.size} | ${t.weight} | ${t.lineHeight} | ${t.letterSpacing} | ${t.notes} |`
-    );
-  }
-
-  lines.push("\n### Principles\n");
-  for (const p of system.typography.principles) {
-    lines.push(`- ${p}`);
-  }
+  lines.push(...renderFontChains(tokens));
+  lines.push("");
+  lines.push(...renderScales());
+  lines.push("");
+  lines.push("### Category profiles\n");
+  lines.push(...renderCategoryTable("Heading", "heading", ["xl", "lg", "md", "sm", "xs"], tokens.profiles));
+  lines.push("");
+  lines.push(...renderCategoryTable("Body", "body", ["lg", "md", "sm"], tokens.profiles));
+  lines.push("");
+  lines.push(...renderCategoryTable("Caption", "caption", ["md", "sm", "xs"], tokens.profiles));
+  lines.push("");
+  lines.push(...renderCategoryTable("Code (mono family)", "code", ["md", "sm", "xs"], tokens.profiles));
+  lines.push("");
+  lines.push(...renderCategoryTable("Button", "button", ["md", "sm"], tokens.profiles));
+  lines.push("");
+  lines.push(...renderSingleVariantTable(tokens.profiles));
 
   return lines.join("\n");
 }
