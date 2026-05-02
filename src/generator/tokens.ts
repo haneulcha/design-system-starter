@@ -19,6 +19,22 @@ function parsePx(s: string): number {
   return match ? parseFloat(match[1]) : 0;
 }
 
+/**
+ * Converts the schema's letter-spacing string values to a number (em units).
+ * - "0"       → 0
+ * - "-0.02em" → -0.02
+ * - "0.05em"  → 0.05
+ * Throws if the string cannot be parsed — this is internal data, not user input.
+ */
+function parseLetterSpacingEm(s: string): number {
+  const stripped = s.endsWith("em") ? s.slice(0, -2) : s;
+  const value = parseFloat(stripped);
+  if (isNaN(value)) {
+    throw new Error(`parseLetterSpacingEm: cannot parse "${s}"`);
+  }
+  return value;
+}
+
 // ─── Layer 1: Primitive ───────────────────────────────────────────────────────
 
 export function generatePrimitive(scales: ColorScales): PrimitiveTokens {
@@ -193,31 +209,23 @@ export function buildDesignTokens(
   const brand = { name: system.brandName };
 
   // ── typography ──────────────────────────────────────────────────────────────
+  const { profiles, fontChains } = system.typographyTokens;
+
   const families: Record<string, string> = {
-    primary: system.typography.families.primary,
-    primaryFallback: system.typography.families.primaryFallback,
-    mono: system.typography.families.mono,
-    monoFallback: system.typography.families.monoFallback,
+    sans: fontChains.sans,
+    mono: fontChains.mono,
+    serif: fontChains.serif,
   };
 
   const styles: DesignTokens["typography"]["styles"] = {};
-  for (const t of system.typography.hierarchy) {
-    const key = kebab(t.role);
-    const fontSize = parsePx(t.size);
-    const lineHeightRaw = parseFloat(t.lineHeight);
-    const lineHeight = isNaN(lineHeightRaw) ? 1.5 : lineHeightRaw;
-    let letterSpacing: number;
-    if (t.letterSpacing === "normal" || t.letterSpacing === "0.04em") {
-      letterSpacing = 0;
-    } else {
-      const parsed = parseFloat(t.letterSpacing);
-      letterSpacing = isNaN(parsed) ? 0 : parsed;
-    }
+  for (const [profileKey, t] of Object.entries(profiles)) {
+    const key = profileKey.replace(/\./g, "-"); // "heading.xl" → "heading-xl", "card" → "card"
+    const letterSpacing = parseLetterSpacingEm(t.letterSpacing);
     styles[key] = {
-      fontFamily: t.font,
-      fontSize,
+      fontFamily: t.fontFamily,
+      fontSize: t.size,
       fontWeight: t.weight,
-      lineHeight,
+      lineHeight: t.lineHeight,
       letterSpacing,
     };
   }

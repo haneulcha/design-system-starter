@@ -7,11 +7,15 @@ import {
   generatePrimitive,
   generateSemantic,
   generateComponent,
+  buildDesignTokens,
 } from "../../src/generator/tokens.js";
+import { generateTypographyCategory } from "../../src/generator/typography-category.js";
+import { generate } from "../../src/generator/index.js";
 import type {
   PrimitiveTokens,
   SemanticTokens,
   ComponentTokens,
+  DesignTokens,
 } from "../../src/schema/types.js";
 
 const colorTokens = generateColorCategory({ brandColor: "#5e6ad2" });
@@ -199,5 +203,109 @@ describe("generateComponent", () => {
         }
       }
     }
+  });
+});
+
+// ─── buildDesignTokens — typography section ───────────────────────────────────
+
+describe("buildDesignTokens — typography", () => {
+  const result = generate({
+    brandName: "TokenTest",
+    brandColor: "#5e6ad2",
+  });
+  const tokens: DesignTokens = result.tokens;
+
+  it("families has exactly 3 keys: sans, mono, serif", () => {
+    const keys = Object.keys(tokens.typography.families).sort();
+    expect(keys).toEqual(["mono", "sans", "serif"]);
+  });
+
+  it("families does NOT have legacy keys: primary, primaryFallback, monoFallback", () => {
+    const keys = Object.keys(tokens.typography.families);
+    expect(keys).not.toContain("primary");
+    expect(keys).not.toContain("primaryFallback");
+    expect(keys).not.toContain("monoFallback");
+  });
+
+  it("styles has exactly 20 keys", () => {
+    expect(Object.keys(tokens.typography.styles)).toHaveLength(20);
+  });
+
+  it("all style keys use '-' separator (no dots)", () => {
+    for (const key of Object.keys(tokens.typography.styles)) {
+      expect(key, `key "${key}" must not contain dots`).not.toContain(".");
+    }
+  });
+
+  it("styles has the expected 20 profile keys", () => {
+    const expectedKeys = [
+      "heading-xl", "heading-lg", "heading-md", "heading-sm", "heading-xs",
+      "body-lg", "body-md", "body-sm",
+      "caption-md", "caption-sm", "caption-xs",
+      "code-md", "code-sm", "code-xs",
+      "button-md", "button-sm",
+      "card", "nav", "link", "badge",
+    ];
+    for (const key of expectedKeys) {
+      expect(tokens.typography.styles, `missing style key: "${key}"`).toHaveProperty(key);
+    }
+  });
+
+  it("does NOT have legacy style keys like 'display-hero', 'body-large', 'card-title'", () => {
+    expect(tokens.typography.styles).not.toHaveProperty("display-hero");
+    expect(tokens.typography.styles).not.toHaveProperty("body-large");
+    expect(tokens.typography.styles).not.toHaveProperty("card-title");
+  });
+
+  it("heading-xl has fontSize=64 and letterSpacing=-0.02", () => {
+    const style = tokens.typography.styles["heading-xl"];
+    expect(style.fontSize).toBe(64);
+    expect(style.letterSpacing).toBe(-0.02);
+  });
+
+  it("heading-lg has letterSpacing=-0.02", () => {
+    expect(tokens.typography.styles["heading-lg"].letterSpacing).toBe(-0.02);
+  });
+
+  it("badge has letterSpacing=0.05", () => {
+    expect(tokens.typography.styles["badge"].letterSpacing).toBe(0.05);
+  });
+
+  it("body-md has letterSpacing=0", () => {
+    expect(tokens.typography.styles["body-md"].letterSpacing).toBe(0);
+  });
+
+  it("body-md.fontFamily includes both 'Inter' and 'Pretendard'", () => {
+    const fontFamily = tokens.typography.styles["body-md"].fontFamily;
+    expect(fontFamily).toContain("Inter");
+    expect(fontFamily).toContain("Pretendard");
+  });
+
+  it("all letterSpacing values are numbers", () => {
+    for (const [key, style] of Object.entries(tokens.typography.styles)) {
+      expect(typeof style.letterSpacing, `${key}.letterSpacing must be a number`).toBe("number");
+    }
+  });
+
+  it("code styles use the mono font chain", () => {
+    const codeMd = tokens.typography.styles["code-md"];
+    // The mono chain starts with "Geist Mono"
+    expect(codeMd.fontFamily).toContain("Geist Mono");
+  });
+
+  it("sans font chain is the full fallback string", () => {
+    // Must include at least Inter and a generic fallback
+    expect(tokens.typography.families.sans).toContain("Inter");
+    expect(tokens.typography.families.sans).toContain("sans-serif");
+  });
+
+  it("custom sans font flows through families.sans and body-md.fontFamily", () => {
+    const customResult = generate({
+      brandName: "CustomFont",
+      brandColor: "#5e6ad2",
+      typographyKnobs: { fontFamily: { sans: "Mona Sans" } },
+    });
+    expect(customResult.tokens.typography.families.sans).toContain("Mona Sans");
+    expect(customResult.tokens.typography.styles["body-md"].fontFamily).toContain("Mona Sans");
   });
 });
