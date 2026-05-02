@@ -1,6 +1,6 @@
 // scripts/showcase.ts
 //
-// Generates an HTML preview page for each of the 5 mood archetypes plus a
+// Generates an HTML preview page for each of the 5 archetype presets plus a
 // landing index.html. Output goes to output/showcase/ (gitignored).
 
 import { generate } from "../src/generator/index.js";

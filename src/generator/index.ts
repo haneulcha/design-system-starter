@@ -97,8 +97,8 @@ function buildAgentGuide(
  * Build a complete design system from user inputs.
  *
  * The optional `archetype` argument is internal-only — used by showcase
- * scripts that iterate over the legacy mood vocabulary. Callers from the CLI
- * or library API should omit it and accept DEFAULT_ARCHETYPE.
+ * scripts that iterate over each preset's editorial document. Callers from
+ * the CLI or library API should omit it and accept DEFAULT_ARCHETYPE.
  */
 export function generate(
   inputs: UserInputs,
