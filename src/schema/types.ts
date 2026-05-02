@@ -12,6 +12,7 @@ import type { SpacingInput } from "./spacing.js";
 import type { RadiusInput } from "./radius.js";
 import type { ElevationInput } from "./elevation.js";
 import type { ComponentInput } from "./components.js";
+import type { PresetName } from "./presets.js";
 
 // ═══ User Inputs ═══
 
@@ -42,6 +43,9 @@ export interface UserInputs {
   radiusKnobs?: RadiusInput;
   elevationKnobs?: ElevationInput;
   componentKnobs?: ComponentInput;
+  /** Optional cross-category preset bundle. Each per-category knob the user
+   *  also supplies overrides the preset's value for that whole category. */
+  preset?: PresetName;
 }
 
 // ═══ Color ═══

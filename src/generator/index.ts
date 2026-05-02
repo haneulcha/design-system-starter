@@ -7,6 +7,7 @@ import type {
   DesignTokens,
 } from "../schema/types.js";
 import { DEFAULT_ARCHETYPE } from "../schema/archetypes.js";
+import { PRESETS } from "../schema/presets.js";
 import { renderDesignMd } from "../schema/template.js";
 import { oklchToHex } from "./color.js";
 import {
@@ -103,33 +104,51 @@ export function generate(
   inputs: UserInputs,
   archetype: ArchetypePreset = DEFAULT_ARCHETYPE,
 ): GenerateResult {
+  // Resolve preset → effective knobs. Top-level field merge: if the user
+  // supplies a knob field, it overrides the preset's whole value for that
+  // category (no nested-partial merge in v1). Nested partial overrides are
+  // a v2 concern; documented in src/schema/presets.ts.
+  const preset = inputs.preset ? PRESETS[inputs.preset] : undefined;
+  const colorKnobs       = inputs.colorKnobs       ?? preset?.colorKnobs;
+  const typographyKnobs  = inputs.typographyKnobs  ?? preset?.typographyKnobs;
+  const spacingKnobs     = inputs.spacingKnobs     ?? preset?.spacingKnobs;
+  const radiusKnobs      = inputs.radiusKnobs      ?? preset?.radiusKnobs;
+  const elevationKnobs   = inputs.elevationKnobs   ?? preset?.elevationKnobs;
+  const componentKnobs   = inputs.componentKnobs   ?? preset?.componentKnobs;
+
   // Color: new ColorInput-driven pipeline (proposal §6).
   const colorTokens = generateColorCategory({
     brandColor: inputs.brandColor,
     brandColorSecondary: inputs.brandColorSecondary,
-    knobs: inputs.colorKnobs,
+    knobs: colorKnobs,
   });
   const scales = toLegacyColorScales(colorTokens);
 
   // Typography: new per-category pipeline.
   // If the caller supplies only the legacy fontFamily field (not typographyKnobs),
   // synthesize a TypographyInput so the font flows through the new schema too.
-  const effectiveTypographyInput = inputs.typographyKnobs ?? (
-    inputs.fontFamily ? { fontFamily: { sans: inputs.fontFamily } } : undefined
-  );
+  // The preset's typographyKnobs (if any) takes precedence over the synthesized
+  // fontFamily-only shape — but the user's fontFamily field is layered on top.
+  let effectiveTypographyInput = typographyKnobs;
+  if (!effectiveTypographyInput && inputs.fontFamily) {
+    effectiveTypographyInput = { fontFamily: { sans: inputs.fontFamily } };
+  } else if (effectiveTypographyInput && inputs.fontFamily && !inputs.typographyKnobs?.fontFamily) {
+    // Preset supplied headingStyle but user only supplied fontFamily — combine.
+    effectiveTypographyInput = { ...effectiveTypographyInput, fontFamily: { sans: inputs.fontFamily } };
+  }
   const typographyTokens = generateTypographyCategory(effectiveTypographyInput);
 
   // Spacing: new per-category pipeline (proposal §5).
-  const spacingTokens = generateSpacingCategory(inputs.spacingKnobs);
+  const spacingTokens = generateSpacingCategory(spacingKnobs);
 
   // Radius: new per-category pipeline (proposal §5).
-  const radiusTokens = generateRadiusCategory(inputs.radiusKnobs);
+  const radiusTokens = generateRadiusCategory(radiusKnobs);
 
   // Elevation: new per-category pipeline (proposal §5). Pulls the ring color
   // from the resolved neutral-300 (proposal §8).
   const ringColorOklch = colorTokens.neutral.stops["300"];
   const ringColor = oklchToHex(ringColorOklch);
-  const elevationTokens = generateElevationCategory(inputs.elevationKnobs, ringColor);
+  const elevationTokens = generateElevationCategory(elevationKnobs, ringColor);
 
   // Extract the resolved sans primary for use in agentGuide example prompts.
   // Strip surrounding quotes if the font name contains spaces (e.g. "Mona Sans" → Mona Sans).
@@ -138,7 +157,7 @@ export function generate(
   // Components: per-category pipeline. Rich token tree is the single source
   // of truth; consumers (template, render-html, figma) read componentTokens
   // directly. Archetype is no longer consulted.
-  const componentTokens = generateComponentCategory(inputs.componentKnobs);
+  const componentTokens = generateComponentCategory(componentKnobs);
 
   const layout = generateLayout(archetype, spacingTokens, radiusTokens);
   const elevation = generateElevation(elevationTokens);
