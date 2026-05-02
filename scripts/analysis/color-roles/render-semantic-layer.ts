@@ -1,0 +1,124 @@
+import {
+  computeRoleStats,
+  type CorpusStat,
+  type RoleStats,
+  type SemanticRole,
+  type SemanticSample,
+  type SystemRoleProfile,
+  profilePerSystemRole,
+} from "./semantic-layer.js";
+
+const ROLES: readonly SemanticRole[] = ["surface", "text", "semantic"] as const;
+
+function fmt(n: number, decimals = 3): string {
+  return n.toFixed(decimals);
+}
+
+function fmtStat(s: CorpusStat, decimals = 1): string {
+  return `median=${fmt(s.median, decimals)}, IQR=[${fmt(s.q1, decimals)}, ${fmt(s.q3, decimals)}], range=[${fmt(s.min, decimals)}, ${fmt(s.max, decimals)}]`;
+}
+
+function tableRow(cells: string[]): string {
+  return "| " + cells.join(" | ") + " |";
+}
+
+function escapeCell(s: string): string {
+  return s.replace(/\|/g, "\\|").replace(/\n/g, " ");
+}
+
+function pct(x: number): string {
+  return `${Math.round(x * 100)}%`;
+}
+
+function renderRoleSection(stats: RoleStats): string {
+  const lines: string[] = [];
+  lines.push(`## \`${stats.role}\``);
+  lines.push(`- ${stats.systems_present}/58 systems present, ${stats.total_rows} total rows`);
+  lines.push(`- Row count per system: ${fmtStat(stats.row_count, 0)}`);
+  lines.push(`- Distinct hex per system: ${fmtStat(stats.distinct_hex_count, 0)}`);
+  lines.push(`- **Base origin share** — neutral: ${pct(stats.origin_share.neutral)}, accent: ${pct(stats.origin_share.accent)}, unique: ${pct(stats.origin_share.unique)}, no-color: ${pct(stats.origin_share.no_color)}`);
+  lines.push("");
+  lines.push("**Top description keywords**");
+  lines.push(tableRow(["keywords", "rows", "systems"]));
+  lines.push(tableRow(["---", "---:", "---:"]));
+  for (const e of stats.top_keywords.slice(0, 15)) {
+    lines.push(tableRow([escapeCell(e.key), String(e.count), String(e.systems)]));
+  }
+  lines.push("");
+  lines.push("**Top item labels**");
+  lines.push(tableRow(["label", "rows", "systems"]));
+  lines.push(tableRow(["---", "---:", "---:"]));
+  for (const e of stats.top_labels.slice(0, 15)) {
+    lines.push(tableRow([escapeCell(e.key), String(e.count), String(e.systems)]));
+  }
+  return lines.join("\n");
+}
+
+function renderInterpretation(allStats: RoleStats[]): string {
+  const lines: string[] = [];
+  lines.push("## Reading the Origin Share");
+  lines.push("_Each role's hex values are classified against that system's accent profile + a chroma threshold. neutral = c ≤ 0.025; accent = c ≥ 0.05 AND hue within ±20° of the system's primary accent; unique = chromatic but not the primary accent (e.g. semantic green/red); no-color = row had no parseable hex._");
+  lines.push("");
+  for (const s of allStats) {
+    let line = `- **\`${s.role}\`**`;
+    if (s.origin_share.neutral > 0.6) line += ` is overwhelmingly **neutral-derived** (${pct(s.origin_share.neutral)})`;
+    else if (s.origin_share.accent > 0.4) line += ` leans on **accent** (${pct(s.origin_share.accent)})`;
+    else if (s.origin_share.unique > 0.4) line += ` is dominated by **unique** chromatic values (${pct(s.origin_share.unique)})`;
+    else line += ` mixes origins (neutral ${pct(s.origin_share.neutral)} / accent ${pct(s.origin_share.accent)} / unique ${pct(s.origin_share.unique)})`;
+    lines.push(line + ".");
+  }
+  return lines.join("\n");
+}
+
+function renderRecommendation(allStats: RoleStats[]): string {
+  const lines: string[] = [];
+  lines.push("## Suggested Starter Token Counts");
+  lines.push("_The starter should emit at least the median number of tokens per role. Knob options scale around that._");
+  lines.push("");
+  lines.push(tableRow(["role", "median_tokens", "knob_few", "knob_standard", "knob_rich"]));
+  lines.push(tableRow(["---", "---:", "---:", "---:", "---:"]));
+  for (const s of allStats) {
+    lines.push(tableRow([
+      `\`${s.role}\``,
+      fmt(s.row_count.median, 0),
+      fmt(s.row_count.q1, 0),
+      fmt(s.row_count.median, 0),
+      fmt(s.row_count.q3, 0),
+    ]));
+  }
+  return lines.join("\n");
+}
+
+function renderPerSystemTable(profiles: SystemRoleProfile[]): string {
+  const lines: string[] = [];
+  lines.push("## Per-System × Role Detail");
+  lines.push("");
+  lines.push(tableRow(["system", "role", "rows", "distinct_hex", "neutral", "accent", "unique", "no_color"]));
+  lines.push(tableRow(["---", "---", "---:", "---:", "---:", "---:", "---:", "---:"]));
+  for (const p of profiles) {
+    lines.push(tableRow([
+      escapeCell(p.system),
+      p.role,
+      String(p.row_count),
+      String(p.distinct_hex_count),
+      String(p.origin_breakdown.neutral),
+      String(p.origin_breakdown.accent),
+      String(p.origin_breakdown.unique),
+      String(p.origin_breakdown.no_color),
+    ]));
+  }
+  return lines.join("\n");
+}
+
+export function renderSemanticLayerReport(samples: SemanticSample[]): string {
+  const allStats: RoleStats[] = ROLES.map((r) => computeRoleStats(r, samples));
+  const profiles = profilePerSystemRole(samples);
+  const sections: string[] = [];
+  sections.push("# Semantic Layer (Track S)");
+  sections.push("_Generated by `pnpm color-roles --pass=semantic-layer`. Source: rows tagged `surface`, `text`, `semantic` in Pass 2. Each row's hex is classified by base-layer origin (neutral / accent / unique) using the system's primary accent profile from Track A._");
+  sections.push(renderInterpretation(allStats));
+  sections.push(renderRecommendation(allStats));
+  for (const stats of allStats) sections.push(renderRoleSection(stats));
+  sections.push(renderPerSystemTable(profiles));
+  return sections.join("\n\n").trim() + "\n";
+}

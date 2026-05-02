@@ -1,0 +1,1182 @@
+system,section_heading,item_label,hex,css_var,token_ref,description_first_keywords,description
+airbnb,Brand & Accent,Rausch,#ff385c,,{colors.primary},single brand color,"The single brand color. Used for primary CTA backgrounds (Reserve, Continue), the search orb, the heart save state on property cards, and inline brand links. The most recognizable color in consumer travel."
+airbnb,Brand & Accent,Rausch Active,#e00b41,,{colors.primary-active},press pointer-down variant,The press / pointer-down variant — slightly more saturated. Used on `{component.button-primary-active}`.
+airbnb,Brand & Accent,Rausch Disabled,#ffd1da,,{colors.primary-disabled},pale tint used,A pale tint used on disabled CTAs.
+airbnb,Brand & Accent,Luxe Purple,#460479,,{colors.luxe},sub-brand accent airbnb,Sub-brand accent for Airbnb Luxe. Only appears inside Luxe-branded surfaces — never in mainline marketing.
+airbnb,Brand & Accent,Plus Magenta,#92174d,,{colors.plus},sub-brand accent airbnb,Sub-brand accent for Airbnb Plus. Same scoping as Luxe — sub-product only.
+airbnb,Surface,Canvas,#ffffff,,{colors.canvas},default page floor,The default page floor for every public page. Airbnb does not have a dark mode on the public web.
+airbnb,Surface,Surface Soft,#f7f7f7,,{colors.surface-soft},lightest fill used,"The lightest fill — used on disabled fields, sub-nav hover backgrounds, and the inline search filter band."
+airbnb,Surface,Surface Strong,#f2f2f2,,{colors.surface-strong},slightly heavier fill,"Slightly heavier fill — circular icon-button surface (e.g., the breadcrumb back-arrow and listing toolbar buttons)."
+airbnb,Hairlines & Borders,Hairline,#dddddd,,{colors.hairline},default 1px border,"The default 1px border tone — search bar dividers, table separators, footer column splitters, card 1px borders."
+airbnb,Hairlines & Borders,Hairline Soft,#ebebeb,,{colors.hairline-soft},lighter divider used,A lighter divider used on long-scrolling editorial body separators.
+airbnb,Hairlines & Borders,Border Strong,#c1c1c1,,{colors.border-strong},heavier stroke used,A heavier stroke used on disabled outline buttons and form input outlines after focus.
+airbnb,Text,Ink,#222222,,{colors.ink},dominant text color,"The dominant text color on light surfaces. Display headlines, body paragraphs, primary nav links, and most inline link text. Never pure black."
+airbnb,Text,Body,#3f3f3f,,{colors.body},secondary running-text color,A secondary running-text color used inside long-form review and amenity copy where ink would feel too heavy.
+airbnb,Text,Muted,#6a6a6a,,{colors.muted},sub-titles inside city,"Sub-titles inside city link blocks (""Cottage rentals"", ""Villa rentals""), inactive product-tab labels, footer category sub-labels, ""View all"" links."
+airbnb,Text,Muted Soft,#929292,,{colors.muted-soft},disabled link text,Disabled link text. Used very sparingly.
+airbnb,Text,Star Rating,#222222,,{colors.star-rating},same ink token,"The same ink token — Airbnb's star icon and ""4.81"" rating numbers all render in ink rather than a yellow/gold color, which is a deliberate brand choice (yellow stars feel cheap in travel context)."
+airbnb,Text,On Primary,#ffffff,,{colors.on-primary},white text rausch,White text on Rausch CTAs.
+airbnb,Semantic,Error,#c13515,,{colors.primary-error-text},inline error text,"Inline error text for form validation. Distinct from Rausch — slightly darker, more saturated red."
+airbnb,Semantic,Error Hover,#b32505,,{colors.primary-error-text-hover},darkens link hover,Darkens on link hover.
+airbnb,Semantic,Legal Link Blue,#428bff,,{colors.legal-link},inline links inside,"Inline links inside legal copy (Privacy, Terms). Only used inside the legal sub-band."
+airbnb,Scrim,Scrim,#000000,,{colors.scrim},global modal backdrop,"The global modal backdrop tone — date picker, login dialog, language picker. Stored as the base hex; opacity is applied at render time."
+airtable,Brand & Accent,Primary,#181d26,,{colors.primary},dominant brand color,"The dominant brand color. Used for the primary CTA background, h1/h2 display type, and the `{component.surface-dark}` band. Not ""blue, then black"" — black IS the primary throughout the marketing system."
+airtable,Brand & Accent,Primary Active,#0d1218,,{colors.primary-active},press state primary,The press state on primary buttons.
+airtable,Surface,Canvas,#ffffff,,{colors.canvas},default page surface,The default page surface; the floor of every editorial body.
+airtable,Surface,Surface Soft,#f8fafc,,{colors.surface-soft},tabbed feature cards,Tabbed feature cards and the featured pricing tier.
+airtable,Surface,Surface Strong,#e0e2e6,,{colors.surface-strong},light gray start,"The light gray ""Start building with Airtable"" CTA banner near the footer."
+airtable,Surface,Surface Dark,#181d26,,{colors.surface-dark},dark navy cta,"The dark navy CTA cards used mid-page (for example ""The path to 10× every person in your organization"")."
+airtable,Surface,Surface Dark Elevated,#1d1f25,,{colors.surface-dark-elevated},articles-page hero base,The articles-page hero base behind the rainbow-stripe overlay.
+airtable,Surface,Hairline,#dddddd,,{colors.hairline},1px border tone,"The 1px border tone for input outlines, table dividers, secondary-button outlines."
+airtable,Text,Ink,#181d26,,{colors.ink},strongest text h1,The strongest text — h1/h2 display type and primary button text-on-light. Same hex as `{colors.primary}` because they are the same role expressed at type and button layers.
+airtable,Text,Body,#333840,,{colors.body},default running-text color,The default running-text color.
+airtable,Text,Muted,#41454d,,{colors.muted},footer links breadcrumbs,"Footer links, breadcrumbs, captions."
+airtable,Text,Border Strong,#9297a0,,{colors.border-strong},1px outline color,The 1px outline color on disabled secondary buttons.
+airtable,Text,On Primary / On Dark,#ffffff,,{colors.on-primary},text color primary,The text color on primary buttons and dark surfaces.
+airtable,Signature Card Surfaces,Coral,#aa2d00,,{colors.signature-coral},largest signature card,"The largest signature card on the homepage (""Production apps in prototype speed""). Full-bleed dark coral with white type."
+airtable,Signature Card Surfaces,Forest,#0a2e0e,,{colors.signature-forest},deep-green signature card,A deep-green signature card used in the homepage demo-grid cluster.
+airtable,Signature Card Surfaces,Cream,#f5e9d4,,{colors.signature-cream},cream callout band,"The cream callout band (""The path to 10× every person in your organization"") — a soft beige surface holding dark type and product UI fragments."
+airtable,Signature Card Surfaces,Peach,#fcab79,,{colors.signature-peach},demo-card surfaces carry,Demo-card surfaces that carry small product UI fragments inside the multi-card grid sections.
+airtable,Semantic,Link,#1b61c9,--theme,{colors.link},inline body links,"Inline body links and anchor text. Darker on press to `{colors.link-active}` (#1a3866). Despite the `--theme_button-background-primary` CSS-variable name, this color is **not** the primary button color — it is the link color."
+airtable,Semantic,Info,#254fad,,{colors.info},inline info badges,Inline info badges and focused-input outline.
+airtable,Semantic,Success,#006400,,{colors.success},confirmation states,Confirmation states.
+apple,Brand & Accent,Action Blue,#0066cc,,{colors.primary},single brand-level interactive,"The single brand-level interactive color. All text links, all blue pill CTAs (""Learn more"", ""Buy""), and the focus ring root. This is Apple's quiet but universal ""click me"" signal. Press state shifts to a slightly darker variant via the active scale transform rather than a hex change."
+apple,Brand & Accent,Focus Blue,#0071e3,,{colors.primary-focus},marginally brighter sibling,"A marginally brighter sibling of Action Blue, reserved for the keyboard focus ring on buttons (`outline: 2px solid`)."
+apple,Brand & Accent,Sky Link Blue,#2997ff,,{colors.primary-on-dark},brighter blue used,"A brighter blue used on dark surfaces for in-copy links and inline callouts, where Action Blue would disappear against the tile background."
+apple,Surface,Pure White,#ffffff,,{colors.canvas},dominant canvas,"The dominant canvas. Content, utility cards, store tiles, configurator grids."
+apple,Surface,Parchment,#f5f5f7,,{colors.canvas-parchment},signature apple off-white,"The signature Apple off-white. Used for alternating light tiles, footer region, and the default page canvas in store utility sections. Just different enough from white to create rhythm."
+apple,Surface,Pearl Button,#fafafc,,{colors.surface-pearl},near-white used fill,"A near-white used as the fill for secondary ""ghost"" buttons — lighter than the parchment canvas so the button still reads as a button against `{colors.canvas-parchment}`."
+apple,Surface,Near-Black Tile 1,#272729,,{colors.surface-tile-1},primary dark-tile surface,The primary dark-tile surface on the homepage product grid.
+apple,Surface,Near-Black Tile 2,#2a2a2c,,{colors.surface-tile-2},micro-step lighter used,A micro-step lighter — used where a dark tile sits directly above or below Tile 1 to create the faintest separation.
+apple,Surface,Near-Black Tile 3,#252527,,{colors.surface-tile-3},micro-step darker used,A micro-step darker — used at the bottom of the stack and in embedded video/player frames.
+apple,Surface,Pure Black,#000000,,{colors.surface-black},reserved true void,"Reserved for true void — video player backgrounds, edge-to-edge photographic overlays, the global nav bar background."
+apple,Surface,Translucent Chip Gray,#d2d2d7,,{colors.surface-chip-translucent},base hex translucent,"The base hex of the translucent gray chip used over photography for circular control buttons. In production, applied at ~64% alpha as `rgba(210, 210, 215, 0.64)`."
+apple,Text,Near-Black Ink,#1d1d1f,,{colors.ink},voice headline body,"The voice of every headline, every body paragraph, and the dark utility button's fill. Chosen instead of pure black to keep the page feeling photographic rather than printed."
+apple,Text,Body,#1d1d1f,,{colors.body},same hex ink,Same hex as ink — Apple uses one near-black tone for all text on light surfaces.
+apple,Text,Body On Dark,#ffffff,,{colors.body-on-dark},text dark tiles,All text on dark tiles and on the global nav bar.
+apple,Text,Body Muted,#cccccc,,{colors.body-muted},secondary copy dark,Secondary copy on dark tiles where pure white would be too loud.
+apple,Text,Ink Muted 80,#333333,,{colors.ink-muted-80},body text white,Body text on the white Pearl Button surface — slightly softer than pure black.
+apple,Text,Ink Muted 48,#7a7a7a,,{colors.ink-muted-48},disabled button text,Disabled button text and legal fine-print.
+apple,Hairlines & Borders,Divider Soft,#f0f0f0,,{colors.divider-soft},border tone secondary,"The ""border"" tone on secondary buttons — functions as a ring shadow rather than a hard line. In production, often applied as `rgba(0, 0, 0, 0.04)`."
+apple,Hairlines & Borders,Hairline,#e0e0e0,,{colors.hairline},1px hairline border,The 1px hairline border on store utility cards and configurator chips.
+bmw,Brand & Accent,BMW Blue (Primary),#1c69d4,,{colors.primary},single brand action,"The single brand action color. All primary CTAs, ""Learn More"" link prefixes (blue text), nav-link active state. Press shifts to `{colors.primary-active}` (#0653b6)."
+bmw,Brand & Accent,M Blue Light,#0066b1,,{colors.m-blue-light},m tricolor stripe,"The M tricolor stripe — appears on the corporate site only on M-model pages and the ""M"" badge. Never as CTA colors."
+bmw,Surface,Canvas,#ffffff,,{colors.canvas},default page surface,The default page surface.
+bmw,Surface,Surface Soft,#f7f7f7,,{colors.surface-soft},soft grey footer,Soft grey for the footer and sub-navigation bands.
+bmw,Surface,Surface Card,#fafafa,,{colors.surface-card},light plate behind,The light plate behind a model card's photo block.
+bmw,Surface,Surface Strong,#ebebeb,,{colors.surface-strong},slightly heavier grey,A slightly heavier grey used as a section divider.
+bmw,Surface,Surface Dark,#1a2129,,{colors.surface-dark},dark navy hero,Dark navy for hero bands and large dark CTAs. Not pure black — carries a warm undertone.
+bmw,Surface,Surface Dark Elevated,#262e38,,{colors.surface-dark-elevated},one step lighter,"One step lighter, used for nested cards on top of the dark hero."
+bmw,Hairlines,Hairline,#e6e6e6,,{colors.hairline},1px divider input,"The 1px divider — input outline, configurator card outline, table separator."
+bmw,Hairlines,Hairline Strong,#cccccc,,{colors.hairline-strong},more visible 1px,"A more visible 1px outline — disabled secondary buttons, emphasized table border."
+bmw,Text,Ink,#262626,,{colors.ink},display primary text,All display and primary text. Not pure black — soft against photography.
+bmw,Text,Body,#3c3c3c,,{colors.body},default running text,Default running text.
+bmw,Text,Body Strong,#1a1a1a,,{colors.body-strong},emphasized paragraphs lead,Emphasized paragraphs and lead text.
+bmw,Text,Muted,#6b6b6b,,{colors.muted},footer links breadcrumbs,"Footer links, breadcrumbs, captions."
+bmw,Text,Muted Soft,#9a9a9a,,{colors.muted-soft},disabled text fine-print,"Disabled text, fine-print legal."
+bmw,Text,On Primary,#ffffff,,{colors.on-primary},white text blue,White text on a blue button.
+bmw,Text,On Dark,#ffffff,,{colors.on-dark},white text dark,White text on a dark hero band.
+bmw,Text,On Dark Soft,#bbbbbb,,{colors.on-dark-soft},slightly muted white,A slightly muted white for secondary text on dark bands.
+bmw,Semantic,Success,#22c55e,,{colors.success},confirmation messages available,"Confirmation messages and ""available"" indicators."
+bmw,Semantic,Warning,#f59e0b,,{colors.warning},warning callouts,Warning callouts.
+bmw,Semantic,Error,#dc2626,,{colors.error},validation errors,Validation errors.
+cal,Brand & Accent,Primary,#111111,,{colors.primary},dominant action color,"The dominant action color. All primary CTAs, h1/h2 display type. Press state shifts to `{colors.primary-active}` (#242424)."
+cal,Brand & Accent,Brand Accent,#3b82f6,,{colors.brand-accent},used sparely inline,"Used sparely on inline links and on a small badge / ""Customer story"" highlight. Cal.com is a near-monochrome brand — the blue appears rarely."
+cal,Brand & Accent,Badge Pastels,#fb923c,,{colors.badge-orange},fb923c ec4899 8b5cf6,"`{colors.badge-orange}` (#fb923c), `{colors.badge-pink}` (#ec4899), `{colors.badge-violet}` (#8b5cf6), `{colors.badge-emerald}` (#34d399). These appear on tag pills and small accent moments inside product UI fragments — never on hero CTAs."
+cal,Surface,Canvas,#ffffff,,{colors.canvas},default page floor,The default page floor.
+cal,Surface,Surface Soft,#f8f9fa,,{colors.surface-soft},nav-pill-group background very-soft,"Nav-pill-group background, very-soft section dividers."
+cal,Surface,Surface Card,#f5f5f5,,{colors.surface-card},feature cards testimonial,"Feature cards, testimonial cards, badge pills, default avatar fills."
+cal,Surface,Surface Strong,#e5e7eb,,{colors.surface-strong},hairline border alternative,Hairline border alternative; disabled button background.
+cal,Surface,Surface Dark,#101010,,{colors.surface-dark},footer background only,The footer background — the only dark surface on every page. Also used for the featured pricing tier card.
+cal,Surface,Surface Dark Elevated,#1a1a1a,,{colors.surface-dark-elevated},used nested cards,Used for nested cards inside the dark footer or featured pricing card.
+cal,Surface,Hairline,#e5e7eb,,{colors.hairline},1px border tone,"The 1px border tone on light surfaces. Used on input borders, table dividers, content card outlines (sometimes)."
+cal,Surface,Hairline Soft,#f3f4f6,,{colors.hairline-soft},barely-visible divider used,A barely-visible divider used between sections that share the white canvas.
+cal,Text,Ink,#111111,,{colors.ink},headlines primary text,All headlines and primary text.
+cal,Text,Body,#374151,,{colors.body},default running-text color,Default running-text color.
+cal,Text,Muted,#6b7280,,{colors.muted},secondary text sub-headings,"Secondary text — sub-headings, breadcrumbs, footer body."
+cal,Text,Muted Soft,#898989,,{colors.muted-soft},tertiary text captions,"Tertiary text — captions, fine-print, copyright lines."
+cal,Text,On Primary / On Dark,#ffffff,,{colors.on-primary},text primary buttons,Text on primary buttons and dark footer.
+cal,Text,On Dark Soft,#a1a1aa,,{colors.on-dark-soft},footer body text,Footer body text — slightly muted white for the link rows.
+cal,Semantic,Success,#10b981,,{colors.success},confirmation states success,"Confirmation states, success badges in product UI."
+cal,Semantic,Warning,#f59e0b,,{colors.warning},warning callouts,Warning callouts.
+cal,Semantic,Error,#ef4444,,{colors.error},validation errors,Validation errors.
+claude,Brand & Accent,Coral / Primary,#cc785c,,{colors.primary},signature anthropic warm,"The signature Anthropic warm coral. Used on every primary CTA background, on full-bleed coral callout cards, on the brand wordmark accent. The most-recognized Anthropic color outside of the spike-mark logo."
+claude,Brand & Accent,Coral Active,#a9583e,,{colors.primary-active},press hover-darker variant,The press / hover-darker variant.
+claude,Brand & Accent,Coral Disabled,#e6dfd8,,{colors.primary-disabled},desaturated cream-tinted disabled,A desaturated cream-tinted disabled state.
+claude,Brand & Accent,Accent Teal,#5db8a6,,{colors.accent-teal},used sparingly secondary,"Used sparingly on secondary product surfaces (terminal status indicators, ""active connection"" dots in connectors page)."
+claude,Brand & Accent,Accent Amber,#e8a55a,,{colors.accent-amber},small companion warm-tone,A small companion warm-tone used on category badges and inline highlights.
+claude,Surface,Canvas,#faf9f5,,{colors.canvas},default page floor,"The default page floor. Tinted cream — warm, deliberately not pure white."
+claude,Surface,Surface Soft,#f5f0e8,,{colors.surface-soft},section dividers very-soft,"Section dividers, very-soft band backgrounds."
+claude,Surface,Surface Card,#efe9de,,{colors.surface-card},feature cards content,"Feature cards, content cards. One step darker than canvas."
+claude,Surface,Surface Cream Strong,#e8e0d2,,{colors.surface-cream-strong},strongest-cream variant used,A strongest-cream variant used on selected category tabs and emphasized section bands.
+claude,Surface,Surface Dark,#181715,,{colors.surface-dark},code editor mockups,"Code editor mockups, model showcase cards, footer. The dominant dark surface."
+claude,Surface,Surface Dark Elevated,#252320,,{colors.surface-dark-elevated},elevated cards inside,Elevated cards inside dark bands (settings panels in mockups).
+claude,Surface,Surface Dark Soft,#1f1e1b,,{colors.surface-dark-soft},slightly lighter dark,"Slightly lighter dark, used for code block backgrounds inside larger dark cards."
+claude,Surface,Hairline,#e6dfd8,,{colors.hairline},1px border tone,The 1px border tone on cream surfaces. Same hex as `{colors.primary-disabled}` — borders feel like one elevation step rather than ink lines.
+claude,Surface,Hairline Soft,#ebe6df,,{colors.hairline-soft},barely-visible divider used,Barely-visible divider used inside the same band.
+claude,Text,Ink,#141413,,{colors.ink},headlines primary text,"All headlines and primary text. Warm dark, slightly off-pure-black."
+claude,Text,Body Strong,#252523,,{colors.body-strong},emphasized paragraphs lead,"Emphasized paragraphs, lead text."
+claude,Text,Body,#3d3d3a,,{colors.body},default running-text color,Default running-text color.
+claude,Text,Muted,#6c6a64,,{colors.muted},sub-headings breadcrumbs footer-adjacent,"Sub-headings, breadcrumbs, footer-adjacent secondary text."
+claude,Text,Muted Soft,#8e8b82,,{colors.muted-soft},captions fine-print copyright,"Captions, fine-print, copyright lines."
+claude,Text,On Primary,#ffffff,,{colors.on-primary},text coral buttons,Text on coral buttons.
+claude,Text,On Dark,#faf9f5,,{colors.on-dark},cream-tinted white used,Cream-tinted white used on dark surfaces (echoes the canvas tone).
+claude,Text,On Dark Soft,#a09d96,,{colors.on-dark-soft},footer body text,"Footer body text, secondary labels in dark mockups."
+claude,Semantic,Success,#5db872,,{colors.success},green status dots,"Green status dots, ""available"" indicators."
+claude,Semantic,Warning,#d4a017,,{colors.warning},warning callouts rare,Warning callouts (rare on marketing surfaces).
+claude,Semantic,Error,#c64545,,{colors.error},validation errors,Validation errors.
+clay,Brand & Accent,Primary,#0a0a0a,,{colors.primary},primary ctas h1,"All primary CTAs, h1/h2 ink type. Near-black with slight warmth."
+clay,Brand & Accent,Brand Pink,#ff4d8b,,{colors.brand-pink},hot-pink feature card,Hot-pink feature card surface. Sequencer / outbound feature pages.
+clay,Brand & Accent,Brand Teal,#1a3a3a,,{colors.brand-teal},deep teal-green feature,Deep teal-green feature card. Often the featured pricing tier.
+clay,Brand & Accent,Brand Lavender,#b8a4ed,,{colors.brand-lavender},soft lavender feature,Soft lavender feature card.
+clay,Brand & Accent,Brand Peach,#ffb084,,{colors.brand-peach},warm peach feature,Warm peach feature card.
+clay,Brand & Accent,Brand Ochre,#e8b94a,,{colors.brand-ochre},mustard ochre feature,Mustard / ochre feature card and illustration accents.
+clay,Brand & Accent,Brand Mint,#a4d4c5,,{colors.brand-mint},mint accent illustrations,Mint accent on illustrations and small badges.
+clay,Brand & Accent,Brand Coral,#ff6b5a,,{colors.brand-coral},coral accent highlights,Coral accent for highlights.
+clay,Surface,Canvas,#fffaf0,,{colors.canvas},default page floor,The default page floor. Cream-tinted white.
+clay,Surface,Surface Soft,#faf5e8,,{colors.surface-soft},footer cta-band background,Footer and CTA-band background.
+clay,Surface,Surface Card,#f5f0e0,,{colors.surface-card},cream feature cards,"Cream feature cards, testimonial cards."
+clay,Surface,Surface Strong,#ebe6d6,,{colors.surface-strong},stronger cream emphasized,Stronger cream for emphasized bands.
+clay,Surface,Surface Dark,#0a1a1a,,{colors.surface-dark},dark teal-tinted near-black,Dark teal-tinted near-black for occasional dark cards (rare).
+clay,Surface,Surface Dark Elevated,#1a2a2a,,{colors.surface-dark-elevated},elevated dark cards,Elevated dark cards.
+clay,Surface,Hairline,#e5e5e5,,{colors.hairline},px borders cards,1px borders on cards and inputs.
+clay,Text,Ink,#0a0a0a,,{colors.ink},headlines primary text,Headlines and primary text.
+clay,Text,Body Strong,#1a1a1a,,{colors.body-strong},emphasized body lead,"Emphasized body, lead paragraphs."
+clay,Text,Body,#3a3a3a,,{colors.body},default running-text,Default running-text.
+clay,Text,Muted,#6a6a6a,,{colors.muted},sub-headings breadcrumbs footer,"Sub-headings, breadcrumbs, footer body."
+clay,Text,Muted Soft,#9a9a9a,,{colors.muted-soft},captions fine-print,"Captions, fine-print."
+clay,Text,On Primary / On Dark,#ffffff,,{colors.on-primary},text primary buttons,Text on primary buttons + dark feature cards (teal).
+clay,Semantic,Success,#22c55e,,{colors.success},success states,Success states.
+clay,Semantic,Warning,#f59e0b,,{colors.warning},warning callouts,Warning callouts.
+clay,Semantic,Error,#ef4444,,{colors.error},validation errors,Validation errors.
+clickhouse,Brand & Accent,Primary (Electric Yellow),#faff69,,{colors.primary},signature brand color,"The signature brand color. All primary CTA backgrounds, large stat-callout numbers, full-bleed yellow CTA cards. The yellow is the brand."
+clickhouse,Brand & Accent,Primary Active,#e6eb52,,{colors.primary-active},press hover-darker variant,Press / hover-darker variant.
+clickhouse,Brand & Accent,Primary Disabled,#3a3a1f,,{colors.primary-disabled},desaturated dark-yellow dark,Desaturated dark-yellow on dark canvas.
+clickhouse,Surface,Canvas,#0a0a0a,,{colors.canvas},default page floor,The default page floor. Near-pure black.
+clickhouse,Surface,Surface Soft,#121212,,{colors.surface-soft},section dividers very-soft,"Section dividers, very-soft band tints."
+clickhouse,Surface,Surface Card,#1a1a1a,,{colors.surface-card},feature cards code,"Feature cards, code windows, product mockups, pricing tier cards."
+clickhouse,Surface,Surface Elevated,#242424,,{colors.surface-elevated},nested cards inside,Nested cards inside larger dark cards.
+clickhouse,Surface,Surface Yellow Band,#faff69,,{colors.surface-yellow-band},yellow cta card,The yellow CTA card / band fill — same hex as primary.
+clickhouse,Surface,Hairline,#2a2a2a,,{colors.hairline},px borders cards,1px borders on cards.
+clickhouse,Surface,Hairline Strong,#3a3a3a,,{colors.hairline-strong},heavier divider input,Heavier divider on input underlines and emphasis.
+clickhouse,Text,Ink / On Dark,#ffffff,,{colors.on-dark},headline primary text,All headline and primary text.
+clickhouse,Text,Body,#cccccc,,{colors.body},default running-text color,Default running-text color.
+clickhouse,Text,Body Strong,#e6e6e6,,{colors.body-strong},emphasized paragraphs,Emphasized paragraphs.
+clickhouse,Text,Muted,#888888,,{colors.muted},footer links captions,"Footer links, captions, breadcrumbs."
+clickhouse,Text,Muted Soft,#5a5a5a,,{colors.muted-soft},tertiary text fine,Tertiary text — fine print.
+clickhouse,Text,On Primary / On Yellow,#0a0a0a,,{colors.on-primary},black text yellow,Black text on yellow CTAs and yellow CTA bands. The high-contrast yellow + black combo is the brand action signal.
+clickhouse,Semantic / Accent,Accent Emerald,#22c55e,,{colors.accent-emerald},success states active,"Success states, ""active"" status indicators in product UI."
+clickhouse,Semantic / Accent,Accent Rose,#ef4444,,{colors.accent-rose},error states down,"Error states, ""down"" indicators."
+clickhouse,Semantic / Accent,Accent Blue,#3b82f6,,{colors.accent-blue},info states code-syntax,"Info states, code-syntax highlighting."
+cohere,Brand & Accent,Cohere Black,#000000,,,announcement bar highest-contrast,"Announcement bar, highest-contrast text, and the global brand anchor."
+cohere,Brand & Accent,Near-Black Primary,#17171c,,,primary cta buttons,"Primary CTA buttons, dark footer, and deep UI cards."
+cohere,Brand & Accent,Deep Enterprise Green,#003c33,,,product hero bands,Product hero bands for North and Command-style dark sections.
+cohere,Brand & Accent,Dark Navy,#071829,,,financial-services security-oriented solution,Financial-services and security-oriented solution bands.
+cohere,Brand & Accent,Action Blue,#1863dc,,,editorial links pagination,"Editorial links, pagination, and secondary action emphasis."
+cohere,Brand & Accent,Coral,#ff7759,,,blog category chips,"Blog category chips, taxonomy outlines, and warm product markers."
+cohere,Brand & Accent,Soft Coral,#ffad9b,,,pale chip borders,Pale chip borders and segmented article-label details.
+cohere,Surface & Background,Canvas White,#ffffff,,,dominant page background,Dominant page background and form/card surface.
+cohere,Surface & Background,Soft Stone,#eeece7,,,product cards testimonial,"Product cards, testimonial placeholders, and warm neutral surface blocks."
+cohere,Surface & Background,Pale Green Wash,#edfce9,,,north page section,North page section backdrop behind stacked dark capability panels.
+cohere,Surface & Background,Pale Blue Wash,#f1f5ff,,,blog cta surface,Blog CTA surface behind abstract 3D imagery.
+cohere,Surface & Background,Card Border,#f2f2f2,,,softest card containment,Softest card containment line.
+cohere,Text & Rules,Ink,#212121,,,default body text,Default body text and most link text on light backgrounds.
+cohere,Text & Rules,Muted Slate,#93939f,,,footer links dates,"Footer links, dates, metadata, and de-emphasized labels."
+cohere,Text & Rules,Slate,#75758a,,,research separators tertiary,Research separators and tertiary text.
+cohere,Text & Rules,Hairline,#d9d9dd,,,standard list rules,Standard list rules and section dividers.
+cohere,Text & Rules,Border Light,#e5e7eb,,,secondary divider utility,Secondary divider and utility rule.
+cohere,Semantic,Focus Blue,#4c6ee6,,,keyboard focus ring,Keyboard focus and ring color.
+cohere,Semantic,Form Focus Violet,#9b60aa,,,focus border text,Focus border for text inputs.
+cohere,Semantic,Error Red,#b30000,,,extracted ring shadow,Extracted ring/shadow color associated with validation-like states.
+coinbase,Brand & Accent,Coinbase Blue,#0052ff,,{colors.primary},single brand color,"The single brand color. Every primary CTA pill, the Coinbase wordmark, and inline brand links."
+coinbase,Brand & Accent,Coinbase Blue Active,#003ecc,,{colors.primary-active},press-state darken primary,Press-state darken on the primary pill.
+coinbase,Brand & Accent,Coinbase Blue Disabled,#a8b8cc,,{colors.primary-disabled},faded-blue tint disabled,Faded-blue tint for disabled CTAs.
+coinbase,Brand & Accent,Accent Yellow,#f4b000,,{colors.accent-yellow},small sub-brand accent,"A small sub-brand accent used very sparingly on Bitcoin/asset glyph fills inside feature cards. Illustrative-only, not an action color."
+coinbase,Surface,Canvas,#ffffff,,{colors.canvas},default page floor,The default page floor.
+coinbase,Surface,Surface Soft,#f7f7f7,,{colors.surface-soft},subtle alternating band,Subtle alternating band surface.
+coinbase,Surface,Surface Strong,#eef0f3,,{colors.surface-strong},light-gray fill behind,"The light-gray fill behind secondary buttons, search pills, asset-icon plates."
+coinbase,Surface,Surface Dark,#0a0b0d,,{colors.surface-dark},deep near-black canvas,"Deep near-black canvas for full-bleed dark heroes, CTA bands. Same hex as `{colors.ink}` — page-floor and text-color share the value."
+coinbase,Surface,Surface Dark Elevated,#16181c,,{colors.surface-dark-elevated},one step lighter,"One step lighter, used for floating product-UI mockup cards inside dark heroes."
+coinbase,Hairlines,Hairline,#dee1e6,,{colors.hairline},default 1px divider,Default 1px divider on white surfaces.
+coinbase,Hairlines,Hairline Soft,#eef0f3,,{colors.hairline-soft},lighter divider same,Lighter divider — same hex as `{colors.surface-strong}`.
+coinbase,Text,Ink,#0a0b0d,,{colors.ink},display headings primary,"Display headings, primary nav, body emphasis."
+coinbase,Text,Body,#5b616e,,{colors.body},default running-text slightly,Default running-text — slightly cool gray.
+coinbase,Text,Body Strong,#0a0b0d,,{colors.body-strong},same ink used,"Same as ink, used for stronger emphasis."
+coinbase,Text,Muted,#7c828a,,{colors.muted},sub-titles breadcrumbs footer,"Sub-titles, breadcrumbs, footer secondary."
+coinbase,Text,Muted Soft,#a8acb3,,{colors.muted-soft},disabled link text,Disabled link text.
+coinbase,Text,On Primary,#ffffff,,{colors.on-primary},white text coinbase,White text on Coinbase Blue CTAs.
+coinbase,Text,On Dark,#ffffff,,{colors.on-dark},white text dark,White text on dark heroes.
+coinbase,Text,On Dark Soft,#a8acb3,,{colors.on-dark-soft},muted off-white secondary,Muted off-white for secondary text on dark.
+coinbase,Trading Semantics,Semantic Up,#05b169,,{colors.semantic-up},price up green,"""Price up"" green, text color only."
+coinbase,Trading Semantics,Semantic Down,#cf202f,,{colors.semantic-down},price down red,"""Price down"" red, text color only."
+composio,Brand & Accent,Composio Blue,#0007cd,,{colors.primary},primary ctas wordmark,"Primary CTAs, wordmark, spotlight glow center."
+composio,Brand & Accent,Composio Blue Active,#0005a3,,{colors.primary-active},press state,Press state.
+composio,Brand & Accent,Spotlight Glow Tone,#1a26ff,,{colors.primary-glow},brighter blue used,Brighter blue used inside radial atmospheric glows.
+composio,Brand & Accent,Accent Cyan,#00d4ff,,{colors.accent-cyan},sparingly data-flow visualizations,Sparingly on data-flow visualizations.
+composio,Brand & Accent,Accent Violet,#7b3aed,,{colors.accent-violet},inside specific product,Inside specific product illustrations only.
+composio,Surface,Canvas,#0f0f0f,,{colors.canvas},page floor near-black,Page floor — near-black.
+composio,Surface,Canvas Deep,#000000,,{colors.canvas-deep},pure black terminal,Pure black for terminal mockup grids and code blocks.
+composio,Surface,Surface Card,#181818,,{colors.surface-card},default content card,Default content card.
+composio,Surface,Surface Card Elevated,#222222,,{colors.surface-card-elevated},terminal panes secondary,"Terminal panes, secondary buttons."
+composio,Surface,Surface Strong,#2a2a2a,,{colors.surface-strong},dropdown menus,Dropdown menus.
+composio,Hairlines,Hairline,#222222,,{colors.hairline},default 1px divider,Default 1px divider.
+composio,Hairlines,Hairline Soft,#1a1a1a,,{colors.hairline-soft},lighter divider,Lighter divider.
+composio,Hairlines,Hairline Strong,#333333,,{colors.hairline-strong},stronger panel outline,Stronger panel outline.
+composio,Text,Ink,#ffffff,,{colors.ink},display headlines,Display headlines.
+composio,Text,Body,#a8a8a8,,{colors.body},default running-text soft,Default running-text — soft gray.
+composio,Text,Body Strong,#ffffff,,{colors.body-strong},same ink,Same as ink.
+composio,Text,Muted,#888888,,{colors.muted},sub-titles breadcrumbs,"Sub-titles, breadcrumbs."
+composio,Text,Muted Soft,#666666,,{colors.muted-soft},disabled text,Disabled text.
+composio,Text,On Primary,#ffffff,,{colors.on-primary},white text blue,White text on blue CTAs.
+composio,Semantic,Success,#33d17a,,{colors.semantic-success},online active indicators,"""Online"", ""active"" indicators."
+composio,Semantic,Error,#ff4d4d,,{colors.semantic-error},validation errors,Validation errors.
+cursor,Brand & Accent,Cursor Orange,#f54e00,,{colors.primary},primary cta pills,"Primary CTA pills, wordmark, hero accent. Used scarcely."
+cursor,Brand & Accent,Cursor Orange Active,#d04200,,{colors.primary-active},press state,Press state.
+cursor,Surface,Canvas,#f7f7f4,,{colors.canvas},warm cream page,Warm cream page floor.
+cursor,Surface,Canvas Soft,#fafaf7,,{colors.canvas-soft},ide-pane background inside,IDE-pane background inside mockups.
+cursor,Surface,Surface Card,#ffffff,,{colors.surface-card},pure white card,Pure white card surface — slight contrast against the cream canvas.
+cursor,Surface,Surface Strong,#e6e5e0,,{colors.surface-strong},badges tag pills,"Badges, tag pills."
+cursor,Hairlines,Hairline,#e6e5e0,,{colors.hairline},px divider,1px divider.
+cursor,Hairlines,Hairline Soft,#efeee8,,{colors.hairline-soft},lighter divider,Lighter divider.
+cursor,Hairlines,Hairline Strong,#cfcdc4,,{colors.hairline-strong},stronger panel outline,Stronger panel outline.
+cursor,Text,Ink,#26251e,,{colors.ink},display body emphasis,"Display, body emphasis. Warm near-black."
+cursor,Text,Body,#5a5852,,{colors.body},default running-text,Default running-text.
+cursor,Text,Body Strong,#26251e,,{colors.body-strong},same ink,Same as ink.
+cursor,Text,Muted,#807d72,,{colors.muted},sub-titles,Sub-titles.
+cursor,Text,Muted Soft,#a09c92,,{colors.muted-soft},disabled text,Disabled text.
+cursor,Text,On Primary,#ffffff,,{colors.on-primary},white text cursor,White text on Cursor Orange.
+cursor,Timeline (AI-action signature),Thinking,#dfa88f,,{colors.timeline-thinking},peach,Peach. Used inside in-product agent timeline only.
+cursor,Timeline (AI-action signature),Grep,#9fc9a2,,{colors.timeline-grep},mint,Mint.
+cursor,Timeline (AI-action signature),Read,#9fbbe0,,{colors.timeline-read},pastel blue,Pastel blue.
+cursor,Timeline (AI-action signature),Edit,#c0a8dd,,{colors.timeline-edit},lavender,Lavender.
+cursor,Timeline (AI-action signature),Done,#c08532,,{colors.timeline-done},warm gold,Warm gold.
+cursor,Semantic,Success,#1f8a65,,{colors.semantic-success},confirmation indicators,Confirmation indicators.
+cursor,Semantic,Error,#cf2d56,,{colors.semantic-error},validation errors,Validation errors.
+elevenlabs,Brand & Accent,Ink Primary,#292524,,{colors.primary},primary action color,The primary action color — warm near-black pill. Used scarcely.
+elevenlabs,Brand & Accent,Ink Primary Active,#0c0a09,,{colors.primary-active},press state,Press state.
+elevenlabs,Surface,Canvas,#f5f5f5,,{colors.canvas},off-white page floor,Off-white page floor.
+elevenlabs,Surface,Canvas Soft,#fafafa,,{colors.canvas-soft},lighter band subtle,Lighter band for subtle alternating sections.
+elevenlabs,Surface,Canvas Deep,#0c0a09,,{colors.canvas-deep},same ink used,Same as ink — used for the rare dark-mode hero (Agents page).
+elevenlabs,Surface,Surface Card,#ffffff,,{colors.surface-card},pure white card,Pure white card.
+elevenlabs,Surface,Surface Strong,#f0efed,,{colors.surface-strong},badges voice-icon plates,"Badges, voice-icon plates."
+elevenlabs,Surface,Surface Dark,#0c0a09,,{colors.surface-dark},dark hero cta,Dark hero/CTA band canvas.
+elevenlabs,Surface,Surface Dark Elevated,#1c1917,,{colors.surface-dark-elevated},cards dark canvas,Cards on dark canvas.
+elevenlabs,Hairlines,Hairline,#e7e5e4,,{colors.hairline},default 1px divider,Default 1px divider.
+elevenlabs,Hairlines,Hairline Soft,#f0efed,,{colors.hairline-soft},lighter divider,Lighter divider.
+elevenlabs,Hairlines,Hairline Strong,#d6d3d1,,{colors.hairline-strong},stronger panel outline,Stronger panel outline.
+elevenlabs,Text,Ink,#0c0a09,,{colors.ink},display primary text,"Display, primary text."
+elevenlabs,Text,Body,#4e4e4e,,{colors.body},default running-text,Default running-text.
+elevenlabs,Text,Body Strong,#292524,,{colors.body-strong},same primary emphasis,Same as primary — emphasis.
+elevenlabs,Text,Muted,#777169,,{colors.muted},sub-titles,Sub-titles.
+elevenlabs,Text,Muted Soft,#a8a29e,,{colors.muted-soft},disabled text,Disabled text.
+elevenlabs,Text,On Primary,#ffffff,,{colors.on-primary},white text ink,White text on ink pill.
+elevenlabs,Text,On Dark,#ffffff,,{colors.on-dark},white text dark,White text on dark hero.
+elevenlabs,Text,On Dark Soft,#a8a29e,,{colors.on-dark-soft},muted off-white dark,Muted off-white on dark.
+elevenlabs,Atmospheric Gradient Stops (signature),Gradient Mint,#a7e5d3,,{colors.gradient-mint},mint green orb,Mint green orb.
+elevenlabs,Atmospheric Gradient Stops (signature),Gradient Peach,#f4c5a8,,{colors.gradient-peach},peach orb,Peach orb.
+elevenlabs,Atmospheric Gradient Stops (signature),Gradient Lavender,#c8b8e0,,{colors.gradient-lavender},lavender orb,Lavender orb.
+elevenlabs,Atmospheric Gradient Stops (signature),Gradient Sky,#a8c8e8,,{colors.gradient-sky},sky-blue orb,Sky-blue orb.
+elevenlabs,Atmospheric Gradient Stops (signature),Gradient Rose,#e8b8c4,,{colors.gradient-rose},rose orb,Rose orb.
+elevenlabs,Semantic,Success,#16a34a,,{colors.semantic-success},confirmation,Confirmation.
+elevenlabs,Semantic,Error,#dc2626,,{colors.semantic-error},validation errors,Validation errors.
+expo,Brand & Accent,Black,#000000,,{colors.primary},primary cta fill,Primary CTA fill. Used scarcely.
+expo,Brand & Accent,Black Active,#1a1a1a,,{colors.primary-active},press state,Press state.
+expo,Brand & Accent,Text Link Blue,#0d74ce,,{colors.text-link},inline body links,Inline body links inside long-form copy. Scoped narrowly — never on CTAs.
+expo,Brand & Accent,Legal Link Blue,#476cff,,{colors.text-link-secondary},inline links inside,Inline links inside legal copy footer.
+expo,Brand & Accent,Bright Cyan,#47c2ff,,{colors.accent-link-bright},used very sparingly,Used very sparingly inside docs widget links.
+expo,Surface,Canvas,#ffffff,,{colors.canvas},pure white page,Pure white page floor.
+expo,Surface,Canvas Soft,#fafafa,,{colors.canvas-soft},subtle alternating band,Subtle alternating band.
+expo,Surface,Surface Card,#ffffff,,{colors.surface-card},pure white card,Pure white card.
+expo,Surface,Surface Strong,#f0f0f3,,{colors.surface-strong},badges ecosystem tiles,"Badges, ecosystem tiles, secondary buttons."
+expo,Surface,Surface Dark,#171717,,{colors.surface-dark},dark feature cards,"Dark feature cards, code blocks, IDE mockups, featured pricing."
+expo,Surface,Surface Dark Elevated,#1a1a1a,,{colors.surface-dark-elevated},one step lighter,One step lighter inside dark cards.
+expo,Atmospheric Backdrop,Sky Light,#cfe7ff,,{colors.gradient-sky-light},soft sky-blue gradient,The soft sky-blue gradient wash behind the homepage hero only. Not a brand action color.
+expo,Hairlines,Hairline,#f0f0f3,,{colors.hairline},default 1px divider,Default 1px divider.
+expo,Hairlines,Hairline Soft,#f5f5f7,,{colors.hairline-soft},lighter divider,Lighter divider.
+expo,Hairlines,Hairline Strong,#dcdee0,,{colors.hairline-strong},stronger panel outline,Stronger panel outline.
+expo,Text,Ink,#171717,,{colors.ink},display body emphasis,"Display, body emphasis."
+expo,Text,Body,#60646c,,{colors.body},default running-text slightly,Default running-text — slightly cool gray.
+expo,Text,Body Strong,#171717,,{colors.body-strong},same ink,Same as ink.
+expo,Text,Muted,#999999,,{colors.muted},sub-titles,Sub-titles.
+expo,Text,Muted Soft,#cccccc,,{colors.muted-soft},disabled text,Disabled text.
+expo,Text,On Primary,#ffffff,,{colors.on-primary},white text black,White text on black CTA.
+expo,Text,On Dark,#ffffff,,{colors.on-dark},white text dark,White text on dark cards.
+expo,Text,On Dark Soft,#b0b4ba,,{colors.on-dark-soft},muted off-white dark,Muted off-white on dark.
+expo,Semantic,Warning,#ab6400,,{colors.accent-warning},warning text inside,Warning text inside docs callouts.
+expo,Semantic,Preview,#8145b5,,{colors.accent-preview},preview tag color,"""Preview"" tag color."
+expo,Semantic,Success,#16a34a,,{colors.semantic-success},confirmation,Confirmation.
+expo,Semantic,Error,#eb8e90,,{colors.semantic-error},validation errors,Validation errors.
+ferrari,Brand & Accent,Rosso Corsa,#da291c,,{colors.primary},iconic ferrari racing,"The iconic Ferrari racing red. Primary CTA fill, Cavallino mark, F1 driver-position highlights. Used scarcely."
+ferrari,Brand & Accent,Rosso Corsa Active,#b01e0a,,{colors.primary-active},press state,Press state.
+ferrari,Brand & Accent,Rosso Corsa Hover-darker,#9d2211,,{colors.primary-hover},documented completeness per,Documented for completeness; per the no-hover policy this is not used in preview HTML.
+ferrari,Brand & Accent,Hypersail Yellow,#fff200,,{colors.accent-yellow-hypersail},sub-brand accents reserved,Sub-brand accents reserved for the Hypersail sailing program and the global focus-ring color. Not part of the main automotive palette.
+ferrari,Surface,Canvas,#181818,,{colors.canvas},near-black page floor,"Near-black page floor — never pure black, slight warmth."
+ferrari,Surface,Canvas Elevated,#303030,,{colors.canvas-elevated},cards panels dark,Cards and panels on dark canvas.
+ferrari,Surface,Canvas Light,#ffffff,,{colors.canvas-light},white editorial bands,"White editorial bands (preowned listings, pricing)."
+ferrari,Surface,Surface Card,#303030,,{colors.surface-card},same canvas-elevated driver,"Same as canvas-elevated — driver cards, livery photo plates."
+ferrari,Surface,Surface Soft Light,#f7f7f7,,{colors.surface-soft-light},light editorial alternating,Light editorial alternating band.
+ferrari,Surface,Surface Strong Light,#ebebeb,,{colors.surface-strong-light},light-canvas dividers badges,"Light-canvas dividers, badges."
+ferrari,Hairlines,Hairline,#303030,,{colors.hairline},px divider dark,1px divider on dark — same hex as `{colors.canvas-elevated}`.
+ferrari,Hairlines,Hairline On Light,#d2d2d2,,{colors.hairline-on-light},px divider light,1px divider on light bands.
+ferrari,Hairlines,Hairline Soft,#ebebeb,,{colors.hairline-soft},lighter divider,Lighter divider.
+ferrari,Text,Ink,#ffffff,,{colors.ink},display body emphasis,"Display, body emphasis on dark."
+ferrari,Text,Body,#969696,,{colors.body},default running-text dark,Default running-text on dark.
+ferrari,Text,Body Strong,#ffffff,,{colors.body-strong},same ink,Same as ink.
+ferrari,Text,Body On Light,#181818,,{colors.body-on-light},default text light,Default text on light bands.
+ferrari,Text,Muted,#666666,,{colors.muted},sub-titles captions dark,"Sub-titles, captions on dark."
+ferrari,Text,Muted Soft,#8f8f8f,,{colors.muted-soft},disabled link text,Disabled link text.
+ferrari,Text,On Primary,#ffffff,,{colors.on-primary},white text rosso,White text on Rosso Corsa.
+ferrari,Semantic,Info,#4c98b9,,{colors.semantic-info},info badges callout,"Info badges, callout backgrounds."
+ferrari,Semantic,Success,#03904a,,{colors.semantic-success},confirmation,Confirmation.
+ferrari,Semantic,Warning,#f13a2c,,{colors.semantic-warning},validation warnings,Validation warnings.
+figma,Primary,Pure Black,#000000,,,text solid buttons,"All text, all solid buttons, all borders. The sole ""color"" of the interface."
+figma,Primary,Pure White,#ffffff,,,backgrounds white buttons,"All backgrounds, white buttons, text on dark surfaces. The other half of the binary."
+figma,Surface & Background,Pure White,#ffffff,,,primary page background,Primary page background and card surfaces.
+figma,Surface & Background,Glass Black,,,,subtle dark overlay,Subtle dark overlay for secondary circular buttons and glass effects.
+figma,Surface & Background,Glass White,,,,frosted glass overlay,Frosted glass overlay for buttons on dark/colored surfaces.
+figma,Gradient System,Hero Gradient,,,,vibrant multi-stop gradient,"A vibrant multi-stop gradient using electric green, bright yellow, deep purple, and hot pink. This gradient is the visual signature of the hero section — it represents the creative possibilities of the tool."
+figma,Gradient System,Product Section Gradients,,,,individual product areas,"Individual product areas (Design, Dev Mode, Prototyping) may use distinct color themes in their showcases."
+framer,Primary,Pure Black,#000000,,,primary background void,"Primary background, the void canvas that defines Framer's dark-first identity"
+framer,Primary,Pure White,#ffffff,,,primary text color,"Primary text color on dark surfaces, button text on accent backgrounds"
+framer,Primary,Framer Blue,#0099ff,,,primary accent color,"Primary accent color — links, borders, ring shadows, interactive highlights"
+framer,Secondary & Accent,Muted Silver,#a6a6a6,,,secondary text subdued,"Secondary text, subdued labels, dimmed descriptions on dark surfaces"
+framer,Secondary & Accent,Near Black,#090909,,,elevated dark surface,"Elevated dark surface, shadow ring color for subtle depth separation"
+framer,Surface & Background,Void Black,#000000,,,page background primary,"Page background, primary canvas"
+framer,Surface & Background,Frosted White,,,,translucent button backgrounds,"Translucent button backgrounds, glass-effect surfaces on dark"
+framer,Surface & Background,Subtle White,,,,slightly more opaque,Slightly more opaque frosted elements for hover states
+framer,Neutrals & Text,Pure White,#ffffff,,,heading text high-emphasis,"Heading text, high-emphasis body text"
+framer,Neutrals & Text,Muted Silver,#a6a6a6,,,body text descriptions,"Body text, descriptions, secondary information"
+framer,Neutrals & Text,Ghost White,,,,tertiary text placeholders,"Tertiary text, placeholders on dark surfaces"
+framer,Semantic & Accent,Framer Blue,#0099ff,,,links interactive borders,"Links, interactive borders, focus rings"
+framer,Semantic & Accent,Blue Glow,,,,focus ring shadow,"Focus ring shadow, subtle blue halo around interactive elements"
+framer,Semantic & Accent,Default Link Blue,#0000ee,,,standard browser link,Standard browser link color (used sparingly in content areas)
+hashicorp,Brand Primary,Black,#000000,--mds-color-hcp-brand,,primary brand color,"Primary brand color, text on light surfaces, `--mds-color-hcp-brand`"
+hashicorp,Brand Primary,Dark Charcoal,#15181e,,,dark mode backgrounds,"Dark mode backgrounds, hero sections"
+hashicorp,Brand Primary,Near Black,#0d0e12,,,deepest dark mode,"Deepest dark mode surface, form inputs on dark"
+hashicorp,Neutral Scale,Light Gray,#f1f2f3,,,light backgrounds subtle,"Light backgrounds, subtle surfaces"
+hashicorp,Neutral Scale,Mid Gray,#d5d7db,,,borders button text,"Borders, button text on dark"
+hashicorp,Neutral Scale,Cool Gray,#b2b6bd,,,border accents 0,Border accents (at 0.1–0.4 opacity)
+hashicorp,Neutral Scale,Dark Gray,#656a76,--mds-form-helper-text-color,,helper text secondary,"Helper text, secondary labels, `--mds-form-helper-text-color`"
+hashicorp,Neutral Scale,Charcoal,#3b3d45,,,secondary text light,"Secondary text on light, button borders"
+hashicorp,Neutral Scale,Near White,#efeff1,,,primary text dark,Primary text on dark surfaces
+hashicorp,Product Brand Colors,Terraform Purple,#7b42bc,--mds-color-terraform-button-background,,,`--mds-color-terraform-button-background`
+hashicorp,Product Brand Colors,Vault Yellow,#ffcf25,--mds-color-vault-button-background,,,`--mds-color-vault-button-background`
+hashicorp,Product Brand Colors,Waypoint Teal,#14c6cb,--mds-color-waypoint-button-background-focus,,,`--mds-color-waypoint-button-background-focus`
+hashicorp,Product Brand Colors,Waypoint Teal Hover,#12b6bb,--mds-color-waypoint-button-background-hover,,,`--mds-color-waypoint-button-background-hover`
+hashicorp,Product Brand Colors,Vagrant Blue,#1868f2,--mds-color-vagrant-brand,,,`--mds-color-vagrant-brand`
+hashicorp,Product Brand Colors,Purple Accent,#911ced,--mds-color-palette-purple-300,,,`--mds-color-palette-purple-300`
+hashicorp,Product Brand Colors,Visited Purple,#a737ff,--mds-color-foreground-action-visited,,,`--mds-color-foreground-action-visited`
+hashicorp,Semantic Colors,Action Blue,#1060ff,,,primary action links,Primary action links on dark
+hashicorp,Semantic Colors,Link Blue,#2264d6,,,primary links light,Primary links on light
+hashicorp,Semantic Colors,Bright Blue,#2b89ff,,,active links hover,"Active links, hover accent"
+hashicorp,Semantic Colors,Amber,#bb5a00,--mds-color-palette-amber-200,,warning states,"`--mds-color-palette-amber-200`, warning states"
+hashicorp,Semantic Colors,Amber Light,#fbeabf,--mds-color-palette-amber-100,,warning backgrounds,"`--mds-color-palette-amber-100`, warning backgrounds"
+hashicorp,Semantic Colors,Vault Faint Yellow,#fff9cf,--mds-color-vault-radar-gradient-faint-stop,,,`--mds-color-vault-radar-gradient-faint-stop`
+hashicorp,Semantic Colors,Orange,#a9722e,--mds-color-unified-core-orange-6,,,`--mds-color-unified-core-orange-6`
+hashicorp,Semantic Colors,Red,#731e25,--mds-color-unified-core-red-7,,error states,"`--mds-color-unified-core-red-7`, error states"
+hashicorp,Semantic Colors,Navy,#101a59,--mds-color-unified-core-blue-7,,,`--mds-color-unified-core-blue-7`
+hashicorp,Shadows,Micro Shadow,,,,default card button,Default card/button elevation
+hashicorp,Shadows,Focus Outline,,--mds-color-focus-action-external,,systematic focus ring,`3px solid var(--mds-color-focus-action-external)` — systematic focus ring
+ibm,Primary,IBM Blue 60,#0f62fe,,,singular interactive color,"The singular interactive color. Primary buttons, links, focus states, active indicators. This is the only chromatic hue in the core UI palette."
+ibm,Primary,White,#ffffff,--cds-background,,page background card,"Page background, card surfaces, button text on blue, `--cds-background`."
+ibm,Primary,Gray 100,#161616,--cds-text-primary,,primary text headings,"Primary text, headings, dark surface backgrounds, nav bar, footer. `--cds-text-primary`."
+ibm,Neutral Scale (Gray Family),Gray 100,#161616,,,primary text headings,"Primary text, headings, dark UI chrome, footer background."
+ibm,Neutral Scale (Gray Family),Gray 90,#262626,,,secondary dark surfaces,"Secondary dark surfaces, hover states on dark backgrounds."
+ibm,Neutral Scale (Gray Family),Gray 80,#393939,,,tertiary dark active,"Tertiary dark, active states."
+ibm,Neutral Scale (Gray Family),Gray 70,#525252,--cds-text-secondary,,secondary text helper,"Secondary text, helper text, descriptions. `--cds-text-secondary`."
+ibm,Neutral Scale (Gray Family),Gray 60,#6f6f6f,,,placeholder text disabled,"Placeholder text, disabled text."
+ibm,Neutral Scale (Gray Family),Gray 50,#8d8d8d,,,disabled icons muted,"Disabled icons, muted labels."
+ibm,Neutral Scale (Gray Family),Gray 30,#c6c6c6,--cds-border-subtle,,borders divider lines,"Borders, divider lines, input bottom-borders. `--cds-border-subtle`."
+ibm,Neutral Scale (Gray Family),Gray 20,#e0e0e0,,,subtle borders card,"Subtle borders, card outlines."
+ibm,Neutral Scale (Gray Family),Gray 10,#f4f4f4,--cds-layer-01,,secondary surface background,"Secondary surface background, card fills, alternating rows. `--cds-layer-01`."
+ibm,Neutral Scale (Gray Family),Gray 10 Hover,#e8e8e8,,,hover state gray,Hover state for Gray 10 surfaces.
+ibm,Interactive,Blue 60,#0f62fe,--cds-link-primary,,primary interactive buttons,"Primary interactive — buttons, links, focus. `--cds-link-primary`, `--cds-button-primary`."
+ibm,Interactive,Blue 70,#0043ce,--cds-link-primary-hover,,link hover state,Link hover state. `--cds-link-primary-hover`.
+ibm,Interactive,Blue 80,#002d9c,,,active pressed state,Active/pressed state for blue elements.
+ibm,Interactive,Blue 10,#edf5ff,,,blue tint surface,"Blue tint surface, selected row background."
+ibm,Interactive,Focus Blue,#0f62fe,--cds-focus,,px inset border,`--cds-focus` — 2px inset border on focused elements.
+ibm,Interactive,Focus Inset,#ffffff,--cds-focus-inset,,white inner ring,`--cds-focus-inset` — white inner ring for focus on dark backgrounds.
+ibm,Support & Status,Red 60,#da1e28,--cds-support-error,,error danger,"Error, danger. `--cds-support-error`."
+ibm,Support & Status,Green 50,#24a148,--cds-support-success,,success,Success. `--cds-support-success`.
+ibm,Support & Status,Yellow 30,#f1c21b,--cds-support-warning,,warning,Warning. `--cds-support-warning`.
+ibm,Support & Status,Blue 60,#0f62fe,--cds-support-info,,informational,Informational. `--cds-support-info`.
+ibm,Dark Theme (Gray 100 Theme),Background,#161616,--cds-background,,gray 100,Gray 100 (`#161616`). `--cds-background`.
+ibm,Dark Theme (Gray 100 Theme),Layer 01,#262626,,,gray 90,Gray 90 (`#262626`). Card and container surfaces.
+ibm,Dark Theme (Gray 100 Theme),Layer 02,#393939,,,gray 80,Gray 80 (`#393939`). Elevated surfaces.
+ibm,Dark Theme (Gray 100 Theme),Text Primary,#f4f4f4,--cds-text-primary,,gray 10,Gray 10 (`#f4f4f4`). `--cds-text-primary`.
+ibm,Dark Theme (Gray 100 Theme),Text Secondary,#c6c6c6,--cds-text-secondary,,gray 30,Gray 30 (`#c6c6c6`). `--cds-text-secondary`.
+ibm,Dark Theme (Gray 100 Theme),Border Subtle,#393939,--cds-border-subtle,,gray 80,Gray 80 (`#393939`). `--cds-border-subtle`.
+ibm,Dark Theme (Gray 100 Theme),Interactive,#78a9ff,,,blue 40,Blue 40 (`#78a9ff`). Links and interactive elements shift lighter for contrast.
+intercom,Primary,Off Black,#111111,--color-off-black,,primary text button,"`--color-off-black`, primary text, button backgrounds"
+intercom,Primary,Pure White,#ffffff,--wsc-color-content-primary,,primary surface,"`--wsc-color-content-primary`, primary surface"
+intercom,Primary,Warm Cream,#faf9f6,,,button backgrounds card,"Button backgrounds, card surfaces"
+intercom,Primary,Fin Orange,#ff5600,--color-fin,,primary brand accent,"`--color-fin`, primary brand accent"
+intercom,Primary,Report Orange,#fe4c02,--color-report-orange,,data visualization,"`--color-report-orange`, data visualization"
+intercom,Report Palette,Report Blue,#65b5ff,--color-report-blue,,,`--color-report-blue`
+intercom,Report Palette,Report Green,#0bdf50,--color-report-green,,,`--color-report-green`
+intercom,Report Palette,Report Red,#c41c1c,--color-report-red,,,`--color-report-red`
+intercom,Report Palette,Report Pink,#ff2067,--color-report-pink,,,`--color-report-pink`
+intercom,Report Palette,Report Lime,#b3e01c,--color-report-lime-300,,,`--color-report-lime-300`
+intercom,Report Palette,Green,#00da00,--color-green,,,`--color-green`
+intercom,Report Palette,Deep Blue,#0007cb,,,deep blue accent,Deep blue accent
+intercom,Neutral Scale (Warm),Black 80,#313130,--wsc-color-black-80,,dark neutral,"`--wsc-color-black-80`, dark neutral"
+intercom,Neutral Scale (Warm),Black 60,#626260,--wsc-color-black-60,,mid neutral,"`--wsc-color-black-60`, mid neutral"
+intercom,Neutral Scale (Warm),Black 50,#7b7b78,--wsc-color-black-50,,muted text,"`--wsc-color-black-50`, muted text"
+intercom,Neutral Scale (Warm),Content Tertiary,#9c9fa5,--wsc-color-content-tertiary,,,`--wsc-color-content-tertiary`
+intercom,Neutral Scale (Warm),Oat Border,#dedbd6,,,warm border color,Warm border color
+intercom,Neutral Scale (Warm),Warm Sand,#d3cec6,,,light warm neutral,Light warm neutral
+kraken,Primary,Kraken Purple,#7132f5,,,primary cta brand,"Primary CTA, brand accent, links"
+kraken,Primary,Purple Dark,#5741d8,,,button borders outlined,"Button borders, outlined variants"
+kraken,Primary,Purple Deep,#5b1ecf,,,deepest purple,Deepest purple
+kraken,Primary,Purple Subtle,,,,purple 16 subtle,Purple at 16% — subtle button backgrounds
+kraken,Primary,Near Black,#101114,,,primary text,Primary text
+kraken,Neutral,Cool Gray,#686b82,,,primary neutral borders,"Primary neutral, borders at 24% opacity"
+kraken,Neutral,Silver Blue,#9497a9,,,secondary text muted,"Secondary text, muted elements"
+kraken,Neutral,White,#ffffff,,,primary surface,Primary surface
+kraken,Neutral,Border Gray,#dedee5,,,divider borders,Divider borders
+kraken,Semantic,Green,#149e61,,,success positive 16,Success/positive at 16% opacity for badges
+kraken,Semantic,Green Dark,#026b3f,,,badge text,Badge text
+lamborghini,Primary,Lamborghini Gold,#ffc000,,,signature accent color,"The signature accent color — a warm, saturated amber-gold (rgb 255, 192, 0) used exclusively for primary action buttons (""Discover More"", ""Tickets"", ""Start Configuration""). The only chromatic color in the entire interface, it ignites against the black canvas like a headlight cutting through night"
+lamborghini,Primary,Pure White,#ffffff,,,primary text color,"Primary text color on dark surfaces, logo rendering, nav elements, and light-mode button fills — the voice that speaks from the darkness"
+lamborghini,Secondary & Accent,Dark Gold,#917300,,,hover pressed state,"Hover/pressed state for gold buttons — a deep amber (rgb 145, 115, 0) that darkens the gold to signal interaction"
+lamborghini,Secondary & Accent,Gold Text,#ffce3e,,,slightly lighter gold,"Slightly lighter gold variant (rgb 255, 206, 62) used for inline text accents and highlighted labels"
+lamborghini,Secondary & Accent,Cyan Pulse,#29abe2,,,electric blue-cyan rgb,"Electric blue-cyan (rgb 41, 171, 226) appearing as an informational accent and interactive element highlight"
+lamborghini,Secondary & Accent,Link Blue,#3860be,,,medium blue rgb,"Medium blue (rgb 56, 96, 190) used universally for link hover states across all text colors"
+lamborghini,Surface & Background,Absolute Black,#000000,,,dominant surface color,"The dominant surface color — used for page background, hero sections, header, footer, and most containers"
+lamborghini,Surface & Background,Charcoal,#202020,,,elevated dark surface,"Elevated dark surface (rgb 32, 32, 32) — the primary ""dark gray"" for cards, panels, and text containers sitting above the black canvas"
+lamborghini,Surface & Background,Dark Iron,#181818,,,subtle surface variant,"Subtle surface variant (rgb 24, 24, 24) — barely distinguishable from black, used for footer and deep sections"
+lamborghini,Surface & Background,Overlay Black,,,,semi-transparent overlay modals,Semi-transparent overlay for modals and video dimming
+lamborghini,Surface & Background,Near White,#f8f8f8,,,rare light surface,"Rare light surface (rgb 248, 248, 248) for content blocks in white-mode sections"
+lamborghini,Surface & Background,Mist,#e6e6e6,,,light gray surface,Light gray surface for secondary light-mode containers
+lamborghini,Neutrals & Text,Pure White,#ffffff,,,primary text dark,"Primary text on dark backgrounds — headlines, body, nav labels"
+lamborghini,Neutrals & Text,Smoke,#f5f5f5,,,secondary text dark,Secondary text on dark surfaces — slightly softer than pure white
+lamborghini,Neutrals & Text,Graphite,#494949,,,dark gray text,"Dark gray text on light surfaces (rgb 73, 73, 73)"
+lamborghini,Neutrals & Text,Ash,#7d7d7d,,,mid-range gray muted,"Mid-range gray for muted text, timestamps, and metadata (rgb 125, 125, 125)"
+lamborghini,Neutrals & Text,Steel,#969696,,,lighter gray disabled,"Lighter gray for disabled text and subtle labels (rgb 150, 150, 150)"
+lamborghini,Neutrals & Text,Slate,#666666,,,alternative mid-gray secondary,Alternative mid-gray for secondary content
+lamborghini,Neutrals & Text,Iron,#555555,,,dark mid-gray body,Dark mid-gray for body text variants
+lamborghini,Neutrals & Text,Shadow,#313131,,,very dark gray,Very dark gray for text on dark surfaces where white is too strong
+lamborghini,Semantic & Accent,Cyan Pulse,#29abe2,,,used informational highlights,Used for informational highlights and interactive feedback
+lamborghini,Semantic & Accent,Link Blue,#3860be,,,universal hover state,Universal hover state for all hyperlinks
+lamborghini,Semantic & Accent,Teal Action,#1eaedb,,,button hover background,"Button hover background for transparent/ghost variants (rgb 30, 174, 219)"
+linear.app,Background Surfaces,Marketing Black,#010102,,,deepest background canvas,The deepest background — the canvas for hero sections and marketing pages. Near-pure black with an imperceptible blue-cool undertone.
+linear.app,Background Surfaces,Panel Dark,#0f1011,,,sidebar panel backgrounds,Sidebar and panel backgrounds. One step up from the marketing black.
+linear.app,Background Surfaces,Level 3 Surface,#191a1b,,,elevated surface areas,"Elevated surface areas, card backgrounds, dropdowns."
+linear.app,Background Surfaces,Secondary Surface,#28282c,,,lightest dark surface,The lightest dark surface — used for hover states and slightly elevated components.
+linear.app,Text & Content,Primary Text,#f7f8f8,,,near-white barely-warm cast,"Near-white with a barely-warm cast. The default text color — not pure white, preventing eye strain on dark backgrounds."
+linear.app,Text & Content,Secondary Text,#d0d6e0,,,cool silver-gray body,"Cool silver-gray for body text, descriptions, and secondary content."
+linear.app,Text & Content,Tertiary Text,#8a8f98,,,muted gray placeholders,"Muted gray for placeholders, metadata, and de-emphasized content."
+linear.app,Text & Content,Quaternary Text,#62666d,,,most subdued text,"The most subdued text — timestamps, disabled states, subtle labels."
+linear.app,Brand & Accent,Brand Indigo,#5e6ad2,,,primary brand color,"Primary brand color — used for CTA button backgrounds, brand marks, and key interactive surfaces."
+linear.app,Brand & Accent,Accent Violet,#7170ff,,,brighter variant interactive,"Brighter variant for interactive elements — links, active states, selected items."
+linear.app,Brand & Accent,Accent Hover,#828fff,,,lighter more saturated,"Lighter, more saturated variant for hover states on accent elements."
+linear.app,Brand & Accent,Security Lavender,#7a7fad,,,muted indigo used,Muted indigo used specifically for security-related UI elements.
+linear.app,Status Colors,Green,#27a644,,,primary success active,"Primary success/active status. Used for ""in progress"" indicators."
+linear.app,Status Colors,Emerald,#10b981,,,secondary success pill,"Secondary success — pill badges, completion states."
+linear.app,Border & Divider,Border Primary,#23252a,,,solid dark border,Solid dark border for prominent separations.
+linear.app,Border & Divider,Border Secondary,#34343a,,,slightly lighter solid,Slightly lighter solid border.
+linear.app,Border & Divider,Border Tertiary,#3e3e44,,,lightest solid border,Lightest solid border variant.
+linear.app,Border & Divider,Border Subtle,,,,ultra-subtle semi-transparent border,Ultra-subtle semi-transparent border — the default.
+linear.app,Border & Divider,Border Standard,,,,standard semi-transparent border,"Standard semi-transparent border for cards, inputs, code blocks."
+linear.app,Border & Divider,Line Tint,#141516,,,nearly invisible line,Nearly invisible line for the subtlest divisions.
+linear.app,Border & Divider,Line Tertiary,#18191a,,,slightly more visible,Slightly more visible divider line.
+linear.app,Light Mode Neutrals (for light theme contexts),Light Background,#f7f8f8,,,page background light,Page background in light mode.
+linear.app,Light Mode Neutrals (for light theme contexts),Light Surface,#f3f4f5,,,subtle surface tinting,Subtle surface tinting.
+linear.app,Light Mode Neutrals (for light theme contexts),Light Border,#d0d6e0,,,visible border light,Visible border in light contexts.
+linear.app,Light Mode Neutrals (for light theme contexts),Light Border Alt,#e6e6e6,,,alternative lighter border,Alternative lighter border.
+linear.app,Light Mode Neutrals (for light theme contexts),Pure White,#ffffff,,,card surfaces highlights,"Card surfaces, highlights."
+linear.app,Overlay,Overlay Primary,,,,modal dialog backdrop,Modal/dialog backdrop — extremely dark for focus isolation.
+lovable,Primary,Cream,#f7f4ed,,,page background card,"Page background, card surfaces, button surfaces. The foundation — warm, paper-like, human."
+lovable,Primary,Charcoal,#1c1c1c,,,primary text headings,"Primary text, headings, dark button backgrounds. Not pure black — organic warmth."
+lovable,Primary,Off-White,#fcfbf8,,,button text dark,"Button text on dark backgrounds, subtle highlight. Barely distinguishable from pure white."
+lovable,Neutral Scale (Opacity-Based),Charcoal 100%,#1c1c1c,,,primary text headings,"Primary text, headings, dark surfaces."
+lovable,Neutral Scale (Opacity-Based),Charcoal 83%,,,,strong secondary text,Strong secondary text.
+lovable,Neutral Scale (Opacity-Based),Charcoal 82%,,,,body copy,Body copy.
+lovable,Neutral Scale (Opacity-Based),Muted Gray,#5f5f5d,,,secondary text descriptions,"Secondary text, descriptions, captions."
+lovable,Neutral Scale (Opacity-Based),Charcoal 40%,,,,interactive borders button,"Interactive borders, button outlines."
+lovable,Neutral Scale (Opacity-Based),Charcoal 4%,,,,subtle hover backgrounds,"Subtle hover backgrounds, micro-tints."
+lovable,Neutral Scale (Opacity-Based),Charcoal 3%,,,,barely-visible overlays background,"Barely-visible overlays, background depth."
+lovable,Surface & Border,Light Cream,#eceae4,,,card borders dividers,"Card borders, dividers, image outlines. The warm divider line."
+lovable,Surface & Border,Cream Surface,#f7f4ed,,,card backgrounds section,"Card backgrounds, section fills — same as page background for seamless integration."
+lovable,Interactive,Ring Blue,#3b82f6,--tw-ring-color,,tailwind focus ring,"`--tw-ring-color`, Tailwind focus ring."
+lovable,Interactive,Focus Shadow,,,,focus active state,"Focus and active state shadow — soft, warm, diffused."
+lovable,Inset Shadows,Button Inset,,,,signature multi-layer inset,The signature multi-layer inset shadow on dark buttons.
+minimax,Brand Primary,Brand Blue,#1456f0,--brand-6,,primary brand identity,"`--brand-6`, primary brand identity color"
+minimax,Brand Primary,Sky Blue,#3daeff,--col-brand00,,lighter brand variant,"`--col-brand00`, lighter brand variant for accents"
+minimax,Brand Primary,Brand Pink,#ea5ec1,--col-brand02,,secondary brand accent,"`--col-brand02`, secondary brand accent"
+minimax,Blue Scale (Primary),Primary 200,#bfdbfe,--color-primary-200,,light blue backgrounds,"`--color-primary-200`, light blue backgrounds"
+minimax,Blue Scale (Primary),Primary Light,#60a5fa,--color-primary-light,,active states highlights,"`--color-primary-light`, active states, highlights"
+minimax,Blue Scale (Primary),Primary 500,#3b82f6,--color-primary-500,,standard blue actions,"`--color-primary-500`, standard blue actions"
+minimax,Blue Scale (Primary),Primary 600,#2563eb,--color-primary-600,,hover states,"`--color-primary-600`, hover states"
+minimax,Blue Scale (Primary),Primary 700,#1d4ed8,--color-primary-700,,pressed active states,"`--color-primary-700`, pressed/active states"
+minimax,Blue Scale (Primary),Brand Deep,#17437d,--brand-3,,deep blue emphasis,"`--brand-3`, deep blue for emphasis"
+minimax,Text Colors,Near Black,#222222,--col-text00,,primary text,"`--col-text00`, primary text"
+minimax,Text Colors,Dark,#18181b,,,button text headings,"Button text, headings"
+minimax,Text Colors,Charcoal,#181e25,,,dark surface text,"Dark surface text, footer background"
+minimax,Text Colors,Dark Gray,#45515e,--col-text04,,secondary text,"`--col-text04`, secondary text"
+minimax,Text Colors,Mid Gray,#8e8e93,,,tertiary text muted,"Tertiary text, muted labels"
+minimax,Text Colors,Light Gray,#5f5f5f,--brand-2,,helper text,"`--brand-2`, helper text"
+minimax,Surface & Background,Pure White,#ffffff,--col-bg13,,primary background,"`--col-bg13`, primary background"
+minimax,Surface & Background,Light Gray,#f0f0f0,,,secondary button backgrounds,Secondary button backgrounds
+minimax,Surface & Background,Glass White,,--fill-bg-white,,frosted glass overlay,"`--fill-bg-white`, frosted glass overlay"
+minimax,Surface & Background,Border Light,#f2f3f5,,,subtle section dividers,Subtle section dividers
+minimax,Surface & Background,Border Gray,#e5e7eb,,,component borders,Component borders
+minimax,Semantic,Success Background,#e8ffea,--success-bg,,positive state backgrounds,"`--success-bg`, positive state backgrounds"
+minimax,Shadows,Standard,,,,default card shadow,Default card shadow
+minimax,Shadows,Soft Glow,,,,ambient soft shadow,Ambient soft shadow
+minimax,Shadows,Brand Purple,,,,brand-tinted glow,Brand-tinted glow
+minimax,Shadows,Brand Purple Offset,,,,directional brand glow,Directional brand glow
+minimax,Shadows,Card Elevation,,,,lifted card shadow,Lifted card shadow
+mintlify,Primary,Near Black,#0d0d0d,,,primary text headings,"Primary text, headings, dark surfaces. Not pure black — the micro-softness improves reading comfort."
+mintlify,Primary,Pure White,#ffffff,,,page background card,"Page background, card surfaces, input backgrounds."
+mintlify,Primary,Brand Green,#18e299,,,signature accent ctas,"The signature accent — CTAs, links on hover, focus rings, brand identity."
+mintlify,Secondary Accents,Brand Green Light,#d4fae8,,,tinted green surface,"Tinted green surface for badges, hover states, subtle backgrounds."
+mintlify,Secondary Accents,Brand Green Deep,#0fa76e,,,darker green text,"Darker green for text on light-green badges, hover states on brand elements."
+mintlify,Secondary Accents,Warm Amber,#c37d0d,--twoslash-warn-bg,,warning states caution,"Warning states, caution badges — `--twoslash-warn-bg`."
+mintlify,Secondary Accents,Soft Blue,#3772cf,--twoslash-tag-bg,,tag backgrounds informational,"Tag backgrounds, informational annotations — `--twoslash-tag-bg`."
+mintlify,Secondary Accents,Error Red,#d45656,--twoslash-error-bg,,error states destructive,"Error states, destructive actions — `--twoslash-error-bg`."
+mintlify,Neutral Scale,Gray 900,#0d0d0d,,,primary heading text,"Primary heading text, nav links."
+mintlify,Neutral Scale,Gray 700,#333333,,,secondary text descriptions,"Secondary text, descriptions, body copy."
+mintlify,Neutral Scale,Gray 500,#666666,,,tertiary text muted,"Tertiary text, muted labels."
+mintlify,Neutral Scale,Gray 400,#888888,,,placeholder text disabled,"Placeholder text, disabled states, code annotations."
+mintlify,Neutral Scale,Gray 200,#e5e5e5,,,borders dividers card,"Borders, dividers, card outlines."
+mintlify,Neutral Scale,Gray 100,#f5f5f5,,,subtle surface backgrounds,"Subtle surface backgrounds, hover states."
+mintlify,Neutral Scale,Gray 50,#fafafa,,,near-white surface tint,Near-white surface tint.
+mintlify,Interactive,Link Default,#0d0d0d,,,links match text,"Links match text color, relying on underline/context."
+mintlify,Interactive,Link Hover,#18e299,--color-brand,,brand green hover,Brand green on hover — `var(--color-brand)`.
+mintlify,Interactive,Focus Ring,#18e299,,,brand green focus,Brand green focus outline for inputs and interactive elements.
+mintlify,Surface & Overlay,Card Background,#ffffff,,,white cards white,"White cards on white background, separated by borders."
+mintlify,Surface & Overlay,Border Subtle,,,,black opacity borders,5% black opacity borders — the primary separation mechanism.
+mintlify,Surface & Overlay,Border Medium,,,,slightly stronger borders,Slightly stronger borders for interactive elements.
+mintlify,Surface & Overlay,Input Border Focus,,--color-brand,,green ring focused,Green ring on focused inputs.
+mintlify,Shadows & Depth,Card Shadow,,,,barely-there ambient shadow,Barely-there ambient shadow for subtle lift.
+mintlify,Shadows & Depth,Button Shadow,,,,micro-shadow button depth,Micro-shadow for button depth.
+mintlify,Shadows & Depth,No heavy shadows,,,,mintlify relies borders,"Mintlify relies on borders, not shadows, for depth."
+miro,Primary,Near Black,#1c1c1e,,,primary text,Primary text
+miro,Primary,White,#ffffff,--tw-color-white,,primary surface,"`--tw-color-white`, primary surface"
+miro,Primary,Blue 450,#5b76fe,--tw-color-blue-450,,primary interactive,"`--tw-color-blue-450`, primary interactive"
+miro,Primary,Actionable Pressed,#2a41b6,--tw-color-actionable-pressed,,,`--tw-color-actionable-pressed`
+miro,Pastel Accents (Light/Dark pairs),Coral,#ffc6c6,,,light dark,Light `#ffc6c6` / Dark `#600000`
+miro,Pastel Accents (Light/Dark pairs),Rose,#ffd8f4,,,light dark implied,Light `#ffd8f4` / Dark (implied)
+miro,Pastel Accents (Light/Dark pairs),Teal,#c3faf5,,,light dark,Light `#c3faf5` / Dark `#187574`
+miro,Pastel Accents (Light/Dark pairs),Orange,#ffe6cd,,,light,Light `#ffe6cd`
+miro,Pastel Accents (Light/Dark pairs),Yellow,#746019,,,dark,Dark `#746019`
+miro,Pastel Accents (Light/Dark pairs),Moss,#187574,,,dark,Dark `#187574`
+miro,Pastel Accents (Light/Dark pairs),Pink,#fde0f0,,,soft pink surface,Soft pink surface
+miro,Pastel Accents (Light/Dark pairs),Red,#fbd4d4,,,light red surface,Light red surface
+miro,Pastel Accents (Light/Dark pairs),Dark Red,#e3c5c5,,,muted red,Muted red
+miro,Semantic,Success,#00b473,--tw-color-success-accent,,,`--tw-color-success-accent`
+miro,Neutral,Slate,#555a6a,,,secondary text,Secondary text
+miro,Neutral,Input Placeholder,#a5a8b5,--tw-color-input-placeholder,,,`--tw-color-input-placeholder`
+miro,Neutral,Border,#c7cad5,,,button borders,Button borders
+miro,Neutral,Ring,,,,shadow-as-border,Shadow-as-border
+mistral.ai,Primary,Mistral Orange,#fa520f,,,core brand color,"The core brand color — a vivid, saturated orange-red that anchors the entire identity. Used for primary emphasis, the brand block, and the highest-signal moments."
+mistral.ai,Primary,Mistral Flame,#fb6424,,,slightly warmer lighter,"A slightly warmer, lighter variant of the brand orange used for secondary brand moments and hover states."
+mistral.ai,Primary,Block Orange,#ff8105,,,pure orange used,A pure orange used in the gradient block system — warmer and less red than Mistral Orange.
+mistral.ai,Secondary & Accent,Sunshine 900,#ff8a00,,,deep golden amber,"Deep golden amber — the darkest sunshine tone, used for strong accent moments."
+mistral.ai,Secondary & Accent,Sunshine 700,#ffa110,,,warm amber-gold core,Warm amber-gold — the core sunshine accent for backgrounds and interactive elements.
+mistral.ai,Secondary & Accent,Sunshine 500,#ffb83e,,,medium golden balanced,Medium golden — balanced warmth for mid-level emphasis.
+mistral.ai,Secondary & Accent,Sunshine 300,#ffd06a,,,light golden subtle,Light golden — for subtle warm tints and secondary backgrounds.
+mistral.ai,Secondary & Accent,Block Gold,#ffe295,,,pale gold soft,Pale gold — soft background accents and gentle warmth.
+mistral.ai,Secondary & Accent,Bright Yellow,#ffd900,,,brightest tone gradient,"The brightest tone in the gradient — used at the ""top"" of the block identity."
+mistral.ai,Surface & Background,Warm Ivory,#fffaeb,,,lightest page background,"The lightest page background — barely tinted with warmth, the foundation canvas."
+mistral.ai,Surface & Background,Cream,#fff0c2,,,primary warm surface,The primary warm surface and secondary button background — noticeably golden.
+mistral.ai,Surface & Background,Pure White,#ffffff,,,used maximum contrast,Used for maximum contrast elements and popover surfaces.
+mistral.ai,Surface & Background,Mistral Black,#1f1f1f,,,primary dark surface,"The primary dark surface for buttons, text, and dark sections."
+mistral.ai,Surface & Background,Accent Orange,,,,functional accent color,The functional accent color for interactive states.
+mistral.ai,Neutrals & Text,Mistral Black,#1f1f1f,,,primary text color,Primary text color and dark button backgrounds — a near-black that's warmer than pure #000.
+mistral.ai,Neutrals & Text,Black Tint,,,,medium dark gray,A medium dark gray for secondary text on light backgrounds.
+mistral.ai,Neutrals & Text,Pure White,#ffffff,,,text dark surfaces,Text on dark surfaces and CTA labels.
+mistral.ai,Semantic & Accent,Input Border,,,,cool-tinted light gray,A cool-tinted light gray for form borders — one of the few cool tones in the system.
+mistral.ai,Semantic & Accent,White Overlay,,,,semi-transparent white frosted,Semi-transparent white for frosted glass effects and button overlays.
+mistral.ai,Gradient System,Mistral Block Gradient,#ffd900,,,signature identity multi-step,"The signature identity — a multi-step gradient flowing through Yellow (`#ffd900`) → Gold (`#ffe295`) → Amber (`#ffa110`) → Orange (`#ff8105`) → Flame (`#fb6424`) → Mistral Orange (`#fa520f`). This gradient appears in the logo blocks, section backgrounds, and decorative elements."
+mistral.ai,Gradient System,Golden Landscape Wash,,,,photography backgrounds use,Photography and backgrounds use warm amber overlays creating a consistent golden temperature across the page.
+mistral.ai,Gradient System,Warm Shadow Cascade,,,,multi-layered golden shadows,Multi-layered golden shadows that build depth with amber-tinted transparency rather than gray.
+mongodb,Primary Brand,Forest Black,#001e2b,,,primary dark background,Primary dark background — the deepest teal-black
+mongodb,Primary Brand,MongoDB Green,#00ed64,,,primary brand accent,"Primary brand accent — neon green for highlights, underlines, gradients"
+mongodb,Primary Brand,Dark Green,#00684a,,,button borders link,"Button borders, link text on light — muted green for functional use"
+mongodb,Interactive,Action Blue,#006cfa,,,secondary accent links,"Secondary accent — links, interactive highlights"
+mongodb,Interactive,Hover Blue,#3860be,,,link hover states,All link hover states transition to this blue
+mongodb,Interactive,Teal Active,#1eaedb,,,button hover background,Button hover background — bright teal
+mongodb,Neutral Scale,Deep Teal,#1c2d38,,,dark button backgrounds,"Dark button backgrounds, secondary dark surfaces"
+mongodb,Neutral Scale,Teal Gray,#3d4f58,,,dark borders dark,Dark borders on dark surfaces
+mongodb,Neutral Scale,Dark Slate,#21313c,,,dark link text,Dark link text variant
+mongodb,Neutral Scale,Cool Gray,#5c6c75,,,muted text dark,"Muted text on dark, secondary button text"
+mongodb,Neutral Scale,Silver Teal,#b8c4c2,,,borders light surfaces,"Borders on light surfaces, dividers"
+mongodb,Neutral Scale,Light Input,#e8edeb,,,input text dark,Input text on dark surfaces
+mongodb,Neutral Scale,Pure White,#ffffff,,,light section background,"Light section background, button text on dark"
+mongodb,Neutral Scale,Black,#000000,,,text light surfaces,"Text on light surfaces, darkest elements"
+mongodb,Shadows,Forest Shadow,,,,primary card elevation,Primary card elevation — teal-tinted
+mongodb,Shadows,Standard Shadow,,,,general elevation,General elevation
+mongodb,Shadows,Subtle Shadow,,,,light card lift,Light card lift
+notion,Primary,Notion Black,#000000f2,,,primary text headings,"Primary text, headings, body copy. The 95% opacity softens pure black without sacrificing readability."
+notion,Primary,Pure White,#ffffff,,,page background card,"Page background, card surfaces, button text on blue."
+notion,Primary,Notion Blue,#0075de,,,primary cta link,"Primary CTA, link color, interactive accent -- the only saturated color in the core UI chrome."
+notion,Brand Secondary,Deep Navy,#213183,,,secondary brand color,"Secondary brand color, used sparingly for emphasis and dark feature sections."
+notion,Brand Secondary,Active Blue,#005bab,,,button active pressed,Button active/pressed state -- darker variant of Notion Blue.
+notion,Warm Neutral Scale,Warm White,#f6f5f4,,,background surface tint,"Background surface tint, section alternation, subtle card fill. The yellow undertone is key."
+notion,Warm Neutral Scale,Warm Dark,#31302e,,,dark surface background,"Dark surface background, dark section text. Warmer than standard grays."
+notion,Warm Neutral Scale,Warm Gray 500,#615d59,,,secondary text descriptions,"Secondary text, descriptions, muted labels."
+notion,Warm Neutral Scale,Warm Gray 300,#a39e98,,,placeholder text disabled,"Placeholder text, disabled states, caption text."
+notion,Semantic Accent Colors,Teal,#2a9d99,,,success states positive,"Success states, positive indicators."
+notion,Semantic Accent Colors,Green,#1aae39,,,confirmation completion badges,"Confirmation, completion badges."
+notion,Semantic Accent Colors,Orange,#dd5b00,,,warning states attention,"Warning states, attention indicators."
+notion,Semantic Accent Colors,Pink,#ff64c8,,,decorative accent feature,"Decorative accent, feature highlights."
+notion,Semantic Accent Colors,Purple,#391c57,,,premium features deep,"Premium features, deep accents."
+notion,Semantic Accent Colors,Brown,#523410,,,earthy accent warm,"Earthy accent, warm feature sections."
+notion,Interactive,Link Blue,#0075de,,,primary link color,Primary link color with underline-on-hover.
+notion,Interactive,Link Light Blue,#62aef0,,,lighter link variant,Lighter link variant for dark backgrounds.
+notion,Interactive,Focus Blue,#097fe8,,,focus ring interactive,Focus ring on interactive elements.
+notion,Interactive,Badge Blue Bg,#f2f9ff,,,pill badge background,"Pill badge background, tinted blue surface."
+notion,Interactive,Badge Blue Text,#097fe8,,,pill badge text,"Pill badge text, darker blue for readability."
+notion,Shadows & Depth,Card Shadow,,,,multi-layer card elevation,Multi-layer card elevation.
+notion,Shadows & Depth,Deep Shadow,,,,five-layer deep elevation,Five-layer deep elevation for modals and featured content.
+notion,Shadows & Depth,Whisper Border,,,,standard division border,"Standard division border -- cards, dividers, sections."
+nvidia,Primary Brand,NVIDIA Green,#76b900,,,signature -- borders,"The signature -- borders, link underlines, CTA outlines, active indicators. Never used as large surface fills."
+nvidia,Primary Brand,True Black,#000000,,,primary page background,"Primary page background, text on light surfaces, dominant tone."
+nvidia,Primary Brand,Pure White,#ffffff,,,text dark backgrounds,"Text on dark backgrounds, light section backgrounds, card surfaces."
+nvidia,Extended Brand Palette,NVIDIA Green Light,#bff230,,,bright lime accent,Bright lime accent for highlights and hover states.
+nvidia,Extended Brand Palette,Orange 400,#df6500,,,warm accent alerts,"Warm accent for alerts, featured badges, or energy-related contexts."
+nvidia,Extended Brand Palette,Yellow 300,#ef9100,,,secondary warm accent,"Secondary warm accent, product category highlights."
+nvidia,Extended Brand Palette,Yellow 050,#feeeb2,,,light warm surface,Light warm surface for callout backgrounds.
+nvidia,Status & Semantic,Red 500,#e52020,,,error states destructive,"Error states, destructive actions, critical alerts."
+nvidia,Status & Semantic,Red 800,#650b0b,,,deep red severe,Deep red for severe warning backgrounds.
+nvidia,Status & Semantic,Green 500,#3f8500,,,success states positive,"Success states, positive indicators (darker than brand green)."
+nvidia,Status & Semantic,Blue 700,#0046a4,,,informational accents link,"Informational accents, link hover alternative."
+nvidia,Decorative,Purple 800,#4d1368,,,deep purple gradient,"Deep purple for gradient ends, premium/AI contexts."
+nvidia,Decorative,Purple 100,#f9d4ff,,,light purple surface,Light purple surface tint.
+nvidia,Decorative,Fuchsia 700,#8c1c55,,,rich accent special,Rich accent for special promotions or featured content.
+nvidia,Neutral Scale,Gray 300,#a7a7a7,,,muted text disabled,"Muted text, disabled labels."
+nvidia,Neutral Scale,Gray 400,#898989,,,secondary text metadata,"Secondary text, metadata."
+nvidia,Neutral Scale,Gray 500,#757575,,,tertiary text placeholders,"Tertiary text, placeholders, footers."
+nvidia,Neutral Scale,Gray Border,#5e5e5e,,,subtle borders divider,"Subtle borders, divider lines."
+nvidia,Neutral Scale,Near Black,#1a1a1a,,,dark surfaces card,"Dark surfaces, card backgrounds on black pages."
+nvidia,Interactive States,Link Default (dark bg),#ffffff,,,white links dark,White links on dark backgrounds.
+nvidia,Interactive States,Link Default (light bg),#000000,,,black links green,Black links with green underline on light backgrounds.
+nvidia,Interactive States,Link Hover,#3860be,,,blue shift hover,Blue shift on hover across all link variants.
+nvidia,Interactive States,Button Hover,#1eaedb,,,teal highlight button,Teal highlight for button hover states.
+nvidia,Interactive States,Button Active,#007fff,,,bright blue active,Bright blue for active/pressed button states.
+nvidia,Interactive States,Focus Ring,#000000,,,black outline keyboard,Black outline for keyboard focus.
+nvidia,Shadows & Depth,Card Shadow,,,,subtle ambient shadow,Subtle ambient shadow for elevated cards.
+ollama,Primary,Pure Black,#000000,,,primary headlines primary,"Primary headlines, primary links, and the darkest text. The only ""color"" that demands attention."
+ollama,Primary,Near Black,#262626,,,button text light,"Button text on light surfaces, secondary headline weight."
+ollama,Primary,Darkest Surface,#090909,,,darkest possible surface,"The darkest possible surface — barely distinguishable from pure black, used for footer or dark containers."
+ollama,Surface & Background,Pure White,#ffffff,,,primary page background,"The primary page background — not off-white, not cream, pure white. Button surfaces for secondary actions."
+ollama,Surface & Background,Snow,#fafafa,,,subtlest possible surface,The subtlest possible surface distinction from white — used for section backgrounds and barely-elevated containers.
+ollama,Surface & Background,Light Gray,#e5e5e5,,,button backgrounds borders,"Button backgrounds, borders, and the primary containment color. The workhorse neutral."
+ollama,Neutrals & Text,Stone,#737373,,,secondary body text,"Secondary body text, footer links, and de-emphasized content. The primary ""muted"" tone."
+ollama,Neutrals & Text,Mid Gray,#525252,,,emphasized secondary text,"Emphasized secondary text, slightly darker than Stone."
+ollama,Neutrals & Text,Silver,#a3a3a3,,,tertiary text placeholders,"Tertiary text, placeholders, and deeply de-emphasized metadata."
+ollama,Neutrals & Text,Button Text Dark,#404040,,,specific white-surface button,Specific to white-surface button text.
+ollama,Semantic & Accent,Ring Blue,#3b82f6,,,only non-gray color,"The ONLY non-gray color in the entire system — Tailwind's default focus ring, used exclusively for keyboard accessibility. Never visible in normal interaction flow."
+ollama,Semantic & Accent,Border Light,#d4d4d4,,,slightly darker gray,A slightly darker gray for white-surface button borders.
+ollama,Gradient System,None.,,,,ollama uses absolutely,"Ollama uses absolutely no gradients. Visual separation comes from flat color blocks and single-pixel borders. This is a deliberate, almost philosophical design choice."
+opencode.ai,Primary,OpenCode Dark,#201d1d,,,primary background button,"Primary background, button fills, link text. A warm near-black with subtle reddish-brown warmth -- rgb(32, 29, 29)."
+opencode.ai,Primary,OpenCode Light,#fdfcfc,,,primary text dark,"Primary text on dark surfaces, button text. A barely-warm off-white that avoids clinical pure white."
+opencode.ai,Primary,Mid Gray,#9a9898,,,secondary text muted,"Secondary text, muted links. A neutral warm gray that bridges dark and light."
+opencode.ai,Secondary,Dark Surface,#302c2c,,,slightly lighter than,"Slightly lighter than primary dark, used for elevated surfaces and subtle differentiation."
+opencode.ai,Secondary,Border Gray,#646262,,,stronger borders outline,"Stronger borders, outline rings on interactive elements."
+opencode.ai,Secondary,Light Surface,#f1eeee,,,light mode surface,"Light mode surface, subtle background variation."
+opencode.ai,Accent,Accent Blue,#007aff,,,primary accent links,"Primary accent, links, interactive highlights. Apple system blue."
+opencode.ai,Accent,Accent Blue Hover,#0056b3,,,darker blue hover,Darker blue for hover states.
+opencode.ai,Accent,Accent Blue Active,#004085,,,deepest blue pressed,Deepest blue for pressed/active states.
+opencode.ai,Semantic,Danger Red,#ff3b30,,,error states destructive,"Error states, destructive actions. Apple system red."
+opencode.ai,Semantic,Danger Hover,#d70015,,,darker red hover,Darker red for hover on danger elements.
+opencode.ai,Semantic,Danger Active,#a50011,,,deepest red pressed,Deepest red for pressed danger states.
+opencode.ai,Semantic,Success Green,#30d158,,,success states positive,"Success states, positive feedback. Apple system green."
+opencode.ai,Semantic,Warning Orange,#ff9f0a,,,warning states caution,"Warning states, caution signals. Apple system orange."
+opencode.ai,Semantic,Warning Hover,#cc7f08,,,darker orange hover,Darker orange for hover on warning elements.
+opencode.ai,Semantic,Warning Active,#995f06,,,deepest orange pressed,Deepest orange for pressed warning states.
+opencode.ai,Text Scale,Text Muted,#6e6e73,,,muted labels disabled,"Muted labels, disabled text, placeholder content."
+opencode.ai,Text Scale,Text Secondary,#424245,,,secondary text light,"Secondary text on light backgrounds, captions."
+opencode.ai,Border,Border Warm,,,,primary border color,"Primary border color, warm transparent black with red tint."
+opencode.ai,Border,Border Tab,#9a9898,,,tab underline border,"Tab underline border, 2px solid bottom."
+opencode.ai,Border,Border Outline,#646262,,,px solid outline,1px solid outline border for containers.
+pinterest,Primary Brand,Pinterest Red,#e60023,,,primary cta brand,"Primary CTA, brand accent — bold, confident red"
+pinterest,Primary Brand,Green 700,#103c25,--base-color-green-700,,success nature accent,"`--base-color-green-700`, success/nature accent"
+pinterest,Primary Brand,Green 700 Hover,#0b2819,--base-color-hover-green-700,,pressed green,"`--base-color-hover-green-700`, pressed green"
+pinterest,Text,Plum Black,#211922,,,primary text warm,Primary text — warm near-black with plum undertone
+pinterest,Text,Black,#000000,,,secondary text button,"Secondary text, button text"
+pinterest,Text,Olive Gray,#62625b,,,secondary descriptions muted,"Secondary descriptions, muted text"
+pinterest,Text,Warm Silver,#91918c,--comp-button-color-text-transparent-disabled,,disabled text input,"`--comp-button-color-text-transparent-disabled`, disabled text, input borders"
+pinterest,Text,White,#ffffff,,,text dark colored,Text on dark/colored surfaces
+pinterest,Interactive,Focus Blue,#435ee5,--comp-button-color-border-focus-outer-transparent,,focus rings,"`--comp-button-color-border-focus-outer-transparent`, focus rings"
+pinterest,Interactive,Performance Purple,#6845ab,--sema-color-hover-icon-performance-plus,,performance features,"`--sema-color-hover-icon-performance-plus`, performance features"
+pinterest,Interactive,Recommendation Purple,#7e238b,--sema-color-hover-text-recommendation,,ai recommendation,"`--sema-color-hover-text-recommendation`, AI recommendation"
+pinterest,Interactive,Link Blue,#2b48d4,,,link text color,Link text color
+pinterest,Interactive,Facebook Blue,#0866ff,--facebook-background-color,,social login,"`--facebook-background-color`, social login"
+pinterest,Interactive,Pressed Blue,#617bff,--base-color-pressed-blue-200,,pressed state,"`--base-color-pressed-blue-200`, pressed state"
+pinterest,Surface & Border,Sand Gray,#e5e5e0,,,secondary button background,"Secondary button background — warm, craft-like"
+pinterest,Surface & Border,Warm Light,#e0e0d9,,,circular button backgrounds,"Circular button backgrounds, badges"
+pinterest,Surface & Border,Warm Wash,,--comp-badge-color-background-wash-light,,subtle warm badge,"`--comp-badge-color-background-wash-light`, subtle warm badge bg"
+pinterest,Surface & Border,Fog,#f6f6f3,,,light surface 50,Light surface (at 50% opacity)
+pinterest,Surface & Border,Border Disabled,#c8c8c1,--sema-color-border-disabled,,disabled borders,"`--sema-color-border-disabled`, disabled borders"
+pinterest,Surface & Border,Hover Gray,#bcbcb3,--base-color-hover-grayscale-150,,hover border,"`--base-color-hover-grayscale-150`, hover border"
+pinterest,Surface & Border,Dark Surface,#33332e,,,dark section backgrounds,Dark section backgrounds
+pinterest,Semantic,Error Red,#9e0a0a,,,checkbox form error,Checkbox/form error states
+posthog,Primary,Olive Ink,#4d4f46,,,primary text color,"Primary text color — a distinctive olive-gray that gives all text a warm, earthy tone"
+posthog,Primary,Deep Olive,#23251d,,,link text high-emphasis,Link text and high-emphasis headings — near-black with green undertone
+posthog,Primary,PostHog Orange,#f54e00,,,hidden brand accent,"Hidden brand accent — appears only on hover states, a vibrant orange that surprises"
+posthog,Secondary & Accent,Amber Gold,#f7a501,,,secondary hover accent,Secondary hover accent on dark buttons — warm gold that pairs with the orange
+posthog,Secondary & Accent,Gold Border,#b17816,,,special button borders,Special button borders — an amber-gold for featured CTAs
+posthog,Secondary & Accent,Focus Blue,#3b82f6,,,focus ring color,"Focus ring color (Tailwind default) — the only blue in the system, reserved for accessibility"
+posthog,Surface & Background,Warm Parchment,#fdfdf8,,,primary page background,Primary page background — warm near-white with yellow-green undertone
+posthog,Surface & Background,Sage Cream,#eeefe9,,,input backgrounds secondary,"Input backgrounds, secondary surfaces — light sage tint"
+posthog,Surface & Background,Light Sage,#e5e7e0,,,button backgrounds tertiary,"Button backgrounds, tertiary surfaces — muted sage-green"
+posthog,Surface & Background,Warm Tan,#d4c9b8,,,featured button backgrounds,Featured button backgrounds — warm tan/khaki for emphasis
+posthog,Surface & Background,Hover White,#f4f4f4,,,universal hover background,Universal hover background state
+posthog,Neutrals & Text,Olive Ink,#4d4f46,,,primary body ui,Primary body and UI text
+posthog,Neutrals & Text,Muted Olive,#65675e,,,secondary text button,"Secondary text, button labels on light backgrounds"
+posthog,Neutrals & Text,Sage Placeholder,#9ea096,,,placeholder text disabled,"Placeholder text, disabled states — warm sage-green"
+posthog,Neutrals & Text,Sage Border,#bfc1b7,,,primary border color,Primary border color — olive-tinted gray for all borders
+posthog,Neutrals & Text,Light Border,#b6b7af,,,secondary border toolbar,"Secondary border, toolbar borders — slightly darker sage"
+posthog,Semantic & Accent,PostHog Orange,#f54e00,,,hover text accent,Hover text accent — signals interactivity and brand personality
+posthog,Semantic & Accent,Amber Gold,#f7a501,,,dark button hover,Dark button hover accent — warmth signal
+posthog,Semantic & Accent,Focus Blue,#3b82f6,,,keyboard focus rings,Keyboard focus rings — accessibility-only color
+posthog,Semantic & Accent,Dark Text,#111827,,,high-contrast link text,High-contrast link text — near-black for important links
+raycast,Primary,Near-Black Blue,#07080a,,,primary page background,Primary page background — the foundational void with a subtle blue-cold undertone
+raycast,Primary,Pure White,#ffffff,,,primary heading text,"Primary heading text, high-emphasis elements"
+raycast,Primary,Raycast Red,#ff6363,,,brand accent hero,"Brand accent — hero stripes, danger states, critical highlights"
+raycast,Secondary & Accent,Raycast Blue,#55b3ff,,,interactive accent links,"Interactive accent — links, focus states, selected items"
+raycast,Secondary & Accent,Raycast Green,#5fc992,,,success states positive,"Success states, positive indicators"
+raycast,Secondary & Accent,Raycast Yellow,#ffbc33,,,warning accents highlights,"Warning accents, highlights"
+raycast,Secondary & Accent,Blue Transparent,,,,blue tint overlay,Blue tint overlay for interactive surfaces
+raycast,Secondary & Accent,Red Transparent,,,,red tint overlay,Red tint overlay for danger/error surfaces
+raycast,Surface & Background,Deep Background,#07080a,,,page canvas darkest,"Page canvas, the darkest surface"
+raycast,Surface & Background,Surface 100,#101111,,,elevated surface card,"Elevated surface, card backgrounds"
+raycast,Surface & Background,Key Start,#121212,,,keyboard key gradient,Keyboard key gradient start
+raycast,Surface & Background,Key End,#0d0d0d,,,keyboard key gradient,Keyboard key gradient end
+raycast,Surface & Background,Card Surface,#1b1c1e,,,badge backgrounds tag,"Badge backgrounds, tag fills, elevated containers"
+raycast,Surface & Background,Button Foreground,#18191a,,,dark surface button,Dark surface for button text on light backgrounds
+raycast,Neutrals & Text,Near White,#f9f9f9,,,primary body text,"Primary body text, high-emphasis content"
+raycast,Neutrals & Text,Light Gray,#cecece,,,secondary body text,"Secondary body text, descriptions"
+raycast,Neutrals & Text,Silver,#c0c0c0,,,tertiary text subdued,"Tertiary text, subdued labels"
+raycast,Neutrals & Text,Medium Gray,#9c9c9d,,,link default color,"Link default color, secondary navigation"
+raycast,Neutrals & Text,Dim Gray,#6a6b6c,,,disabled text low-emphasis,"Disabled text, low-emphasis labels"
+raycast,Neutrals & Text,Dark Gray,#434345,,,muted borders inactive,"Muted borders, inactive navigation links"
+raycast,Neutrals & Text,Border,#252829,,,standard border color,Standard border color for cards and dividers
+raycast,Neutrals & Text,Dark Border,#2f3031,,,separator lines table,"Separator lines, table borders"
+raycast,Semantic & Accent,Error Red,,,,error states destructive,"Error states, destructive actions"
+raycast,Semantic & Accent,Success Green,,,,success confirmations positive,"Success confirmations, positive states"
+raycast,Semantic & Accent,Warning Yellow,,,,warnings attention-needed states,"Warnings, attention-needed states"
+raycast,Semantic & Accent,Info Blue,,,,informational highlights links,"Informational highlights, links"
+raycast,Gradient System,Keyboard Key Gradient,#121212,,,linear gradient top,Linear gradient from `#121212` (top) to `#0d0d0d` (bottom) — simulates physical key depth
+raycast,Gradient System,Warm Glow,,,,radial spread subtle,"`rgba(215, 201, 175, 0.05)` radial spread — subtle warm ambient glow behind featured elements"
+renault,Primary,Renault Yellow,#efdf00,--CtaLink-background-color,,brand s signature,"The brand's signature Pantone — a vivid, saturated yellow used for super-primary CTAs and the highest-priority action buttons. Appears as `--CtaLink-background-color` on `.is-cta-super-primary` class. Carries the energy of the diamond logo"
+renault,Primary,Absolute Black,#000000,,,primary button background,"Primary button background, heading text on light surfaces, and the dominant dark section surface. The structural anchor of the entire interface"
+renault,Primary,Pure White,#ffffff,--rt-color-white,,primary surface editorial,"Primary surface for editorial content, inverted button backgrounds, hero text color, and the dominant light-mode canvas (--rt-color-white)"
+renault,Secondary & Accent,Soft Yellow,#f8eb4c,,,lighter warmer variant,"Lighter, warmer variant of Renault Yellow — used for hover/pressed states on yellow CTAs and secondary accent contexts"
+renault,Secondary & Accent,Renault Blue,#1883fd,,,link hover color,"Link hover color across all link variants — a bright, confident blue that signals interactivity without competing with the yellow brand accent"
+renault,Secondary & Accent,Warm Gray,#d9d9d6,,,subtle warm neutral,"Subtle warm neutral used for disabled states, inactive UI elements, and soft borders — carries a slight warmth that distinguishes it from cold grays"
+renault,Surface & Background,Pure White,#ffffff,,,page background light,"Page background, light editorial sections, navigation bar, and footer"
+renault,Surface & Background,Absolute Black,#000000,,,hero backgrounds promocard,"Hero backgrounds, PromoCard dark-mode sections (`is-alternative-mode`), and E-Tech showcase areas"
+renault,Surface & Background,Charcoal,#222222,--rt-color-dark,,secondary dark surface,Secondary dark surface for text-heavy dark sections and footer sub-regions (--rt-color-dark)
+renault,Surface & Background,Pale Silver,#f2f2f2,,,subtle alternate light,Subtle alternate light surface for section differentiation and card borders
+renault,Neutrals & Text,Absolute Black,#000000,,,primary heading body,Primary heading and body text on light surfaces — Renault uses true black rather than near-black
+renault,Neutrals & Text,Pure White,#ffffff,,,primary text dark,"Primary text on dark surfaces — hero headlines, dark-section headings, and inverted button labels"
+renault,Neutrals & Text,Warm Gray,#d9d9d6,,,tertiary text metadata,"Tertiary text, metadata, and subdued labels"
+renault,Neutrals & Text,Border Gray,#d1d1d1,,,input field borders,Input field borders and subtle separators
+renault,Semantic & Accent,Success Green,#8dc572,--rt-color-success,,positive status indicators,Positive status indicators and confirmation messages (--rt-color-success)
+renault,Semantic & Accent,Error Rose,#be6464,--rt-color-error,,form validation errors,Form validation errors and warning states (--rt-color-error)
+renault,Semantic & Accent,Warning Amber,#f0ad4e,--rt-color-warning,,cautionary alerts attention-requiring,Cautionary alerts and attention-requiring states (--rt-color-warning)
+renault,Semantic & Accent,Info Blue,#337ab7,--rt-color-info,,informational callouts neutral,Informational callouts and neutral status messaging (--rt-color-info)
+renault,Gradient System,Hero Aurora,,,,sweeping multi-color gradients,Sweeping multi-color gradients (magenta → violet → teal) applied to hero slide backgrounds — the site's most distinctive visual element. These are photographic/composited rather than CSS gradients
+renault,Gradient System,PromoCard Overlay,,,,applied card tops,"`linear-gradient(rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 40%)` — applied to card tops to ensure heading text legibility over photography"
+replicate,Primary,Replicate Dark,#202020,,,primary text color,The primary text color and dark surface — a near-black that's the anchor of all text and borders. Slightly warmer than pure #000.
+replicate,Primary,Replicate Red,#ea2804,,,core brand color,"The core brand color — a vivid, saturated orange-red used in the hero gradient, accent borders, and high-signal moments."
+replicate,Primary,Secondary Red,#dd4425,,,slightly warmer variant,A slightly warmer variant for button borders and link hover states.
+replicate,Secondary & Accent,Status Green,#2b9a66,,,badge pill background,"Badge/pill background for ""running"" or operational status indicators."
+replicate,Secondary & Accent,GitHub Dark,#24292e,,,blue-tinted dark used,A blue-tinted dark used for code block backgrounds and developer contexts.
+replicate,Surface & Background,Pure White,#ffffff,,,primary page body,The primary page body background.
+replicate,Surface & Background,Near White,#fcfcfc,,,button text dark,Button text on dark surfaces and the lightest content.
+replicate,Surface & Background,Hero Gradient,#ea2804,,,dramatic orange red,A dramatic orange → red → magenta → pink gradient for the hero section. Transitions from warm (#ea2804 family) through hot pink.
+replicate,Neutrals & Text,Medium Gray,#646464,,,secondary body text,Secondary body text and de-emphasized content.
+replicate,Neutrals & Text,Warm Gray,#4e4e4e,,,emphasized secondary text,Emphasized secondary text.
+replicate,Neutrals & Text,Mid Silver,#8d8d8d,,,tertiary text footnotes,"Tertiary text, footnotes."
+replicate,Neutrals & Text,Light Silver,#bbbbbb,,,dotted-underline link decoration,"Dotted-underline link decoration color, muted metadata."
+replicate,Neutrals & Text,Pure Black,#000000,,,maximum-emphasis borders occasional,Maximum-emphasis borders and occasional text.
+replicate,Gradient System,Hero Blaze,#ea2804,,,dramatic multi-stop gradient,A dramatic multi-stop gradient flowing through orange (`#ea2804`) → red → magenta → hot pink. This gradient occupies the full hero section and is the most visually dominant element on the page.
+replicate,Gradient System,Dark Sections,#202020,,,deep dark 202020,Deep dark (#202020) sections with white/near-white text provide contrast against the white body.
+resend,Primary,Void Black,#000000,--color-black-12,,page background defining,"Page background, the defining canvas color (95% opacity via `--color-black-12`)"
+resend,Primary,Near White,#f0f0f0,,,primary text button,"Primary text, button text, high-contrast elements"
+resend,Primary,Pure White,#ffffff,--color-white,,maximum emphasis text,"`--color-white`, maximum emphasis text, link highlights"
+resend,Accent Scale — Orange,Orange 4,#ff5900,--color-orange-4,,22 opacity subtle,"`--color-orange-4`, at 22% opacity — subtle warm glow"
+resend,Accent Scale — Orange,Orange 10,#ff801f,--color-orange-10,,primary orange accent,"`--color-orange-10`, primary orange accent — warm, energetic"
+resend,Accent Scale — Orange,Orange 11,#ffa057,--color-orange-11,,lighter orange secondary,"`--color-orange-11`, lighter orange for secondary use"
+resend,Accent Scale — Green,Green 3,#22ff99,--color-green-3,,12 opacity faint,"`--color-green-3`, at 12% opacity — faint emerald wash"
+resend,Accent Scale — Green,Green 4,#11ff99,--color-green-4,,18 opacity success,"`--color-green-4`, at 18% opacity — success indicator glow"
+resend,Accent Scale — Blue,Blue 4,#0075ff,--color-blue-4,,34 opacity medium,"`--color-blue-4`, at 34% opacity — medium blue accent"
+resend,Accent Scale — Blue,Blue 5,#0081fd,--color-blue-5,,42 opacity stronger,"`--color-blue-5`, at 42% opacity — stronger blue"
+resend,Accent Scale — Blue,Blue 10,#3b9eff,--color-blue-10,,bright blue links,"`--color-blue-10`, bright blue — links, interactive elements"
+resend,Accent Scale — Other,Yellow 9,#ffc53d,--color-yellow-9,,warm gold warnings,"`--color-yellow-9`, warm gold for warnings or highlights"
+resend,Accent Scale — Other,Red 5,#ff2047,--color-red-5,,34 opacity error,"`--color-red-5`, at 34% opacity — error states, destructive actions"
+resend,Neutral Scale,Silver,#a1a4a5,,,secondary text muted,"Secondary text, muted links, descriptions"
+resend,Neutral Scale,Dark Gray,#464a4d,,,tertiary text de-emphasized,"Tertiary text, de-emphasized content"
+resend,Neutral Scale,Mid Gray,#5c5c5c,,,hover states subtle,"Hover states, subtle emphasis"
+resend,Neutral Scale,Medium Gray,#494949,,,quaternary text,Quaternary text
+resend,Neutral Scale,Light Gray,#f8f8f8,,,light mode surface,Light mode surface (if applicable)
+resend,Neutral Scale,Border Gray,#eaeaea,,,light context borders,Light context borders
+resend,Neutral Scale,Edge Gray,#ececec,,,subtle borders light,Subtle borders on light surfaces
+resend,Neutral Scale,Mist Gray,#dedfdf,,,light dividers,Light dividers
+resend,Neutral Scale,Soft Gray,#e5e6e6,,,alternate light border,Alternate light border
+resend,Surface & Overlay,Frost Primary,#fcfdff,,,primary color token,"Primary color token (slight blue tint, 94% opacity)"
+resend,Surface & Overlay,White Hover,,,,button hover state,Button hover state on dark
+resend,Surface & Overlay,White 60%,,,,semi-transparent white muted,Semi-transparent white for muted text
+resend,Surface & Overlay,White 64%,,,,slightly brighter semi-transparent,Slightly brighter semi-transparent white
+resend,Borders & Shadows,Frost Border,,,,signature icy blue-tinted,The signature — icy blue-tinted borders at 19% opacity
+resend,Borders & Shadows,Frost Border Alt,,,,slightly lighter variant,Slightly lighter variant for list items
+resend,Borders & Shadows,Ring Shadow,,,,blue-tinted shadow-as-border,Blue-tinted shadow-as-border
+resend,Borders & Shadows,Focus Ring,,,,heavy black focus,Heavy black focus ring
+resend,Borders & Shadows,Subtle Shadow,,,,minimal card elevation,Minimal card elevation
+revolut,Primary,Revolut Dark,#191c1f,,,primary dark surface,"Primary dark surface, button background, near-black text"
+revolut,Primary,Pure White,#ffffff,--rui-color-action-label,,primary light surface,"`--rui-color-action-label`, primary light surface"
+revolut,Primary,Light Surface,#f4f4f4,,,secondary button background,"Secondary button background, subtle surface"
+revolut,Brand / Interactive,Revolut Blue,#494fdf,--rui-color-blue,,primary brand blue,"`--rui-color-blue`, primary brand blue"
+revolut,Brand / Interactive,Action Blue,#4f55f1,--rui-color-action-photo-header-text,,header accent,"`--rui-color-action-photo-header-text`, header accent"
+revolut,Brand / Interactive,Blue Text,#376cd5,--website-color-blue-text,,link blue,"`--website-color-blue-text`, link blue"
+revolut,Semantic,Danger Red,#e23b4a,--rui-color-danger,,error destructive,"`--rui-color-danger`, error/destructive"
+revolut,Semantic,Deep Pink,#e61e49,--rui-color-deep-pink,,critical accent,"`--rui-color-deep-pink`, critical accent"
+revolut,Semantic,Warning Orange,#ec7e00,--rui-color-warning,,warning states,"`--rui-color-warning`, warning states"
+revolut,Semantic,Yellow,#b09000,--rui-color-yellow,,attention,"`--rui-color-yellow`, attention"
+revolut,Semantic,Teal,#00a87e,--rui-color-teal,,success positive,"`--rui-color-teal`, success/positive"
+revolut,Semantic,Light Green,#428619,--rui-color-light-green,,secondary success,"`--rui-color-light-green`, secondary success"
+revolut,Semantic,Green Text,#006400,--website-color-green-text,,green text,"`--website-color-green-text`, green text"
+revolut,Semantic,Light Blue,#007bc2,--rui-color-light-blue,,informational,"`--rui-color-light-blue`, informational"
+revolut,Semantic,Brown,#936d62,--rui-color-brown,,warm neutral accent,"`--rui-color-brown`, warm neutral accent"
+revolut,Semantic,Red Text,#8b0000,--website-color-red-text,,dark red text,"`--website-color-red-text`, dark red text"
+revolut,Neutral Scale,Mid Slate,#505a63,,,secondary text,Secondary text
+revolut,Neutral Scale,Cool Gray,#8d969e,,,muted text tertiary,"Muted text, tertiary"
+revolut,Neutral Scale,Gray Tone,#c9c9cd,--rui-color-grey-tone-20,,borders dividers,"`--rui-color-grey-tone-20`, borders/dividers"
+runwayml,Primary,Runway Black,#000000,,,primary page background,The primary page background and maximum-emphasis text.
+runwayml,Primary,Deep Black,#030303,,,near-imperceptible variant layered,A near-imperceptible variant for layered dark surfaces.
+runwayml,Primary,Dark Surface,#1a1a1a,,,card backgrounds elevated,Card backgrounds and elevated dark containers.
+runwayml,Primary,Pure White,#ffffff,,,primary text dark,Primary text on dark surfaces and light-section backgrounds.
+runwayml,Surface & Background,Near White,#fefefe,,,lightest surface barely,The lightest surface — barely distinguishable from pure white.
+runwayml,Surface & Background,Cool Cloud,#e9ecf2,,,light section backgrounds,Light section backgrounds with a cool blue-gray tint.
+runwayml,Surface & Background,Border Dark,#27272a,,,single dark-mode border,The single dark-mode border color — barely visible containment.
+runwayml,Neutrals & Text,Charcoal,#404040,,,primary body text,Primary body text on light surfaces and secondary text.
+runwayml,Neutrals & Text,Near Charcoal,#3f3f3f,,,slightly lighter variant,Slightly lighter variant for dark-section secondary text.
+runwayml,Neutrals & Text,Cool Slate,#767d88,,,secondary body text,Secondary body text — a distinctly blue-gray cool neutral.
+runwayml,Neutrals & Text,Mid Slate,#7d848e,,,tertiary text metadata,"Tertiary text, metadata descriptions."
+runwayml,Neutrals & Text,Muted Gray,#a7a7a7,,,de-emphasized content timestamps,"De-emphasized content, timestamps."
+runwayml,Neutrals & Text,Cool Silver,#c9ccd1,,,light borders dividers,Light borders and dividers.
+runwayml,Neutrals & Text,Light Silver,#d0d4d4,,,lightest border divider,The lightest border/divider variant.
+runwayml,Neutrals & Text,Tailwind Gray,#6b7280,,,standard tailwind neutral,Standard Tailwind neutral for supplementary text.
+runwayml,Neutrals & Text,Dark Link,#0c0c0c,,,darkest link text,Darkest link text — nearly black.
+runwayml,Neutrals & Text,Footer Gray,#999999,,,footer links deeply,Footer links and deeply muted content.
+runwayml,Gradient System,None in the interface.,,,,visual richness comes,Visual richness comes entirely from photographic content — AI-generated and enhanced imagery provides all the color and gradient the design needs. The interface itself is intentionally colorless.
+sanity,Primary Brand,Sanity Black,#0b0b0b,,,primary canvas dominant,The primary canvas and dominant surface color. Not pure black but close enough to feel absolute. The foundation of the entire visual identity.
+sanity,Primary Brand,Pure Black,#000000,,,used maximum-contrast moments,"Used for maximum-contrast moments, deep overlays, and certain border accents."
+sanity,Primary Brand,Sanity Red,#f36458,,,primary cta brand,"The primary CTA and brand accent -- a warm coral-red that serves as the main call-to-action color. Used for ""Get Started"" buttons and primary conversion points."
+sanity,Accent & Interactive,Electric Blue,#0052ef,--color-blue-700,,universal hover active,"The universal hover/active state color across the entire system. Buttons, links, and interactive elements all shift to this blue on hover. Also used as `--color-blue-700` for focus rings and active states."
+sanity,Accent & Interactive,Light Blue,#55beff,,,secondary blue variants,"Secondary blue variants used for accent backgrounds, badges, and dimmed blue surfaces."
+sanity,Accent & Interactive,Neon Green,#19d600,--color-fg-accent-green,,vivid wide-gamut green,"A vivid, wide-gamut green used as `--color-fg-accent-green` for success states and premium feature highlights. Falls back to `#19d600` in sRGB."
+sanity,Accent & Interactive,Accent Magenta,,,,vivid wide-gamut magenta,A vivid wide-gamut magenta for specialized accent moments.
+sanity,Surface & Background,Near Black,#0b0b0b,,,default page background,Default page background and primary surface.
+sanity,Surface & Background,Dark Gray,#212121,,,elevated surface color,"Elevated surface color for cards, secondary containers, input backgrounds, and subtle layering above the base canvas."
+sanity,Surface & Background,Medium Dark,#353535,,,tertiary surface border,Tertiary surface and border color for creating depth between dark layers.
+sanity,Surface & Background,Pure White,#ffffff,,,used inverted sections,"Used for inverted sections, light-on-dark text, and specific button surfaces."
+sanity,Surface & Background,Light Gray,#ededed,,,light surface inverted,Light surface for inverted/light sections and subtle background tints.
+sanity,Neutrals & Text,White,#ffffff,,,primary text color,"Primary text color on dark surfaces, maximum legibility."
+sanity,Neutrals & Text,Silver,#b9b9b9,,,secondary text body,"Secondary text, body copy on dark surfaces, muted descriptions, and placeholder text."
+sanity,Neutrals & Text,Medium Gray,#797979,,,tertiary text metadata,"Tertiary text, metadata, timestamps, and de-emphasized content."
+sanity,Neutrals & Text,Charcoal,#212121,,,text light inverted,Text on light/inverted surfaces.
+sanity,Neutrals & Text,Near Black Text,#0b0b0b,,,primary text white,Primary text on white/light button surfaces.
+sanity,Semantic,Error Red,#dd0000,,,destructive actions validation,"Destructive actions, validation errors, and critical warnings -- a pure, high-saturation red."
+sanity,Semantic,GPC Green,#37cd84,,,privacy compliance indicator,Privacy/compliance indicator green.
+sanity,Semantic,Focus Ring Blue,#0052ef,,,focus ring color,"Focus ring color for accessibility, matching the interactive blue."
+sanity,Border System,Dark Border,#0b0b0b,,,primary border dark,"Primary border on dark containers -- barely visible, maintaining minimal containment."
+sanity,Border System,Subtle Border,#212121,,,standard border inputs,"Standard border for inputs, textareas, and card edges on dark surfaces."
+sanity,Border System,Medium Border,#353535,,,more visible borders,More visible borders for emphasized containment and dividers.
+sanity,Border System,Light Border,#ffffff,,,border inverted light,Border on inverted/light elements or buttons needing contrast separation.
+sanity,Border System,Orange Border,,,,special accent border,Special accent border for highlighted/featured elements.
+sentry,Primary Brand,Deep Purple,#1f1633,,,primary background defining,"Primary background, the defining color of the brand"
+sentry,Primary Brand,Darker Purple,#150f23,,,deeper sections footer,"Deeper sections, footer, secondary backgrounds"
+sentry,Primary Brand,Border Purple,#362d59,,,borders dividers subtle,"Borders, dividers, subtle structural lines"
+sentry,Accent Colors,Sentry Purple,#6a5fc1,,,primary interactive color,"Primary interactive color — links, hover states, focus rings"
+sentry,Accent Colors,Muted Purple,#79628c,,,button backgrounds secondary,"Button backgrounds, secondary interactive elements"
+sentry,Accent Colors,Deep Violet,#422082,,,select dropdowns active,"Select dropdowns, active states, high-emphasis surfaces"
+sentry,Accent Colors,Lime Green,#c2ef4e,,,high-visibility accent special,"High-visibility accent, special links, badge highlights"
+sentry,Accent Colors,Coral,#ffb287,,,focus state backgrounds,"Focus state backgrounds, warm accent"
+sentry,Accent Colors,Pink,#fa7faa,,,focus outlines decorative,"Focus outlines, decorative accents"
+sentry,Text Colors,Pure White,#ffffff,,,primary text dark,Primary text on dark backgrounds
+sentry,Text Colors,Light Gray,#e5e7eb,,,secondary text muted,"Secondary text, muted content"
+sentry,Text Colors,Code Yellow,#dcdcaa,,,syntax highlighting code,"Syntax highlighting, code tokens"
+sentry,Surface & Overlay,Glass White,,,,frosted glass button,Frosted glass button backgrounds
+sentry,Surface & Overlay,Glass Dark,,,,hover overlay glass,Hover overlay on glass elements
+sentry,Surface & Overlay,Input White,#ffffff,,,form input backgrounds,Form input backgrounds (light context)
+sentry,Surface & Overlay,Input Border,#cfcfdb,,,form field borders,Form field borders
+sentry,Shadows,Ambient Glow,,,,deep purple ambient,Deep purple ambient shadow
+sentry,Shadows,Button Hover,,,,elevated hover state,Elevated hover state
+sentry,Shadows,Card Shadow,,,,standard card elevation,Standard card elevation
+sentry,Shadows,Inset Button,,,,tactile pressed effect,Tactile pressed effect
+spacex,Primary,Space Black,#000000,,,page background void,"Page background, the void of space — at 50% opacity for overlay gradient"
+spacex,Primary,Spectral White,#f0f0fa,,,text color pure,"Text color — not pure white, a slight blue-violet tint that mimics starlight"
+spacex,Interactive,Ghost Surface,,,,button background nearly,"Button background — nearly invisible, 10% opacity"
+spacex,Interactive,Ghost Border,,,,button border spectral,"Button border — spectral, 35% opacity"
+spacex,Interactive,Hover White,,--white-100,,link hover state,Link hover state — full spectral white
+spacex,Gradient,Dark Overlay,,,,gradient overlay photographs,Gradient overlay on photographs to ensure text legibility
+spotify,Primary Brand,Spotify Green,#1ed760,,,primary brand accent,"Primary brand accent — play buttons, active states, CTAs"
+spotify,Primary Brand,Near Black,#121212,,,deepest background surface,Deepest background surface
+spotify,Primary Brand,Dark Surface,#181818,,,cards containers elevated,"Cards, containers, elevated surfaces"
+spotify,Primary Brand,Mid Dark,#1f1f1f,,,button backgrounds interactive,"Button backgrounds, interactive surfaces"
+spotify,Text,White,#ffffff,--text-base,,primary text,"`--text-base`, primary text"
+spotify,Text,Silver,#b3b3b3,,,secondary text muted,"Secondary text, muted labels, inactive nav"
+spotify,Text,Near White,#cbcbcb,,,slightly brighter secondary,Slightly brighter secondary text
+spotify,Text,Light,#fdfdfd,,,near-pure white maximum,Near-pure white for maximum emphasis
+spotify,Semantic,Negative Red,#f3727f,--text-negative,,error states,"`--text-negative`, error states"
+spotify,Semantic,Warning Orange,#ffa42b,--text-warning,,warning states,"`--text-warning`, warning states"
+spotify,Semantic,Announcement Blue,#539df5,--text-announcement,,info states,"`--text-announcement`, info states"
+spotify,Surface & Border,Dark Card,#252525,,,elevated card surface,Elevated card surface
+spotify,Surface & Border,Mid Card,#272727,,,alternate card surface,Alternate card surface
+spotify,Surface & Border,Border Gray,#4d4d4d,,,button borders dark,Button borders on dark
+spotify,Surface & Border,Light Border,#7c7c7c,,,outlined button borders,"Outlined button borders, muted links"
+spotify,Surface & Border,Separator,#b3b3b3,,,divider lines,Divider lines
+spotify,Surface & Border,Light Surface,#eeeeee,,,light-mode buttons rare,Light-mode buttons (rare)
+spotify,Surface & Border,Spotify Green Border,#1db954,,,green accent border,Green accent border variant
+spotify,Shadows,Heavy,,,,dialogs menus elevated,"Dialogs, menus, elevated panels"
+spotify,Shadows,Medium,,,,cards dropdowns,"Cards, dropdowns"
+spotify,Shadows,Inset Border,,,,input border-shadow combo,Input border-shadow combo
+stripe,Primary,Stripe Purple,#533afd,,,primary brand color,"Primary brand color, CTA backgrounds, link text, interactive highlights. A saturated blue-violet that anchors the entire system."
+stripe,Primary,Deep Navy,#061b31,--hds-color-heading-solid,,primary heading color,"`--hds-color-heading-solid`. Primary heading color. Not black, not gray -- a very dark blue that adds warmth and depth to text."
+stripe,Primary,Pure White,#ffffff,,,page background card,"Page background, card surfaces, button text on dark backgrounds."
+stripe,Brand & Dark,Brand Dark,#1c1e54,--hds-color-util-brand-900,,deep indigo dark,"`--hds-color-util-brand-900`. Deep indigo for dark sections, footer backgrounds, and immersive brand moments."
+stripe,Brand & Dark,Dark Navy,#0d253d,--hds-color-core-neutral-975,,darkest neutral --,`--hds-color-core-neutral-975`. The darkest neutral -- almost-black with a blue undertone for maximum depth without harshness.
+stripe,Accent Colors,Ruby,#ea2261,--hds-color-accentColorMode-ruby-icon-solid,,warm red-pink icons,"`--hds-color-accentColorMode-ruby-icon-solid`. Warm red-pink for icons, alerts, and accent elements."
+stripe,Accent Colors,Magenta,#f96bee,--hds-color-accentColorMode-magenta-icon-gradientMiddle,,vivid pink-purple gradients,`--hds-color-accentColorMode-magenta-icon-gradientMiddle`. Vivid pink-purple for gradients and decorative highlights.
+stripe,Accent Colors,Magenta Light,#ffd7ef,--hds-color-util-accent-magenta-100,,tinted surface magenta-themed,`--hds-color-util-accent-magenta-100`. Tinted surface for magenta-themed cards and badges.
+stripe,Interactive,Primary Purple,#533afd,,,primary link color,"Primary link color, active states, selected elements."
+stripe,Interactive,Purple Hover,#4434d4,,,darker purple hover,Darker purple for hover states on primary elements.
+stripe,Interactive,Purple Deep,#2e2b8c,--hds-color-button-ui-iconHover,,dark purple icon,`--hds-color-button-ui-iconHover`. Dark purple for icon hover states.
+stripe,Interactive,Purple Light,#b9b9f9,--hds-color-action-bg-subduedHover,,soft lavender subdued,`--hds-color-action-bg-subduedHover`. Soft lavender for subdued hover backgrounds.
+stripe,Interactive,Purple Mid,#665efd,--hds-color-input-selector-text-range,,range selector input,`--hds-color-input-selector-text-range`. Range selector and input highlight color.
+stripe,Neutral Scale,Heading,#061b31,,,primary headings nav,"Primary headings, nav text, strong labels."
+stripe,Neutral Scale,Label,#273951,--hds-color-input-text-label,,form labels secondary,"`--hds-color-input-text-label`. Form labels, secondary headings."
+stripe,Neutral Scale,Body,#64748d,,,secondary text descriptions,"Secondary text, descriptions, captions."
+stripe,Neutral Scale,Success Green,#15be53,,,status badges success,"Status badges, success indicators (with 0.2-0.4 alpha for backgrounds/borders)."
+stripe,Neutral Scale,Success Text,#108c3d,,,success badge text,Success badge text color.
+stripe,Neutral Scale,Lemon,#9b6829,--hds-color-core-lemon-500,,warning highlight accent,`--hds-color-core-lemon-500`. Warning and highlight accent.
+stripe,Surface & Borders,Border Default,#e5edf5,,,standard border color,"Standard border color for cards, dividers, and containers."
+stripe,Surface & Borders,Border Purple,#b9b9f9,,,active selected state,Active/selected state borders on buttons and inputs.
+stripe,Surface & Borders,Border Soft Purple,#d6d9fc,,,subtle purple-tinted borders,Subtle purple-tinted borders for secondary elements.
+stripe,Surface & Borders,Border Magenta,#ffd7ef,,,pink-tinted borders magenta-themed,Pink-tinted borders for magenta-themed elements.
+stripe,Surface & Borders,Border Dashed,#362baa,,,dashed borders drop,Dashed borders for drop zones and placeholder elements.
+stripe,Shadow Colors,Shadow Blue,,,,signature -- blue-tinted,The signature -- blue-tinted primary shadow color.
+stripe,Shadow Colors,Shadow Dark Blue,,,,deeper blue shadow,Deeper blue shadow for elevated elements.
+stripe,Shadow Colors,Shadow Black,,,,secondary shadow layer,Secondary shadow layer for depth reinforcement.
+stripe,Shadow Colors,Shadow Ambient,,,,soft ambient shadow,Soft ambient shadow for subtle elevation.
+stripe,Shadow Colors,Shadow Soft,,,,minimal ambient shadow,Minimal ambient shadow for light lift.
+supabase,Brand,Supabase Green,#3ecf8e,,,primary brand color,"Primary brand color, logo, accent borders"
+supabase,Brand,Green Link,#00c573,,,interactive green links,Interactive green for links and actions
+supabase,Brand,Green Border,,,,subtle green border,Subtle green border accent
+supabase,Neutral Scale (Dark Mode),Near Black,#0f0f0f,,,primary button background,"Primary button background, deepest surface"
+supabase,Neutral Scale (Dark Mode),Dark,#171717,,,page background primary,"Page background, primary canvas"
+supabase,Neutral Scale (Dark Mode),Dark Border,#242424,,,horizontal rule section,"Horizontal rule, section dividers"
+supabase,Neutral Scale (Dark Mode),Border Dark,#2e2e2e,,,card borders tab,"Card borders, tab borders"
+supabase,Neutral Scale (Dark Mode),Mid Border,#363636,,,button borders dividers,"Button borders, dividers"
+supabase,Neutral Scale (Dark Mode),Border Light,#393939,,,secondary borders,Secondary borders
+supabase,Neutral Scale (Dark Mode),Charcoal,#434343,,,tertiary borders dark,"Tertiary borders, dark accents"
+supabase,Neutral Scale (Dark Mode),Dark Gray,#4d4d4d,,,heavy secondary text,Heavy secondary text
+supabase,Neutral Scale (Dark Mode),Mid Gray,#898989,,,muted text link,"Muted text, link color"
+supabase,Neutral Scale (Dark Mode),Light Gray,#b4b4b4,,,secondary link text,Secondary link text
+supabase,Neutral Scale (Dark Mode),Near White,#efefef,,,light border subtle,"Light border, subtle surface"
+supabase,Neutral Scale (Dark Mode),Off White,#fafafa,,,primary text button,"Primary text, button text"
+supabase,Radix Color Tokens (HSL-based),Slate Scale,,--colors-slate5,,through neutral progression,`--colors-slate5` through `--colors-slateA12` — neutral progression
+supabase,Radix Color Tokens (HSL-based),Purple,,--colors-purple4,,accent spectrum,"`--colors-purple4`, `--colors-purple5`, `--colors-purpleA7` — accent spectrum"
+supabase,Radix Color Tokens (HSL-based),Violet,,--colors-violet10,,vibrant accent,"`--colors-violet10` (`hsl(251, 63.2%, 63.2%)`) — vibrant accent"
+supabase,Radix Color Tokens (HSL-based),Crimson,,--colors-crimson4,,warm accent alert,"`--colors-crimson4`, `--colors-crimsonA9` — warm accent / alert"
+supabase,Radix Color Tokens (HSL-based),Indigo,,--colors-indigoA2,,subtle blue wash,`--colors-indigoA2` — subtle blue wash
+supabase,Radix Color Tokens (HSL-based),Yellow,,--colors-yellowA7,,attention warning,`--colors-yellowA7` — attention/warning
+supabase,Radix Color Tokens (HSL-based),Tomato,,--colors-tomatoA4,,error accent,`--colors-tomatoA4` — error accent
+supabase,Radix Color Tokens (HSL-based),Orange,,--colors-orange6,,warm accent,`--colors-orange6` — warm accent
+supabase,Surface & Overlay,Glass Dark,,,,translucent dark overlay,Translucent dark overlay
+supabase,Surface & Overlay,Slate Alpha,,,,ultra-subtle blue wash,Ultra-subtle blue wash
+supabase,Surface & Overlay,Fixed Scale Alpha,,,,light frost overlay,Light frost overlay
+superhuman,Primary,Mysteria Purple,#1b1938,,,hero gradient background,"Hero gradient background, deep purple that straddles blue-purple — the darkest expression of the brand"
+superhuman,Primary,Lavender Glow,#cbb7fb,,,primary accent highlight,"Primary accent and highlight color — soft purple used for emphasis, decorative elements, and interactive highlights"
+superhuman,Primary,Charcoal Ink,#292827,,,primary text heading,Primary text and heading color on light surfaces — warm near-black with faint brown undertone
+superhuman,Secondary & Accent,Amethyst Link,#714cb6,,,underlined link text,Underlined link text — mid-range purple that connects to the brand palette while signaling interactivity
+superhuman,Secondary & Accent,Translucent White,,,,hero overlay text,Hero overlay text — near-white at 95% opacity for depth layering on dark surfaces
+superhuman,Secondary & Accent,Misted White,,,,secondary text dark,Secondary text on dark surfaces — 80% opacity white for hierarchy on the hero gradient
+superhuman,Surface & Background,Pure White,#ffffff,,,primary page background,Primary page background — the dominant canvas color for all content sections
+superhuman,Surface & Background,Warm Cream,#e9e5dd,,,button background warm,"Button background — a warm, neutral cream that avoids the coldness of pure gray"
+superhuman,Surface & Background,Parchment Border,#dcd7d3,,,card divider borders,Card and divider borders — warm light gray with slight pink undertone
+superhuman,Neutrals & Text,Charcoal Ink,#292827,,,primary heading body,Primary heading and body text on white surfaces
+superhuman,Neutrals & Text,Amethyst Link,#714cb6,,,in-content links underline,In-content links with underline decoration
+superhuman,Neutrals & Text,Translucent White 95%,,,,primary text dark,Primary text on dark/purple surfaces
+superhuman,Neutrals & Text,Translucent White 80%,,,,secondary text dark,Secondary text on dark/purple surfaces
+superhuman,Gradient System,Hero Gradient,#1b1938,,,deep purple gradient,"Deep purple gradient starting from `#1b1938`, transitioning through purple-to-twilight tones across the hero section — the most dramatic visual element on the entire site"
+superhuman,Gradient System,Content Transition,,,,gradient dissolves white,"The gradient dissolves into the white content area, creating a cinematic curtain-lift effect as the user scrolls"
+tesla,Primary,Electric Blue,#3e6ae1,,,primary cta button,"Primary CTA button background — a confident, mid-saturation blue (rgb 62, 106, 225) that stands alone as the only chromatic color in the entire interface. Used exclusively for ""Order Now"" and other primary action buttons"
+tesla,Primary,Pure White,#ffffff,,,dominant background color,"Dominant background color for all surfaces, panels, navigation, and secondary button fills — the canvas that lets photography breathe"
+tesla,Secondary & Accent,Promo Blue,#3e6ae1,,,blue also serves,"Blue also serves for promotional text (""0% APR Available"") displayed over hero imagery in the same hue as the CTA — creating a visual link between incentive messaging and action"
+tesla,Surface & Background,White Canvas,#ffffff,,,page background navigation,"Page background, navigation panel, dropdown menus, and all surface containers"
+tesla,Surface & Background,Light Ash,#f4f4f4,,,subtle alternate surface,"Subtle alternate surface for section differentiation — barely perceptible shift from pure white (rgb 244, 244, 244)"
+tesla,Surface & Background,Carbon Dark,#171a20,,,dark surface color,"Dark surface color for hero text overlays and potential dark-mode contexts (rgb 23, 26, 32) — a warm near-black with a blue undertone"
+tesla,Surface & Background,Frosted Glass,,,,semi-transparent white navigation,Semi-transparent white for navigation backdrop-filter effects on scroll
+tesla,Neutrals & Text,Carbon Dark,#171a20,,,primary heading navigation,"Primary heading and navigation text — the darkest text value (rgb 23, 26, 32), used for model names, nav labels, and hero titles on light backgrounds"
+tesla,Neutrals & Text,Graphite,#393c41,,,body text secondary,"Body text and secondary content (rgb 57, 60, 65) — the default paragraph color, slightly warmer than pure gray"
+tesla,Neutrals & Text,Pewter,#5c5e62,,,tertiary text sub-links,"Tertiary text for sub-links, secondary navigation links like ""Learn"" and ""Order"" (rgb 92, 94, 98)"
+tesla,Neutrals & Text,Silver Fog,#8e8e8e,,,placeholder text input,"Placeholder text in input fields and disabled states (rgb 142, 142, 142)"
+tesla,Neutrals & Text,Cloud Gray,#eeeeee,,,light borders divider,"Light borders and divider lines (rgb 238, 238, 238)"
+tesla,Neutrals & Text,Pale Silver,#d0d1d2,,,subtle ui borders,"Subtle UI borders and delineation (rgb 208, 209, 210)"
+together.ai,Primary,Brand Magenta,#ef2cc1,,,primary brand accent,The primary brand accent — a vivid pink-magenta used in gradient illustrations and the highest-signal brand moments. Never used as UI chrome.
+together.ai,Primary,Brand Orange,#fc4c02,,,secondary brand accent,The secondary brand accent — a vivid orange for gradient endpoints and warm accent moments.
+together.ai,Primary,Dark Blue,#010120,,,primary dark surface,"The primary dark surface — a deep midnight blue-black used for research sections, footer, and dark containers. Not gray, not black — distinctly blue."
+together.ai,Secondary & Accent,Soft Lavender,#bdbbff,,,gentle blue-violet used,"A gentle blue-violet used for subtle accents, secondary indicators, and soft UI highlights."
+together.ai,Secondary & Accent,Black 40,#00000066,,,semi-transparent black de-emphasized,Semi-transparent black for de-emphasized overlays and secondary text.
+together.ai,Surface & Background,Pure White,#ffffff,,,primary light-section page,The primary light-section page background.
+together.ai,Surface & Background,Dark Blue,#010120,,,dark-section backgrounds research,"Dark-section backgrounds — research, footer, technical content."
+together.ai,Surface & Background,Glass Light,,,,frosted glass button,Frosted glass button backgrounds on dark sections.
+together.ai,Surface & Background,Glass Dark,,,,subtle tinted surfaces,Subtle tinted surfaces on light sections.
+together.ai,Neutrals & Text,Pure Black,#000000,,,primary text light,Primary text on light surfaces.
+together.ai,Neutrals & Text,Pure White,#ffffff,,,primary text dark,Primary text on dark surfaces.
+together.ai,Neutrals & Text,Black 8%,,,,borders subtle containment,Borders and subtle containment on light surfaces.
+together.ai,Neutrals & Text,White 12%,,,,borders containment dark,Borders and containment on dark surfaces.
+together.ai,Gradient System,Pastel Cloud Gradient,,,,soft pink lavender,"Soft pink → lavender → soft blue gradients in hero illustrations. These appear in abstract, painterly forms — clouds, feathers, flowing shapes — that create visual warmth without literal meaning."
+together.ai,Gradient System,Hero Gradient,,,,hero background uses,"The hero background uses soft pastel tints layered over white, creating a dawn-like atmospheric effect."
+uber,Primary,Uber Black,#000000,,,defining brand color,"The defining brand color -- used for primary buttons, headlines, navigation text, and the footer. Not ""near-black"" or ""off-black,"" but true, uncompromising black."
+uber,Primary,Pure White,#ffffff,,,primary surface color,"The primary surface color and inverse text. Used for page backgrounds, card surfaces, and text on black elements."
+uber,Interactive & Button States,Hover Gray,#e2e2e2,,,white button hover,"White button hover state -- a clean, cool light gray that provides clear feedback without warmth."
+uber,Interactive & Button States,Hover Light,#f3f3f3,,,subtle hover elevated,Subtle hover for elevated white buttons -- barely-there gray for gentle interaction feedback.
+uber,Interactive & Button States,Chip Gray,#efefef,,,background secondary filter,"Background for secondary/filter buttons and navigation chips -- a neutral, ultra-light gray."
+uber,Text & Content,Body Gray,#4b4b4b,,,secondary text footer,Secondary text and footer links -- a true mid-gray with no warm or cool bias.
+uber,Text & Content,Muted Gray,#afafaf,,,tertiary text de-emphasized,"Tertiary text, de-emphasized footer links, and placeholder content."
+uber,Borders & Separation,Border Black,#000000,,,thin 1px borders,Thin 1px borders for structural containment -- used sparingly on dividers and form containers.
+uber,Shadows & Depth,Shadow Light,,,,standard card elevation,Standard card elevation -- a featherweight lift for content cards.
+uber,Shadows & Depth,Shadow Medium,,,,slightly stronger elevation,Slightly stronger elevation for floating action buttons and overlays.
+uber,Shadows & Depth,Button Press,,,,inset shadow active,Inset shadow for active/pressed states on secondary buttons.
+uber,Link States,Default Link Blue,#0000ee,,,standard browser blue,Standard browser blue for text links with underline -- used in body content.
+uber,Link States,Link White,#ffffff,,,links dark surfaces,Links on dark surfaces -- used in footer and dark sections.
+uber,Link States,Link Black,#000000,,,links light surfaces,Links on light surfaces with underline decoration.
+vercel,Primary,Vercel Black,#171717,,,primary text headings,"Primary text, headings, dark surface backgrounds. Not pure black — the slight warmth prevents harshness."
+vercel,Primary,Pure White,#ffffff,,,page background card,"Page background, card surfaces, button text on dark."
+vercel,Primary,True Black,#000000,--geist-console-text-color-default,,secondary use used,"Secondary use, `--geist-console-text-color-default`, used in specific console/code contexts."
+vercel,Workflow Accent Colors,Ship Red,#ff5b4f,--ship-text,,ship production workflow,"`--ship-text`, the ""ship to production"" workflow step — warm, urgent coral-red."
+vercel,Workflow Accent Colors,Preview Pink,#de1d8d,--preview-text,,preview deployment workflow,"`--preview-text`, the preview deployment workflow — vivid magenta-pink."
+vercel,Workflow Accent Colors,Develop Blue,#0a72ef,--develop-text,,development workflow bright,"`--develop-text`, the development workflow — bright, focused blue."
+vercel,Console / Code Colors,Console Blue,#0070f3,--geist-console-text-color-blue,,syntax highlighting blue,"`--geist-console-text-color-blue`, syntax highlighting blue."
+vercel,Console / Code Colors,Console Purple,#7928ca,--geist-console-text-color-purple,,syntax highlighting purple,"`--geist-console-text-color-purple`, syntax highlighting purple."
+vercel,Console / Code Colors,Console Pink,#eb367f,--geist-console-text-color-pink,,syntax highlighting pink,"`--geist-console-text-color-pink`, syntax highlighting pink."
+vercel,Interactive,Link Blue,#0072f5,,,primary link color,Primary link color with underline decoration.
+vercel,Interactive,Focus Blue,,--ds-focus-color,,focus ring interactive,"`--ds-focus-color`, focus ring on interactive elements."
+vercel,Interactive,Ring Blue,,--tw-ring-color,,tailwind ring utility,"`--tw-ring-color`, Tailwind ring utility."
+vercel,Neutral Scale,Gray 900,#171717,,,primary text headings,"Primary text, headings, nav text."
+vercel,Neutral Scale,Gray 600,#4d4d4d,,,secondary text description,"Secondary text, description copy."
+vercel,Neutral Scale,Gray 500,#666666,,,tertiary text muted,"Tertiary text, muted links."
+vercel,Neutral Scale,Gray 400,#808080,,,placeholder text disabled,"Placeholder text, disabled states."
+vercel,Neutral Scale,Gray 100,#ebebeb,,,borders card outlines,"Borders, card outlines, dividers."
+vercel,Neutral Scale,Gray 50,#fafafa,,,subtle surface tint,"Subtle surface tint, inner shadow highlight."
+vercel,Surface & Overlay,Overlay Backdrop,,--ds-overlay-backdrop-color,,modal dialog backdrop,"`--ds-overlay-backdrop-color`, modal/dialog backdrop."
+vercel,Surface & Overlay,Selection Text,,--geist-selection-text-color,,text selection highlight,"`--geist-selection-text-color`, text selection highlight."
+vercel,Surface & Overlay,Badge Blue Bg,#ebf5ff,,,pill badge background,"Pill badge background, tinted blue surface."
+vercel,Surface & Overlay,Badge Blue Text,#0068d6,,,pill badge text,"Pill badge text, darker blue for readability."
+vercel,Shadows & Depth,Border Shadow,,,,signature replaces traditional,The signature — replaces traditional borders.
+vercel,Shadows & Depth,Subtle Elevation,,,,minimal lift cards,Minimal lift for cards.
+vercel,Shadows & Depth,Card Stack,#fafafa,,,full multi-layer card,Full multi-layer card shadow.
+vercel,Shadows & Depth,Ring Border,,,,light gray ring-border,Light gray ring-border for tabs and images.
+voltagent,Primary,Emerald Signal Green,#00d992,,,core brand energy,"The core brand energy — used for accent borders, glow effects, and the highest-signal interactive moments. This is the ""power-on"" indicator of the entire interface."
+voltagent,Primary,VoltAgent Mint,#2fd6a1,,,button-text variant brand,"The button-text variant of the brand green — slightly warmer and more readable than pure Signal Green, used specifically for CTA text on dark surfaces."
+voltagent,Primary,Tailwind Emerald,#10b981,,,ecosystem-standard green used,The ecosystem-standard green used at low opacity (30%) for subtle background tints and link defaults. Bridges VoltAgent's custom palette with Tailwind's utility classes.
+voltagent,Secondary & Accent,Soft Purple,#818cf8,,,cool indigo-violet used,"A cool indigo-violet used sparingly for secondary categorization, code syntax highlights, and visual variety without competing with green."
+voltagent,Secondary & Accent,Cobalt Primary,#306cce,,,docusaurus primary dark,Docusaurus primary dark — used in documentation contexts for links and interactive focus states.
+voltagent,Secondary & Accent,Deep Cobalt,#2554a0,,,darkest primary shade,"The darkest primary shade, reserved for pressed/active states in documentation UI."
+voltagent,Secondary & Accent,Ring Blue,#3b82f6,,,tailwind s ring,Tailwind's ring color at 50% opacity — visible only during keyboard focus for accessibility compliance.
+voltagent,Surface & Background,Abyss Black,#050507,,,landing page canvas,"The landing page canvas — a near-pure black with the faintest warm undertone, darker than most ""dark themes"" for maximum contrast with green accents."
+voltagent,Surface & Background,Carbon Surface,#101010,,,primary card button,"The primary card and button background — one shade lighter than Abyss, creating a barely perceptible elevation layer. Used across all contained surfaces."
+voltagent,Surface & Background,Warm Charcoal Border,#3d3a39,,,signature containment color,"The signature containment color — not a cold gray but a warm, almost brownish dark tone that prevents borders from feeling harsh against the black canvas."
+voltagent,Neutrals & Text,Snow White,#f2f2f2,,,primary text color,"The primary text color on dark surfaces — not pure white (`#ffffff`) but a softened, eye-friendly off-white. The most-used color on the site (1008 instances)."
+voltagent,Neutrals & Text,Pure White,#ffffff,,,reserved highest-emphasis moments,Reserved for the highest-emphasis moments — ghost button text and maximum-contrast headings. Used at low opacity (5%) for subtle overlay effects.
+voltagent,Neutrals & Text,Warm Parchment,#b8b3b0,,,secondary body text,"Secondary body text — a warm light gray with a slight pinkish undertone that reads as ""paper"" against the dark canvas."
+voltagent,Neutrals & Text,Steel Slate,#8b949e,,,tertiary text metadata,"Tertiary text, metadata, timestamps, and de-emphasized content. A cool blue-gray that provides clear hierarchy below Warm Parchment."
+voltagent,Neutrals & Text,Fog Gray,#bdbdbd,,,footer links supporting,Footer links and supporting navigation text — brightens on hover to Pure White.
+voltagent,Neutrals & Text,Mist Gray,#dcdcdc,,,slightly brighter than,"Slightly brighter than Fog, used for secondary link text that transitions to bright green on hover."
+voltagent,Neutrals & Text,Near White,#eeeeee,,,highest-contrast secondary text,"Highest-contrast secondary text, one step below Snow White."
+voltagent,Semantic & Accent,Success Emerald,#008b00,,,deep green success,Deep green for success states and positive confirmations in documentation contexts.
+voltagent,Semantic & Accent,Success Light,#80d280,,,soft pastel green,Soft pastel green for success backgrounds and subtle positive indicators.
+voltagent,Semantic & Accent,Warning Amber,#ffba00,,,bright amber warning,Bright amber for warning alerts and caution states.
+voltagent,Semantic & Accent,Warning Pale,#ffdd80,,,softened amber warning,Softened amber for warning background fills.
+voltagent,Semantic & Accent,Danger Coral,#fb565b,,,vivid red error,Vivid red for error states and destructive action warnings.
+voltagent,Semantic & Accent,Danger Rose,#fd9c9f,,,softened coral-pink error,Softened coral-pink for error backgrounds.
+voltagent,Semantic & Accent,Info Teal,#4cb3d4,,,cool teal-blue informational,Cool teal-blue for informational callouts and tip admonitions.
+voltagent,Semantic & Accent,Dashed Border Slate,#4f5d75,,,muted blue-gray used,A muted blue-gray used exclusively for decorative dashed borders in workflow diagrams.
+voltagent,Gradient System,Green Signal Glow,#00d992,,,animating creates pulsing,"`drop-shadow(0 0 2px #00d992)` animating to `drop-shadow(0 0 8px #00d992)` — creates a pulsing ""electric charge"" effect on the VoltAgent bolt logo and interactive elements. The glow expands and contracts like a heartbeat."
+voltagent,Gradient System,Warm Ambient Haze,,,,warm-toned diffused shadow,"`rgba(92, 88, 85, 0.2) 0px 0px 15px` — a warm-toned diffused shadow that creates a soft atmospheric glow around elevated cards, visible at the edges without sharp boundaries."
+voltagent,Gradient System,Deep Dramatic Elevation,,,,heavy dramatic downward,"`rgba(0, 0, 0, 0.7) 0px 20px 60px` with `rgba(148, 163, 184, 0.1) 0px 0px 0px 1px inset` — a heavy, dramatic downward shadow paired with a faint inset slate ring for the most prominent floating elements."
+warp,Primary,Warm Parchment,#faf9f6,,,primary text color,Primary text color — a barely-cream off-white that softens every surface
+warp,Primary,Earth Gray,#353534,,,button backgrounds dark,"Button backgrounds, dark interactive surfaces — warm, not cold"
+warp,Primary,Deep Void,,,,warm dark canvas,The warm dark canvas derived from the body background
+warp,Secondary & Accent,Stone Gray,#868584,,,secondary text muted,"Secondary text, muted descriptions — warm mid-gray"
+warp,Secondary & Accent,Ash Gray,#afaeac,,,body text button,"Body text, button text — the workhorse reading color"
+warp,Secondary & Accent,Purple-Tint Gray,#666469,,,link text subtle,Link text with subtle purple undertone — underlined links in content
+warp,Surface & Background,Frosted Veil,,,,ultra-subtle white overlay,Ultra-subtle white overlay for surface differentiation
+warp,Surface & Background,Mist Border,,,,semi-transparent borders card,Semi-transparent borders for card containment
+warp,Surface & Background,Translucent Parchment,,,,slightly transparent primary,"Slightly transparent primary surface, allowing depth"
+warp,Neutrals & Text,Warm Parchment,#faf9f6,,,headlines high-emphasis text,"Headlines, high-emphasis text"
+warp,Neutrals & Text,Ash Gray,#afaeac,,,body paragraphs descriptions,"Body paragraphs, descriptions"
+warp,Neutrals & Text,Stone Gray,#868584,,,secondary labels subdued,"Secondary labels, subdued information"
+warp,Neutrals & Text,Muted Purple,#666469,,,underlined links tertiary,"Underlined links, tertiary content"
+warp,Neutrals & Text,Dark Charcoal,#454545,,,borders button backgrounds,"Borders, button backgrounds"
+webflow,Primary,Near Black,#080808,,,primary text,Primary text
+webflow,Primary,Webflow Blue,#146ef5,--primary--webflow-blue,,primary cta links,"`--_color---primary--webflow-blue`, primary CTA and links"
+webflow,Primary,Blue 400,#3b89ff,--primary--blue-400,,lighter interactive blue,"`--_color---primary--blue-400`, lighter interactive blue"
+webflow,Primary,Blue 300,#006acc,--blue-300,,darker blue variant,"`--_color---blue-300`, darker blue variant"
+webflow,Primary,Button Hover Blue,#0055d4,--mkto-embed-color-button-hover,,,`--mkto-embed-color-button-hover`
+webflow,Secondary Accents,Purple,#7a3dff,--secondary--purple,,,`--_color---secondary--purple`
+webflow,Secondary Accents,Pink,#ed52cb,--secondary--pink,,,`--_color---secondary--pink`
+webflow,Secondary Accents,Green,#00d722,--secondary--green,,,`--_color---secondary--green`
+webflow,Secondary Accents,Orange,#ff6b00,--secondary--orange,,,`--_color---secondary--orange`
+webflow,Secondary Accents,Yellow,#ffae13,--secondary--yellow,,,`--_color---secondary--yellow`
+webflow,Secondary Accents,Red,#ee1d36,--secondary--red,,,`--_color---secondary--red`
+webflow,Neutral,Gray 800,#222222,,,dark secondary text,Dark secondary text
+webflow,Neutral,Gray 700,#363636,,,mid text,Mid text
+webflow,Neutral,Gray 300,#ababab,,,muted text placeholder,"Muted text, placeholder"
+webflow,Neutral,Mid Gray,#5a5a5a,,,link text,Link text
+webflow,Neutral,Border Gray,#d8d8d8,,,borders dividers,"Borders, dividers"
+webflow,Neutral,Border Hover,#898989,,,hover border,Hover border
+webflow,Shadows,5-layer cascade,,,,,"`rgba(0,0,0,0) 0px 84px 24px, rgba(0,0,0,0.01) 0px 54px 22px, rgba(0,0,0,0.04) 0px 30px 18px, rgba(0,0,0,0.08) 0px 13px 13px, rgba(0,0,0,0.09) 0px 3px 7px`"
+wise,Primary Brand,Near Black,#0e0f0c,,,primary text background,"Primary text, background for dark sections"
+wise,Primary Brand,Wise Green,#9fe870,,,primary cta button,"Primary CTA button, brand accent"
+wise,Primary Brand,Dark Green,#163300,,,button text green,"Button text on green, deep green accent"
+wise,Primary Brand,Light Mint,#e2f6d5,,,soft green surface,"Soft green surface, badge backgrounds"
+wise,Primary Brand,Pastel Green,#cdffad,--color-interactive-contrast-hover,,hover accent,"`--color-interactive-contrast-hover`, hover accent"
+wise,Semantic,Positive Green,#054d28,--color-sentiment-positive-primary,,success,"`--color-sentiment-positive-primary`, success"
+wise,Semantic,Danger Red,#d03238,--color-interactive-negative-hover,,error destructive,"`--color-interactive-negative-hover`, error/destructive"
+wise,Semantic,Warning Yellow,#ffd11a,--color-sentiment-warning-hover,,warnings,"`--color-sentiment-warning-hover`, warnings"
+wise,Semantic,Background Cyan,,--color-background-accent,,info tint,"`--color-background-accent`, info tint"
+wise,Semantic,Bright Orange,#ffc091,--color-bright-orange,,warm accent,"`--color-bright-orange`, warm accent"
+wise,Neutral,Warm Dark,#454745,,,secondary text borders,"Secondary text, borders"
+wise,Neutral,Gray,#868685,,,muted text tertiary,"Muted text, tertiary"
+wise,Neutral,Light Surface,#e8ebe6,,,subtle green-tinted light,Subtle green-tinted light surface
+x.ai,Primary,Pure White,#ffffff,,,singular text color,"The singular text color, link color, and all foreground elements. In xAI's system, white is not a background -- it is the voice."
+x.ai,Primary,Dark Background,#1f2228,,,canvas,"The canvas. A warm near-black with a subtle blue undertone (not pure black, not neutral gray). This specific hue prevents the harsh eye strain of `#000000` while maintaining deep darkness."
+x.ai,Interactive,White Default,#ffffff,,,link interactive element,Link and interactive element color in default state.
+x.ai,Interactive,White Muted,,,,hover state links,"Hover state for links -- a deliberate dimming rather than brightening, which is unusual and distinctive."
+x.ai,Interactive,White Subtle,,,,borders dividers subtle,"Borders, dividers, and subtle surface treatments."
+x.ai,Interactive,Ring Blue,,--tw-ring-color,,tailwind s default,"Tailwind's default focus ring color (`--tw-ring-color`), used for keyboard accessibility focus states."
+x.ai,Surface & Borders,Surface Elevated,,,,subtle card backgrounds,Subtle card backgrounds and hover surfaces -- barely visible lift.
+x.ai,Surface & Borders,Surface Hover,,,,slightly more visible,Slightly more visible hover state for interactive containers.
+x.ai,Surface & Borders,Border Default,,,,standard border cards,"Standard border for cards, dividers, and containers."
+x.ai,Surface & Borders,Border Strong,,,,emphasized borders active,Emphasized borders for active states and button outlines.
+x.ai,Functional,Text Primary,#ffffff,,,headings body text,"All headings, body text, labels."
+x.ai,Functional,Text Secondary,,,,descriptions captions supporting,"Descriptions, captions, supporting text."
+x.ai,Functional,Text Tertiary,,,,muted labels placeholder,"Muted labels, placeholder text, timestamps."
+x.ai,Functional,Text Quaternary,,,,disabled text very,"Disabled text, very subtle annotations."
+zapier,Primary,Zapier Black,#201515,,,primary text headings,"Primary text, headings, dark button backgrounds. A warm near-black with reddish undertones -- never cold."
+zapier,Primary,Cream White,#fffefb,,,page background card,"Page background, card surfaces, light button fills. Not pure white; the yellowish warmth is intentional."
+zapier,Primary,Off-White,#fffdf9,,,secondary background surface,"Secondary background surface, subtle alternate tint. Nearly indistinguishable from cream white but creates depth."
+zapier,Brand Accent,Zapier Orange,#ff4f00,,,primary cta buttons,"Primary CTA buttons, active underline indicators, accent borders. The signature color -- vivid and warm."
+zapier,Neutral Scale,Dark Charcoal,#36342e,,,secondary text footer,"Secondary text, footer text, border color for strong dividers. A warm dark gray-brown with 70% opacity variant."
+zapier,Neutral Scale,Warm Gray,#939084,,,tertiary text muted,"Tertiary text, muted labels, timestamp-style content. Mid-range with greenish-warm undertone."
+zapier,Neutral Scale,Sand,#c5c0b1,,,primary border color,"Primary border color, hover state backgrounds, divider lines. The backbone of Zapier's structural elements."
+zapier,Neutral Scale,Light Sand,#eceae3,,,secondary button backgrounds,"Secondary button backgrounds, light borders, subtle card surfaces."
+zapier,Neutral Scale,Mid Warm,#b5b2aa,,,alternate border tone,"Alternate border tone, used on specific span elements."
+zapier,Interactive,Orange CTA,#ff4f00,,,primary action buttons,Primary action buttons and active tab underlines.
+zapier,Interactive,Dark CTA,#201515,,,secondary dark buttons,Secondary dark buttons with sand hover state.
+zapier,Interactive,Light CTA,#eceae3,,,tertiary ghost buttons,Tertiary/ghost buttons with sand hover.
+zapier,Interactive,Link Default,#201515,,,standard link color,"Standard link color, matching body text."
+zapier,Interactive,Hover Underline,,,,links remove hover,Links remove `text-decoration: underline` on hover (inverse pattern).
+zapier,Overlay & Surface,Semi-transparent Dark,,,,overlay button variant,"Overlay button variant, backdrop-like elements."
+zapier,Overlay & Surface,Pill Surface,#fffefb,,,white pill buttons,White pill buttons with sand borders.
+zapier,Shadows & Depth,Inset Underline,,,,active tab indicator,Active tab indicator -- orange underline using inset box-shadow.
+zapier,Shadows & Depth,Hover Underline,,,,inactive tab hover,Inactive tab hover -- sand-colored underline.
