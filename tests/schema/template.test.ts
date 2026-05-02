@@ -141,7 +141,7 @@ describe("renderDesignMd", () => {
     });
     it("button section has size table with token references", () => {
       expect(output).toContain("spacing.xl");
-      expect(output).toContain("spacing.2xl");
+      expect(output).toContain("spacing.xxl");
     });
   });
 

@@ -231,10 +231,9 @@ export function buildDesignTokens(
   }
 
   // ── spacing ─────────────────────────────────────────────────────────────────
-  const spacing: Record<string, number> = {};
-  for (const s of system.layout.spacing) {
-    spacing[s.name] = parsePx(s.value);
-  }
+  // Read directly from spacingTokens (proposal §3) — emits the 8 aliases.
+  // Reserved scale stops (2, 20, 64, 80) stay accessible via SCALE constant.
+  const spacing: Record<string, number> = { ...system.spacingTokens.aliases };
 
   // ── borderRadius ────────────────────────────────────────────────────────────
   const borderRadius: Record<string, number> = {};

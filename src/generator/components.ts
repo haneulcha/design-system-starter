@@ -2,22 +2,30 @@
 
 import type { ArchetypePreset, ComponentSpecs } from "../schema/types.js";
 
-export function generateComponents(archetype: ArchetypePreset): ComponentSpecs {
+/**
+ * Build the component specs. All `spacing.*` references resolve through the
+ * spacing category aliases (proposal §3): xxs/xs/sm/md/lg/xl/xxl/section.
+ *
+ * Note: this generator is still archetype-driven. Once the components category
+ * gets its own inductive analysis, these references and their resolution will
+ * be reworked end-to-end.
+ */
+export function generateComponents(_archetype: ArchetypePreset): ComponentSpecs {
   return {
     button: {
       sizes: {
-        sm: { height: "spacing.xl", paddingX: "spacing.sm", gap: "spacing.2xs", fontSize: "typography.caption", iconSize: "spacing.md", radius: "radius.button" },
-        md: { height: "spacing.2xl", paddingX: "spacing.md", gap: "spacing.xs", fontSize: "typography.button", iconSize: "spacing.md", radius: "radius.button" },
-        lg: { height: "spacing.3xl", paddingX: "spacing.lg", gap: "spacing.xs", fontSize: "typography.body", iconSize: "spacing.lg", radius: "radius.button" },
+        sm: { height: "spacing.xl",  paddingX: "spacing.sm", gap: "spacing.xxs", fontSize: "typography.caption", iconSize: "spacing.md", radius: "radius.button" },
+        md: { height: "spacing.xxl", paddingX: "spacing.md", gap: "spacing.xs",  fontSize: "typography.button",  iconSize: "spacing.md", radius: "radius.button" },
+        lg: { height: "spacing.xxl", paddingX: "spacing.lg", gap: "spacing.xs",  fontSize: "typography.body",    iconSize: "spacing.lg", radius: "radius.button" },
       },
       variants: ["primary", "secondary", "ghost"],
     },
     input: {
-      fieldHeight: "spacing.2xl",
+      fieldHeight: "spacing.xxl",
       fieldPaddingX: "spacing.sm",
       fieldRadius: "radius.input",
-      labelFieldGap: "spacing.2xs",
-      fieldHelperGap: "spacing.2xs",
+      labelFieldGap: "spacing.xxs",
+      fieldHelperGap: "spacing.xxs",
       labelFont: "typography.label",
       valueFont: "typography.body",
       helperFont: "typography.caption",
@@ -42,7 +50,9 @@ export function generateComponents(archetype: ArchetypePreset): ComponentSpecs {
       variants: ["default", "success", "error", "warning", "info"],
     },
     divider: {
-      lineHeight: "spacing.3xs",
+      // 1px hairline. Not a spacing concern — kept as raw px until a dedicated
+      // border-width token category exists.
+      lineHeight: "1px",
       labelPaddingX: "spacing.sm",
       labelFont: "typography.caption",
     },

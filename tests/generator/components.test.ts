@@ -76,8 +76,9 @@ describe("generateComponents", () => {
   });
 
   describe("divider", () => {
-    it("dimensions are token references", () => {
-      expect(specs.divider.lineHeight).toMatch(/^spacing\./);
+    it("dimensions are token references or raw px", () => {
+      // lineHeight is raw px (1px hairline) — not yet a token category
+      expect(specs.divider.lineHeight).toMatch(/^\d+px$/);
       expect(specs.divider.labelPaddingX).toMatch(/^spacing\./);
       expect(specs.divider.labelFont).toMatch(/^typography\./);
     });

@@ -15,6 +15,7 @@ import {
   type ColorCategoryTokens,
 } from "./color-category.js";
 import { generateTypographyCategory } from "./typography-category.js";
+import { generateSpacingCategory } from "./spacing-category.js";
 import { generateComponents } from "./components.js";
 import { generateLayout } from "./layout.js";
 import { generateElevation } from "./elevation.js";
@@ -116,11 +117,14 @@ export function generate(
   );
   const typographyTokens = generateTypographyCategory(effectiveTypographyInput);
 
+  // Spacing: new per-category pipeline (proposal §5).
+  const spacingTokens = generateSpacingCategory(inputs.spacingKnobs);
+
   // Extract the resolved sans primary for use in agentGuide example prompts.
   // Strip surrounding quotes if the font name contains spaces (e.g. "Mona Sans" → Mona Sans).
   const fontFamily = typographyTokens.fontChains.sans.split(",")[0].trim().replace(/^"|"$/g, "");
   const components = generateComponents(archetype);
-  const layout = generateLayout(archetype);
+  const layout = generateLayout(archetype, spacingTokens);
   const elevation = generateElevation(archetype, scales);
   const responsive = generateResponsive();
 
@@ -143,6 +147,7 @@ export function generate(
     colorTokens,
     colors: scales,
     typographyTokens,
+    spacingTokens,
     components,
     layout,
     elevation,

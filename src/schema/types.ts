@@ -2,8 +2,10 @@
 
 import type { ColorCategoryTokens } from "../generator/color-category.js";
 import type { TypographyCategoryTokens } from "../generator/typography-category.js";
+import type { SpacingCategoryTokens } from "../generator/spacing-category.js";
 import type { PartialColorKnobs } from "./color.js";
 import type { TypographyInput } from "./typography.js";
+import type { SpacingInput } from "./spacing.js";
 
 // ═══ User Inputs ═══
 
@@ -30,6 +32,7 @@ export interface UserInputs {
   fontFamily: string;
   colorKnobs?: PartialColorKnobs;
   typographyKnobs?: TypographyInput;
+  spacingKnobs?: SpacingInput;
 }
 
 // ═══ Color ═══
@@ -168,6 +171,8 @@ export interface DesignSystem {
   colors: ColorScales;
   /** New per-category typography output. Source of truth for typography rendering. */
   typographyTokens: TypographyCategoryTokens;
+  /** New per-category spacing output. Source of truth for spacing rendering. */
+  spacingTokens: SpacingCategoryTokens;
   components: ComponentSpecs;
   layout: LayoutSystem;
   elevation: ElevationSystem;
@@ -192,8 +197,6 @@ export interface ArchetypePreset {
   description: string;
   atmosphereTemplate: string;
   characteristics: string[];
-  sectionSpacing: string;
-  componentSpacing: string;
   buttonRadius: string;
   cardRadius: string;
   inputRadius: string;

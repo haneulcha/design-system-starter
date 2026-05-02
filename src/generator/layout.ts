@@ -1,6 +1,16 @@
 import type { ArchetypePreset, LayoutSystem } from "../schema/types.js";
+import type { SpacingCategoryTokens } from "./spacing-category.js";
 
-export function generateLayout(archetype: ArchetypePreset): LayoutSystem {
+/**
+ * Build the LayoutSystem (spacing array, grid, border-radius, philosophy) for
+ * the markdown template. Spacing entries are derived from the new spacing
+ * category (proposal §3); border-radius and grid still consume archetype until
+ * those categories complete their per-category inductive analyses.
+ */
+export function generateLayout(
+  archetype: ArchetypePreset,
+  spacingTokens: SpacingCategoryTokens,
+): LayoutSystem {
   const whitespaceMap: Record<string, string> = {
     "professional": "Structured, purposeful spacing. Every margin serves information hierarchy. Dense enough to convey seriousness, open enough to breathe.",
     "bold-energetic": "Whitespace is not decoration — it is the frame that makes bold typographic moments land harder by contrast. Section breaks are generous and deliberate.",
@@ -9,23 +19,23 @@ export function generateLayout(archetype: ArchetypePreset): LayoutSystem {
     "playful-creative": "Generous, unhurried rhythm with room for expressive moments. Section breaks feel intentional and inviting, never crowded — whitespace gives every element space to express itself.",
   };
 
+  // Emit the 8 named aliases in semantic order. Reserved scale stops are not
+  // surfaced here — consumers needing them go through spacingTokens.scale.
+  const aliasOrder: Array<keyof SpacingCategoryTokens["aliases"]> = [
+    "xxs", "xs", "sm", "md", "lg", "xl", "xxl", "section",
+  ];
+  const spacing = aliasOrder.map((name) => ({
+    name,
+    value: `${spacingTokens.aliases[name]}px`,
+  }));
+
   return {
-    spacing: [
-      { name: "3xs", value: "2px" },
-      { name: "2xs", value: "4px" },
-      { name: "xs", value: "8px" },
-      { name: "sm", value: "12px" },
-      { name: "md", value: "16px" },
-      { name: "lg", value: "24px" },
-      { name: "xl", value: "32px" },
-      { name: "2xl", value: "48px" },
-      { name: "3xl", value: "64px" },
-      { name: "4xl", value: archetype.sectionSpacing },
-    ],
+    spacing,
     grid: {
       maxWidth: "1200px",
       columns: 12,
-      gutter: archetype.componentSpacing,
+      // Grid gutter consumes the md alias — corpus mode for card-grid gutters.
+      gutter: `${spacingTokens.aliases.md}px`,
     },
     borderRadius: [
       { name: "None", value: "0px", use: "Sharp-edged elements" },

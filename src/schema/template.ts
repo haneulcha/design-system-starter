@@ -336,7 +336,8 @@ function renderLayout(system: DesignSystem): string {
   lines.push("## 5. Layout & Spacing\n");
 
   lines.push("### Spacing System\n");
-  lines.push("Base unit: 8px. Scale:");
+  const density = system.spacingTokens.knobs.density;
+  lines.push(`4-multiple scale. Density: \`${density}\` (section = ${system.spacingTokens.aliases.section}px). Aliases:`);
   for (const s of system.layout.spacing) {
     lines.push(`- **${s.name}:** ${s.value}`);
   }
