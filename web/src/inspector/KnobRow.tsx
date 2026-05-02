@@ -5,12 +5,11 @@ interface KnobRowProps {
   isPreset?: boolean;
   isDefault?: boolean;
   onClick: () => void;
-  preview: ReactNode;
   label: string;
-  tokens: string;
+  tokens: ReactNode;
 }
 
-export function KnobRow({ selected, isPreset, isDefault, onClick, preview, label, tokens }: KnobRowProps) {
+export function KnobRow({ selected, isPreset, isDefault, onClick, label, tokens }: KnobRowProps) {
   return (
     <button
       type="button"
@@ -22,9 +21,6 @@ export function KnobRow({ selected, isPreset, isDefault, onClick, preview, label
           : "border border-neutral-200 bg-white hover:border-neutral-400",
       ].join(" ")}
     >
-      <div className="shrink-0 flex items-center gap-1" style={{ width: 44 }}>
-        {preview}
-      </div>
       <div className="flex-1 flex items-center gap-2 min-w-0">
         <span className={selected ? "text-neutral-900 font-medium text-[13px]" : "text-neutral-700 text-[13px]"}>
           {label}
@@ -36,7 +32,7 @@ export function KnobRow({ selected, isPreset, isDefault, onClick, preview, label
           <span className="text-[9px] text-neutral-400 uppercase tracking-wider">default</span>
         )}
       </div>
-      <span className="font-mono text-[10px] text-neutral-400 tabular-nums shrink-0">{tokens}</span>
+      <div className="font-mono text-[10px] text-neutral-500 tabular-nums shrink-0">{tokens}</div>
     </button>
   );
 }

@@ -5,26 +5,20 @@ import { PRESETS } from "@core/schema/presets.js";
 import { KnobRow } from "../KnobRow";
 import { ResetButton } from "../ResetButton";
 
-const TOKEN_LABEL: Record<RadiusStyle, string> = {
-  sharp:    "4·4·8",
-  standard: "8·8·12",
-  generous: "12·8·16",
-  pill:     "∞·∞·12",
-};
-
-function previewRadiusPx(style: RadiusStyle, slot: "button" | "input"): number | string {
-  const v = STYLE_PROFILES[style][slot];
-  return v === "pill" ? 9999 : v;
+function fmt(v: number | "pill"): string {
+  return v === "pill" ? "∞" : String(v);
 }
 
-function MiniPreview({ style }: { style: RadiusStyle }) {
-  const btn = previewRadiusPx(style, "button");
-  const inp = previewRadiusPx(style, "input");
+function TokenTriplet({ style }: { style: RadiusStyle }) {
+  const p = STYLE_PROFILES[style];
   return (
-    <>
-      <div style={{ width: 22, height: 12, background: "#262626", borderRadius: btn }} />
-      <div style={{ width: 16, height: 12, background: "#fff", border: "1px solid #d4d4d0", borderRadius: inp }} />
-    </>
+    <span className="inline-flex items-baseline gap-2">
+      <span><span className="text-neutral-400">btn</span> {fmt(p.button)}</span>
+      <span className="text-neutral-300">·</span>
+      <span><span className="text-neutral-400">in</span> {fmt(p.input)}</span>
+      <span className="text-neutral-300">·</span>
+      <span><span className="text-neutral-400">card</span> {p.card}</span>
+    </span>
   );
 }
 
@@ -69,9 +63,8 @@ export function RadiusPanel({
             isPreset={presetStyle === style}
             isDefault={presetStyle == null && DEFAULT_RADIUS_KNOBS.style === style}
             onClick={() => selectStyle(style)}
-            preview={<MiniPreview style={style} />}
             label={style}
-            tokens={TOKEN_LABEL[style]}
+            tokens={<TokenTriplet style={style} />}
           />
         ))}
       </div>
