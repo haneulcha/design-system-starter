@@ -17,6 +17,7 @@ import {
 import { generateTypographyCategory } from "./typography-category.js";
 import { generateSpacingCategory } from "./spacing-category.js";
 import { generateRadiusCategory } from "./radius-category.js";
+import { generateElevationCategory } from "./elevation-category.js";
 import { generateComponents } from "./components.js";
 import { generateLayout } from "./layout.js";
 import { generateElevation } from "./elevation.js";
@@ -124,12 +125,18 @@ export function generate(
   // Radius: new per-category pipeline (proposal §5).
   const radiusTokens = generateRadiusCategory(inputs.radiusKnobs);
 
+  // Elevation: new per-category pipeline (proposal §5). Pulls the ring color
+  // from the resolved neutral-300 (proposal §8).
+  const ringColorOklch = colorTokens.neutral.stops["300"];
+  const ringColor = oklchToHex(ringColorOklch);
+  const elevationTokens = generateElevationCategory(inputs.elevationKnobs, ringColor);
+
   // Extract the resolved sans primary for use in agentGuide example prompts.
   // Strip surrounding quotes if the font name contains spaces (e.g. "Mona Sans" → Mona Sans).
   const fontFamily = typographyTokens.fontChains.sans.split(",")[0].trim().replace(/^"|"$/g, "");
   const components = generateComponents(archetype);
   const layout = generateLayout(archetype, spacingTokens, radiusTokens);
-  const elevation = generateElevation(archetype, scales);
+  const elevation = generateElevation(elevationTokens);
   const responsive = generateResponsive();
 
   const vars: Record<string, string> = {
@@ -153,6 +160,7 @@ export function generate(
     typographyTokens,
     spacingTokens,
     radiusTokens,
+    elevationTokens,
     components,
     layout,
     elevation,

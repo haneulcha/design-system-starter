@@ -4,10 +4,12 @@ import type { ColorCategoryTokens } from "../generator/color-category.js";
 import type { TypographyCategoryTokens } from "../generator/typography-category.js";
 import type { SpacingCategoryTokens } from "../generator/spacing-category.js";
 import type { RadiusCategoryTokens } from "../generator/radius-category.js";
+import type { ElevationCategoryTokens } from "../generator/elevation-category.js";
 import type { PartialColorKnobs } from "./color.js";
 import type { TypographyInput } from "./typography.js";
 import type { SpacingInput } from "./spacing.js";
 import type { RadiusInput } from "./radius.js";
+import type { ElevationInput } from "./elevation.js";
 
 // ═══ User Inputs ═══
 
@@ -36,6 +38,7 @@ export interface UserInputs {
   typographyKnobs?: TypographyInput;
   spacingKnobs?: SpacingInput;
   radiusKnobs?: RadiusInput;
+  elevationKnobs?: ElevationInput;
 }
 
 // ═══ Color ═══
@@ -178,6 +181,8 @@ export interface DesignSystem {
   spacingTokens: SpacingCategoryTokens;
   /** New per-category radius output. Source of truth for radius rendering. */
   radiusTokens: RadiusCategoryTokens;
+  /** New per-category elevation output. Source of truth for elevation rendering. */
+  elevationTokens: ElevationCategoryTokens;
   components: ComponentSpecs;
   layout: LayoutSystem;
   elevation: ElevationSystem;
@@ -194,7 +199,6 @@ export interface DesignSystem {
 // ═══ Archetype Preset ═══
 
 export type NeutralUndertone = "cool" | "warm" | "neutral";
-export type ShadowIntensity = "whisper" | "subtle" | "medium" | "dramatic";
 
 export interface ArchetypePreset {
   mood: MoodArchetype;
@@ -202,7 +206,6 @@ export interface ArchetypePreset {
   description: string;
   atmosphereTemplate: string;
   characteristics: string[];
-  shadowIntensity: ShadowIntensity;
   neutralUndertone: NeutralUndertone;
   dos: string[];
   donts: string[];
