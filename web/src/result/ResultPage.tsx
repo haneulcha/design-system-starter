@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { WizardState, FullResult, PresetName } from "../hooks/useGenerator";
 import { ARCHETYPES } from "@core/schema/archetypes.js";
-import { ColorScale } from "../components/ColorScale";
+import { ColorPalette } from "../components/ColorPalette";
 import { DSButton } from "../components/DSButton";
 import { DSInput } from "../components/DSInput";
 import { DSCard } from "../components/DSCard";
@@ -83,31 +83,6 @@ export function ResultPage({
               className="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:border-neutral-500 transition-colors"
               placeholder="Untitled"
             />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1.5">
-              Primary Color
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={state.brandColor}
-                onChange={(e) => onChange({ brandColor: e.target.value })}
-                className="w-9 h-9 rounded cursor-pointer border border-neutral-200 p-0.5 bg-white"
-              />
-              <input
-                type="text"
-                value={state.brandColor}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  if (/^#[0-9a-fA-F]{6}$/.test(v)) onChange({ brandColor: v });
-                  else if (v.length <= 7) onChange({ brandColor: v });
-                }}
-                className="flex-1 font-mono text-sm px-3 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-neutral-500"
-                placeholder="#5e6ad2"
-              />
-            </div>
           </div>
 
           <div>
@@ -200,10 +175,10 @@ export function ResultPage({
             </p>
           </div>
 
-          {/* Color scales */}
+          {/* Palette */}
           <section>
-            <h2 className="text-lg font-semibold text-neutral-900 mb-4">Color Scales</h2>
-            <ColorScale scales={system.colors} />
+            <h2 className="text-lg font-semibold text-neutral-900 mb-4">Color Palette</h2>
+            <ColorPalette palette={system.colorTokens.palette} preset={system.colorTokens.preset} />
           </section>
 
           {/* Components */}

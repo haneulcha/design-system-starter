@@ -57,37 +57,31 @@ function replaceInArray(arr: string[], vars: Record<string, string>): string[] {
 }
 
 function buildAgentGuide(
-  inputs: UserInputs,
+  _inputs: UserInputs,
   fontFamily: string,
   colorTokens: ColorCategoryTokens,
 ): DesignSystem["agentGuide"] {
-  const accentBaseHex = oklchToHex(colorTokens.accent.stops["500"]);
-  const surfaceCanvasHex = oklchToHex(colorTokens.neutral.stops["50"]);
-  const textInkHex = oklchToHex(colorTokens.neutral.stops["900"]);
-  const textBodyHex = oklchToHex(colorTokens.neutral.stops["800"]);
-  const hairlineHex = oklchToHex(colorTokens.neutral.stops["300"]);
+  const p = colorTokens.palette;
 
   const quickColors = [
-    { name: "Primary CTA", hex: accentBaseHex },
-    { name: "Surface Canvas", hex: surfaceCanvasHex },
-    { name: "Text Ink", hex: textInkHex },
-    { name: "Text Body", hex: textBodyHex },
-    { name: "Hairline / Border", hex: hairlineHex },
+    { name: "Primary CTA",       hex: p.accent },
+    { name: "Surface Canvas",    hex: p.canvas },
+    { name: "Text Ink",          hex: p.ink },
+    { name: "Text Body",         hex: p.body },
+    { name: "Hairline / Border", hex: p.hairline },
   ];
 
   const examplePrompts = [
-    `Create a hero section with a heading in ${fontFamily}, background ${surfaceCanvasHex}, and a CTA button using ${accentBaseHex}.`,
-    `Build a card component with a subtle border using ${hairlineHex}, body text in ${textBodyHex}, and 24px padding.`,
-    `Design a navigation bar with background ${surfaceCanvasHex}, link color ${textInkHex}, and an active indicator using ${accentBaseHex}.`,
-    `Create a form input with border ${hairlineHex} and focus ring using ${accentBaseHex}33.`,
+    `Create a hero section with a heading in ${fontFamily}, background ${p.canvas}, and a CTA button using ${p.accent}.`,
+    `Build a card component with a subtle border using ${p.hairline}, body text in ${p.body}, and 24px padding.`,
+    `Design a navigation bar with background ${p.canvas}, link color ${p.ink}, and an active indicator using ${p.accent}.`,
+    `Create a form input with border ${p.hairline} and focus ring using ${p.accent}33.`,
   ];
 
-  const knobs = colorTokens.knobs;
   const iterationTips = [
-    `Adjust neutral.tint (current: ${knobs.neutral.tint}) to shift gray undertone — options: achromatic, cool, green, purple.`,
-    `Toggle accent.secondary (current: ${knobs.accent.secondary}) and supply brandColorSecondary to add a second accent hue.`,
-    `Tune semantic.depth (current: ${knobs.semantic.depth}) to control how many variants are emitted per status role (minimal=bg only, standard=bg+text, rich=bg+text+border).`,
-    `Change ${inputs.brandColor} to retune the entire accent scale (lightness spread ±0.18 around the input L is preserved).`,
+    `Pick a different archetype to swap the entire palette (current: ${colorTokens.preset}).`,
+    `Override individual slots via paletteOverrides (e.g. { accent: "#ff0066" }) to drift from the archetype baseline.`,
+    `The 8 status slots (error/success/warning/info × bg/text) are universal across archetypes — override per-slot for brand-specific status hues.`,
   ];
 
   return { quickColors, examplePrompts, iterationTips };
@@ -108,19 +102,18 @@ export function generate(
   // supplies a knob field, it overrides the preset's whole value for that
   // category (no nested-partial merge in v1). Nested partial overrides are
   // a v2 concern; documented in src/schema/presets.ts.
-  const preset = inputs.preset ? PRESETS[inputs.preset] : undefined;
-  const colorKnobs       = inputs.colorKnobs       ?? preset?.colorKnobs;
+  const presetName = inputs.preset ?? "professional";
+  const preset = PRESETS[presetName];
   const typographyKnobs  = inputs.typographyKnobs  ?? preset?.typographyKnobs;
   const spacingKnobs     = inputs.spacingKnobs     ?? preset?.spacingKnobs;
   const radiusKnobs      = inputs.radiusKnobs      ?? preset?.radiusKnobs;
   const elevationKnobs   = inputs.elevationKnobs   ?? preset?.elevationKnobs;
   const componentKnobs   = inputs.componentKnobs   ?? preset?.componentKnobs;
 
-  // Color: new ColorInput-driven pipeline (proposal §6).
+  // Color: palette-driven pipeline. Archetype palette + per-slot overrides.
   const colorTokens = generateColorCategory({
-    brandColor: inputs.brandColor,
-    brandColorSecondary: inputs.brandColorSecondary,
-    knobs: colorKnobs,
+    preset: presetName,
+    overrides: inputs.paletteOverrides,
   });
   const scales = toLegacyColorScales(colorTokens);
 
@@ -144,11 +137,9 @@ export function generate(
   // Radius: new per-category pipeline (proposal §5).
   const radiusTokens = generateRadiusCategory(radiusKnobs);
 
-  // Elevation: new per-category pipeline (proposal §5). Pulls the ring color
-  // from the resolved neutral-300 (proposal §8).
-  const ringColorOklch = colorTokens.neutral.stops["300"];
-  const ringColor = oklchToHex(ringColorOklch);
-  const elevationTokens = generateElevationCategory(elevationKnobs, ringColor);
+  // Elevation: pulls the ring color from the palette's hairline slot
+  // (replaces the prior neutral-300 derivation).
+  const elevationTokens = generateElevationCategory(elevationKnobs, colorTokens.palette.hairline);
 
   // Extract the resolved sans primary for use in agentGuide example prompts.
   // Strip surrounding quotes if the font name contains spaces (e.g. "Mona Sans" → Mona Sans).
@@ -165,7 +156,7 @@ export function generate(
 
   const vars: Record<string, string> = {
     brandName: inputs.brandName,
-    primaryHex: inputs.brandColor,
+    primaryHex: colorTokens.palette.accent,
     fontFamily,
   };
 

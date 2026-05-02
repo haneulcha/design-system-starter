@@ -4,19 +4,17 @@ import { PRESETS } from "../../src/schema/presets.js";
 
 const baseInputs = {
   brandName: "Test",
-  brandColor: "#5e6ad2",
+  preset: "professional" as const,
   fontFamily: "Inter",
 };
 
 describe("preset application via generate()", () => {
-  it("undefined preset → all defaults", () => {
+  it("preset:professional defaults applied", () => {
     const r = generate(baseInputs);
-    expect(r.system.componentTokens.knobs).toEqual({
-      cardSurface: "outlined",
-      buttonShape: "rect",
-    });
-    expect(r.system.spacingTokens.knobs.density).toBe("comfortable");
-    expect(r.system.radiusTokens.knobs.style).toBe("standard");
+    expect(r.system.componentTokens.knobs.cardSurface).toBe("outlined");
+    expect(r.system.componentTokens.knobs.buttonShape).toBe("rect");
+    expect(r.system.spacingTokens.knobs.density).toBe("compact");
+    expect(r.system.radiusTokens.knobs.style).toBe("sharp");
     expect(r.system.elevationTokens.knobs.intensity).toBe("subtle");
   });
 
@@ -33,9 +31,10 @@ describe("preset application via generate()", () => {
     for (const w of headingWeights) expect(w).toBeGreaterThanOrEqual(600);
   });
 
-  it("preset:professional uses cool neutral tint", () => {
+  it("preset:professional anchors palette + sharp radius", () => {
     const r = generate({ ...baseInputs, preset: "professional" });
-    expect(r.system.colorTokens.knobs.neutral.tint).toBe("cool");
+    expect(r.system.colorTokens.preset).toBe("professional");
+    expect(r.system.colorTokens.palette.accent).toBe("#635bff");
     expect(r.system.radiusTokens.knobs.style).toBe("sharp");
   });
 

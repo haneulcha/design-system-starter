@@ -6,9 +6,10 @@ import { formatOklch, formatOklchAlpha } from "@core/generator/color.js";
 export function resolveOklch(tokens: DesignTokens, semanticKey: string): Oklch | null {
   const ref = tokens.semantic[semanticKey];
   if (!ref) return null;
-  const lastDash = ref.lastIndexOf("-");
-  const hue = ref.slice(0, lastDash);
-  const step = ref.slice(lastDash + 1);
+  const slash = ref.indexOf("/");
+  if (slash === -1) return null;
+  const hue = ref.slice(0, slash);
+  const step = ref.slice(slash + 1);
   return tokens.primitive.colors[hue]?.[step]?.light ?? null;
 }
 

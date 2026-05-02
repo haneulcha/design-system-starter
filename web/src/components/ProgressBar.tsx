@@ -1,4 +1,4 @@
-const STEPS = ["Color", "Archetype", "Font"];
+const STEPS = ["Archetype", "Font"];
 
 export function ProgressBar({ current }: { current: number }) {
   return (

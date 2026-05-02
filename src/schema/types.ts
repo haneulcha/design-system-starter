@@ -6,7 +6,7 @@ import type { SpacingCategoryTokens } from "../generator/spacing-category.js";
 import type { RadiusCategoryTokens } from "../generator/radius-category.js";
 import type { ElevationCategoryTokens } from "../generator/elevation-category.js";
 import type { ComponentCategoryTokens } from "../generator/components-category.js";
-import type { PartialColorKnobs } from "./color.js";
+import type { PaletteOverrides } from "./archetype-palettes.js";
 import type { TypographyInput } from "./typography.js";
 import type { SpacingInput } from "./spacing.js";
 import type { RadiusInput } from "./radius.js";
@@ -16,21 +16,17 @@ import type { PresetName } from "./presets.js";
 
 // ═══ User Inputs ═══
 
-export type ColorCharacter = "vivid" | "balanced" | "muted";
-
 export interface UserInputs {
   brandName: string;
-  brandColor: string;
-  brandColorSecondary?: string;
   fontFamily: string;
-  colorKnobs?: PartialColorKnobs;
+  /** Per-slot hex overrides on top of the chosen archetype's palette. */
+  paletteOverrides?: PaletteOverrides;
   typographyKnobs?: TypographyInput;
   spacingKnobs?: SpacingInput;
   radiusKnobs?: RadiusInput;
   elevationKnobs?: ElevationInput;
   componentKnobs?: ComponentInput;
-  /** Optional cross-category preset bundle. Each per-category knob the user
-   *  also supplies overrides the preset's value for that whole category. */
+  /** Required. Anchors palette, atmosphere, and per-category knob defaults. */
   preset?: PresetName;
 }
 

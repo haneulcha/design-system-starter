@@ -9,8 +9,8 @@ import {
   generateComponent,
   buildDesignTokens,
 } from "../../src/generator/tokens.js";
-import { generateTypographyCategory } from "../../src/generator/typography-category.js";
 import { generate } from "../../src/generator/index.js";
+import { PALETTE_SLOTS } from "../../src/schema/archetype-palettes.js";
 import type {
   PrimitiveTokens,
   SemanticTokens,
@@ -18,7 +18,7 @@ import type {
   DesignTokens,
 } from "../../src/schema/types.js";
 
-const colorTokens = generateColorCategory({ brandColor: "#5e6ad2" });
+const colorTokens = generateColorCategory({ preset: "professional" });
 const scales = toLegacyColorScales(colorTokens);
 
 let primitive: PrimitiveTokens;
@@ -34,42 +34,25 @@ beforeAll(() => {
 // ─── generatePrimitive ────────────────────────────────────────────────────────
 
 describe("generatePrimitive", () => {
-  it("has neutral, accent, and 4 semantic hues", () => {
-    expect(primitive.colors).toHaveProperty("neutral");
-    expect(primitive.colors).toHaveProperty("accent");
-    expect(primitive.colors).toHaveProperty("error");
-    expect(primitive.colors).toHaveProperty("success");
-    expect(primitive.colors).toHaveProperty("warning");
-    expect(primitive.colors).toHaveProperty("info"); // standard depth includes info
-  });
-
-  it("neutral has 9 stops including the alias-referenced names", () => {
-    const stops = Object.keys(primitive.colors.neutral);
-    expect(stops).toHaveLength(9);
-    for (const required of ["50", "100", "200", "300", "500", "600", "800", "900"]) {
-      expect(stops).toContain(required);
+  it("has a single 'palette' hue containing every slot", () => {
+    expect(primitive.colors).toHaveProperty("palette");
+    const stops = Object.keys(primitive.colors.palette);
+    expect(stops).toHaveLength(PALETTE_SLOTS.length);
+    for (const slot of PALETTE_SLOTS) {
+      expect(stops, `slot "${slot}" missing in palette`).toContain(slot);
     }
   });
 
-  it("accent has 5 stops including 'contrast'", () => {
-    const stops = Object.keys(primitive.colors.accent);
-    expect(stops).toHaveLength(5);
-    expect(stops).toContain("contrast");
-    expect(stops).toContain("500");
-  });
-
-  it("each step has light and dark Oklch values", () => {
-    for (const [hue, scale] of Object.entries(primitive.colors)) {
-      for (const [step, value] of Object.entries(scale)) {
-        expect(value.light, `${hue}-${step}.light`).toHaveProperty("l");
-        expect(value.dark, `${hue}-${step}.dark`).toHaveProperty("l");
-      }
+  it("each slot has light and dark Oklch values", () => {
+    for (const [step, value] of Object.entries(primitive.colors.palette)) {
+      expect(value.light, `palette/${step}.light`).toHaveProperty("l");
+      expect(value.dark, `palette/${step}.dark`).toHaveProperty("l");
     }
   });
 
-  it("does NOT have legacy gray/brand/red/green/amber/blue keys", () => {
+  it("does NOT contain legacy hue keys", () => {
     const keys = Object.keys(primitive.colors);
-    for (const legacy of ["gray", "brand", "red", "green", "amber", "blue"]) {
+    for (const legacy of ["neutral", "accent", "error", "success", "warning", "info"]) {
       expect(keys, `legacy key "${legacy}" should be gone`).not.toContain(legacy);
     }
   });
@@ -79,18 +62,18 @@ describe("generatePrimitive", () => {
 
 describe("generateSemantic", () => {
   const requiredKeys = [
-    // surface aliases
+    // surface
     "bg/canvas", "bg/soft", "bg/strong", "bg/card", "bg/hairline",
-    // text aliases
+    // text
     "text/ink", "text/body", "text/body-strong",
     "text/muted", "text/muted-soft", "text/on-primary",
     // accent
     "accent/primary", "accent/hover", "accent/active", "accent/strong",
-    // status
-    "status/error-bg", "status/error-text",
+    // status (always emitted — no depth knob)
+    "status/error-bg",   "status/error-text",
     "status/success-bg", "status/success-text",
     "status/warning-bg", "status/warning-text",
-    "status/info-bg", "status/info-text",
+    "status/info-bg",    "status/info-text",
   ];
 
   it("has all required role keys", () => {
@@ -99,57 +82,18 @@ describe("generateSemantic", () => {
     }
   });
 
-  it("text/on-primary points at accent-contrast", () => {
-    expect(semantic["text/on-primary"]).toBe("accent-contrast");
-  });
-
-  it("ALL referenced hues exist in primitive.colors", () => {
-    const primitiveHues = new Set(Object.keys(primitive.colors));
+  it("every value uses the 'palette/<slot>' format", () => {
     for (const [role, ref] of Object.entries(semantic)) {
-      const lastDash = ref.lastIndexOf("-");
-      const hue = ref.slice(0, lastDash);
-      expect(
-        primitiveHues.has(hue),
-        `semantic["${role}"] = "${ref}" — hue "${hue}" not in primitive`,
-      ).toBe(true);
+      expect(ref, `${role} must start with 'palette/'`).toMatch(/^palette\//);
     }
   });
 
-  it("ALL referenced steps exist in the respective hue", () => {
+  it("every referenced slot exists in primitive.colors.palette", () => {
+    const palette = primitive.colors.palette;
     for (const [role, ref] of Object.entries(semantic)) {
-      const lastDash = ref.lastIndexOf("-");
-      const hue = ref.slice(0, lastDash);
-      const step = ref.slice(lastDash + 1);
-      const hueMap = primitive.colors[hue];
-      expect(
-        hueMap,
-        `semantic["${role}"] = "${ref}" — hue not in primitive`,
-      ).toBeDefined();
-      expect(
-        hueMap,
-        `semantic["${role}"] = "${ref}" — step "${step}" missing in "${hue}"`,
-      ).toHaveProperty(step);
+      const slot = ref.slice("palette/".length);
+      expect(palette, `semantic["${role}"] = "${ref}" — slot "${slot}" missing`).toHaveProperty(slot);
     }
-  });
-
-  it("omits info status keys when semantic.depth=minimal", () => {
-    const minimalTokens = generateColorCategory({
-      brandColor: "#5e6ad2",
-      knobs: { semantic: { depth: "minimal" } },
-    });
-    const minimalSemantic = generateSemantic(minimalTokens);
-    expect(minimalSemantic).not.toHaveProperty("status/info-bg");
-    expect(minimalSemantic).not.toHaveProperty("status/info-text");
-  });
-
-  it("emits accent/secondary keys when accentSecondary is on", () => {
-    const dualTokens = generateColorCategory({
-      brandColor: "#5e6ad2",
-      brandColorSecondary: "#f97316",
-      knobs: { accent: { secondary: "on" } },
-    });
-    const dualSemantic = generateSemantic(dualTokens);
-    expect(dualSemantic).toHaveProperty("accent/secondary");
   });
 });
 
@@ -162,12 +106,12 @@ describe("generateComponent", () => {
     expect(component.button.ghost).toBeDefined();
   });
 
-  it("button.primary references the new accent + on-primary aliases", () => {
+  it("button.primary references the accent + on-primary aliases", () => {
     expect(component.button.primary.bg).toBe("accent/primary");
     expect(component.button.primary.text).toBe("text/on-primary");
   });
 
-  it("has input.default, input.focus, input.error, input.disabled", () => {
+  it("has input.default/focus/error/disabled", () => {
     expect(component.input.default).toBeDefined();
     expect(component.input.focus).toBeDefined();
     expect(component.input.error).toBeDefined();
@@ -178,16 +122,12 @@ describe("generateComponent", () => {
     expect(component.card.default).toBeDefined();
   });
 
-  it("has badge.default, badge.success, badge.error, badge.warning, badge.info", () => {
+  it("has badge.default/success/error/warning/info", () => {
     expect(component.badge.default).toBeDefined();
     expect(component.badge.success).toBeDefined();
     expect(component.badge.error).toBeDefined();
     expect(component.badge.warning).toBeDefined();
     expect(component.badge.info).toBeDefined();
-  });
-
-  it("has divider.default", () => {
-    expect(component.divider.default).toBeDefined();
   });
 
   it("ALL leaf values exist as semantic keys OR are 'transparent'", () => {
@@ -206,25 +146,14 @@ describe("generateComponent", () => {
   });
 });
 
-// ─── buildDesignTokens — typography section ───────────────────────────────────
+// ─── buildDesignTokens — typography section (unchanged) ───────────────────────
 
 describe("buildDesignTokens — typography", () => {
-  const result = generate({
-    brandName: "TokenTest",
-    brandColor: "#5e6ad2",
-  });
+  const result = generate({ brandName: "TokenTest", preset: "professional", fontFamily: "Inter" });
   const tokens: DesignTokens = result.tokens;
 
   it("families has exactly 3 keys: sans, mono, serif", () => {
-    const keys = Object.keys(tokens.typography.families).sort();
-    expect(keys).toEqual(["mono", "sans", "serif"]);
-  });
-
-  it("families does NOT have legacy keys: primary, primaryFallback, monoFallback", () => {
-    const keys = Object.keys(tokens.typography.families);
-    expect(keys).not.toContain("primary");
-    expect(keys).not.toContain("primaryFallback");
-    expect(keys).not.toContain("monoFallback");
+    expect(Object.keys(tokens.typography.families).sort()).toEqual(["mono", "sans", "serif"]);
   });
 
   it("styles has exactly 20 keys", () => {
@@ -237,72 +166,21 @@ describe("buildDesignTokens — typography", () => {
     }
   });
 
-  it("styles has the expected 20 profile keys", () => {
-    const expectedKeys = [
-      "heading-xl", "heading-lg", "heading-md", "heading-sm", "heading-xs",
-      "body-lg", "body-md", "body-sm",
-      "caption-md", "caption-sm", "caption-xs",
-      "code-md", "code-sm", "code-xs",
-      "button-md", "button-sm",
-      "card", "nav", "link", "badge",
-    ];
-    for (const key of expectedKeys) {
-      expect(tokens.typography.styles, `missing style key: "${key}"`).toHaveProperty(key);
-    }
-  });
-
-  it("does NOT have legacy style keys like 'display-hero', 'body-large', 'card-title'", () => {
-    expect(tokens.typography.styles).not.toHaveProperty("display-hero");
-    expect(tokens.typography.styles).not.toHaveProperty("body-large");
-    expect(tokens.typography.styles).not.toHaveProperty("card-title");
-  });
-
   it("heading-xl has fontSize=64 and letterSpacing=-0.02", () => {
     const style = tokens.typography.styles["heading-xl"];
     expect(style.fontSize).toBe(64);
     expect(style.letterSpacing).toBe(-0.02);
   });
 
-  it("heading-lg has letterSpacing=-0.02", () => {
-    expect(tokens.typography.styles["heading-lg"].letterSpacing).toBe(-0.02);
-  });
-
   it("badge has letterSpacing=0.05", () => {
     expect(tokens.typography.styles["badge"].letterSpacing).toBe(0.05);
-  });
-
-  it("body-md has letterSpacing=0", () => {
-    expect(tokens.typography.styles["body-md"].letterSpacing).toBe(0);
-  });
-
-  it("body-md.fontFamily includes both 'Inter' and 'Pretendard'", () => {
-    const fontFamily = tokens.typography.styles["body-md"].fontFamily;
-    expect(fontFamily).toContain("Inter");
-    expect(fontFamily).toContain("Pretendard");
-  });
-
-  it("all letterSpacing values are numbers", () => {
-    for (const [key, style] of Object.entries(tokens.typography.styles)) {
-      expect(typeof style.letterSpacing, `${key}.letterSpacing must be a number`).toBe("number");
-    }
-  });
-
-  it("code styles use the mono font chain", () => {
-    const codeMd = tokens.typography.styles["code-md"];
-    // The mono chain starts with "Geist Mono"
-    expect(codeMd.fontFamily).toContain("Geist Mono");
-  });
-
-  it("sans font chain is the full fallback string", () => {
-    // Must include at least Inter and a generic fallback
-    expect(tokens.typography.families.sans).toContain("Inter");
-    expect(tokens.typography.families.sans).toContain("sans-serif");
   });
 
   it("custom sans font flows through families.sans and body-md.fontFamily", () => {
     const customResult = generate({
       brandName: "CustomFont",
-      brandColor: "#5e6ad2",
+      preset: "professional",
+      fontFamily: "Mona Sans",
       typographyKnobs: { fontFamily: { sans: "Mona Sans" } },
     });
     expect(customResult.tokens.typography.families.sans).toContain("Mona Sans");

@@ -2,16 +2,11 @@
 //
 // Cross-category knob bundles. Each preset is an editorial pairing — the
 // archetype's atmospheric intent translated into actual category knobs.
-// Ships as v1 of the "preset bundle" feature mentioned in the playbook §4.1
-// rejected-alternatives log: "if a 'preset bundles' feature is added — e.g.
-// `preset: 'professional'` autoselects matching color knobs + heading style
-// + radius — the 5 archetypes are still in src/schema/archetypes.ts."
 //
-// Source intent: src/schema/archetypes.ts (the prose, dos, donts).
-// Knob vocab: each category's schema (color/typography/spacing/radius/
-// elevation/components).
+// Color is NOT a knob bundle — each preset gets its full palette from
+// src/schema/archetype-palettes.ts. Other categories (typography/spacing/
+// radius/elevation/components) still use knobs.
 
-import type { PartialColorKnobs } from "./color.js";
 import type { TypographyInput } from "./typography.js";
 import type { SpacingInput } from "./spacing.js";
 import type { RadiusInput } from "./radius.js";
@@ -34,12 +29,8 @@ export const PRESET_NAMES: readonly PresetName[] = [
 ];
 
 /** A preset is a bag of optional category knobs. Generate() merges this with
- *  user-supplied knobs at top level (user wins per category). Nested partial
- *  overrides within a single category (e.g., overriding only colorKnobs.accent
- *  while keeping the preset's colorKnobs.neutral) are not supported in v1 —
- *  if you supply colorKnobs, you replace the whole preset's colorKnobs. */
+ *  user-supplied knobs at top level (user wins per category). */
 export interface PresetBundle {
-  colorKnobs?: PartialColorKnobs;
   typographyKnobs?: TypographyInput;
   spacingKnobs?: SpacingInput;
   radiusKnobs?: RadiusInput;
@@ -47,26 +38,8 @@ export interface PresetBundle {
   componentKnobs?: ComponentInput;
 }
 
-// Caveat 1: warm-friendly and playful-creative are keyed `archetypes.warm-*`
-// to a warm neutral undertone. The color category's NeutralTint vocabulary
-// (achromatic / cool / green / purple) does NOT include "warm" because the
-// corpus showed 0/56 systems use warm-tinted neutrals (color proposal §4.1
-// rejected). These two presets therefore use `achromatic` and lean on
-// elevation/component knobs to express warmth instead.
-//
-// Caveat 2: no preset sets `accent.secondary: "on"` even though bold-energetic
-// and playful-creative would benefit from a second accent. The color category
-// requires `brandColorSecondary` as a paired input when `accent.secondary` is
-// on, and silently falling back when the user hasn't supplied one would be
-// confusing. Recommend the secondary explicitly via documentation rather than
-// implicitly via preset.
-
 export const PRESETS: Record<PresetName, PresetBundle> = {
   "clean-minimal": {
-    colorKnobs: {
-      neutral: { tint: "achromatic" },
-      semantic: { depth: "minimal" },
-    },
     typographyKnobs: { headingStyle: "flat" },
     spacingKnobs: { density: "compact" },
     radiusKnobs: { style: "sharp" },
@@ -75,10 +48,6 @@ export const PRESETS: Record<PresetName, PresetBundle> = {
   },
 
   "warm-friendly": {
-    colorKnobs: {
-      neutral: { tint: "achromatic" },
-      semantic: { depth: "standard" },
-    },
     typographyKnobs: { headingStyle: "default" },
     spacingKnobs: { density: "compact" },
     radiusKnobs: { style: "standard" },
@@ -87,10 +56,6 @@ export const PRESETS: Record<PresetName, PresetBundle> = {
   },
 
   "bold-energetic": {
-    colorKnobs: {
-      neutral: { tint: "achromatic" },
-      semantic: { depth: "rich" },
-    },
     typographyKnobs: { headingStyle: "bold" },
     spacingKnobs: { density: "dense" },
     radiusKnobs: { style: "standard" },
@@ -99,10 +64,6 @@ export const PRESETS: Record<PresetName, PresetBundle> = {
   },
 
   "professional": {
-    colorKnobs: {
-      neutral: { tint: "cool" },
-      semantic: { depth: "standard" },
-    },
     typographyKnobs: { headingStyle: "default" },
     spacingKnobs: { density: "compact" },
     radiusKnobs: { style: "sharp" },
@@ -111,10 +72,6 @@ export const PRESETS: Record<PresetName, PresetBundle> = {
   },
 
   "playful-creative": {
-    colorKnobs: {
-      neutral: { tint: "achromatic" },
-      semantic: { depth: "rich" },
-    },
     typographyKnobs: { headingStyle: "bold" },
     spacingKnobs: { density: "comfortable" },
     radiusKnobs: { style: "generous" },
