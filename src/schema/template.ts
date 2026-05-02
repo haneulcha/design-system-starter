@@ -208,34 +208,46 @@ function renderTypography(system: DesignSystem): string {
   return lines.join("\n");
 }
 
+type SizeTableRow<S> = readonly [label: string, getter: (s: S) => string];
+
+/** Render a markdown table with one column per size and one row per field.
+ *  Used for every primitive that has a per-size matrix (button/input/card/
+ *  badge/tab/avatar). */
+function renderSizeTable<S>(
+  sizes: Record<string, S>,
+  rows: readonly SizeTableRow<S>[],
+): string[] {
+  const sizeNames = Object.keys(sizes);
+  const lines: string[] = [];
+  lines.push(`| | ${sizeNames.join(" | ")} |`);
+  lines.push(`|---|${sizeNames.map(() => "---|").join("")}`);
+  for (const [label, getter] of rows) {
+    const cells = sizeNames.map((sz) => getter(sizes[sz])).join(" | ");
+    lines.push(`| ${label} | ${cells} |`);
+  }
+  return lines;
+}
+
 function renderComponents(system: DesignSystem): string {
+  const t = system.componentTokens;
   const lines: string[] = [];
   lines.push("## 4. Components\n");
+  lines.push(`_Knobs: \`cardSurface=${t.knobs.cardSurface}\`, \`buttonShape=${t.knobs.buttonShape}\`. ${t.philosophy}_\n`);
 
   // ── Button ──────────────────────────────────────────────────────────────────
   lines.push("### Button\n");
-
-  const btn = system.components.button;
-  const btnSizeNames = Object.keys(btn.sizes);
-  const btnRows: Array<[string, (s: typeof btn.sizes[string]) => string]> = [
-    ["height",    (s) => s.height],
-    ["paddingX",  (s) => s.paddingX],
-    ["gap",       (s) => s.gap],
-    ["fontSize",  (s) => s.fontSize],
-    ["iconSize",  (s) => s.iconSize],
-    ["radius",    (s) => s.radius],
-  ];
-
   lines.push("**Sizes:**\n");
-  lines.push(`| | ${btnSizeNames.join(" | ")} |`);
-  lines.push(`|---|${btnSizeNames.map(() => "---|").join("")}`);
-  for (const [rowLabel, getter] of btnRows) {
-    const cells = btnSizeNames.map((sz) => getter(btn.sizes[sz])).join(" | ");
-    lines.push(`| ${rowLabel} | ${cells} |`);
-  }
-
+  lines.push(...renderSizeTable(t.button.sizes, [
+    ["height",   (s) => s.height],
+    ["paddingX", (s) => s.paddingX],
+    ["gap",      (s) => s.gap],
+    ["fontSize", (s) => s.fontSize],
+    ["iconSize", (s) => s.iconSize],
+    ["radius",   (s) => s.radius],
+  ]));
   lines.push("");
-  lines.push(`**Variants:** ${btn.variants.join(", ")}\n`);
+  lines.push(`**Variants:** ${t.button.variants.join(", ")}`);
+  lines.push(`**States:** ${t.button.states.join(", ")}\n`);
   lines.push("**Colors:** component.button.{variant}.{state} tokens\n");
   lines.push("**Structure:**");
   lines.push("```");
@@ -247,21 +259,18 @@ function renderComponents(system: DesignSystem): string {
 
   // ── Input ───────────────────────────────────────────────────────────────────
   lines.push("\n### Input\n");
-
-  const inp = system.components.input;
-  lines.push("**Dimensions:**\n");
-  lines.push(`- fieldHeight: ${inp.fieldHeight}`);
-  lines.push(`- fieldPaddingX: ${inp.fieldPaddingX}`);
-  lines.push(`- fieldRadius: ${inp.fieldRadius}`);
-  lines.push(`- labelFieldGap: ${inp.labelFieldGap}`);
-  lines.push(`- fieldHelperGap: ${inp.fieldHelperGap}`);
-  lines.push(`- labelFont: ${inp.labelFont}`);
-  lines.push(`- valueFont: ${inp.valueFont}`);
-  lines.push(`- helperFont: ${inp.helperFont}`);
-  lines.push(`- iconSize: ${inp.iconSize}`);
-
+  lines.push("**Sizes:**\n");
+  lines.push(...renderSizeTable(t.input.sizes, [
+    ["height",     (s) => s.height],
+    ["paddingX",   (s) => s.paddingX],
+    ["radius",     (s) => s.radius],
+    ["labelFont",  (s) => s.labelFont],
+    ["valueFont",  (s) => s.valueFont],
+    ["helperFont", (s) => s.helperFont],
+  ]));
   lines.push("");
-  lines.push(`**States:** ${inp.states.join(", ")}\n`);
+  lines.push(`**Variants:** ${t.input.variants.join(", ")}`);
+  lines.push(`**States:** ${t.input.states.join(", ")}\n`);
   lines.push("**Structure:**");
   lines.push("```");
   lines.push("[Input] vertical auto-layout");
@@ -275,19 +284,17 @@ function renderComponents(system: DesignSystem): string {
 
   // ── Card ────────────────────────────────────────────────────────────────────
   lines.push("\n### Card\n");
-
-  const card = system.components.card;
-  lines.push("**Dimensions:**\n");
-  lines.push(`- radius: ${card.radius}`);
-  lines.push(`- contentPadding: ${card.contentPadding}`);
-  lines.push(`- contentGap: ${card.contentGap}`);
-  lines.push(`- shadow: ${card.shadow}`);
-  lines.push(`- headerFont: ${card.headerFont}`);
-  lines.push(`- bodyFont: ${card.bodyFont}`);
-  lines.push(`- footerGap: ${card.footerGap}`);
-
+  lines.push("**Sizes:**\n");
+  lines.push(...renderSizeTable(t.card.sizes, [
+    ["radius",         (s) => s.radius],
+    ["contentPadding", (s) => s.contentPadding],
+    ["contentGap",     (s) => s.contentGap],
+    ["elevatedShadow", (s) => s.elevatedShadow],
+    ["headerFont",     (s) => s.headerFont],
+    ["bodyFont",       (s) => s.bodyFont],
+  ]));
   lines.push("");
-  lines.push(`**Variants:** ${card.variants.join(", ")}\n`);
+  lines.push(`**Variants:** ${t.card.variants.join(", ")} _(default: ${t.card.defaultVariant})_\n`);
   lines.push("**Structure:**");
   lines.push("```");
   lines.push("[Card] vertical auto-layout");
@@ -298,35 +305,38 @@ function renderComponents(system: DesignSystem): string {
 
   // ── Badge ───────────────────────────────────────────────────────────────────
   lines.push("\n### Badge\n");
-
-  const badge = system.components.badge;
-  const badgeSizeNames = Object.keys(badge.sizes);
-  const badgeRows: Array<[string, (s: typeof badge.sizes[string]) => string]> = [
+  lines.push("**Sizes:**\n");
+  lines.push(...renderSizeTable(t.badge.sizes, [
     ["height",   (s) => s.height],
     ["paddingX", (s) => s.paddingX],
     ["radius",   (s) => s.radius],
     ["font",     (s) => s.font],
-  ];
-
-  lines.push("**Sizes:**\n");
-  lines.push(`| | ${badgeSizeNames.join(" | ")} |`);
-  lines.push(`|---|${badgeSizeNames.map(() => "---|").join("")}`);
-  for (const [rowLabel, getter] of badgeRows) {
-    const cells = badgeSizeNames.map((sz) => getter(badge.sizes[sz])).join(" | ");
-    lines.push(`| ${rowLabel} | ${cells} |`);
-  }
-
+  ]));
   lines.push("");
-  lines.push(`**Variants:** ${badge.variants.join(", ")}`);
+  lines.push(`**Variants:** ${t.badge.variants.join(", ")}`);
 
-  // ── Divider ─────────────────────────────────────────────────────────────────
-  lines.push("\n### Divider\n");
+  // ── Tab ─────────────────────────────────────────────────────────────────────
+  lines.push("\n### Tab\n");
+  lines.push("**Sizes:**\n");
+  lines.push(...renderSizeTable(t.tab.sizes, [
+    ["height",   (s) => s.height],
+    ["paddingX", (s) => s.paddingX],
+    ["gap",      (s) => s.gap],
+    ["font",     (s) => s.font],
+  ]));
+  lines.push("");
+  lines.push(`**Variants:** ${t.tab.variants.join(", ")}`);
+  lines.push(`**States:** ${t.tab.states.join(", ")}`);
 
-  const divider = system.components.divider;
-  lines.push("**Dimensions:**\n");
-  lines.push(`- lineHeight: ${divider.lineHeight}`);
-  lines.push(`- labelPaddingX: ${divider.labelPaddingX}`);
-  lines.push(`- labelFont: ${divider.labelFont}`);
+  // ── Avatar ──────────────────────────────────────────────────────────────────
+  lines.push("\n### Avatar\n");
+  lines.push("**Sizes:**\n");
+  lines.push(...renderSizeTable(t.avatar.sizes, [
+    ["dimension", (s) => s.dimension],
+  ]));
+  lines.push("");
+  lines.push(`**Variants:** ${t.avatar.variants.join(", ")}`);
+  lines.push(`**Radius:** ${t.avatar.radius}`);
 
   return lines.join("\n");
 }
