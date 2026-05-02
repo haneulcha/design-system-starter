@@ -1,12 +1,20 @@
 // src/schema/template.ts
 
-import type {
-  DesignSystem,
-  TypeStyle,
-  ElevationLevel,
-  Breakpoint,
-} from "./types.js";
-import { formatOklch } from "../generator/color.js";
+import type { DesignSystem } from "./types.js";
+import { formatOklch, oklchToHex } from "../generator/color.js";
+import {
+  SEMANTIC_PALETTE,
+  SURFACE_ALIASES_STANDARD,
+  TEXT_ALIASES_STANDARD,
+} from "./color.js";
+import type { ColorCategoryTokens } from "../generator/color-category.js";
+import {
+  SIZE_SCALE,
+  WEIGHT_SCALE,
+  LINE_HEIGHT_SCALE,
+  LETTER_SPACING_VALUES,
+} from "./typography.js";
+import type { TypographyCategoryTokens, TypographyToken } from "../generator/typography-category.js";
 
 // ─── Section renderers ───────────────────────────────────────────────────────
 
@@ -22,50 +30,180 @@ function renderTheme(system: DesignSystem): string {
   return lines.join("\n");
 }
 
+function renderNeutralScale(tokens: ColorCategoryTokens): string[] {
+  const lines: string[] = [];
+  lines.push("### Tier 1 — Neutral Scale\n");
+  lines.push(`Tint: \`${tokens.neutral.tint}\`. ${Object.keys(tokens.neutral.stops).length} stops.\n`);
+  lines.push("| Step | OKLCH | Hex |");
+  lines.push("|------|-------|-----|");
+  for (const [step, value] of Object.entries(tokens.neutral.stops)) {
+    lines.push(`| neutral.${step} | \`${formatOklch(value)}\` | \`${oklchToHex(value)}\` |`);
+  }
+  return lines;
+}
+
+function renderAccentScale(
+  label: string,
+  scale: ColorCategoryTokens["accent"],
+): string[] {
+  const lines: string[] = [];
+  lines.push(`### Tier 1 — ${label}\n`);
+  lines.push(
+    `Hue: ${scale.hue.toFixed(1)}°. Anchored at base L = ${scale.baseL.toFixed(3)} ± 0.18.\n`,
+  );
+  lines.push("| Step | OKLCH | Hex |");
+  lines.push("|------|-------|-----|");
+  for (const [step, value] of Object.entries(scale.stops)) {
+    lines.push(`| accent.${step} | \`${formatOklch(value)}\` | \`${oklchToHex(value)}\` |`);
+  }
+  return lines;
+}
+
+function renderSemanticPalette(tokens: ColorCategoryTokens): string[] {
+  const lines: string[] = [];
+  lines.push("### Tier 2 — Semantic Palette\n");
+  lines.push("Independent hues per role; brand-invariant.\n");
+  lines.push("| Role | Hue | Variant | OKLCH | Hex |");
+  lines.push("|------|-----|---------|-------|-----|");
+  for (const [role, variants] of Object.entries(tokens.semantic)) {
+    if (!variants) continue;
+    const hue = SEMANTIC_PALETTE[role as keyof typeof SEMANTIC_PALETTE].hue;
+    for (const [variant, value] of Object.entries(variants)) {
+      if (!value) continue;
+      lines.push(
+        `| ${role} | ${hue}° | ${variant} | \`${formatOklch(value)}\` | \`${oklchToHex(value)}\` |`,
+      );
+    }
+  }
+  return lines;
+}
+
+function renderRoleAliases(): string[] {
+  const lines: string[] = [];
+  lines.push("### Tier 3 — Role Aliases\n");
+  lines.push("**Surface (5):**\n");
+  for (const [name, ref] of Object.entries(SURFACE_ALIASES_STANDARD)) {
+    lines.push(`- \`surface.${name}\` → \`${ref}\``);
+  }
+  lines.push("\n**Text (6):**\n");
+  for (const [name, ref] of Object.entries(TEXT_ALIASES_STANDARD)) {
+    lines.push(`- \`text.${name}\` → \`${ref}\``);
+  }
+  return lines;
+}
+
 function renderColors(system: DesignSystem): string {
+  const tokens = system.colorTokens;
   const lines: string[] = [];
   lines.push("## 2. Color System\n");
-  lines.push("### Color Scales\n");
-  lines.push("Each color has 10 steps (100-1000). Steps 100-300: backgrounds, 400-600: borders, 700-800: high contrast, 900-1000: text.\n");
+  lines.push(
+    "Three-tier architecture (proposal §1). Tier 1 = base palettes (neutral + accent). " +
+      "Tier 2 = semantic palette (error/success/warning/info, independent hues). " +
+      "Tier 3 = role aliases (surface/text → references into Tier 1).\n",
+  );
 
-  for (const [hue, scale] of Object.entries(system.colors)) {
-    lines.push(`#### ${hue.charAt(0).toUpperCase() + hue.slice(1)}\n`);
-    const steps = Object.entries(scale).sort((a, b) => Number(a[0]) - Number(b[0]));
-    lines.push("| Step | Light | Dark |");
-    lines.push("|------|-------|------|");
-    for (const [step, values] of steps) {
-      lines.push(`| ${step} | \`${formatOklch(values.light)}\` | \`${formatOklch(values.dark)}\` |`);
-    }
+  const knobs = tokens.knobs;
+  lines.push("**Active knobs:**\n");
+  lines.push(`- neutral.stops: \`${knobs.neutral.stops}\` · neutral.tint: \`${knobs.neutral.tint}\``);
+  lines.push(`- accent.stops: \`${knobs.accent.stops}\` · accent.secondary: \`${knobs.accent.secondary}\``);
+  lines.push(`- semantic.depth: \`${knobs.semantic.depth}\``);
+  lines.push(`- aliases.cardinality: \`${knobs.aliases.cardinality}\``);
+  lines.push("");
+
+  lines.push(...renderNeutralScale(tokens));
+  lines.push("");
+  lines.push(...renderAccentScale("Accent Scale", tokens.accent));
+  lines.push("");
+  if (tokens.accentSecondary) {
+    lines.push(...renderAccentScale("Accent Scale (Secondary)", tokens.accentSecondary));
     lines.push("");
   }
+  lines.push(...renderSemanticPalette(tokens));
+  lines.push("");
+  lines.push(...renderRoleAliases());
 
   return lines.join("\n");
 }
 
+function renderFontChains(tokens: TypographyCategoryTokens): string[] {
+  const lines: string[] = [];
+  lines.push("### Font Family Chains\n");
+  lines.push(`- **Sans:** ${tokens.fontChains.sans}`);
+  lines.push(`- **Mono:** ${tokens.fontChains.mono}`);
+  lines.push(`- **Serif:** ${tokens.fontChains.serif}`);
+  return lines;
+}
+
+function renderScales(): string[] {
+  const lines: string[] = [];
+  lines.push("### Scales\n");
+  lines.push(`**Size scale (px):** ${SIZE_SCALE.join(", ")}`);
+  lines.push(`**Weight scale:** ${WEIGHT_SCALE.join(", ")}`);
+  lines.push(`**Line-height scale:** ${LINE_HEIGHT_SCALE.join(", ")}`);
+  lines.push(`**Letter-spacing values:** ${LETTER_SPACING_VALUES.join(", ")}`);
+  return lines;
+}
+
+function renderCategoryTable(
+  label: string,
+  category: string,
+  variantKeys: string[],
+  profiles: Record<string, TypographyToken>,
+): string[] {
+  const lines: string[] = [];
+  lines.push(`#### ${label}\n`);
+  lines.push("| variant | size | weight | line-height | letter-spacing |");
+  lines.push("| --- | ---: | ---: | ---: | --- |");
+  for (const variant of variantKeys) {
+    const key = `${category}.${variant}`;
+    const t = profiles[key];
+    if (!t) continue;
+    lines.push(`| ${variant} | ${t.size} | ${t.weight} | ${t.lineHeight} | ${t.letterSpacing} |`);
+  }
+  return lines;
+}
+
+function renderSingleVariantTable(profiles: Record<string, TypographyToken>): string[] {
+  const lines: string[] = [];
+  lines.push("#### Single-variant categories\n");
+  lines.push("| category | family | size | weight | line-height | letter-spacing |");
+  lines.push("| --- | --- | ---: | ---: | ---: | --- |");
+  const singleKeys = ["card", "nav", "link", "badge"];
+  for (const key of singleKeys) {
+    const t = profiles[key];
+    if (!t) continue;
+    // Derive slot name from fontFamily chain: mono chain means "mono", serif means "serif", else "sans"
+    const familySlot = t.fontFamily.startsWith('"Geist Mono"') || t.fontFamily.startsWith("Geist Mono")
+      ? "mono"
+      : t.fontFamily.startsWith("Georgia") || t.fontFamily.startsWith('"Georgia"')
+        ? "serif"
+        : "sans";
+    lines.push(`| ${key} | ${familySlot} | ${t.size} | ${t.weight} | ${t.lineHeight} | ${t.letterSpacing} |`);
+  }
+  return lines;
+}
+
 function renderTypography(system: DesignSystem): string {
+  const tokens = system.typographyTokens;
   const lines: string[] = [];
   lines.push("## 3. Typography\n");
 
-  lines.push("### Font Families\n");
-  const f = system.typography.families;
-  lines.push(`- **Primary:** ${f.primary}, ${f.primaryFallback}`);
-  lines.push(`- **Mono:** ${f.mono}, ${f.monoFallback}`);
-
-  lines.push("\n### Type Scale\n");
-  lines.push(
-    "| Role | Font | Size | Weight | Line Height | Letter Spacing | Notes |"
-  );
-  lines.push("| --- | --- | --- | --- | --- | --- | --- |");
-  for (const t of system.typography.hierarchy) {
-    lines.push(
-      `| ${t.role} | ${t.font} | ${t.size} | ${t.weight} | ${t.lineHeight} | ${t.letterSpacing} | ${t.notes} |`
-    );
-  }
-
-  lines.push("\n### Principles\n");
-  for (const p of system.typography.principles) {
-    lines.push(`- ${p}`);
-  }
+  lines.push(...renderFontChains(tokens));
+  lines.push("");
+  lines.push(...renderScales());
+  lines.push("");
+  lines.push("### Category profiles\n");
+  lines.push(...renderCategoryTable("Heading", "heading", ["xl", "lg", "md", "sm", "xs"], tokens.profiles));
+  lines.push("");
+  lines.push(...renderCategoryTable("Body", "body", ["lg", "md", "sm"], tokens.profiles));
+  lines.push("");
+  lines.push(...renderCategoryTable("Caption", "caption", ["md", "sm", "xs"], tokens.profiles));
+  lines.push("");
+  lines.push(...renderCategoryTable("Code (mono family)", "code", ["md", "sm", "xs"], tokens.profiles));
+  lines.push("");
+  lines.push(...renderCategoryTable("Button", "button", ["md", "sm"], tokens.profiles));
+  lines.push("");
+  lines.push(...renderSingleVariantTable(tokens.profiles));
 
   return lines.join("\n");
 }
@@ -198,7 +336,8 @@ function renderLayout(system: DesignSystem): string {
   lines.push("## 5. Layout & Spacing\n");
 
   lines.push("### Spacing System\n");
-  lines.push("Base unit: 8px. Scale:");
+  const density = system.spacingTokens.knobs.density;
+  lines.push(`4-multiple scale. Density: \`${density}\` (section = ${system.spacingTokens.aliases.section}px). Aliases:`);
   for (const s of system.layout.spacing) {
     lines.push(`- **${s.name}:** ${s.value}`);
   }
@@ -311,7 +450,6 @@ function renderAgentGuide(system: DesignSystem): string {
 export function renderDesignMd(system: DesignSystem): string {
   const sections = [
     `# Design System: ${system.brandName}`,
-    `**Mood:** ${system.mood}`,
     "",
     renderTheme(system),
     "",

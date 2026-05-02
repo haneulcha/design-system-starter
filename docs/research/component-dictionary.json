@@ -1,0 +1,1804 @@
+{
+  "version": 1,
+  "scope": [
+    "buttons",
+    "inputs",
+    "cards",
+    "badges",
+    "tabs",
+    "avatar"
+  ],
+  "variants": {
+    "buttons": [
+      "primary",
+      "secondary",
+      "tertiary",
+      "ghost",
+      "outline",
+      "text",
+      "icon",
+      "danger"
+    ],
+    "inputs": [
+      "text",
+      "search",
+      "textarea"
+    ],
+    "cards": [
+      "default",
+      "outlined",
+      "elevated",
+      "filled"
+    ],
+    "badges": [
+      "solid",
+      "subtle",
+      "outline"
+    ],
+    "tabs": [
+      "underline",
+      "pill",
+      "segmented"
+    ],
+    "avatar": [
+      "circle"
+    ]
+  },
+  "states": [
+    "default",
+    "hover",
+    "active",
+    "focus",
+    "disabled",
+    "error"
+  ],
+  "sizeVariants": [
+    "sm",
+    "md",
+    "lg"
+  ],
+  "modifiers": [
+    "onDark",
+    "onLight",
+    "pill",
+    "capsule",
+    "icon"
+  ],
+  "rules": [
+    "feature-card / pricing-card / hero-card / testimonial-card / etc. \u2192 cards (variant=default unless attrs say otherwise) \u2014 corpus uses these as de-facto card data even though they are page-slotted",
+    "cta-band-* \u2192 _excluded (full-bleed page-architecture, not a button)",
+    "*-on-dark / *-on-light \u2192 modifier: 'onDark' or 'onLight' (not a state)",
+    "*-active / *-pressed \u2192 state: 'active'",
+    "*-disabled \u2192 state: 'disabled'",
+    "*-focus / *-focused \u2192 state: 'focus'",
+    "*-pill / *-capsule / *-rounded-full \u2192 modifier: 'pill' (radius treatment, not variant)",
+    "*-icon-* / icon-button-* \u2192 variant: 'icon'",
+    "Brand-color names (coral, purple, green, blue, orange, red, sand) \u2192 variant=primary (color is per-system not v1 variant)",
+    "*-text / text-link / button-tertiary-text \u2192 variant: 'text'",
+    "*-ghost / *-transparent / *-glass \u2192 variant: 'ghost'",
+    "*-outline / *-outlined / *-bordered \u2192 variant: 'outline'",
+    "*-tertiary \u2192 variant: 'tertiary'",
+    "*-secondary \u2192 variant: 'secondary'",
+    "*-primary / unprefixed brand-color \u2192 variant: 'primary'",
+    "_default for groups with no sub-variant \u2192 variant=primary, state=default, sizeVariant=md (per system's representative button)",
+    "filter-chip \u2192 tabs:pill (chips serve as filter-tab role in corpus)",
+    "card-tile / *-tile \u2192 cards:default (tile is naming, not structure)",
+    "callout-card-* / cookie-consent-card \u2192 cards:default",
+    "code-block / code-window-card / agent-console-card \u2192 cards:default (code-shell wraps a card)",
+    "ide-mockup-card / device-mockup-card / hero-app-mockup-card \u2192 cards:default (mockup wraps a card)",
+    "audio-waveform-card / gradient-orb-card \u2192 cards:default (brand-distinctive, but generic card structure)",
+    "search-bar-pill \u2192 inputs:search modifier:pill",
+    "newsletter-input-band \u2192 _excluded (band is page-architecture)",
+    "ai-chat-input \u2192 inputs:text modifier:multiline",
+    "date-picker-day \u2192 _excluded (date picker is a future component, not v1 input)",
+    "avatar-circle \u2192 avatar:circle"
+  ],
+  "mappings": {
+    "avatar-circle": {
+      "category": "avatar",
+      "variant": "circle",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "button-primary": {
+      "category": "buttons",
+      "variant": "primary",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "button-primary-active": {
+      "category": "buttons",
+      "variant": "primary",
+      "state": "active",
+      "sizeVariant": "md"
+    },
+    "button-primary-disabled": {
+      "category": "buttons",
+      "variant": "primary",
+      "state": "disabled",
+      "sizeVariant": "md"
+    },
+    "button-primary-focus": {
+      "category": "buttons",
+      "variant": "primary",
+      "state": "focus",
+      "sizeVariant": "md"
+    },
+    "button-secondary": {
+      "category": "buttons",
+      "variant": "secondary",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "button-secondary-dark": {
+      "category": "buttons",
+      "variant": "secondary",
+      "state": "default",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "button-secondary-light": {
+      "category": "buttons",
+      "variant": "secondary",
+      "state": "default",
+      "sizeVariant": "md",
+      "modifier": "onLight"
+    },
+    "button-secondary-on-dark": {
+      "category": "buttons",
+      "variant": "secondary",
+      "state": "default",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "button-secondary-pill": {
+      "category": "buttons",
+      "variant": "secondary",
+      "state": "default",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "button-tertiary-text": {
+      "category": "buttons",
+      "variant": "text",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "button-text-link": {
+      "category": "buttons",
+      "variant": "text",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "button-outline": {
+      "category": "buttons",
+      "variant": "outline",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "button-outline-on-dark": {
+      "category": "buttons",
+      "variant": "outline",
+      "state": "default",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "button-outline-on-light": {
+      "category": "buttons",
+      "variant": "outline",
+      "state": "default",
+      "sizeVariant": "md",
+      "modifier": "onLight"
+    },
+    "button-icon-circular": {
+      "category": "buttons",
+      "variant": "icon",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "button-pill-cta": {
+      "category": "buttons",
+      "variant": "primary",
+      "state": "default",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "button-pill-outline": {
+      "category": "buttons",
+      "variant": "outline",
+      "state": "default",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "button-pill-rausch": {
+      "category": "buttons",
+      "variant": "primary",
+      "state": "default",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "button-pearl-capsule": {
+      "category": "buttons",
+      "variant": "secondary",
+      "state": "default",
+      "sizeVariant": "md",
+      "modifier": "capsule"
+    },
+    "button-pricing-pill": {
+      "category": "buttons",
+      "variant": "primary",
+      "state": "default",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "button-on-color": {
+      "category": "buttons",
+      "variant": "secondary",
+      "state": "default",
+      "sizeVariant": "md",
+      "modifier": "onColor"
+    },
+    "button-dark-utility": {
+      "category": "buttons",
+      "variant": "secondary",
+      "state": "default",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "button-download": {
+      "category": "buttons",
+      "variant": "primary",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "button-store-hero": {
+      "category": "buttons",
+      "variant": "primary",
+      "state": "default",
+      "sizeVariant": "lg"
+    },
+    "button-legal": {
+      "category": "buttons",
+      "variant": "text",
+      "state": "default",
+      "sizeVariant": "sm"
+    },
+    "buttons:_default": {
+      "category": "buttons",
+      "variant": "primary",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "buttons:black-pill-cta": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:black-solid-pill": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:brand-accent-button": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md"
+    },
+    "buttons:chip-filter": {
+      "category": "tabs",
+      "variant": "pill",
+      "sizeVariant": "sm"
+    },
+    "buttons:circular-action": {
+      "category": "buttons",
+      "variant": "icon",
+      "sizeVariant": "md"
+    },
+    "buttons:circular-play": {
+      "category": "buttons",
+      "variant": "icon",
+      "sizeVariant": "md"
+    },
+    "buttons:compact-inline": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "sm"
+    },
+    "buttons:cream-surface": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "md"
+    },
+    "buttons:danger-button": {
+      "category": "buttons",
+      "variant": "danger",
+      "sizeVariant": "md"
+    },
+    "buttons:dark-large-pill": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "lg",
+      "modifier": "pill"
+    },
+    "buttons:dark-pill": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:dark-solid": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md"
+    },
+    "buttons:dark-teal-button": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md"
+    },
+    "buttons:deep-violet-select-dropdown": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md"
+    },
+    "buttons:floating-action": {
+      "category": "buttons",
+      "variant": "icon",
+      "sizeVariant": "md"
+    },
+    "buttons:ghost-button": {
+      "category": "buttons",
+      "variant": "ghost",
+      "sizeVariant": "md"
+    },
+    "buttons:ghost-button-default": {
+      "category": "buttons",
+      "variant": "ghost",
+      "sizeVariant": "md"
+    },
+    "buttons:ghost-link-button": {
+      "category": "buttons",
+      "variant": "text",
+      "sizeVariant": "md"
+    },
+    "buttons:ghost-on-dark": {
+      "category": "buttons",
+      "variant": "ghost",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "buttons:ghost-outline": {
+      "category": "buttons",
+      "variant": "outline",
+      "sizeVariant": "md"
+    },
+    "buttons:ghost-outline-standard": {
+      "category": "buttons",
+      "variant": "outline",
+      "sizeVariant": "md"
+    },
+    "buttons:ghost-outlined": {
+      "category": "buttons",
+      "variant": "outline",
+      "sizeVariant": "md"
+    },
+    "buttons:ghost-subtle": {
+      "category": "buttons",
+      "variant": "ghost",
+      "sizeVariant": "md"
+    },
+    "buttons:ghost-transparent": {
+      "category": "buttons",
+      "variant": "ghost",
+      "sizeVariant": "md"
+    },
+    "buttons:glass-dark": {
+      "category": "buttons",
+      "variant": "ghost",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "buttons:glass-light": {
+      "category": "buttons",
+      "variant": "ghost",
+      "sizeVariant": "md",
+      "modifier": "onLight"
+    },
+    "buttons:glass-on-dark": {
+      "category": "buttons",
+      "variant": "ghost",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "buttons:glass-white": {
+      "category": "buttons",
+      "variant": "ghost",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "buttons:gray-pill-primary": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:icon-button-circle": {
+      "category": "buttons",
+      "variant": "icon",
+      "sizeVariant": "md"
+    },
+    "buttons:large-pill-navigation": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "lg",
+      "modifier": "pill"
+    },
+    "buttons:light-ghost": {
+      "category": "buttons",
+      "variant": "ghost",
+      "sizeVariant": "md",
+      "modifier": "onLight"
+    },
+    "buttons:light-pill": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:neutral-ghost": {
+      "category": "buttons",
+      "variant": "ghost",
+      "sizeVariant": "md"
+    },
+    "buttons:outlined": {
+      "category": "buttons",
+      "variant": "outline",
+      "sizeVariant": "md"
+    },
+    "buttons:outlined-button-light-surface": {
+      "category": "buttons",
+      "variant": "outline",
+      "sizeVariant": "md",
+      "modifier": "onLight"
+    },
+    "buttons:outlined-light": {
+      "category": "buttons",
+      "variant": "outline",
+      "sizeVariant": "md",
+      "modifier": "onLight"
+    },
+    "buttons:outlined-light-pill": {
+      "category": "buttons",
+      "variant": "outline",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:outlined-pill": {
+      "category": "buttons",
+      "variant": "outline",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:overlay-semi-transparent": {
+      "category": "buttons",
+      "variant": "ghost",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "buttons:pill-badge-button": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "sm",
+      "modifier": "pill"
+    },
+    "buttons:pill-button": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:pill-button-badge": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "sm",
+      "modifier": "pill"
+    },
+    "buttons:pill-icon-button": {
+      "category": "buttons",
+      "variant": "icon",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:pill-nav": {
+      "category": "tabs",
+      "variant": "pill",
+      "sizeVariant": "md"
+    },
+    "buttons:pill-primary-dark": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:pill-white": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:primary-black-cta": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md"
+    },
+    "buttons:primary-blue": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md"
+    },
+    "buttons:primary-brand-button-inferred": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md"
+    },
+    "buttons:primary-brand-full-round": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:primary-button-blue": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md"
+    },
+    "buttons:primary-cta-pill": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:primary-dark": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md"
+    },
+    "buttons:primary-dark-fill": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md"
+    },
+    "buttons:primary-dark-inferred-from-geist-system": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md"
+    },
+    "buttons:primary-dark-inset-shadow": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md"
+    },
+    "buttons:primary-dark-pill": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:primary-green-border": {
+      "category": "buttons",
+      "variant": "outline",
+      "sizeVariant": "md"
+    },
+    "buttons:primary-green-cta": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md"
+    },
+    "buttons:primary-green-dark-surface": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "buttons:primary-green-pill": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:primary-muted-purple": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md"
+    },
+    "buttons:primary-orange": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md"
+    },
+    "buttons:primary-pill-dark": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:primary-purple": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md"
+    },
+    "buttons:primary-red": {
+      "category": "buttons",
+      "variant": "danger",
+      "sizeVariant": "md"
+    },
+    "buttons:primary-transparent-pill": {
+      "category": "buttons",
+      "variant": "ghost",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:primary-white-on-dark": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "buttons:primary-white-shadow-bordered": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "md"
+    },
+    "buttons:product-colored-buttons": {
+      "category": "buttons",
+      "variant": "primary",
+      "sizeVariant": "md"
+    },
+    "buttons:purple-outlined": {
+      "category": "buttons",
+      "variant": "outline",
+      "sizeVariant": "md"
+    },
+    "buttons:purple-subtle": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "md"
+    },
+    "buttons:secondary-button-gray": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "md"
+    },
+    "buttons:secondary-dark-pill": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:secondary-ghost-full-round": {
+      "category": "buttons",
+      "variant": "ghost",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:secondary-gray": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "md"
+    },
+    "buttons:secondary-green-border-thin": {
+      "category": "buttons",
+      "variant": "outline",
+      "sizeVariant": "md"
+    },
+    "buttons:secondary-light": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "md",
+      "modifier": "onLight"
+    },
+    "buttons:secondary-light-pill": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:secondary-pill-dark-muted": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:secondary-sand": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "md"
+    },
+    "buttons:secondary-subtle-pill": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:secondary-tertiary": {
+      "category": "buttons",
+      "variant": "tertiary",
+      "sizeVariant": "md"
+    },
+    "buttons:secondary-white": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "md"
+    },
+    "buttons:small-toolbar-button": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "sm"
+    },
+    "buttons:subtle-button": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "md"
+    },
+    "buttons:tab-navigation-inset-shadow": {
+      "category": "tabs",
+      "variant": "segmented",
+      "sizeVariant": "md"
+    },
+    "buttons:tertiary-button-ghost-blue": {
+      "category": "buttons",
+      "variant": "tertiary",
+      "sizeVariant": "md"
+    },
+    "buttons:tertiary-emphasized-container-button": {
+      "category": "buttons",
+      "variant": "tertiary",
+      "sizeVariant": "md"
+    },
+    "buttons:text-link": {
+      "category": "buttons",
+      "variant": "text",
+      "sizeVariant": "md"
+    },
+    "buttons:text-underline": {
+      "category": "buttons",
+      "variant": "text",
+      "sizeVariant": "md"
+    },
+    "buttons:transparent-glass": {
+      "category": "buttons",
+      "variant": "ghost",
+      "sizeVariant": "md"
+    },
+    "buttons:transparent-info": {
+      "category": "buttons",
+      "variant": "ghost",
+      "sizeVariant": "md"
+    },
+    "buttons:transparent-nav-button": {
+      "category": "tabs",
+      "variant": "underline",
+      "sizeVariant": "md"
+    },
+    "buttons:uppercase-label-button": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "sm"
+    },
+    "buttons:warm-card-button": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "md"
+    },
+    "buttons:white-button": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "md"
+    },
+    "buttons:white-outlined": {
+      "category": "buttons",
+      "variant": "outline",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "buttons:white-pill": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:white-pill-secondary": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "buttons:white-solid": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "md"
+    },
+    "buttons:white-solid-pill": {
+      "category": "buttons",
+      "variant": "secondary",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "icon-button-circle": {
+      "category": "buttons",
+      "variant": "icon",
+      "sizeVariant": "md"
+    },
+    "icon-button-outline": {
+      "category": "buttons",
+      "variant": "icon",
+      "sizeVariant": "md",
+      "modifier": "onLight"
+    },
+    "text-input": {
+      "category": "inputs",
+      "variant": "text",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "text-input-focus": {
+      "category": "inputs",
+      "variant": "text",
+      "state": "focus",
+      "sizeVariant": "md"
+    },
+    "text-input-focused": {
+      "category": "inputs",
+      "variant": "text",
+      "state": "focus",
+      "sizeVariant": "md"
+    },
+    "text-input-on-dark": {
+      "category": "inputs",
+      "variant": "text",
+      "state": "default",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "text-input-on-light": {
+      "category": "inputs",
+      "variant": "text",
+      "state": "default",
+      "sizeVariant": "md",
+      "modifier": "onLight"
+    },
+    "search-input": {
+      "category": "inputs",
+      "variant": "search",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "search-input-pill": {
+      "category": "inputs",
+      "variant": "search",
+      "state": "default",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "search-bar-pill": {
+      "category": "inputs",
+      "variant": "search",
+      "state": "default",
+      "sizeVariant": "md",
+      "modifier": "pill"
+    },
+    "inputs:_default": {
+      "category": "inputs",
+      "variant": "text",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "inputs:text-input": {
+      "category": "inputs",
+      "variant": "text",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "inputs:text-input-dark-mode": {
+      "category": "inputs",
+      "variant": "text",
+      "state": "default",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "inputs:text-input-textarea": {
+      "category": "inputs",
+      "variant": "textarea",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "inputs:search-input": {
+      "category": "inputs",
+      "variant": "search",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "inputs:email-input": {
+      "category": "inputs",
+      "variant": "text",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "inputs:checkbox": {
+      "category": "_excluded",
+      "reason": "checkbox is forms category, not v1 inputs"
+    },
+    "inputs-forms:_default": {
+      "category": "inputs",
+      "variant": "text",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "inputs-forms:email-input": {
+      "category": "inputs",
+      "variant": "text",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "inputs-forms:search-input": {
+      "category": "inputs",
+      "variant": "search",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "inputs-forms:search-text-input": {
+      "category": "inputs",
+      "variant": "search",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "inputs-forms:text-area": {
+      "category": "inputs",
+      "variant": "textarea",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "inputs-forms:button-style-input": {
+      "category": "_excluded",
+      "reason": "button-styled trigger, not a text input"
+    },
+    "inputs-white-bg-1px-solid-e9eaef-8px-radius-16px-padding:_default": {
+      "category": "inputs",
+      "variant": "text",
+      "sizeVariant": "md"
+    },
+    "distinctive-components:ai-chat-input": {
+      "category": "inputs",
+      "variant": "textarea",
+      "state": "default",
+      "sizeVariant": "lg"
+    },
+    "date-picker-day": {
+      "category": "_excluded",
+      "reason": "date picker is future component"
+    },
+    "date-picker-day-selected": {
+      "category": "_excluded",
+      "reason": "date picker is future component"
+    },
+    "badge-coral": {
+      "category": "badges",
+      "variant": "solid",
+      "sizeVariant": "sm"
+    },
+    "badge-pill": {
+      "category": "badges",
+      "variant": "subtle",
+      "sizeVariant": "sm",
+      "modifier": "pill"
+    },
+    "badge-yellow": {
+      "category": "badges",
+      "variant": "solid",
+      "sizeVariant": "sm"
+    },
+    "badges:_default": {
+      "category": "badges",
+      "variant": "subtle",
+      "sizeVariant": "sm"
+    },
+    "badges-pills:_default": {
+      "category": "badges",
+      "variant": "subtle",
+      "sizeVariant": "sm",
+      "modifier": "pill"
+    },
+    "badges-pills:neutral-filled": {
+      "category": "badges",
+      "variant": "solid",
+      "sizeVariant": "sm"
+    },
+    "badges-pills:neutral-pill": {
+      "category": "badges",
+      "variant": "subtle",
+      "sizeVariant": "sm",
+      "modifier": "pill"
+    },
+    "badges-pills:neutral-subtle": {
+      "category": "badges",
+      "variant": "subtle",
+      "sizeVariant": "sm"
+    },
+    "badges-pills:subtle-badge": {
+      "category": "badges",
+      "variant": "subtle",
+      "sizeVariant": "sm"
+    },
+    "badges-pills:success-pill": {
+      "category": "badges",
+      "variant": "solid",
+      "sizeVariant": "sm",
+      "modifier": "pill"
+    },
+    "badges-tags-pills:neutral-pill": {
+      "category": "badges",
+      "variant": "subtle",
+      "sizeVariant": "sm",
+      "modifier": "pill"
+    },
+    "badges-tags-pills:success-badge": {
+      "category": "badges",
+      "variant": "solid",
+      "sizeVariant": "sm"
+    },
+    "badges-tags:_default": {
+      "category": "badges",
+      "variant": "subtle",
+      "sizeVariant": "sm"
+    },
+    "badges-tags:monospace-tag": {
+      "category": "badges",
+      "variant": "outline",
+      "sizeVariant": "sm"
+    },
+    "badges-blue-tinted-bg-at-10-opacity-4px-radius:_default": {
+      "category": "badges",
+      "variant": "subtle",
+      "sizeVariant": "sm"
+    },
+    "guest-favorite-badge": {
+      "category": "badges",
+      "variant": "subtle",
+      "sizeVariant": "sm"
+    },
+    "distinctive-components:multi-color-accent-badges": {
+      "category": "badges",
+      "variant": "solid",
+      "sizeVariant": "sm"
+    },
+    "distinctive-components:status-badges": {
+      "category": "badges",
+      "variant": "subtle",
+      "sizeVariant": "sm"
+    },
+    "category-tab": {
+      "category": "tabs",
+      "variant": "underline",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "category-tab-active": {
+      "category": "tabs",
+      "variant": "underline",
+      "state": "active",
+      "sizeVariant": "md"
+    },
+    "product-tab-active": {
+      "category": "tabs",
+      "variant": "underline",
+      "state": "active",
+      "sizeVariant": "md"
+    },
+    "product-tab-inactive": {
+      "category": "tabs",
+      "variant": "underline",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "tabs:_default": {
+      "category": "tabs",
+      "variant": "underline",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "tabs:tab-navigation": {
+      "category": "tabs",
+      "variant": "underline",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "distinctive-components:tab-navigation": {
+      "category": "tabs",
+      "variant": "underline",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "distinctive-components:tab-pills": {
+      "category": "tabs",
+      "variant": "pill",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "distinctive-components:product-tab-bar": {
+      "category": "tabs",
+      "variant": "underline",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "distinctive-components:category-pill-navigation": {
+      "category": "tabs",
+      "variant": "pill",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "blog-filter-chip": {
+      "category": "tabs",
+      "variant": "pill",
+      "state": "default",
+      "sizeVariant": "sm"
+    },
+    "filter-chip": {
+      "category": "tabs",
+      "variant": "pill",
+      "state": "default",
+      "sizeVariant": "sm"
+    },
+    "filter-chip-active": {
+      "category": "tabs",
+      "variant": "pill",
+      "state": "active",
+      "sizeVariant": "sm"
+    },
+    "configurator-option-chip": {
+      "category": "tabs",
+      "variant": "pill",
+      "state": "default",
+      "sizeVariant": "sm"
+    },
+    "configurator-option-chip-selected": {
+      "category": "tabs",
+      "variant": "pill",
+      "state": "active",
+      "sizeVariant": "sm"
+    },
+    "configurator-option-tile": {
+      "category": "tabs",
+      "variant": "segmented",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "configurator-option-tile-selected": {
+      "category": "tabs",
+      "variant": "segmented",
+      "state": "active",
+      "sizeVariant": "md"
+    },
+    "nav-pill-group": {
+      "category": "tabs",
+      "variant": "pill",
+      "state": "default",
+      "sizeVariant": "md"
+    },
+    "research-table": {
+      "category": "_excluded",
+      "reason": "table is future component"
+    },
+    "agent-console-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "ai-product-cards-matrix:_default": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "article-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "audio-waveform-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "callout-card-coral": {
+      "category": "cards",
+      "variant": "filled",
+      "sizeVariant": "lg"
+    },
+    "capability-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "card-tile-clickable": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "cards:dark-content-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "cards:feature-card-full-bleed": {
+      "category": "cards",
+      "variant": "filled",
+      "sizeVariant": "lg"
+    },
+    "cards-12px-24px-radius-pastel-backgrounds:_default": {
+      "category": "cards",
+      "variant": "filled",
+      "sizeVariant": "md"
+    },
+    "cards-1px-solid-d8d8d8-4px-8px-radius:_default": {
+      "category": "cards",
+      "variant": "outlined",
+      "sizeVariant": "md"
+    },
+    "cards-containers:_default": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "cards-containers:featured-card": {
+      "category": "cards",
+      "variant": "elevated",
+      "sizeVariant": "md"
+    },
+    "cards-containers:logo-trust-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "cards-containers:standard-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "code-window-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "comparison-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "contact-form-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "cookie-consent-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "cream-callout-card": {
+      "category": "cards",
+      "variant": "filled",
+      "sizeVariant": "lg"
+    },
+    "demo-grid-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "device-mockup-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "driver-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "ecosystem-tile": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "environment-quote-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "events-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "experience-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "expert-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "feature-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "feature-card-cream": {
+      "category": "cards",
+      "variant": "filled",
+      "sizeVariant": "md"
+    },
+    "feature-card-dark": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "feature-card-lavender": {
+      "category": "cards",
+      "variant": "filled",
+      "sizeVariant": "md"
+    },
+    "feature-card-light": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md",
+      "modifier": "onLight"
+    },
+    "feature-card-ochre": {
+      "category": "cards",
+      "variant": "filled",
+      "sizeVariant": "md"
+    },
+    "feature-card-peach": {
+      "category": "cards",
+      "variant": "filled",
+      "sizeVariant": "md"
+    },
+    "feature-card-photo": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "feature-card-pink": {
+      "category": "cards",
+      "variant": "filled",
+      "sizeVariant": "md"
+    },
+    "feature-card-tabbed": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "feature-card-teal": {
+      "category": "cards",
+      "variant": "filled",
+      "sizeVariant": "md"
+    },
+    "feature-card-yellow": {
+      "category": "cards",
+      "variant": "filled",
+      "sizeVariant": "md"
+    },
+    "feature-icon-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "feature-photo-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "gradient-orb-card": {
+      "category": "cards",
+      "variant": "filled",
+      "sizeVariant": "lg"
+    },
+    "hero-app-mockup-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "lg"
+    },
+    "hero-card-dark": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "lg",
+      "modifier": "onDark"
+    },
+    "hero-illustration-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "lg"
+    },
+    "hero-photo-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "lg"
+    },
+    "hero-stat-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "host-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "ide-mockup-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "lg",
+      "modifier": "onDark"
+    },
+    "inventory-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "model-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "model-card-photo": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "model-comparison-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "preowned-listing-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "pricing-tier-card": {
+      "category": "cards",
+      "variant": "outlined",
+      "sizeVariant": "md"
+    },
+    "pricing-tier-card-featured": {
+      "category": "cards",
+      "variant": "elevated",
+      "sizeVariant": "md"
+    },
+    "product-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "product-card-stack": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "product-cards:_default": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "product-mockup-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "lg"
+    },
+    "product-mockup-card-dark": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "lg",
+      "modifier": "onDark"
+    },
+    "product-tile-dark": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "product-tile-dark-2": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "product-tile-dark-3": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "product-tile-light": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "product-tile-parchment": {
+      "category": "cards",
+      "variant": "filled",
+      "sizeVariant": "md"
+    },
+    "product-ui-card-dark": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "product-ui-card-light": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "property-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "property-card-photo": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "rating-display-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "reservation-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "reviews-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "signature-coral-card": {
+      "category": "cards",
+      "variant": "filled",
+      "sizeVariant": "lg"
+    },
+    "signature-forest-card": {
+      "category": "cards",
+      "variant": "filled",
+      "sizeVariant": "lg"
+    },
+    "distinctive-components:feature-cards-with-icons": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "distinctive-components:feature-cards-with-illustrations": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "distinctive-components:feature-section-cards": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "distinctive-components:golden-shadow-cards": {
+      "category": "cards",
+      "variant": "elevated",
+      "sizeVariant": "md"
+    },
+    "distinctive-components:metric-cards": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "distinctive-components:plan-ahead-cards": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "distinctive-components:product-cards": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "distinctive-components:research-article-cards": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "distinctive-components:tile-clickable-card": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "distinctive-components:workflow-integration-cards": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md"
+    },
+    "distinctive-components:code-preview-panels": {
+      "category": "cards",
+      "variant": "default",
+      "sizeVariant": "md",
+      "modifier": "onDark"
+    },
+    "distinctive-components:tech-spec-tables": {
+      "category": "_excluded",
+      "reason": "tables out of v1"
+    },
+    "newsletter-input-band": {
+      "category": "_excluded",
+      "reason": "page-architecture band, not input"
+    },
+    "cta-band": {
+      "category": "_excluded",
+      "reason": "page-architecture full-bleed band"
+    },
+    "cta-band-coral": {
+      "category": "_excluded",
+      "reason": "page-architecture full-bleed band"
+    },
+    "cta-band-dark": {
+      "category": "_excluded",
+      "reason": "page-architecture full-bleed band"
+    },
+    "cta-band-illustrated": {
+      "category": "_excluded",
+      "reason": "page-architecture full-bleed band"
+    },
+    "cta-band-light": {
+      "category": "_excluded",
+      "reason": "page-architecture full-bleed band"
+    },
+    "cta-band-photo": {
+      "category": "_excluded",
+      "reason": "page-architecture full-bleed band"
+    },
+    "cta-band-spotlight": {
+      "category": "_excluded",
+      "reason": "page-architecture full-bleed band"
+    },
+    "cta-band-yellow": {
+      "category": "_excluded",
+      "reason": "page-architecture full-bleed band"
+    }
+  },
+  "excluded": [
+    "ai-chat-widget:_default",
+    "amenity-row",
+    "announcement-bar",
+    "asset-icon-circular",
+    "asset-row",
+    "carousel-component:_default",
+    "category-strip",
+    "city-link-block",
+    "code-block",
+    "connector-tile",
+    "customer-logo-strip",
+    "dark-feature-band",
+    "decorative-elements:dashed-borders",
+    "decorative-elements:gradient-accents",
+    "distinctive-components:_default",
+    "distinctive-components:agent-flow-diagrams",
+    "distinctive-components:atmospheric-hero",
+    "distinctive-components:cinematic-hero",
+    "distinctive-components:community-github-section",
+    "distinctive-components:company-logo-marquee",
+    "distinctive-components:content-block-hero-feature",
+    "distinctive-components:cookie-consent-banner",
+    "distinctive-components:cta-footer-section",
+    "distinctive-components:dark-footer-gradient",
+    "distinctive-components:dashed-focus-indicators",
+    "distinctive-components:dotted-underline-links",
+    "distinctive-components:email-capture",
+    "distinctive-components:feature-list",
+    "distinctive-components:hero-gradient-section",
+    "distinctive-components:hero-with-dual-action",
+    "distinctive-components:integration-grid",
+    "distinctive-components:large-footer-logo",
+    "distinctive-components:manifesto-section",
+    "distinctive-components:mission-statement",
+    "distinctive-components:mistral-block-identity",
+    "distinctive-components:model-gallery-grid",
+    "distinctive-components:model-tags",
+    "distinctive-components:mono-section-labels",
+    "distinctive-components:neon-green-accent-underlines",
+    "distinctive-components:notification-banner",
+    "distinctive-components:npm-install-command-block",
+    "distinctive-components:research-section",
+    "distinctive-components:social-proof-icons",
+    "distinctive-components:source-code-label-system",
+    "distinctive-components:stat-counter",
+    "distinctive-components:stats-bar",
+    "distinctive-components:tag-label",
+    "distinctive-components:template-gallery",
+    "distinctive-components:terminal-command-block",
+    "distinctive-components:terminal-hero",
+    "distinctive-components:trust-bar",
+    "distinctive-components:trust-bar-logo-grid",
+    "distinctive-components:workflow-pipeline",
+    "floating-sticky-bar",
+    "footer",
+    "footer-dark",
+    "footer-light",
+    "footer-link",
+    "footer-newsletter",
+    "global-nav",
+    "hero-band",
+    "hero-band-cinema",
+    "hero-band-dark",
+    "hero-band-light",
+    "hero-photo-band",
+    "ide-pane",
+    "image-treatment:_default",
+    "keyboard-shortcut-keys:_default",
+    "legal-band",
+    "links:_default",
+    "links:default-link",
+    "links:light-link",
+    "links:muted-link",
+    "livery-band",
+    "logo-strip",
+    "m-stripe-divider",
+    "navigation:_default",
+    "navigation:footer",
+    "navigation:top-navigation",
+    "new-tag",
+    "persistent-chat-bar:_default",
+    "price-down-cell",
+    "price-up-cell",
+    "pricing-comparison-row",
+    "pricing-tier-featured",
+    "race-calendar-row",
+    "race-position-cell",
+    "rating-stars",
+    "search-field-segment",
+    "search-orb",
+    "spec-cell",
+    "spotlight-glow-card",
+    "stat-callout",
+    "store-utility-card",
+    "sub-nav-frosted",
+    "terminal-mockup-grid",
+    "terminal-pane",
+    "testimonial-card",
+    "testimonial-section:_default",
+    "testimonial-social-proof:_default",
+    "text-link",
+    "text-link-on-dark",
+    "timeline-pill-done",
+    "timeline-pill-edit",
+    "timeline-pill-grep",
+    "timeline-pill-read",
+    "timeline-pill-thinking",
+    "toolkit-card",
+    "toolkit-icon",
+    "top-nav",
+    "top-nav-dark",
+    "top-nav-light",
+    "top-nav-on-dark",
+    "top-nav-on-light",
+    "topic-filter-rail",
+    "trust-logo-strip",
+    "trust-social-proof:_default",
+    "voice-icon-circular",
+    "voice-row",
+    "workflow-step-card",
+    "workflow-step-icon"
+  ]
+}

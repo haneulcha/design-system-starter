@@ -3,58 +3,60 @@ import { input, select } from "@inquirer/prompts";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { generate } from "../generator/index.js";
-import { getArchetype, ARCHETYPES } from "../schema/archetypes.js";
 import { transformToFigma } from "../figma/transformer.js";
-import type { MoodArchetype } from "../schema/types.js";
+import type { HeadingStyle } from "../schema/typography.js";
 
 async function main() {
   console.log("\n  Design System Starter\n");
-  console.log("  Answer 4 questions to generate a complete design system.\n");
+  console.log(
+    "  Answer a few questions to generate a complete design system.\n",
+  );
 
   const brandName = await input({
     message: "Brand name:",
     validate: (v) => v.trim().length > 0 || "Brand name is required",
   });
 
-  const primaryColor = await input({
-    message: "Primary brand color (hex):",
+  const brandColor = await input({
+    message: "Brand color (hex):",
     default: "#5e6ad2",
     validate: (v) =>
       /^#[0-9a-fA-F]{6}$/.test(v.trim()) || "Enter a valid hex (e.g. #5e6ad2)",
   });
 
-  const mood = await select<MoodArchetype>({
-    message: "Design mood:",
-    choices: (Object.values(ARCHETYPES) as { mood: MoodArchetype; label: string; description: string }[]).map((a) => ({
-      value: a.mood,
-      name: `${a.label} — ${a.description}`,
-    })),
+  const sansRaw = await input({
+    message: "Sans font (optional, leave blank for default):",
+    default: "",
   });
 
-  const archetype = getArchetype(mood);
-  const fontChoice = await select({
-    message: "Primary font:",
+  const monoRaw = await input({
+    message: "Mono font (optional, leave blank for default):",
+    default: "",
+  });
+
+  const headingStyle = await select<HeadingStyle>({
+    message: "Heading style:",
     choices: [
-      ...archetype.suggestedFonts.map((f) => ({
-        value: f.name,
-        name: `${f.name} (${f.fallback})`,
-      })),
-      { value: "__custom__", name: "Custom (type your own)" },
+      { value: "default", name: "Default (medium weight)" },
+      { value: "flat", name: "Flat (regular weight, editorial)" },
+      { value: "bold", name: "Bold (heavy weight, impactful)" },
     ],
+    default: "default",
   });
 
-  const resolvedFont =
-    fontChoice === "__custom__"
-      ? await input({ message: "Font family name:" })
-      : fontChoice;
+  const sans = sansRaw.trim() || undefined;
+  const mono = monoRaw.trim() || undefined;
 
   console.log("\n  Generating...\n");
 
   const result = generate({
     brandName: brandName.trim(),
-    primaryColor: primaryColor.trim(),
-    mood,
-    fontFamily: resolvedFont,
+    brandColor: brandColor.trim(),
+    fontFamily: sans ?? "Inter",
+    typographyKnobs: {
+      fontFamily: { sans, mono },
+      headingStyle,
+    },
   });
 
   const figmaData = transformToFigma(result.tokens);

@@ -1,11 +1,25 @@
 // src/generator/index.ts
 
-import type { UserInputs, DesignSystem, DesignTokens } from "../schema/types.js";
-import { getArchetype } from "../schema/archetypes.js";
+import type {
+  ArchetypePreset,
+  UserInputs,
+  DesignSystem,
+  DesignTokens,
+} from "../schema/types.js";
+import { DEFAULT_ARCHETYPE } from "../schema/archetypes.js";
 import { renderDesignMd } from "../schema/template.js";
-import { generateScales, oklchToHex } from "./color.js";
-import { generateTypography } from "./typography.js";
-import { generateComponents } from "./components.js";
+import { oklchToHex } from "./color.js";
+import {
+  generateColorCategory,
+  toLegacyColorScales,
+  type ColorCategoryTokens,
+} from "./color-category.js";
+import { generateTypographyCategory } from "./typography-category.js";
+import { generateSpacingCategory } from "./spacing-category.js";
+import { generateRadiusCategory } from "./radius-category.js";
+import { generateElevationCategory } from "./elevation-category.js";
+import { generateComponentCategory } from "./components-category.js";
+import { toLegacyComponentSpecs } from "./components.js";
 import { generateLayout } from "./layout.js";
 import { generateElevation } from "./elevation.js";
 import { generateResponsive } from "./responsive.js";
@@ -42,97 +56,136 @@ function replaceInArray(arr: string[], vars: Record<string, string>): string[] {
   return arr.map((s) => replacePlaceholders(s, vars));
 }
 
-export function generate(inputs: UserInputs): GenerateResult {
-  const archetype = getArchetype(inputs.mood);
+function buildAgentGuide(
+  inputs: UserInputs,
+  fontFamily: string,
+  colorTokens: ColorCategoryTokens,
+): DesignSystem["agentGuide"] {
+  const accentBaseHex = oklchToHex(colorTokens.accent.stops["500"]);
+  const surfaceCanvasHex = oklchToHex(colorTokens.neutral.stops["50"]);
+  const textInkHex = oklchToHex(colorTokens.neutral.stops["900"]);
+  const textBodyHex = oklchToHex(colorTokens.neutral.stops["800"]);
+  const hairlineHex = oklchToHex(colorTokens.neutral.stops["300"]);
 
-  // Generate all subsystems
-  const scales = generateScales(inputs.primaryColor);
-  const fontFamily = inputs.fontFamily || archetype.defaultFont;
-  const typography = generateTypography(archetype, fontFamily);
-  const components = generateComponents(archetype);
-  const layout = generateLayout(archetype);
-  const elevation = generateElevation(archetype, scales);
+  const quickColors = [
+    { name: "Primary CTA", hex: accentBaseHex },
+    { name: "Surface Canvas", hex: surfaceCanvasHex },
+    { name: "Text Ink", hex: textInkHex },
+    { name: "Text Body", hex: textBodyHex },
+    { name: "Hairline / Border", hex: hairlineHex },
+  ];
+
+  const examplePrompts = [
+    `Create a hero section with a heading in ${fontFamily}, background ${surfaceCanvasHex}, and a CTA button using ${accentBaseHex}.`,
+    `Build a card component with a subtle border using ${hairlineHex}, body text in ${textBodyHex}, and 24px padding.`,
+    `Design a navigation bar with background ${surfaceCanvasHex}, link color ${textInkHex}, and an active indicator using ${accentBaseHex}.`,
+    `Create a form input with border ${hairlineHex} and focus ring using ${accentBaseHex}33.`,
+  ];
+
+  const knobs = colorTokens.knobs;
+  const iterationTips = [
+    `Adjust neutral.tint (current: ${knobs.neutral.tint}) to shift gray undertone — options: achromatic, cool, green, purple.`,
+    `Toggle accent.secondary (current: ${knobs.accent.secondary}) and supply brandColorSecondary to add a second accent hue.`,
+    `Tune semantic.depth (current: ${knobs.semantic.depth}) to control how many variants are emitted per status role (minimal=bg only, standard=bg+text, rich=bg+text+border).`,
+    `Change ${inputs.brandColor} to retune the entire accent scale (lightness spread ±0.18 around the input L is preserved).`,
+  ];
+
+  return { quickColors, examplePrompts, iterationTips };
+}
+
+/**
+ * Build a complete design system from user inputs.
+ *
+ * The optional `archetype` argument is internal-only — used by showcase
+ * scripts that iterate over the legacy mood vocabulary. Callers from the CLI
+ * or library API should omit it and accept DEFAULT_ARCHETYPE.
+ */
+export function generate(
+  inputs: UserInputs,
+  archetype: ArchetypePreset = DEFAULT_ARCHETYPE,
+): GenerateResult {
+  // Color: new ColorInput-driven pipeline (proposal §6).
+  const colorTokens = generateColorCategory({
+    brandColor: inputs.brandColor,
+    brandColorSecondary: inputs.brandColorSecondary,
+    knobs: inputs.colorKnobs,
+  });
+  const scales = toLegacyColorScales(colorTokens);
+
+  // Typography: new per-category pipeline.
+  // If the caller supplies only the legacy fontFamily field (not typographyKnobs),
+  // synthesize a TypographyInput so the font flows through the new schema too.
+  const effectiveTypographyInput = inputs.typographyKnobs ?? (
+    inputs.fontFamily ? { fontFamily: { sans: inputs.fontFamily } } : undefined
+  );
+  const typographyTokens = generateTypographyCategory(effectiveTypographyInput);
+
+  // Spacing: new per-category pipeline (proposal §5).
+  const spacingTokens = generateSpacingCategory(inputs.spacingKnobs);
+
+  // Radius: new per-category pipeline (proposal §5).
+  const radiusTokens = generateRadiusCategory(inputs.radiusKnobs);
+
+  // Elevation: new per-category pipeline (proposal §5). Pulls the ring color
+  // from the resolved neutral-300 (proposal §8).
+  const ringColorOklch = colorTokens.neutral.stops["300"];
+  const ringColor = oklchToHex(ringColorOklch);
+  const elevationTokens = generateElevationCategory(inputs.elevationKnobs, ringColor);
+
+  // Extract the resolved sans primary for use in agentGuide example prompts.
+  // Strip surrounding quotes if the font name contains spaces (e.g. "Mona Sans" → Mona Sans).
+  const fontFamily = typographyTokens.fontChains.sans.split(",")[0].trim().replace(/^"|"$/g, "");
+
+  // Components: new per-category pipeline (proposal §6). Archetype is no
+  // longer consulted; the rich tokens flow downstream and the legacy
+  // ComponentSpecs shape is derived via the adapter for template/tokens/figma.
+  const componentTokens = generateComponentCategory(inputs.componentKnobs);
+  const components = toLegacyComponentSpecs(componentTokens);
+
+  const layout = generateLayout(archetype, spacingTokens, radiusTokens);
+  const elevation = generateElevation(elevationTokens);
   const responsive = generateResponsive();
 
-  // Template variable map
   const vars: Record<string, string> = {
     brandName: inputs.brandName,
-    primaryHex: inputs.primaryColor,
+    primaryHex: inputs.brandColor,
     fontFamily,
-    "fontWeights.heading": String(archetype.fontWeights.heading),
-    "fontWeights.ui": String(archetype.fontWeights.ui),
-    "fontWeights.body": String(archetype.fontWeights.body),
   };
 
-  // Build theme with replaced placeholders
   const atmosphere = replacePlaceholders(archetype.atmosphereTemplate, vars);
   const characteristics = replaceInArray(archetype.characteristics, vars);
   const dos = replaceInArray(archetype.dos, vars);
   const donts = replaceInArray(archetype.donts, vars);
 
-  // Build agent guide — convert Oklch to hex for display
-  const primaryHex = oklchToHex(scales.brand["700"].light);
-  const surfaceBase = oklchToHex(scales.gray["100"].light);
-  const neutral900 = oklchToHex(scales.gray["900"].light);
-  const neutral600 = oklchToHex(scales.gray["600"].light);
-  const borderDefault = oklchToHex(scales.gray["400"].light);
-  const accentHex = oklchToHex(scales.accent["700"].light);
-
-  const quickColors = [
-    { name: "Primary CTA", hex: primaryHex },
-    { name: "Background", hex: surfaceBase },
-    { name: "Heading Text", hex: neutral900 },
-    { name: "Body Text", hex: neutral600 },
-    { name: "Border", hex: borderDefault },
-    { name: "Accent", hex: accentHex },
-  ];
-
-  const examplePrompts = [
-    `Create a hero section with a heading in ${fontFamily} weight ${archetype.fontWeights.heading}, background ${surfaceBase}, and a CTA button using ${primaryHex}.`,
-    `Build a card component with ${archetype.cardRadius} border-radius, a subtle border using ${borderDefault}, and padding of 24px.`,
-    `Design a navigation bar with background ${surfaceBase}, link color ${neutral900}, and an active indicator using ${primaryHex}.`,
-    `Create a form input with ${archetype.inputRadius} radius, border ${borderDefault}, and focus ring using ${primaryHex}33.`,
-    `Design a section divider using ${accentHex} as an accent stripe, with ${archetype.sectionSpacing} of vertical spacing around it.`,
-  ];
-
-  const iterationTips = [
-    `Adjust the gray undertone by changing grayChroma config — higher values make grays warmer/cooler.`,
-    `Tweak the border-radius scale starting from the button radius (${archetype.buttonRadius}) to shift the personality from sharp/technical to soft/friendly.`,
-    `Change font weights (currently heading: ${archetype.fontWeights.heading}, UI: ${archetype.fontWeights.ui}, body: ${archetype.fontWeights.body}) to increase contrast or reduce hierarchy intensity.`,
-    `Modify the shadow intensity (${archetype.shadowIntensity}) to control perceived depth — whisper feels flat/editorial, dramatic feels physical/energetic.`,
-  ];
+  const agentGuide = buildAgentGuide(inputs, fontFamily, colorTokens);
 
   const system: DesignSystem = {
     brandName: inputs.brandName,
-    mood: inputs.mood,
-    theme: {
-      atmosphere,
-      characteristics,
-    },
+    theme: { atmosphere, characteristics },
+    colorTokens,
     colors: scales,
-    typography,
+    typographyTokens,
+    spacingTokens,
+    radiusTokens,
+    elevationTokens,
+    componentTokens,
     components,
     layout,
     elevation,
     responsive,
     dos,
     donts,
-    agentGuide: {
-      quickColors,
-      examplePrompts,
-      iterationTips,
-    },
+    agentGuide,
   };
 
   const designMd = renderDesignMd(system);
 
   // Build 3-layer token system
   const primitive = generatePrimitive(scales);
-  const semantic = generateSemantic(primitive);
+  const semantic = generateSemantic(colorTokens);
   const component = generateComponent(semantic);
   const tokens = buildDesignTokens(system, primitive, semantic, component);
 
-  // Generate token file strings
   const tokenFiles: Record<string, string> = {
     "primitive.ts": writePrimitiveTs(primitive),
     "semantic.ts": writeSemanticTs(semantic),

@@ -8,6 +8,7 @@ import type {
   ComponentTokens,
 } from "../schema/types.js";
 import type { ColorScales } from "./color.js";
+import type { ColorCategoryTokens } from "./color-category.js";
 
 function kebab(s: string): string {
   return s.toLowerCase().replace(/\s+/g, "-");
@@ -16,6 +17,22 @@ function kebab(s: string): string {
 function parsePx(s: string): number {
   const match = s.match(/^(\d+(?:\.\d+)?)px/);
   return match ? parseFloat(match[1]) : 0;
+}
+
+/**
+ * Converts the schema's letter-spacing string values to a number (em units).
+ * - "0"       → 0
+ * - "-0.02em" → -0.02
+ * - "0.05em"  → 0.05
+ * Throws if the string cannot be parsed — this is internal data, not user input.
+ */
+function parseLetterSpacingEm(s: string): number {
+  const stripped = s.endsWith("em") ? s.slice(0, -2) : s;
+  const value = parseFloat(stripped);
+  if (isNaN(value)) {
+    throw new Error(`parseLetterSpacingEm: cannot parse "${s}"`);
+  }
+  return value;
 }
 
 // ─── Layer 1: Primitive ───────────────────────────────────────────────────────
@@ -33,141 +50,148 @@ export function generatePrimitive(scales: ColorScales): PrimitiveTokens {
 
 // ─── Layer 2: Semantic ────────────────────────────────────────────────────────
 
-export function generateSemantic(primitive: PrimitiveTokens): SemanticTokens {
+/**
+ * Builds the flat semantic alias map from the new color category output.
+ * Token names follow the proposal §4 vocabulary plus a small set of
+ * accent/status conveniences for component generation.
+ */
+export function generateSemantic(colorTokens: ColorCategoryTokens): SemanticTokens {
+  const includesInfo = colorTokens.semantic.info !== undefined;
+  const hasSecondary = colorTokens.accentSecondary !== undefined;
+
   return {
-    // Background
-    "bg/base": "gray-100",
-    "bg/subtle": "gray-200",
-    "bg/muted": "gray-300",
+    // ── Surface aliases (proposal §4) ──────────────────────────────────────
+    "bg/canvas": "neutral-50",
+    "bg/soft": "neutral-100",
+    "bg/strong": "neutral-200",
+    "bg/card": "neutral-50",
+    "bg/hairline": "neutral-300",
 
-    // Text
-    "text/primary": "gray-1000",
-    "text/secondary": "gray-900",
-    "text/muted": "gray-700",
-    "text/disabled": "gray-500",
+    // ── Text aliases (proposal §4) ─────────────────────────────────────────
+    "text/ink": "neutral-900",
+    "text/body": "neutral-800",
+    "text/body-strong": "neutral-900",
+    "text/muted": "neutral-600",
+    "text/muted-soft": "neutral-500",
+    "text/on-primary": "accent-contrast",
 
-    // Border
-    "border/default": "gray-400",
-    "border/subtle": "gray-300",
-    "border/strong": "gray-600",
-
-    // Brand (always "brand" role, anchor at 700)
-    "brand/primary": "brand-500",
-    "brand/secondary": "brand-800",
-    "brand/subtle": "brand-200",
-    "brand/muted": "brand-100",
-
-    // Accent (always "accent" role)
-    ...(primitive.colors["accent"]
+    // ── Accent role aliases (component-facing) ─────────────────────────────
+    "accent/primary": "accent-500",
+    "accent/hover": "accent-300",
+    "accent/active": "accent-700",
+    "accent/strong": "accent-900",
+    ...(hasSecondary
       ? {
-          "accent/primary": "accent-700",
-          "accent/subtle": "accent-200",
+          "accent/secondary": "accent2-500",
+          "accent/secondary-hover": "accent2-300",
         }
       : {}),
 
-    // Status
-    "status/success": "green-700",
-    "status/success-subtle": "green-200",
-    "status/success-text": "green-900",
-    "status/error": "red-700",
-    "status/error-subtle": "red-200",
-    "status/error-text": "red-900",
-    "status/warning": "amber-700",
-    "status/warning-subtle": "amber-200",
-    "status/warning-text": "amber-900",
-    "status/info": "blue-700",
-    "status/info-subtle": "blue-200",
-    "status/info-text": "blue-900",
-
-    // Constants
-    white: "gray-100",
-    black: "gray-1000",
+    // ── Semantic palette refs (proposal §3) ────────────────────────────────
+    "status/error-bg": "error-background",
+    "status/error-text": "error-text",
+    "status/success-bg": "success-background",
+    "status/success-text": "success-text",
+    "status/warning-bg": "warning-background",
+    "status/warning-text": "warning-text",
+    ...(includesInfo
+      ? {
+          "status/info-bg": "info-background",
+          "status/info-text": "info-text",
+        }
+      : {}),
   };
 }
 
 // ─── Layer 3: Component ───────────────────────────────────────────────────────
 
 export function generateComponent(_semantic: SemanticTokens): ComponentTokens {
+  const includesInfo = "status/info-bg" in _semantic;
+
   return {
     button: {
       primary: {
-        bg: "brand/primary",
-        bgHover: "brand/secondary",
-        bgDisabled: "bg/muted",
-        text: "white",
-        textDisabled: "text/disabled",
+        bg: "accent/primary",
+        bgHover: "accent/hover",
+        bgDisabled: "bg/strong",
+        text: "text/on-primary",
+        textDisabled: "text/muted",
       },
       secondary: {
-        bg: "bg/subtle",
-        bgHover: "bg/muted",
-        bgDisabled: "bg/subtle",
-        text: "text/primary",
-        textDisabled: "text/disabled",
+        bg: "bg/soft",
+        bgHover: "bg/strong",
+        bgDisabled: "bg/soft",
+        text: "text/body",
+        textDisabled: "text/muted",
       },
       ghost: {
         bg: "transparent",
-        bgHover: "bg/subtle",
+        bgHover: "bg/soft",
         bgDisabled: "transparent",
-        text: "brand/primary",
-        textDisabled: "text/disabled",
-        border: "border/default",
-        borderDisabled: "border/subtle",
+        text: "accent/primary",
+        textDisabled: "text/muted",
+        border: "bg/hairline",
+        borderDisabled: "bg/hairline",
       },
     },
     input: {
       default: {
-        bg: "bg/base",
-        border: "border/default",
-        text: "text/primary",
+        bg: "bg/canvas",
+        border: "bg/hairline",
+        text: "text/body",
         placeholder: "text/muted",
-        label: "text/primary",
-        helper: "text/secondary",
+        label: "text/body",
+        helper: "text/muted-soft",
       },
       focus: {
-        border: "brand/primary",
+        border: "accent/primary",
       },
       error: {
-        border: "status/error",
+        border: "status/error-text",
         errorText: "status/error-text",
       },
       disabled: {
-        bg: "bg/muted",
-        border: "border/subtle",
+        bg: "bg/strong",
+        border: "bg/hairline",
       },
     },
     card: {
       default: {
-        bg: "bg/subtle",
-        border: "border/subtle",
-        headerText: "text/primary",
-        bodyText: "text/secondary",
+        bg: "bg/card",
+        border: "bg/hairline",
+        headerText: "text/ink",
+        bodyText: "text/body",
       },
     },
     badge: {
       default: {
-        bg: "bg/muted",
-        text: "text/secondary",
+        bg: "bg/strong",
+        text: "text/body",
       },
       success: {
-        bg: "status/success-subtle",
+        bg: "status/success-bg",
         text: "status/success-text",
       },
       error: {
-        bg: "status/error-subtle",
+        bg: "status/error-bg",
         text: "status/error-text",
       },
       warning: {
-        bg: "status/warning-subtle",
+        bg: "status/warning-bg",
         text: "status/warning-text",
       },
-      info: {
-        bg: "status/info-subtle",
-        text: "status/info-text",
-      },
+      ...(includesInfo
+        ? {
+            info: {
+              bg: "status/info-bg",
+              text: "status/info-text",
+            },
+          }
+        : {}),
     },
     divider: {
       default: {
-        line: "border/subtle",
+        line: "bg/hairline",
         labelText: "text/muted",
       },
     },
@@ -182,43 +206,34 @@ export function buildDesignTokens(
   semantic: SemanticTokens,
   component: ComponentTokens,
 ): DesignTokens {
-  const brand = { name: system.brandName, mood: system.mood };
+  const brand = { name: system.brandName };
 
   // ── typography ──────────────────────────────────────────────────────────────
+  const { profiles, fontChains } = system.typographyTokens;
+
   const families: Record<string, string> = {
-    primary: system.typography.families.primary,
-    primaryFallback: system.typography.families.primaryFallback,
-    mono: system.typography.families.mono,
-    monoFallback: system.typography.families.monoFallback,
+    sans: fontChains.sans,
+    mono: fontChains.mono,
+    serif: fontChains.serif,
   };
 
   const styles: DesignTokens["typography"]["styles"] = {};
-  for (const t of system.typography.hierarchy) {
-    const key = kebab(t.role);
-    const fontSize = parsePx(t.size);
-    const lineHeightRaw = parseFloat(t.lineHeight);
-    const lineHeight = isNaN(lineHeightRaw) ? 1.5 : lineHeightRaw;
-    let letterSpacing: number;
-    if (t.letterSpacing === "normal" || t.letterSpacing === "0.04em") {
-      letterSpacing = 0;
-    } else {
-      const parsed = parseFloat(t.letterSpacing);
-      letterSpacing = isNaN(parsed) ? 0 : parsed;
-    }
+  for (const [profileKey, t] of Object.entries(profiles)) {
+    const key = profileKey.replace(/\./g, "-"); // "heading.xl" → "heading-xl", "card" → "card"
+    const letterSpacing = parseLetterSpacingEm(t.letterSpacing);
     styles[key] = {
-      fontFamily: t.font,
-      fontSize,
+      fontFamily: t.fontFamily,
+      fontSize: t.size,
       fontWeight: t.weight,
-      lineHeight,
+      lineHeight: t.lineHeight,
       letterSpacing,
     };
   }
 
   // ── spacing ─────────────────────────────────────────────────────────────────
-  const spacing: Record<string, number> = {};
-  for (const s of system.layout.spacing) {
-    spacing[s.name] = parsePx(s.value);
-  }
+  // Read directly from spacingTokens (proposal §3) — emits the 8 aliases.
+  // Reserved scale stops (2, 20, 64, 80) stay accessible via SCALE constant.
+  const spacing: Record<string, number> = { ...system.spacingTokens.aliases };
 
   // ── borderRadius ────────────────────────────────────────────────────────────
   const borderRadius: Record<string, number> = {};

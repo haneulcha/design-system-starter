@@ -35,8 +35,7 @@ describe("parseShadowString", () => {
 describe("transformToFigma", () => {
   const { tokens } = generate({
     brandName: "Test",
-    primaryColor: "#5e6ad2",
-    mood: "professional",
+    brandColor: "#5e6ad2",
     fontFamily: "Inter",
   });
   const figma = transformToFigma(tokens);
@@ -64,9 +63,9 @@ describe("transformToFigma", () => {
 
   it("creates text styles from typography tokens", () => {
     expect(figma.textStyles.length).toBeGreaterThanOrEqual(12);
-    const hero = figma.textStyles.find((s) => s.name === "Display Hero");
+    const hero = figma.textStyles.find((s) => s.name === "Heading Xl");
     expect(hero).toBeTruthy();
-    expect(hero!.fontSize).toBe(48);
+    expect(hero!.fontSize).toBe(64);
   });
 
   it("creates effect styles from elevation tokens", () => {

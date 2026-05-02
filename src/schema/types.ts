@@ -1,7 +1,27 @@
 // src/schema/types.ts
 
+import type { ColorCategoryTokens } from "../generator/color-category.js";
+import type { TypographyCategoryTokens } from "../generator/typography-category.js";
+import type { SpacingCategoryTokens } from "../generator/spacing-category.js";
+import type { RadiusCategoryTokens } from "../generator/radius-category.js";
+import type { ElevationCategoryTokens } from "../generator/elevation-category.js";
+import type { ComponentCategoryTokens } from "../generator/components-category.js";
+import type { PartialColorKnobs } from "./color.js";
+import type { TypographyInput } from "./typography.js";
+import type { SpacingInput } from "./spacing.js";
+import type { RadiusInput } from "./radius.js";
+import type { ElevationInput } from "./elevation.js";
+import type { ComponentInput } from "./components.js";
+
 // ═══ User Inputs ═══
 
+/**
+ * Internal-only archetype identifiers. The 5-mood vocabulary is no longer a
+ * user-facing input — see docs/research/color-analysis-notes.md §1 for the
+ * pivot rationale. Typography/components/layout/elevation generation still
+ * consumes a single fixed archetype (DEFAULT_ARCHETYPE) until those categories
+ * complete their per-category inductive analyses.
+ */
 export type MoodArchetype =
   | "clean-minimal"
   | "warm-friendly"
@@ -13,9 +33,15 @@ export type ColorCharacter = "vivid" | "balanced" | "muted";
 
 export interface UserInputs {
   brandName: string;
-  primaryColor: string;
-  mood: MoodArchetype;
+  brandColor: string;
+  brandColorSecondary?: string;
   fontFamily: string;
+  colorKnobs?: PartialColorKnobs;
+  typographyKnobs?: TypographyInput;
+  spacingKnobs?: SpacingInput;
+  radiusKnobs?: RadiusInput;
+  elevationKnobs?: ElevationInput;
+  componentKnobs?: ComponentInput;
 }
 
 // ═══ Color ═══
@@ -33,29 +59,6 @@ export interface ColorStep {
 
 export interface ColorScales {
   readonly [role: string]: Record<string, ColorStep>;
-}
-
-// ═══ Typography ═══
-
-export interface TypeStyle {
-  role: string;
-  font: string;
-  size: string;
-  weight: number;
-  lineHeight: string;
-  letterSpacing: string;
-  notes: string;
-}
-
-export interface TypographySystem {
-  families: {
-    primary: string;
-    primaryFallback: string;
-    mono: string;
-    monoFallback: string;
-  };
-  hierarchy: TypeStyle[];
-  principles: string[];
 }
 
 // ═══ Components ═══
@@ -165,10 +168,25 @@ export interface ResponsiveSystem {
 
 export interface DesignSystem {
   brandName: string;
-  mood: MoodArchetype;
   theme: { atmosphere: string; characteristics: string[] };
+  /** New 3-tier color category output. Source of truth for color rendering. */
+  colorTokens: ColorCategoryTokens;
+  /**
+   * Legacy 10-step ColorScales view, derived from `colorTokens` for the parts of
+   * the pipeline (figma transformer, primitive token writer) that still expect
+   * a homogeneous {hue: {step: ColorStep}} shape. Will be removed when those
+   * consumers migrate to colorTokens directly.
+   */
   colors: ColorScales;
-  typography: TypographySystem;
+  /** New per-category typography output. Source of truth for typography rendering. */
+  typographyTokens: TypographyCategoryTokens;
+  /** New per-category spacing output. Source of truth for spacing rendering. */
+  spacingTokens: SpacingCategoryTokens;
+  /** New per-category radius output. Source of truth for radius rendering. */
+  radiusTokens: RadiusCategoryTokens;
+  /** New per-category elevation output. Source of truth for elevation rendering. */
+  elevationTokens: ElevationCategoryTokens;
+  componentTokens: ComponentCategoryTokens;
   components: ComponentSpecs;
   layout: LayoutSystem;
   elevation: ElevationSystem;
@@ -185,7 +203,6 @@ export interface DesignSystem {
 // ═══ Archetype Preset ═══
 
 export type NeutralUndertone = "cool" | "warm" | "neutral";
-export type ShadowIntensity = "whisper" | "subtle" | "medium" | "dramatic";
 
 export interface ArchetypePreset {
   mood: MoodArchetype;
@@ -193,25 +210,9 @@ export interface ArchetypePreset {
   description: string;
   atmosphereTemplate: string;
   characteristics: string[];
-  defaultFont: string;
-  defaultFontFallback: string;
-  monoFont: string;
-  monoFontFallback: string;
-  fontWeights: { heading: number; ui: number; body: number };
-  headingLetterSpacing: string;
-  bodyLineHeight: string;
-  headingLineHeight: string;
-  sectionSpacing: string;
-  componentSpacing: string;
-  buttonRadius: string;
-  cardRadius: string;
-  inputRadius: string;
-  pillRadius: string;
-  shadowIntensity: ShadowIntensity;
   neutralUndertone: NeutralUndertone;
   dos: string[];
   donts: string[];
-  suggestedFonts: { name: string; fallback: string }[];
 }
 
 // ═══ Design Tokens — 3-Layer Architecture ═══
@@ -236,7 +237,7 @@ export interface ComponentTokens {
 }
 
 export interface DesignTokens {
-  brand: { name: string; mood: MoodArchetype };
+  brand: { name: string };
   primitive: PrimitiveTokens;
   semantic: SemanticTokens;  // no longer { light, dark } — just flat map
   component: ComponentTokens;
