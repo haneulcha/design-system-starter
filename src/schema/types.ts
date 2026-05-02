@@ -1,7 +1,17 @@
 // src/schema/types.ts
 
+import type { ColorCategoryTokens } from "../generator/color-category.js";
+import type { PartialColorKnobs } from "./color.js";
+
 // ═══ User Inputs ═══
 
+/**
+ * Internal-only archetype identifiers. The 5-mood vocabulary is no longer a
+ * user-facing input — see docs/research/color-analysis-notes.md §1 for the
+ * pivot rationale. Typography/components/layout/elevation generation still
+ * consumes a single fixed archetype (DEFAULT_ARCHETYPE) until those categories
+ * complete their per-category inductive analyses.
+ */
 export type MoodArchetype =
   | "clean-minimal"
   | "warm-friendly"
@@ -13,9 +23,10 @@ export type ColorCharacter = "vivid" | "balanced" | "muted";
 
 export interface UserInputs {
   brandName: string;
-  primaryColor: string;
-  mood: MoodArchetype;
+  brandColor: string;
+  brandColorSecondary?: string;
   fontFamily: string;
+  colorKnobs?: PartialColorKnobs;
 }
 
 // ═══ Color ═══
@@ -165,8 +176,15 @@ export interface ResponsiveSystem {
 
 export interface DesignSystem {
   brandName: string;
-  mood: MoodArchetype;
   theme: { atmosphere: string; characteristics: string[] };
+  /** New 3-tier color category output. Source of truth for color rendering. */
+  colorTokens: ColorCategoryTokens;
+  /**
+   * Legacy 10-step ColorScales view, derived from `colorTokens` for the parts of
+   * the pipeline (figma transformer, primitive token writer) that still expect
+   * a homogeneous {hue: {step: ColorStep}} shape. Will be removed when those
+   * consumers migrate to colorTokens directly.
+   */
   colors: ColorScales;
   typography: TypographySystem;
   components: ComponentSpecs;
@@ -236,7 +254,7 @@ export interface ComponentTokens {
 }
 
 export interface DesignTokens {
-  brand: { name: string; mood: MoodArchetype };
+  brand: { name: string };
   primitive: PrimitiveTokens;
   semantic: SemanticTokens;  // no longer { light, dark } — just flat map
   component: ComponentTokens;

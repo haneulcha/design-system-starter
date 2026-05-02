@@ -4,8 +4,7 @@ import { writeFileSync, mkdirSync } from "fs";
 
 const result = generate({
   brandName: "Acme",
-  primaryColor: "#5e6ad2",
-  mood: "professional",
+  brandColor: "#5e6ad2",
   fontFamily: "Inter",
 });
 

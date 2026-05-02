@@ -21,12 +21,14 @@ mkdirSync("output/showcase", { recursive: true });
 
 const summaries = MOODS.map((mood) => {
   const archetype = getArchetype(mood);
-  const result = generate({
-    brandName: "Acme",
-    primaryColor: "#5e6ad2",
-    mood,
-    fontFamily: archetype.defaultFont,
-  });
+  const result = generate(
+    {
+      brandName: "Acme",
+      brandColor: "#5e6ad2",
+      fontFamily: archetype.defaultFont,
+    },
+    archetype,
+  );
   const html = renderShowcaseHtml(mood, archetype, result);
   writeFileSync(`output/showcase/${mood}.html`, html);
   console.log(`  ${mood}: ${html.length.toLocaleString()} chars`);

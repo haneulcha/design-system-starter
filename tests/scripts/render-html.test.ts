@@ -19,12 +19,14 @@ const PRIMARY = "#5e6ad2";
 
 function gen(mood: MoodArchetype) {
   const archetype = getArchetype(mood);
-  const result = generate({
-    brandName: "Acme",
-    primaryColor: PRIMARY,
-    mood,
-    fontFamily: archetype.defaultFont,
-  });
+  const result = generate(
+    {
+      brandName: "Acme",
+      brandColor: PRIMARY,
+      fontFamily: archetype.defaultFont,
+    },
+    archetype,
+  );
   return { archetype, result };
 }
 

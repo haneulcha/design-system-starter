@@ -1,12 +1,13 @@
 // src/schema/template.ts
 
-import type {
-  DesignSystem,
-  TypeStyle,
-  ElevationLevel,
-  Breakpoint,
-} from "./types.js";
-import { formatOklch } from "../generator/color.js";
+import type { DesignSystem } from "./types.js";
+import { formatOklch, oklchToHex } from "../generator/color.js";
+import {
+  SEMANTIC_PALETTE,
+  SURFACE_ALIASES_STANDARD,
+  TEXT_ALIASES_STANDARD,
+} from "./color.js";
+import type { ColorCategoryTokens } from "../generator/color-category.js";
 
 // ─── Section renderers ───────────────────────────────────────────────────────
 
@@ -22,22 +23,97 @@ function renderTheme(system: DesignSystem): string {
   return lines.join("\n");
 }
 
+function renderNeutralScale(tokens: ColorCategoryTokens): string[] {
+  const lines: string[] = [];
+  lines.push("### Tier 1 — Neutral Scale\n");
+  lines.push(`Tint: \`${tokens.neutral.tint}\`. ${Object.keys(tokens.neutral.stops).length} stops.\n`);
+  lines.push("| Step | OKLCH | Hex |");
+  lines.push("|------|-------|-----|");
+  for (const [step, value] of Object.entries(tokens.neutral.stops)) {
+    lines.push(`| neutral.${step} | \`${formatOklch(value)}\` | \`${oklchToHex(value)}\` |`);
+  }
+  return lines;
+}
+
+function renderAccentScale(
+  label: string,
+  scale: ColorCategoryTokens["accent"],
+): string[] {
+  const lines: string[] = [];
+  lines.push(`### Tier 1 — ${label}\n`);
+  lines.push(
+    `Hue: ${scale.hue.toFixed(1)}°. Anchored at base L = ${scale.baseL.toFixed(3)} ± 0.18.\n`,
+  );
+  lines.push("| Step | OKLCH | Hex |");
+  lines.push("|------|-------|-----|");
+  for (const [step, value] of Object.entries(scale.stops)) {
+    lines.push(`| accent.${step} | \`${formatOklch(value)}\` | \`${oklchToHex(value)}\` |`);
+  }
+  return lines;
+}
+
+function renderSemanticPalette(tokens: ColorCategoryTokens): string[] {
+  const lines: string[] = [];
+  lines.push("### Tier 2 — Semantic Palette\n");
+  lines.push("Independent hues per role; brand-invariant.\n");
+  lines.push("| Role | Hue | Variant | OKLCH | Hex |");
+  lines.push("|------|-----|---------|-------|-----|");
+  for (const [role, variants] of Object.entries(tokens.semantic)) {
+    if (!variants) continue;
+    const hue = SEMANTIC_PALETTE[role as keyof typeof SEMANTIC_PALETTE].hue;
+    for (const [variant, value] of Object.entries(variants)) {
+      if (!value) continue;
+      lines.push(
+        `| ${role} | ${hue}° | ${variant} | \`${formatOklch(value)}\` | \`${oklchToHex(value)}\` |`,
+      );
+    }
+  }
+  return lines;
+}
+
+function renderRoleAliases(): string[] {
+  const lines: string[] = [];
+  lines.push("### Tier 3 — Role Aliases\n");
+  lines.push("**Surface (5):**\n");
+  for (const [name, ref] of Object.entries(SURFACE_ALIASES_STANDARD)) {
+    lines.push(`- \`surface.${name}\` → \`${ref}\``);
+  }
+  lines.push("\n**Text (6):**\n");
+  for (const [name, ref] of Object.entries(TEXT_ALIASES_STANDARD)) {
+    lines.push(`- \`text.${name}\` → \`${ref}\``);
+  }
+  return lines;
+}
+
 function renderColors(system: DesignSystem): string {
+  const tokens = system.colorTokens;
   const lines: string[] = [];
   lines.push("## 2. Color System\n");
-  lines.push("### Color Scales\n");
-  lines.push("Each color has 10 steps (100-1000). Steps 100-300: backgrounds, 400-600: borders, 700-800: high contrast, 900-1000: text.\n");
+  lines.push(
+    "Three-tier architecture (proposal §1). Tier 1 = base palettes (neutral + accent). " +
+      "Tier 2 = semantic palette (error/success/warning/info, independent hues). " +
+      "Tier 3 = role aliases (surface/text → references into Tier 1).\n",
+  );
 
-  for (const [hue, scale] of Object.entries(system.colors)) {
-    lines.push(`#### ${hue.charAt(0).toUpperCase() + hue.slice(1)}\n`);
-    const steps = Object.entries(scale).sort((a, b) => Number(a[0]) - Number(b[0]));
-    lines.push("| Step | Light | Dark |");
-    lines.push("|------|-------|------|");
-    for (const [step, values] of steps) {
-      lines.push(`| ${step} | \`${formatOklch(values.light)}\` | \`${formatOklch(values.dark)}\` |`);
-    }
+  const knobs = tokens.knobs;
+  lines.push("**Active knobs:**\n");
+  lines.push(`- neutral.stops: \`${knobs.neutral.stops}\` · neutral.tint: \`${knobs.neutral.tint}\``);
+  lines.push(`- accent.stops: \`${knobs.accent.stops}\` · accent.secondary: \`${knobs.accent.secondary}\``);
+  lines.push(`- semantic.depth: \`${knobs.semantic.depth}\``);
+  lines.push(`- aliases.cardinality: \`${knobs.aliases.cardinality}\``);
+  lines.push("");
+
+  lines.push(...renderNeutralScale(tokens));
+  lines.push("");
+  lines.push(...renderAccentScale("Accent Scale", tokens.accent));
+  lines.push("");
+  if (tokens.accentSecondary) {
+    lines.push(...renderAccentScale("Accent Scale (Secondary)", tokens.accentSecondary));
     lines.push("");
   }
+  lines.push(...renderSemanticPalette(tokens));
+  lines.push("");
+  lines.push(...renderRoleAliases());
 
   return lines.join("\n");
 }
@@ -311,7 +387,6 @@ function renderAgentGuide(system: DesignSystem): string {
 export function renderDesignMd(system: DesignSystem): string {
   const sections = [
     `# Design System: ${system.brandName}`,
-    `**Mood:** ${system.mood}`,
     "",
     renderTheme(system),
     "",

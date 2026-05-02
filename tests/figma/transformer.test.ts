@@ -35,8 +35,7 @@ describe("parseShadowString", () => {
 describe("transformToFigma", () => {
   const { tokens } = generate({
     brandName: "Test",
-    primaryColor: "#5e6ad2",
-    mood: "professional",
+    brandColor: "#5e6ad2",
     fontFamily: "Inter",
   });
   const figma = transformToFigma(tokens);

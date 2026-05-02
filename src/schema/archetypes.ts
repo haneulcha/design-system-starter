@@ -335,3 +335,12 @@ Structured spacing — 16px component grid, 80px section intervals — creates a
 export function getArchetype(mood: MoodArchetype): ArchetypePreset {
   return ARCHETYPES[mood];
 }
+
+/**
+ * Fixed archetype used to drive typography/components/layout/elevation while
+ * those categories await per-category inductive analysis (per the pivot
+ * captured in docs/research/color-analysis-notes.md §1). Once each category
+ * has its own functional-knob spec, the corresponding subsystem will move
+ * off ARCHETYPES entirely.
+ */
+export const DEFAULT_ARCHETYPE: ArchetypePreset = ARCHETYPES.professional;

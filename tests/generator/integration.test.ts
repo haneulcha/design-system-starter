@@ -1,23 +1,24 @@
 import { describe, it, expect } from "vitest";
 import { generate } from "../../src/generator/index.js";
-import type { MoodArchetype } from "../../src/schema/types.js";
+import { ARCHETYPES } from "../../src/schema/archetypes.js";
+import type { ArchetypePreset } from "../../src/schema/types.js";
 
-const ALL_MOODS: MoodArchetype[] = [
-  "clean-minimal",
-  "warm-friendly",
-  "bold-energetic",
-  "professional",
-  "playful-creative",
-];
+// Mood is no longer a user input but the 5 archetype presets remain as the
+// internal driver for typography/components/layout/elevation. Iterate over
+// them via the second `archetype` arg to verify each preset still produces a
+// complete, well-formed design system.
+const ALL_ARCHETYPES: ArchetypePreset[] = Object.values(ARCHETYPES);
 
-for (const mood of ALL_MOODS) {
-  describe(`generate: ${mood}`, () => {
-    const result = generate({
-      brandName: "TestBrand",
-      primaryColor: "#5e6ad2",
-      mood,
-      fontFamily: "Inter",
-    });
+for (const archetype of ALL_ARCHETYPES) {
+  describe(`generate (archetype: ${archetype.mood})`, () => {
+    const result = generate(
+      {
+        brandName: "TestBrand",
+        brandColor: "#5e6ad2",
+        fontFamily: "Inter",
+      },
+      archetype,
+    );
 
     it("DESIGN.md has all 9 sections", () => {
       for (let i = 1; i <= 9; i++) {
@@ -33,17 +34,30 @@ for (const mood of ALL_MOODS) {
       expect(result.designMd).toContain("# Design System: TestBrand");
     });
 
-    it("tokens.primitive.colors has role-keyed nested scales", () => {
+    it("tokens.primitive.colors has the new color category roles", () => {
       const colors = result.tokens.primitive.colors;
-      expect(Object.keys(colors).length).toBeGreaterThanOrEqual(7);
-      expect(colors).toHaveProperty("brand");
-      expect(colors).toHaveProperty("gray");
-      for (const [role, scale] of Object.entries(colors)) {
-        expect(Object.keys(scale).length, `${role} should have 10 steps`).toBe(10);
-      }
+      expect(colors).toHaveProperty("neutral");
+      expect(colors).toHaveProperty("accent");
+      expect(colors).toHaveProperty("error");
+      expect(colors).toHaveProperty("success");
+      expect(colors).toHaveProperty("warning");
     });
 
-    it("tokens.primitive.colors each step has light and dark Oklch", () => {
+    it("neutral has 9 stops including the alias-referenced 50", () => {
+      const neutral = result.tokens.primitive.colors.neutral;
+      expect(Object.keys(neutral)).toHaveLength(9);
+      expect(neutral).toHaveProperty("50");
+      expect(neutral).toHaveProperty("900");
+    });
+
+    it("accent has 5 stops including contrast", () => {
+      const accent = result.tokens.primitive.colors.accent;
+      expect(Object.keys(accent)).toHaveLength(5);
+      expect(accent).toHaveProperty("500");
+      expect(accent).toHaveProperty("contrast");
+    });
+
+    it("each step has light and dark Oklch", () => {
       for (const [hue, scale] of Object.entries(result.tokens.primitive.colors)) {
         for (const [step, value] of Object.entries(scale)) {
           expect(value.light, `${hue}-${step}.light`).toHaveProperty("l");
@@ -53,7 +67,7 @@ for (const mood of ALL_MOODS) {
     });
 
     it("tokens.semantic values are all {hue}-{step} format", () => {
-      const pattern = /^[a-z]+-\d{3,4}$/;
+      const pattern = /^[a-z0-9]+-[a-z0-9]+$/;
       for (const [role, value] of Object.entries(result.tokens.semantic)) {
         expect(value, `semantic["${role}"] = "${value}" not {hue}-{step}`).toMatch(pattern);
       }
@@ -66,7 +80,7 @@ for (const mood of ALL_MOODS) {
         const hue = ref.slice(0, lastDash);
         expect(
           primitiveHues.has(hue),
-          `semantic["${role}"] = "${ref}" — hue "${hue}" not in primitive`
+          `semantic["${role}"] = "${ref}" — hue "${hue}" not in primitive`,
         ).toBe(true);
       }
     });
@@ -109,6 +123,10 @@ for (const mood of ALL_MOODS) {
       expect(c.card.variants).toHaveLength(2);
       expect(c.badge.variants).toHaveLength(5);
       expect(c.divider.labelFont).toMatch(/^typography\./);
+    });
+
+    it("brand object has no mood field", () => {
+      expect(result.tokens.brand).not.toHaveProperty("mood");
     });
   });
 }

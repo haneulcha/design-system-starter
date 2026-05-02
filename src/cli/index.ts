@@ -3,39 +3,31 @@ import { input, select } from "@inquirer/prompts";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { generate } from "../generator/index.js";
-import { getArchetype, ARCHETYPES } from "../schema/archetypes.js";
+import { DEFAULT_ARCHETYPE } from "../schema/archetypes.js";
 import { transformToFigma } from "../figma/transformer.js";
-import type { MoodArchetype } from "../schema/types.js";
 
 async function main() {
   console.log("\n  Design System Starter\n");
-  console.log("  Answer 4 questions to generate a complete design system.\n");
+  console.log(
+    "  Answer 3 questions to generate a complete design system.\n",
+  );
 
   const brandName = await input({
     message: "Brand name:",
     validate: (v) => v.trim().length > 0 || "Brand name is required",
   });
 
-  const primaryColor = await input({
-    message: "Primary brand color (hex):",
+  const brandColor = await input({
+    message: "Brand color (hex):",
     default: "#5e6ad2",
     validate: (v) =>
       /^#[0-9a-fA-F]{6}$/.test(v.trim()) || "Enter a valid hex (e.g. #5e6ad2)",
   });
 
-  const mood = await select<MoodArchetype>({
-    message: "Design mood:",
-    choices: (Object.values(ARCHETYPES) as { mood: MoodArchetype; label: string; description: string }[]).map((a) => ({
-      value: a.mood,
-      name: `${a.label} — ${a.description}`,
-    })),
-  });
-
-  const archetype = getArchetype(mood);
   const fontChoice = await select({
     message: "Primary font:",
     choices: [
-      ...archetype.suggestedFonts.map((f) => ({
+      ...DEFAULT_ARCHETYPE.suggestedFonts.map((f) => ({
         value: f.name,
         name: `${f.name} (${f.fallback})`,
       })),
@@ -52,8 +44,7 @@ async function main() {
 
   const result = generate({
     brandName: brandName.trim(),
-    primaryColor: primaryColor.trim(),
-    mood,
+    brandColor: brandColor.trim(),
     fontFamily: resolvedFont,
   });
 
