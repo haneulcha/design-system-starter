@@ -1,23 +1,28 @@
 import { useMemo } from "react";
 import { generate } from "@core/generator/index.js";
 import type { GenerateResult } from "@core/generator/index.js";
-import type { ColorScales, MoodArchetype } from "@core/schema/types.js";
-import { ARCHETYPES, getArchetype } from "@core/schema/archetypes.js";
+import type { ColorScales } from "@core/schema/types.js";
+import type { PaletteOverrides } from "@core/schema/archetype-palettes.js";
+import type { RadiusInput } from "@core/schema/radius.js";
+import type { PresetName } from "@core/schema/presets.js";
+import { PRESET_NAMES } from "@core/schema/presets.js";
 import { transformToFigma } from "@core/figma/transformer.js";
 import type { FigmaDesignSystem } from "@core/figma/types.js";
 
 export interface WizardState {
-  primaryColor: string;
-  mood: MoodArchetype;
-  fontFamily: string;
   brandName: string;
+  preset: PresetName;
+  fontFamily: string;
+  /** Per-slot palette overrides. `undefined`/empty = pure archetype baseline. */
+  paletteOverrides?: PaletteOverrides;
+  /** Per-category overrides. `undefined` = use preset value. */
+  radiusKnobs?: RadiusInput;
 }
 
 export const DEFAULT_STATE: WizardState = {
-  primaryColor: "#5e6ad2",
-  mood: "precise",
-  fontFamily: "Inter",
   brandName: "Untitled",
+  preset: "professional",
+  fontFamily: "Inter",
 };
 
 export interface FullResult extends GenerateResult {
@@ -29,17 +34,24 @@ export function useGenerateResult(state: WizardState): FullResult | null {
     try {
       const result = generate({
         brandName: state.brandName,
-        primaryColor: state.primaryColor,
-        mood: state.mood,
         fontFamily: state.fontFamily,
+        preset: state.preset,
+        paletteOverrides: state.paletteOverrides,
+        radiusKnobs: state.radiusKnobs,
       });
       const figma = transformToFigma(result.tokens);
       return { ...result, figma };
     } catch {
       return null;
     }
-  }, [state.brandName, state.primaryColor, state.mood, state.fontFamily]);
+  }, [
+    state.brandName,
+    state.preset,
+    state.fontFamily,
+    state.paletteOverrides,
+    state.radiusKnobs,
+  ]);
 }
 
-export { ARCHETYPES, getArchetype };
-export type { MoodArchetype, ColorScales, GenerateResult };
+export { PRESET_NAMES };
+export type { PresetName, ColorScales, GenerateResult, RadiusInput, PaletteOverrides };

@@ -5,9 +5,9 @@ import {
   renderShowcaseHtml,
   renderIndexHtml,
 } from "../../scripts/render-html.js";
-import type { MoodArchetype } from "../../src/schema/types.js";
+import type { PresetName } from "../../src/schema/presets.js";
 
-const ALL_MOODS: MoodArchetype[] = [
+const ALL_PRESETS: PresetName[] = [
   "clean-minimal",
   "warm-friendly",
   "bold-energetic",
@@ -17,8 +17,8 @@ const ALL_MOODS: MoodArchetype[] = [
 
 const PRIMARY = "#5e6ad2";
 
-function gen(mood: MoodArchetype) {
-  const archetype = getArchetype(mood);
+function gen(preset: PresetName) {
+  const archetype = getArchetype(preset);
   const result = generate(
     {
       brandName: "Acme",
@@ -31,10 +31,10 @@ function gen(mood: MoodArchetype) {
 }
 
 describe("renderShowcaseHtml", () => {
-  for (const mood of ALL_MOODS) {
-    it(`renders a non-empty page with key markers for ${mood}`, () => {
-      const { archetype, result } = gen(mood);
-      const html = renderShowcaseHtml(mood, archetype, result);
+  for (const preset of ALL_PRESETS) {
+    it(`renders a non-empty page with key markers for ${preset}`, () => {
+      const { archetype, result } = gen(preset);
+      const html = renderShowcaseHtml(preset, archetype, result);
 
       expect(html.length).toBeGreaterThan(5_000);
       expect(html.startsWith("<!doctype html>")).toBe(true);
@@ -60,26 +60,26 @@ describe("renderShowcaseHtml", () => {
 });
 
 describe("renderIndexHtml", () => {
-  it("produces 5 anchor tags linking to each mood page", () => {
-    const summaries = ALL_MOODS.map((mood) => ({
-      mood,
-      archetype: getArchetype(mood),
+  it("produces 5 anchor tags linking to each preset page", () => {
+    const summaries = ALL_PRESETS.map((preset) => ({
+      preset,
+      archetype: getArchetype(preset),
       primary: PRIMARY,
     }));
     const html = renderIndexHtml(summaries);
     const anchors = html.match(/<a\b[^>]*\bhref="[^"]+\.html"/g) ?? [];
     expect(anchors.length).toBe(5);
-    for (const mood of ALL_MOODS) {
-      expect(html).toContain(`href="${mood}.html"`);
-      const escapedLabel = getArchetype(mood).label.replace(/&/g, "&amp;");
+    for (const preset of ALL_PRESETS) {
+      expect(html).toContain(`href="${preset}.html"`);
+      const escapedLabel = getArchetype(preset).label.replace(/&/g, "&amp;");
       expect(html).toContain(escapedLabel);
     }
   });
 
   it("includes the primary color chip on each card", () => {
-    const summaries = ALL_MOODS.map((mood) => ({
-      mood,
-      archetype: getArchetype(mood),
+    const summaries = ALL_PRESETS.map((preset) => ({
+      preset,
+      archetype: getArchetype(preset),
       primary: PRIMARY,
     }));
     const html = renderIndexHtml(summaries);

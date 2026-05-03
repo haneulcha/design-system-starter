@@ -12,30 +12,31 @@
 
 ## File Structure
 
-| Action | File | Responsibility |
-|--------|------|----------------|
-| Create | `web/src/lib/tokens.ts` | Token resolution utilities + shared helpers |
-| Create | `web/src/components/ColorScale.tsx` | Color scale palette with step header |
-| Create | `web/src/components/DSButton.tsx` | Design system button (primary/secondary/ghost/disabled) |
-| Create | `web/src/components/DSInput.tsx` | Design system input (default/focus/error/disabled) |
-| Create | `web/src/components/DSCard.tsx` | Design system card container |
-| Create | `web/src/components/DSBadge.tsx` | Design system badge (default/success/error/warning/info) |
-| Create | `web/src/components/DSDivider.tsx` | Design system divider with optional label |
-| Create | `web/src/components/TypeScale.tsx` | Typography scale display |
-| Modify | `web/src/steps/StepColor.tsx` | Replace inline scale → `<ColorScale>` |
-| Modify | `web/src/steps/StepArchetype.tsx` | Replace inline preview → atomic components; receive `tokens`+`system` |
-| Modify | `web/src/steps/StepFont.tsx` | Replace inline type preview → `<TypeScale>` |
-| Modify | `web/src/result/ResultPage.tsx` | Replace preview components → atomic components |
-| Modify | `web/src/App.tsx` | Pass `tokens`+`system` to StepArchetype |
-| Delete | `web/src/result/ColorPreview.tsx` | Replaced by `ColorScale` |
-| Delete | `web/src/result/ComponentPreview.tsx` | Replaced by individual atomic components |
-| Delete | `web/src/result/TypePreview.tsx` | Replaced by `TypeScale` |
+| Action | File                                  | Responsibility                                                        |
+| ------ | ------------------------------------- | --------------------------------------------------------------------- |
+| Create | `web/src/lib/tokens.ts`               | Token resolution utilities + shared helpers                           |
+| Create | `web/src/components/ColorScale.tsx`   | Color scale palette with step header                                  |
+| Create | `web/src/components/DSButton.tsx`     | Design system button (primary/secondary/ghost/disabled)               |
+| Create | `web/src/components/DSInput.tsx`      | Design system input (default/focus/error/disabled)                    |
+| Create | `web/src/components/DSCard.tsx`       | Design system card container                                          |
+| Create | `web/src/components/DSBadge.tsx`      | Design system badge (default/success/error/warning/info)              |
+| Create | `web/src/components/DSDivider.tsx`    | Design system divider with optional label                             |
+| Create | `web/src/components/TypeScale.tsx`    | Typography scale display                                              |
+| Modify | `web/src/steps/StepColor.tsx`         | Replace inline scale → `<ColorScale>`                                 |
+| Modify | `web/src/steps/StepArchetype.tsx`     | Replace inline preview → atomic components; receive `tokens`+`system` |
+| Modify | `web/src/steps/StepFont.tsx`          | Replace inline type preview → `<TypeScale>`                           |
+| Modify | `web/src/result/ResultPage.tsx`       | Replace preview components → atomic components                        |
+| Modify | `web/src/App.tsx`                     | Pass `tokens`+`system` to StepArchetype                               |
+| Delete | `web/src/result/ColorPreview.tsx`     | Replaced by `ColorScale`                                              |
+| Delete | `web/src/result/ComponentPreview.tsx` | Replaced by individual atomic components                              |
+| Delete | `web/src/result/TypePreview.tsx`      | Replaced by `TypeScale`                                               |
 
 ---
 
 ### Task 1: Create token resolution utilities
 
 **Files:**
+
 - Create: `web/src/lib/tokens.ts`
 
 - [ ] **Step 1: Create `web/src/lib/tokens.ts`**
@@ -47,7 +48,10 @@ import { getArchetype } from "@core/schema/archetypes.js";
 
 // ─── Token Resolution ───────────────────────────────────────────────────────
 
-export function resolveOklch(tokens: DesignTokens, semanticKey: string): Oklch | null {
+export function resolveOklch(
+  tokens: DesignTokens,
+  semanticKey: string,
+): Oklch | null {
   const ref = tokens.semantic[semanticKey];
   if (!ref) return null;
   const lastDash = ref.lastIndexOf("-");
@@ -61,15 +65,23 @@ export function resolveColor(tokens: DesignTokens, key: string): string {
   return color ? formatOklch(color) : "oklch(0.8 0 0)";
 }
 
-export function resolveColorAlpha(tokens: DesignTokens, key: string, alpha: number): string {
+export function resolveColorAlpha(
+  tokens: DesignTokens,
+  key: string,
+  alpha: number,
+): string {
   const color = resolveOklch(tokens, key);
   return color ? formatOklchAlpha(color, alpha) : "oklch(0.8 0 0)";
 }
 
-export function resolveComponentColor(tokens: DesignTokens, componentPath: string): string {
+export function resolveComponentColor(
+  tokens: DesignTokens,
+  componentPath: string,
+): string {
   const [comp, variant, prop] = componentPath.split(".");
   const semanticKey = tokens.component[comp]?.[variant]?.[prop];
-  if (!semanticKey || semanticKey === "transparent") return semanticKey ?? "oklch(0.8 0 0)";
+  if (!semanticKey || semanticKey === "transparent")
+    return semanticKey ?? "oklch(0.8 0 0)";
   return resolveColor(tokens, semanticKey);
 }
 
@@ -110,8 +122,15 @@ export function parsePx(size: string): number {
 
 export function weightLabel(weight: number): string {
   const map: Record<number, string> = {
-    100: "Thin", 200: "Extra Light", 300: "Light", 400: "Regular",
-    500: "Medium", 600: "Semi Bold", 700: "Bold", 800: "Extra Bold", 900: "Black",
+    100: "Thin",
+    200: "Extra Light",
+    300: "Light",
+    400: "Regular",
+    500: "Medium",
+    600: "Semi Bold",
+    700: "Bold",
+    800: "Extra Bold",
+    900: "Black",
   };
   return map[weight] ?? String(weight);
 }
@@ -134,6 +153,7 @@ git commit -m "refactor(web): extract token resolution utilities to lib/tokens.t
 ### Task 2: Create ColorScale component
 
 **Files:**
+
 - Create: `web/src/components/ColorScale.tsx`
 
 - [ ] **Step 1: Create `web/src/components/ColorScale.tsx`**
@@ -156,7 +176,10 @@ export function ColorScale({ scales }: { scales: ColorScales }) {
       {/* Step header row */}
       <div className="flex gap-0.5">
         {steps.map((step) => (
-          <div key={step} className="flex-1 text-center text-[10px] font-mono text-neutral-400">
+          <div
+            key={step}
+            className="flex-1 text-center text-2xs font-mono text-neutral-400"
+          >
             {step}
           </div>
         ))}
@@ -165,7 +188,9 @@ export function ColorScale({ scales }: { scales: ColorScales }) {
       {/* Color rows */}
       {Object.entries(scales).map(([hue, scale]) => (
         <div key={hue}>
-          <div className="text-xs font-medium text-neutral-500 mb-1 capitalize">{hue}</div>
+          <div className="text-xs font-medium text-neutral-500 mb-1 capitalize">
+            {hue}
+          </div>
           <div className="flex gap-0.5">
             {Object.entries(scale)
               .sort(([a], [b]) => Number(a) - Number(b))
@@ -176,7 +201,7 @@ export function ColorScale({ scales }: { scales: ColorScales }) {
                   style={{ backgroundColor: formatOklch(vals.light) }}
                 >
                   <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                    <span className="text-[9px] font-mono px-1 py-0.5 rounded bg-black/70 text-white leading-tight">
+                    <span className="text-2xs font-mono px-1 py-0.5 rounded bg-black/70 text-white leading-tight">
                       {step}
                     </span>
                     <span className="text-[8px] font-mono px-1 py-0.5 rounded bg-black/70 text-white leading-tight mt-0.5">
@@ -210,6 +235,7 @@ git commit -m "feat(web): add ColorScale atomic component with step header"
 ### Task 3: Create DSButton component
 
 **Files:**
+
 - Create: `web/src/components/DSButton.tsx`
 
 - [ ] **Step 1: Create `web/src/components/DSButton.tsx`**
@@ -217,7 +243,12 @@ git commit -m "feat(web): add ColorScale atomic component with step header"
 ```tsx
 import type { DesignTokens, DesignSystem } from "@core/schema/types.js";
 import { getArchetype } from "@core/schema/archetypes.js";
-import { resolveColor, resolveComponentColor, resolveShadow, buildFontFamily } from "../lib/tokens";
+import {
+  resolveColor,
+  resolveComponentColor,
+  resolveShadow,
+  buildFontFamily,
+} from "../lib/tokens";
 
 type ButtonVariant = "primary" | "secondary" | "ghost";
 
@@ -326,6 +357,7 @@ git commit -m "feat(web): add DSButton atomic component"
 ### Task 4: Create DSInput component
 
 **Files:**
+
 - Create: `web/src/components/DSInput.tsx`
 
 - [ ] **Step 1: Create `web/src/components/DSInput.tsx`**
@@ -441,6 +473,7 @@ git commit -m "feat(web): add DSInput atomic component"
 ### Task 5: Create DSCard component
 
 **Files:**
+
 - Create: `web/src/components/DSCard.tsx`
 
 - [ ] **Step 1: Create `web/src/components/DSCard.tsx`**
@@ -500,6 +533,7 @@ git commit -m "feat(web): add DSCard atomic component"
 ### Task 6: Create DSBadge component
 
 **Files:**
+
 - Create: `web/src/components/DSBadge.tsx`
 
 - [ ] **Step 1: Create `web/src/components/DSBadge.tsx`**
@@ -507,7 +541,11 @@ git commit -m "feat(web): add DSCard atomic component"
 ```tsx
 import type { DesignTokens, DesignSystem } from "@core/schema/types.js";
 import { getArchetype } from "@core/schema/archetypes.js";
-import { resolveColor, resolveColorAlpha, buildFontFamily } from "../lib/tokens";
+import {
+  resolveColor,
+  resolveColorAlpha,
+  buildFontFamily,
+} from "../lib/tokens";
 
 type BadgeVariant = "default" | "success" | "error" | "warning" | "info";
 
@@ -541,7 +579,12 @@ function computeStyles(
   };
 
   if (variant === "default") {
-    return { ...base, backgroundColor: bgSubtle, color: textPrimary, border: `1px solid ${borderDefault}` };
+    return {
+      ...base,
+      backgroundColor: bgSubtle,
+      color: textPrimary,
+      border: `1px solid ${borderDefault}`,
+    };
   }
 
   const statusKey = `status/${variant}` as const;
@@ -582,6 +625,7 @@ git commit -m "feat(web): add DSBadge atomic component"
 ### Task 7: Create DSDivider component
 
 **Files:**
+
 - Create: `web/src/components/DSDivider.tsx`
 
 - [ ] **Step 1: Create `web/src/components/DSDivider.tsx`**
@@ -643,6 +687,7 @@ git commit -m "feat(web): add DSDivider atomic component"
 ### Task 8: Create TypeScale component
 
 **Files:**
+
 - Create: `web/src/components/TypeScale.tsx`
 
 - [ ] **Step 1: Create `web/src/components/TypeScale.tsx`**
@@ -670,7 +715,10 @@ export function TypeScale({ system }: { system: DesignSystem }) {
         {system.typography.hierarchy.map((entry) => {
           const px = parsePx(entry.size);
           return (
-            <div key={entry.role} className="px-5 py-3 flex items-baseline gap-4">
+            <div
+              key={entry.role}
+              className="px-5 py-3 flex items-baseline gap-4"
+            >
               <div className="shrink-0" style={{ width: 120 }}>
                 <div
                   className="text-neutral-400 uppercase tracking-wide"
@@ -678,7 +726,10 @@ export function TypeScale({ system }: { system: DesignSystem }) {
                 >
                   {entry.role}
                 </div>
-                <div className="text-neutral-400 mt-0.5" style={{ fontSize: 10 }}>
+                <div
+                  className="text-neutral-400 mt-0.5"
+                  style={{ fontSize: 10 }}
+                >
                   {px}px / {weightLabel(entry.weight)}
                 </div>
               </div>
@@ -720,6 +771,7 @@ git commit -m "feat(web): add TypeScale atomic component"
 ### Task 9: Wire StepColor to use ColorScale
 
 **Files:**
+
 - Modify: `web/src/steps/StepColor.tsx`
 
 - [ ] **Step 1: Rewrite `StepColor.tsx` to use `ColorScale`**
@@ -789,6 +841,7 @@ git commit -m "refactor(web): wire StepColor to use ColorScale component"
 ### Task 10: Wire StepArchetype to use atomic components
 
 **Files:**
+
 - Modify: `web/src/steps/StepArchetype.tsx`
 - Modify: `web/src/App.tsx`
 
@@ -803,7 +856,11 @@ import type { MoodArchetype } from "../hooks/useGenerator";
 import { DSButton } from "../components/DSButton";
 import { DSInput } from "../components/DSInput";
 import { DSCard } from "../components/DSCard";
-import { resolveColor, resolveComponentColor, buildFontFamily } from "../lib/tokens";
+import {
+  resolveColor,
+  resolveComponentColor,
+  buildFontFamily,
+} from "../lib/tokens";
 
 const REFERENCES: Record<MoodArchetype, string> = {
   precise: "Stripe, IBM, X.ai",
@@ -812,7 +869,12 @@ const REFERENCES: Record<MoodArchetype, string> = {
   modern: "Supabase, Resend, Coinbase",
 };
 
-const ARCHETYPE_KEYS: MoodArchetype[] = ["precise", "confident", "expressive", "modern"];
+const ARCHETYPE_KEYS: MoodArchetype[] = [
+  "precise",
+  "confident",
+  "expressive",
+  "modern",
+];
 
 export function StepArchetype({
   value,
@@ -826,7 +888,9 @@ export function StepArchetype({
   onChange: (v: MoodArchetype) => void;
 }) {
   const selected = getArchetype(value);
-  const brandColor = tokens ? resolveComponentColor(tokens, "button.primary.bg") : "#6b7280";
+  const brandColor = tokens
+    ? resolveComponentColor(tokens, "button.primary.bg")
+    : "#6b7280";
 
   return (
     <div>
@@ -834,7 +898,8 @@ export function StepArchetype({
         Choose your archetype
       </h2>
       <p className="text-neutral-500 mb-8">
-        Each archetype defines a visual personality — radius, weight, shadow, and spacing.
+        Each archetype defines a visual personality — radius, weight, shadow,
+        and spacing.
       </p>
 
       {/* 2×2 grid of archetype cards */}
@@ -872,9 +937,7 @@ export function StepArchetype({
               <div className="text-xs text-neutral-500 mb-2 leading-snug">
                 {arch.description}
               </div>
-              <div className="text-[11px] text-neutral-400">
-                {REFERENCES[key]}
-              </div>
+              <div className="text-2xs text-neutral-400">{REFERENCES[key]}</div>
             </button>
           );
         })}
@@ -889,9 +952,15 @@ export function StepArchetype({
 
           {/* Buttons row */}
           <div className="flex flex-wrap gap-3 mb-5">
-            <DSButton variant="primary" tokens={tokens} system={system}>Primary</DSButton>
-            <DSButton variant="secondary" tokens={tokens} system={system}>Secondary</DSButton>
-            <DSButton variant="ghost" tokens={tokens} system={system}>Ghost</DSButton>
+            <DSButton variant="primary" tokens={tokens} system={system}>
+              Primary
+            </DSButton>
+            <DSButton variant="secondary" tokens={tokens} system={system}>
+              Secondary
+            </DSButton>
+            <DSButton variant="ghost" tokens={tokens} system={system}>
+              Ghost
+            </DSButton>
           </div>
 
           {/* Card */}
@@ -899,15 +968,22 @@ export function StepArchetype({
             <DSCard tokens={tokens} system={system}>
               <div
                 className="text-sm font-medium mb-1"
-                style={{ color: resolveColor(tokens, "text/primary"), fontFamily: buildFontFamily(system) }}
+                style={{
+                  color: resolveColor(tokens, "text/primary"),
+                  fontFamily: buildFontFamily(system),
+                }}
               >
                 Card Component
               </div>
               <div
                 className="text-xs"
-                style={{ color: resolveColor(tokens, "text/muted"), fontFamily: buildFontFamily(system) }}
+                style={{
+                  color: resolveColor(tokens, "text/muted"),
+                  fontFamily: buildFontFamily(system),
+                }}
               >
-                radius: {selected.cardRadius} · shadow: {selected.shadowIntensity}
+                radius: {selected.cardRadius} · shadow:{" "}
+                {selected.shadowIntensity}
               </div>
             </DSCard>
           </div>
@@ -915,7 +991,7 @@ export function StepArchetype({
           {/* Input */}
           <div>
             <DSInput tokens={tokens} system={system} value="Input field" />
-            <div className="text-[11px] text-neutral-400 mt-1">
+            <div className="text-2xs text-neutral-400 mt-1">
               input radius: {selected.inputRadius}
             </div>
           </div>
@@ -968,6 +1044,7 @@ git commit -m "refactor(web): wire StepArchetype to use atomic components"
 ### Task 11: Wire StepFont to use TypeScale
 
 **Files:**
+
 - Modify: `web/src/steps/StepFont.tsx`
 
 - [ ] **Step 1: Rewrite `StepFont.tsx` to use `TypeScale`**
@@ -1040,7 +1117,8 @@ export function StepFont({
         Choose your font
       </h2>
       <p className="text-neutral-500 mb-8">
-        Select from fonts suited to your archetype, or enter any Google Fonts family.
+        Select from fonts suited to your archetype, or enter any Google Fonts
+        family.
       </p>
 
       {/* Font selector */}
@@ -1066,7 +1144,9 @@ export function StepFont({
                 className="accent-neutral-900"
               />
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-neutral-900">{font.name}</div>
+                <div className="text-sm font-medium text-neutral-900">
+                  {font.name}
+                </div>
                 <div
                   className="text-base text-neutral-600 truncate"
                   style={{ fontFamily: `'${font.name}', ${font.fallback}` }}
@@ -1160,6 +1240,7 @@ git commit -m "refactor(web): wire StepFont to use TypeScale component"
 ### Task 12: Wire ResultPage to use atomic components
 
 **Files:**
+
 - Modify: `web/src/result/ResultPage.tsx`
 
 - [ ] **Step 1: Rewrite `ResultPage.tsx` to use atomic components**
@@ -1170,7 +1251,11 @@ The main preview area changes from three monolithic components to a composition 
 
 ```tsx
 import { useEffect, useState } from "react";
-import type { WizardState, MoodArchetype, FullResult } from "../hooks/useGenerator";
+import type {
+  WizardState,
+  MoodArchetype,
+  FullResult,
+} from "../hooks/useGenerator";
 import { ARCHETYPES, getArchetype } from "../hooks/useGenerator";
 import { ColorScale } from "../components/ColorScale";
 import { DSButton } from "../components/DSButton";
@@ -1197,7 +1282,9 @@ export function ResultPage({
   const suggestedFonts = archetype.suggestedFonts;
   const suggestedNames = suggestedFonts.map((f) => f.name);
   const isCustom = !suggestedNames.includes(state.fontFamily);
-  const [customFontInput, setCustomFontInput] = useState(isCustom ? state.fontFamily : "");
+  const [customFontInput, setCustomFontInput] = useState(
+    isCustom ? state.fontFamily : "",
+  );
   const [showCustomFont, setShowCustomFont] = useState(isCustom);
 
   useEffect(() => {
@@ -1207,7 +1294,9 @@ export function ResultPage({
   if (!result) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-neutral-500 text-sm">Generating your design system…</div>
+        <div className="text-neutral-500 text-sm">
+          Generating your design system…
+        </div>
       </div>
     );
   }
@@ -1215,7 +1304,8 @@ export function ResultPage({
   const archetypeEntries = Object.values(ARCHETYPES);
   const { system, tokens } = result;
   const sectionClass = "mb-8";
-  const labelClass = "text-xs font-medium text-neutral-400 uppercase tracking-wider mb-3";
+  const labelClass =
+    "text-xs font-medium text-neutral-400 uppercase tracking-wider mb-3";
   const textPrimary = resolveColor(tokens, "text/primary");
   const textMuted = resolveColor(tokens, "text/muted");
   const fontFamily = buildFontFamily(system);
@@ -1230,8 +1320,19 @@ export function ResultPage({
             onClick={onBack}
             className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors flex items-center gap-1.5"
           >
-            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+            <svg
+              width="14"
+              height="14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 19.5 8.25 12l7.5-7.5"
+              />
             </svg>
             Back to wizard
           </button>
@@ -1265,7 +1366,8 @@ export function ResultPage({
                 value={state.primaryColor}
                 onChange={(e) => {
                   const v = e.target.value;
-                  if (/^#[0-9a-fA-F]{6}$/.test(v)) onChange({ primaryColor: v });
+                  if (/^#[0-9a-fA-F]{6}$/.test(v))
+                    onChange({ primaryColor: v });
                   else if (v.length <= 7) onChange({ primaryColor: v });
                 }}
                 className="flex-1 font-mono text-sm px-3 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-neutral-500"
@@ -1313,7 +1415,8 @@ export function ResultPage({
                 const val = e.target.value;
                 if (val === "custom") {
                   setShowCustomFont(true);
-                  if (customFontInput) onChange({ fontFamily: customFontInput });
+                  if (customFontInput)
+                    onChange({ fontFamily: customFontInput });
                 } else {
                   setShowCustomFont(false);
                   onChange({ fontFamily: val });
@@ -1355,7 +1458,9 @@ export function ResultPage({
           <div>
             <h1
               className="text-3xl font-semibold text-neutral-900 mb-1"
-              style={{ fontFamily: `'${state.fontFamily}', system-ui, sans-serif` }}
+              style={{
+                fontFamily: `'${state.fontFamily}', system-ui, sans-serif`,
+              }}
             >
               {state.brandName || "Untitled"} Design System
             </h1>
@@ -1366,22 +1471,39 @@ export function ResultPage({
 
           {/* Color scales */}
           <section>
-            <h2 className="text-lg font-semibold text-neutral-900 mb-4">Color Scales</h2>
+            <h2 className="text-lg font-semibold text-neutral-900 mb-4">
+              Color Scales
+            </h2>
             <ColorScale scales={system.colors} />
           </section>
 
           {/* Components */}
           <section style={{ fontFamily }}>
-            <h2 className="text-lg font-semibold text-neutral-900 mb-6">Components</h2>
+            <h2 className="text-lg font-semibold text-neutral-900 mb-6">
+              Components
+            </h2>
 
             {/* Buttons */}
             <div className={sectionClass}>
               <div className={labelClass}>Buttons</div>
               <div className="flex flex-wrap gap-3 items-center">
-                <DSButton variant="primary" tokens={tokens} system={system}>Primary</DSButton>
-                <DSButton variant="secondary" tokens={tokens} system={system}>Secondary</DSButton>
-                <DSButton variant="ghost" tokens={tokens} system={system}>Ghost</DSButton>
-                <DSButton variant="primary" disabled tokens={tokens} system={system}>Disabled</DSButton>
+                <DSButton variant="primary" tokens={tokens} system={system}>
+                  Primary
+                </DSButton>
+                <DSButton variant="secondary" tokens={tokens} system={system}>
+                  Secondary
+                </DSButton>
+                <DSButton variant="ghost" tokens={tokens} system={system}>
+                  Ghost
+                </DSButton>
+                <DSButton
+                  variant="primary"
+                  disabled
+                  tokens={tokens}
+                  system={system}
+                >
+                  Disabled
+                </DSButton>
               </div>
             </div>
 
@@ -1390,23 +1512,85 @@ export function ResultPage({
               <div className={labelClass}>Inputs</div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <div style={{ fontSize: 11, color: textMuted, marginBottom: 4, fontFamily }}>Default</div>
-                  <DSInput tokens={tokens} system={system} value="Input value" />
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: textMuted,
+                      marginBottom: 4,
+                      fontFamily,
+                    }}
+                  >
+                    Default
+                  </div>
+                  <DSInput
+                    tokens={tokens}
+                    system={system}
+                    value="Input value"
+                  />
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: textMuted, marginBottom: 4, fontFamily }}>Focus</div>
-                  <DSInput state="focus" tokens={tokens} system={system} value="Focused input" />
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: textMuted,
+                      marginBottom: 4,
+                      fontFamily,
+                    }}
+                  >
+                    Focus
+                  </div>
+                  <DSInput
+                    state="focus"
+                    tokens={tokens}
+                    system={system}
+                    value="Focused input"
+                  />
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: resolveColor(tokens, "status/error"), marginBottom: 4, fontFamily }}>Error</div>
-                  <DSInput state="error" tokens={tokens} system={system} value="Invalid value" />
-                  <div style={{ fontSize: 11, color: resolveColor(tokens, "status/error"), marginTop: 4, fontFamily }}>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: resolveColor(tokens, "status/error"),
+                      marginBottom: 4,
+                      fontFamily,
+                    }}
+                  >
+                    Error
+                  </div>
+                  <DSInput
+                    state="error"
+                    tokens={tokens}
+                    system={system}
+                    value="Invalid value"
+                  />
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: resolveColor(tokens, "status/error"),
+                      marginTop: 4,
+                      fontFamily,
+                    }}
+                  >
                     This field has an error
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: textMuted, marginBottom: 4, fontFamily }}>Disabled</div>
-                  <DSInput state="disabled" tokens={tokens} system={system} value="Disabled input" />
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: textMuted,
+                      marginBottom: 4,
+                      fontFamily,
+                    }}
+                  >
+                    Disabled
+                  </div>
+                  <DSInput
+                    state="disabled"
+                    tokens={tokens}
+                    system={system}
+                    value="Disabled input"
+                  />
                 </div>
               </div>
             </div>
@@ -1416,15 +1600,43 @@ export function ResultPage({
               <div className={labelClass}>Card</div>
               <div style={{ maxWidth: 360 }}>
                 <DSCard tokens={tokens} system={system}>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: textPrimary, marginBottom: 8, fontFamily }}>
+                  <div
+                    style={{
+                      fontSize: 16,
+                      fontWeight: 600,
+                      color: textPrimary,
+                      marginBottom: 8,
+                      fontFamily,
+                    }}
+                  >
                     Card Title
                   </div>
-                  <div style={{ fontSize: 14, color: textMuted, lineHeight: 1.6, fontFamily }}>
-                    This is a sample card component showing how content sits within the design system's card container.
+                  <div
+                    style={{
+                      fontSize: 14,
+                      color: textMuted,
+                      lineHeight: 1.6,
+                      fontFamily,
+                    }}
+                  >
+                    This is a sample card component showing how content sits
+                    within the design system's card container.
                   </div>
-                  <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${borderDefault}`, display: "flex", gap: 8 }}>
-                    <DSButton variant="primary" tokens={tokens} system={system}>Action</DSButton>
-                    <DSButton variant="ghost" tokens={tokens} system={system}>Cancel</DSButton>
+                  <div
+                    style={{
+                      marginTop: 16,
+                      paddingTop: 16,
+                      borderTop: `1px solid ${borderDefault}`,
+                      display: "flex",
+                      gap: 8,
+                    }}
+                  >
+                    <DSButton variant="primary" tokens={tokens} system={system}>
+                      Action
+                    </DSButton>
+                    <DSButton variant="ghost" tokens={tokens} system={system}>
+                      Cancel
+                    </DSButton>
                   </div>
                 </DSCard>
               </div>
@@ -1434,24 +1646,40 @@ export function ResultPage({
             <div className={sectionClass}>
               <div className={labelClass}>Badges</div>
               <div className="flex flex-wrap gap-2">
-                <DSBadge variant="default" tokens={tokens} system={system}>Default</DSBadge>
-                <DSBadge variant="success" tokens={tokens} system={system}>Success</DSBadge>
-                <DSBadge variant="error" tokens={tokens} system={system}>Error</DSBadge>
-                <DSBadge variant="warning" tokens={tokens} system={system}>Warning</DSBadge>
-                <DSBadge variant="info" tokens={tokens} system={system}>Info</DSBadge>
+                <DSBadge variant="default" tokens={tokens} system={system}>
+                  Default
+                </DSBadge>
+                <DSBadge variant="success" tokens={tokens} system={system}>
+                  Success
+                </DSBadge>
+                <DSBadge variant="error" tokens={tokens} system={system}>
+                  Error
+                </DSBadge>
+                <DSBadge variant="warning" tokens={tokens} system={system}>
+                  Warning
+                </DSBadge>
+                <DSBadge variant="info" tokens={tokens} system={system}>
+                  Info
+                </DSBadge>
               </div>
             </div>
 
             {/* Divider */}
             <div className={sectionClass}>
               <div className={labelClass}>Divider</div>
-              <DSDivider label="Section label" tokens={tokens} system={system} />
+              <DSDivider
+                label="Section label"
+                tokens={tokens}
+                system={system}
+              />
             </div>
           </section>
 
           {/* Typography */}
           <section>
-            <h2 className="text-lg font-semibold text-neutral-900 mb-4">Typography</h2>
+            <h2 className="text-lg font-semibold text-neutral-900 mb-4">
+              Typography
+            </h2>
             <TypeScale system={system} />
           </section>
         </div>
@@ -1478,6 +1706,7 @@ git commit -m "refactor(web): wire ResultPage to use atomic components"
 ### Task 13: Delete replaced files and verify build
 
 **Files:**
+
 - Delete: `web/src/result/ColorPreview.tsx`
 - Delete: `web/src/result/ComponentPreview.tsx`
 - Delete: `web/src/result/TypePreview.tsx`
@@ -1509,6 +1738,7 @@ Expected: Build succeeds with no errors
 Run: `cd /Users/haneul/Projects/design-system-starter/web && npm run dev`
 
 Verify in browser:
+
 1. Step 0 (Color): Color scale palette shows with step header row (50, 100, ..., 950) and hover tooltips with OKLCH values
 2. Step 1 (Archetype): Component Preview section shows token-resolved buttons, card, and input
 3. Step 2 (Font): Typography preview renders using the `TypeScale` component with role/size/weight metadata

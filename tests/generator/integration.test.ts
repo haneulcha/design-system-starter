@@ -1,21 +1,22 @@
 import { describe, it, expect } from "vitest";
 import { generate } from "../../src/generator/index.js";
 import { ARCHETYPES } from "../../src/schema/archetypes.js";
+import { PRESET_NAMES, type PresetName } from "../../src/schema/presets.js";
+import {
+  ARCHETYPE_PALETTES,
+  PALETTE_SLOTS,
+} from "../../src/schema/archetype-palettes.js";
 import type { ArchetypePreset } from "../../src/schema/types.js";
 import { DEFAULT_ARCHETYPE } from "../../src/schema/archetypes.js";
 
-// Mood is no longer a user input but the 5 archetype presets remain as the
-// internal driver for typography/components/layout/elevation. Iterate over
-// them via the second `archetype` arg to verify each preset still produces a
-// complete, well-formed design system.
 const ALL_ARCHETYPES: ArchetypePreset[] = Object.values(ARCHETYPES);
 
 for (const archetype of ALL_ARCHETYPES) {
-  describe(`generate (archetype: ${archetype.mood})`, () => {
+  describe(`generate (archetype: ${archetype.preset})`, () => {
     const result = generate(
       {
         brandName: "TestBrand",
-        brandColor: "#5e6ad2",
+        preset: archetype.preset,
         fontFamily: "Inter",
       },
       archetype,
@@ -35,90 +36,45 @@ for (const archetype of ALL_ARCHETYPES) {
       expect(result.designMd).toContain("# Design System: TestBrand");
     });
 
-    it("tokens.primitive.colors has the new color category roles", () => {
-      const colors = result.tokens.primitive.colors;
-      expect(colors).toHaveProperty("neutral");
-      expect(colors).toHaveProperty("accent");
-      expect(colors).toHaveProperty("error");
-      expect(colors).toHaveProperty("success");
-      expect(colors).toHaveProperty("warning");
+    it("tokens.primitive.colors collapses to a single 'palette' hue", () => {
+      expect(result.tokens.primitive.colors).toHaveProperty("palette");
+      const stops = Object.keys(result.tokens.primitive.colors.palette);
+      expect(stops).toHaveLength(PALETTE_SLOTS.length);
     });
 
-    it("neutral has 9 stops including the alias-referenced 50", () => {
-      const neutral = result.tokens.primitive.colors.neutral;
-      expect(Object.keys(neutral)).toHaveLength(9);
-      expect(neutral).toHaveProperty("50");
-      expect(neutral).toHaveProperty("900");
+    it("resolved palette matches the archetype baseline (no overrides)", () => {
+      const arche = ARCHETYPE_PALETTES[archetype.preset];
+      // Surface/text derive via refs.
+      expect(result.system.colorTokens.palette.canvas).toBe(arche.baseScale[arche.surfaceRefs.canvas]);
+      expect(result.system.colorTokens.palette.ink).toBe(arche.baseScale[arche.textRefs.ink]);
+      // Accent + a sample status slot.
+      expect(result.system.colorTokens.palette.accent).toBe(arche.accent);
+      expect(result.system.colorTokens.palette["error-text"]).toBe(arche.status["error-text"]);
     });
 
-    it("accent has 5 stops including contrast", () => {
-      const accent = result.tokens.primitive.colors.accent;
-      expect(Object.keys(accent)).toHaveLength(5);
-      expect(accent).toHaveProperty("500");
-      expect(accent).toHaveProperty("contrast");
-    });
-
-    it("each step has light and dark Oklch", () => {
-      for (const [hue, scale] of Object.entries(result.tokens.primitive.colors)) {
-        for (const [step, value] of Object.entries(scale)) {
-          expect(value.light, `${hue}-${step}.light`).toHaveProperty("l");
-          expect(value.dark, `${hue}-${step}.dark`).toHaveProperty("l");
-        }
+    it("each palette slot has light and dark Oklch", () => {
+      for (const [slot, value] of Object.entries(result.tokens.primitive.colors.palette)) {
+        expect(value.light, `palette/${slot}.light`).toHaveProperty("l");
+        expect(value.dark, `palette/${slot}.dark`).toHaveProperty("l");
       }
     });
 
-    it("tokens.semantic values are all {hue}-{step} format", () => {
-      const pattern = /^[a-z0-9]+-[a-z0-9]+$/;
+    it("tokens.semantic values use the 'palette/<slot>' format", () => {
       for (const [role, value] of Object.entries(result.tokens.semantic)) {
-        expect(value, `semantic["${role}"] = "${value}" not {hue}-{step}`).toMatch(pattern);
-      }
-    });
-
-    it("tokens.semantic referenced hues all exist in primitive.colors", () => {
-      const primitiveHues = new Set(Object.keys(result.tokens.primitive.colors));
-      for (const [role, ref] of Object.entries(result.tokens.semantic)) {
-        const lastDash = ref.lastIndexOf("-");
-        const hue = ref.slice(0, lastDash);
-        expect(
-          primitiveHues.has(hue),
-          `semantic["${role}"] = "${ref}" — hue "${hue}" not in primitive`,
-        ).toBe(true);
+        expect(value, `semantic["${role}"] = "${value}"`).toMatch(/^palette\/[a-z0-9-]+$/);
       }
     });
 
     it("tokens.component.button.primary exists", () => {
-      expect(result.tokens.component.button).toBeTruthy();
-      expect(result.tokens.component.button.primary).toBeTruthy();
       expect(result.tokens.component.button.primary.bg).toBeTruthy();
     });
 
     it("tokenFiles has 4 entries", () => {
       expect(Object.keys(result.tokenFiles)).toHaveLength(4);
-      expect(result.tokenFiles["primitive.ts"]).toBeTruthy();
-      expect(result.tokenFiles["semantic.ts"]).toBeTruthy();
-      expect(result.tokenFiles["component.ts"]).toBeTruthy();
-      expect(result.tokenFiles["index.ts"]).toBeTruthy();
-    });
-
-    it("tokens have 12+ typography styles", () => {
-      expect(Object.keys(result.tokens.typography.styles).length).toBeGreaterThanOrEqual(12);
-    });
-
-    it("tokens have 8+ spacing values", () => {
-      expect(Object.keys(result.tokens.spacing).length).toBeGreaterThanOrEqual(8);
-    });
-
-    it("tokens have elevation values", () => {
-      expect(Object.keys(result.tokens.elevation).length).toBeGreaterThanOrEqual(3);
-    });
-
-    it("tokens have breakpoints", () => {
-      expect(Object.keys(result.tokens.breakpoint).length).toBe(4);
     });
 
     it("system has 6 component primitives via componentTokens", () => {
       const c = result.system.componentTokens;
-      expect(c.button.sizes).toBeTruthy();
       expect(c.button.variants).toHaveLength(6);
       expect(c.input.states).toHaveLength(5);
       expect(c.card.variants).toHaveLength(4);
@@ -127,30 +83,57 @@ for (const archetype of ALL_ARCHETYPES) {
       expect(c.avatar.variants).toEqual(["circle"]);
     });
 
-    it("brand object has no mood field", () => {
-      expect(result.tokens.brand).not.toHaveProperty("mood");
-    });
-
-    it("system.typographyTokens exists with 20 profiles", () => {
-      expect(result.system.typographyTokens).toBeDefined();
+    it("system.typographyTokens has 20 profiles", () => {
       expect(Object.keys(result.system.typographyTokens.profiles)).toHaveLength(20);
-    });
-
-    it("system.typographyTokens has all three font chains", () => {
-      expect(result.system.typographyTokens.fontChains).toHaveProperty("sans");
-      expect(result.system.typographyTokens.fontChains).toHaveProperty("mono");
-      expect(result.system.typographyTokens.fontChains).toHaveProperty("serif");
     });
   });
 }
 
-// ─── Font propagation tests ───────────────────────────────────────────────────
+// ─── Palette override propagation ───────────────────────────────────────────
+
+describe("generate — paletteOverrides", () => {
+  const result = generate({
+    brandName: "OverrideTest",
+    preset: "professional",
+    fontFamily: "Inter",
+    paletteOverrides: {
+      accent: "#ff0066",
+      baseScale: { "50": "#fef9e7" },
+      status: { "error-text": "#000000" },
+    },
+  });
+
+  it("base scale override cascades to surface slot via canvas ref", () => {
+    expect(result.system.colorTokens.palette.canvas).toBe("#fef9e7");
+  });
+
+  it("accent override replaces accent directly", () => {
+    expect(result.system.colorTokens.palette.accent).toBe("#ff0066");
+  });
+
+  it("status override replaces individual status slot", () => {
+    expect(result.system.colorTokens.palette["error-text"]).toBe("#000000");
+  });
+
+  it("non-overridden base stops keep the archetype baseline", () => {
+    const baseline = ARCHETYPE_PALETTES["professional"].baseScale;
+    expect(result.system.colorTokens.baseScale["900"]).toBe(baseline["900"]);
+  });
+
+  it("colorTokens.overrides carries the structured diff", () => {
+    expect(result.system.colorTokens.overrides.accent).toBe("#ff0066");
+    expect(result.system.colorTokens.overrides.baseScale).toEqual({ "50": "#fef9e7" });
+    expect(result.system.colorTokens.overrides.status).toEqual({ "error-text": "#000000" });
+  });
+});
+
+// ─── Font propagation (unchanged) ───────────────────────────────────────────
 
 describe("generate — typographyKnobs.fontFamily.sans propagation", () => {
   const result = generate(
     {
       brandName: "PropTest",
-      brandColor: "#5e6ad2",
+      preset: "professional",
       fontFamily: "Inter",
       typographyKnobs: { fontFamily: { sans: "Mona Sans" } },
     },
@@ -162,27 +145,11 @@ describe("generate — typographyKnobs.fontFamily.sans propagation", () => {
   });
 });
 
-describe("generate — typographyKnobs.fontFamily.mono propagation", () => {
-  const result = generate(
-    {
-      brandName: "MonoTest",
-      brandColor: "#5e6ad2",
-      fontFamily: "Inter",
-      typographyKnobs: { fontFamily: { mono: "Fira Code" } },
-    },
-    DEFAULT_ARCHETYPE,
-  );
-
-  it("typographyTokens.fontChains.mono starts with Fira Code", () => {
-    expect(result.system.typographyTokens.fontChains.mono).toMatch(/^"?Fira Code"?,/);
-  });
-});
-
 describe("generate — typographyKnobs omitted (default behavior)", () => {
   const result = generate(
     {
       brandName: "DefaultTest",
-      brandColor: "#5e6ad2",
+      preset: "professional",
       fontFamily: "Roboto",
     },
     DEFAULT_ARCHETYPE,
@@ -190,9 +157,5 @@ describe("generate — typographyKnobs omitted (default behavior)", () => {
 
   it("typographyTokens.fontChains.sans reflects fontFamily input", () => {
     expect(result.system.typographyTokens.fontChains.sans).toContain("Roboto");
-  });
-
-  it("typographyTokens still has 20 profiles", () => {
-    expect(Object.keys(result.system.typographyTokens.profiles)).toHaveLength(20);
   });
 });

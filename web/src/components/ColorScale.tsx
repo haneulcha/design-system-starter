@@ -15,7 +15,10 @@ export function ColorScale({ scales }: { scales: ColorScales }) {
       {/* Step header row */}
       <div className="flex gap-0.5">
         {steps.map((step) => (
-          <div key={step} className="flex-1 text-center text-[10px] font-mono text-neutral-400">
+          <div
+            key={step}
+            className="flex-1 text-center text-2xs font-mono text-neutral-400"
+          >
             {step}
           </div>
         ))}
@@ -24,7 +27,9 @@ export function ColorScale({ scales }: { scales: ColorScales }) {
       {/* Color rows */}
       {Object.entries(scales).map(([hue, scale]) => (
         <div key={hue}>
-          <div className="text-xs font-medium text-neutral-500 mb-1 capitalize">{hue}</div>
+          <div className="text-xs font-medium text-neutral-500 mb-1 capitalize">
+            {hue}
+          </div>
           <div className="flex gap-0.5">
             {Object.entries(scale)
               .sort(([a], [b]) => Number(a) - Number(b))
@@ -35,7 +40,7 @@ export function ColorScale({ scales }: { scales: ColorScales }) {
                   style={{ backgroundColor: formatOklch(vals.light) }}
                 >
                   <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                    <span className="text-[9px] font-mono px-1 py-0.5 rounded bg-black/70 text-white leading-tight">
+                    <span className="text-2xs font-mono px-1 py-0.5 rounded bg-black/70 text-white leading-tight">
                       {step}
                     </span>
                     <span className="text-[8px] font-mono px-1 py-0.5 rounded bg-black/70 text-white leading-tight mt-0.5">

@@ -1,13 +1,21 @@
 import { useEffect } from "react";
 import type { DesignSystem } from "@core/schema/types.js";
-import { loadGoogleFont, parsePx, weightLabel } from "../lib/tokens";
+import { loadGoogleFont, primaryFontName, weightLabel } from "../lib/tokens";
+
+const DISPLAY_KEYS = [
+  "heading.xl", "heading.lg", "heading.md", "heading.sm", "heading.xs",
+  "body.lg", "body.md", "body.sm",
+  "caption.md", "caption.sm",
+] as const;
 
 export function TypeScale({ system }: { system: DesignSystem }) {
-  const primaryFont = system.typography.families.primary;
+  const primaryFont = primaryFontName(system);
 
   useEffect(() => {
     if (primaryFont) loadGoogleFont(primaryFont);
   }, [primaryFont]);
+
+  const profiles = system.typographyTokens.profiles;
 
   return (
     <div className="border border-neutral-200 rounded-xl overflow-hidden">
@@ -17,29 +25,26 @@ export function TypeScale({ system }: { system: DesignSystem }) {
         </span>
       </div>
       <div className="divide-y divide-neutral-100">
-        {system.typography.hierarchy.map((entry) => {
-          const px = parsePx(entry.size);
+        {DISPLAY_KEYS.filter((k) => profiles[k]).map((key) => {
+          const t = profiles[key];
           return (
-            <div key={entry.role} className="px-5 py-3 flex items-baseline gap-4">
+            <div key={key} className="px-5 py-3 flex items-baseline gap-4">
               <div className="shrink-0" style={{ width: 120 }}>
-                <div
-                  className="text-neutral-400 uppercase tracking-wide"
-                  style={{ fontSize: 11 }}
-                >
-                  {entry.role}
+                <div className="text-neutral-400 uppercase tracking-wide" style={{ fontSize: 11 }}>
+                  {key}
                 </div>
                 <div className="text-neutral-400 mt-0.5" style={{ fontSize: 10 }}>
-                  {px}px / {weightLabel(entry.weight)}
+                  {t.size}px / {weightLabel(t.weight)}
                 </div>
               </div>
               <div
                 className="truncate text-neutral-900"
                 style={{
-                  fontFamily: `'${entry.font}', system-ui, sans-serif`,
-                  fontSize: Math.min(px, 64),
-                  fontWeight: entry.weight,
-                  letterSpacing: entry.letterSpacing,
-                  lineHeight: entry.lineHeight,
+                  fontFamily: t.fontFamily,
+                  fontSize: Math.min(t.size, 64),
+                  fontWeight: t.weight,
+                  letterSpacing: t.letterSpacing,
+                  lineHeight: t.lineHeight,
                 }}
               >
                 The quick brown fox

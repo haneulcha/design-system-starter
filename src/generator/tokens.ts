@@ -51,55 +51,47 @@ export function generatePrimitive(scales: ColorScales): PrimitiveTokens {
 // ─── Layer 2: Semantic ────────────────────────────────────────────────────────
 
 /**
- * Builds the flat semantic alias map from the new color category output.
- * Token names follow the proposal §4 vocabulary plus a small set of
- * accent/status conveniences for component generation.
+ * Builds the flat semantic alias map from the palette-driven color category.
+ * Each semantic name maps to a palette slot via "palette/<slot>" refs;
+ * resolveOklch parses on the first "/" so slot names with hyphens
+ * (e.g. "error-bg") resolve unambiguously.
+ *
+ * Hover/active/strong accent variants all alias the single accent slot
+ * for v1 — the corpus model is "one brand color, full stop". Future tonal
+ * variants can be derived in CSS via color-mix().
  */
-export function generateSemantic(colorTokens: ColorCategoryTokens): SemanticTokens {
-  const includesInfo = colorTokens.semantic.info !== undefined;
-  const hasSecondary = colorTokens.accentSecondary !== undefined;
-
+export function generateSemantic(_colorTokens: ColorCategoryTokens): SemanticTokens {
   return {
-    // ── Surface aliases (proposal §4) ──────────────────────────────────────
-    "bg/canvas": "neutral-50",
-    "bg/soft": "neutral-100",
-    "bg/strong": "neutral-200",
-    "bg/card": "neutral-50",
-    "bg/hairline": "neutral-300",
+    // Surface
+    "bg/canvas":   "palette/canvas",
+    "bg/soft":     "palette/soft",
+    "bg/strong":   "palette/soft",     // collapsed — palette has no "strong" slot
+    "bg/card":     "palette/canvas",
+    "bg/hairline": "palette/hairline",
 
-    // ── Text aliases (proposal §4) ─────────────────────────────────────────
-    "text/ink": "neutral-900",
-    "text/body": "neutral-800",
-    "text/body-strong": "neutral-900",
-    "text/muted": "neutral-600",
-    "text/muted-soft": "neutral-500",
-    "text/on-primary": "accent-contrast",
+    // Text
+    "text/ink":          "palette/ink",
+    "text/body":         "palette/body",
+    "text/body-strong":  "palette/ink",
+    "text/muted":        "palette/muted",
+    "text/muted-soft":   "palette/muted",
+    "text/on-primary":   "palette/canvas",  // assume light text on the brand accent
 
-    // ── Accent role aliases (component-facing) ─────────────────────────────
-    "accent/primary": "accent-500",
-    "accent/hover": "accent-300",
-    "accent/active": "accent-700",
-    "accent/strong": "accent-900",
-    ...(hasSecondary
-      ? {
-          "accent/secondary": "accent2-500",
-          "accent/secondary-hover": "accent2-300",
-        }
-      : {}),
+    // Accent
+    "accent/primary": "palette/accent",
+    "accent/hover":   "palette/accent",
+    "accent/active":  "palette/accent",
+    "accent/strong":  "palette/accent",
 
-    // ── Semantic palette refs (proposal §3) ────────────────────────────────
-    "status/error-bg": "error-background",
-    "status/error-text": "error-text",
-    "status/success-bg": "success-background",
-    "status/success-text": "success-text",
-    "status/warning-bg": "warning-background",
-    "status/warning-text": "warning-text",
-    ...(includesInfo
-      ? {
-          "status/info-bg": "info-background",
-          "status/info-text": "info-text",
-        }
-      : {}),
+    // Status
+    "status/error-bg":     "palette/error-bg",
+    "status/error-text":   "palette/error-text",
+    "status/success-bg":   "palette/success-bg",
+    "status/success-text": "palette/success-text",
+    "status/warning-bg":   "palette/warning-bg",
+    "status/warning-text": "palette/warning-text",
+    "status/info-bg":      "palette/info-bg",
+    "status/info-text":    "palette/info-text",
   };
 }
 

@@ -1,12 +1,14 @@
 // src/schema/template.ts
 
 import type { DesignSystem } from "./types.js";
-import { formatOklch, oklchToHex } from "../generator/color.js";
 import {
-  SEMANTIC_PALETTE,
-  SURFACE_ALIASES_STANDARD,
-  TEXT_ALIASES_STANDARD,
-} from "./color.js";
+  PALETTE_SLOTS,
+  SURFACE_SLOTS,
+  TEXT_SLOTS,
+  ACCENT_SLOTS,
+  STATUS_SLOTS,
+  ARCHETYPE_PALETTES,
+} from "./archetype-palettes.js";
 import type { ColorCategoryTokens } from "../generator/color-category.js";
 import {
   SIZE_SCALE,
@@ -30,64 +32,20 @@ function renderTheme(system: DesignSystem): string {
   return lines.join("\n");
 }
 
-function renderNeutralScale(tokens: ColorCategoryTokens): string[] {
-  const lines: string[] = [];
-  lines.push("### Tier 1 — Neutral Scale\n");
-  lines.push(`Tint: \`${tokens.neutral.tint}\`. ${Object.keys(tokens.neutral.stops).length} stops.\n`);
-  lines.push("| Step | OKLCH | Hex |");
-  lines.push("|------|-------|-----|");
-  for (const [step, value] of Object.entries(tokens.neutral.stops)) {
-    lines.push(`| neutral.${step} | \`${formatOklch(value)}\` | \`${oklchToHex(value)}\` |`);
-  }
-  return lines;
-}
-
-function renderAccentScale(
-  label: string,
-  scale: ColorCategoryTokens["accent"],
+function renderPaletteGroup(
+  heading: string,
+  slots: readonly string[],
+  tokens: ColorCategoryTokens,
 ): string[] {
   const lines: string[] = [];
-  lines.push(`### Tier 1 — ${label}\n`);
-  lines.push(
-    `Hue: ${scale.hue.toFixed(1)}°. Anchored at base L = ${scale.baseL.toFixed(3)} ± 0.18.\n`,
-  );
-  lines.push("| Step | OKLCH | Hex |");
-  lines.push("|------|-------|-----|");
-  for (const [step, value] of Object.entries(scale.stops)) {
-    lines.push(`| accent.${step} | \`${formatOklch(value)}\` | \`${oklchToHex(value)}\` |`);
-  }
-  return lines;
-}
-
-function renderSemanticPalette(tokens: ColorCategoryTokens): string[] {
-  const lines: string[] = [];
-  lines.push("### Tier 2 — Semantic Palette\n");
-  lines.push("Independent hues per role; brand-invariant.\n");
-  lines.push("| Role | Hue | Variant | OKLCH | Hex |");
-  lines.push("|------|-----|---------|-------|-----|");
-  for (const [role, variants] of Object.entries(tokens.semantic)) {
-    if (!variants) continue;
-    const hue = SEMANTIC_PALETTE[role as keyof typeof SEMANTIC_PALETTE].hue;
-    for (const [variant, value] of Object.entries(variants)) {
-      if (!value) continue;
-      lines.push(
-        `| ${role} | ${hue}° | ${variant} | \`${formatOklch(value)}\` | \`${oklchToHex(value)}\` |`,
-      );
-    }
-  }
-  return lines;
-}
-
-function renderRoleAliases(): string[] {
-  const lines: string[] = [];
-  lines.push("### Tier 3 — Role Aliases\n");
-  lines.push("**Surface (5):**\n");
-  for (const [name, ref] of Object.entries(SURFACE_ALIASES_STANDARD)) {
-    lines.push(`- \`surface.${name}\` → \`${ref}\``);
-  }
-  lines.push("\n**Text (6):**\n");
-  for (const [name, ref] of Object.entries(TEXT_ALIASES_STANDARD)) {
-    lines.push(`- \`text.${name}\` → \`${ref}\``);
+  const baseline = ARCHETYPE_PALETTES[tokens.preset];
+  lines.push(`### ${heading}\n`);
+  lines.push("| Slot | Hex | Source |");
+  lines.push("|------|-----|--------|");
+  for (const slot of slots) {
+    const hex = tokens.palette[slot as keyof typeof tokens.palette];
+    const isOverride = baseline[slot as keyof typeof baseline] !== hex;
+    lines.push(`| \`${slot}\` | \`${hex}\` | ${isOverride ? "override" : "archetype"} |`);
   }
   return lines;
 }
@@ -97,30 +55,25 @@ function renderColors(system: DesignSystem): string {
   const lines: string[] = [];
   lines.push("## 2. Color System\n");
   lines.push(
-    "Three-tier architecture (proposal §1). Tier 1 = base palettes (neutral + accent). " +
-      "Tier 2 = semantic palette (error/success/warning/info, independent hues). " +
-      "Tier 3 = role aliases (surface/text → references into Tier 1).\n",
+    `Palette anchored on the **${tokens.preset}** archetype. ${PALETTE_SLOTS.length} ` +
+      "slots total: 3 surface, 3 text, 1 accent, 8 status (4 roles × bg/text). Status " +
+      "slots are universal across archetypes.\n",
   );
 
-  const knobs = tokens.knobs;
-  lines.push("**Active knobs:**\n");
-  lines.push(`- neutral.stops: \`${knobs.neutral.stops}\` · neutral.tint: \`${knobs.neutral.tint}\``);
-  lines.push(`- accent.stops: \`${knobs.accent.stops}\` · accent.secondary: \`${knobs.accent.secondary}\``);
-  lines.push(`- semantic.depth: \`${knobs.semantic.depth}\``);
-  lines.push(`- aliases.cardinality: \`${knobs.aliases.cardinality}\``);
-  lines.push("");
-
-  lines.push(...renderNeutralScale(tokens));
-  lines.push("");
-  lines.push(...renderAccentScale("Accent Scale", tokens.accent));
-  lines.push("");
-  if (tokens.accentSecondary) {
-    lines.push(...renderAccentScale("Accent Scale (Secondary)", tokens.accentSecondary));
-    lines.push("");
+  const overrideCount = Object.keys(tokens.overrides).length;
+  if (overrideCount > 0) {
+    lines.push(`**Overrides applied:** ${overrideCount} slot(s) deviate from the archetype baseline.\n`);
+  } else {
+    lines.push("**Overrides applied:** none — palette matches the archetype baseline.\n");
   }
-  lines.push(...renderSemanticPalette(tokens));
+
+  lines.push(...renderPaletteGroup("Surface", SURFACE_SLOTS, tokens));
   lines.push("");
-  lines.push(...renderRoleAliases());
+  lines.push(...renderPaletteGroup("Text", TEXT_SLOTS, tokens));
+  lines.push("");
+  lines.push(...renderPaletteGroup("Accent", ACCENT_SLOTS, tokens));
+  lines.push("");
+  lines.push(...renderPaletteGroup("Status", STATUS_SLOTS, tokens));
 
   return lines.join("\n");
 }

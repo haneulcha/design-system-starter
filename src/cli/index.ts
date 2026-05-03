@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { generate } from "../generator/index.js";
 import { transformToFigma } from "../figma/transformer.js";
 import type { HeadingStyle } from "../schema/typography.js";
+import { PRESET_NAMES, type PresetName } from "../schema/presets.js";
 
 async function main() {
   console.log("\n  Design System Starter\n");
@@ -17,11 +18,10 @@ async function main() {
     validate: (v) => v.trim().length > 0 || "Brand name is required",
   });
 
-  const brandColor = await input({
-    message: "Brand color (hex):",
-    default: "#5e6ad2",
-    validate: (v) =>
-      /^#[0-9a-fA-F]{6}$/.test(v.trim()) || "Enter a valid hex (e.g. #5e6ad2)",
+  const preset = await select<PresetName>({
+    message: "Archetype (anchors the color palette):",
+    choices: PRESET_NAMES.map((name) => ({ value: name, name })),
+    default: "professional",
   });
 
   const sansRaw = await input({
@@ -51,7 +51,7 @@ async function main() {
 
   const result = generate({
     brandName: brandName.trim(),
-    brandColor: brandColor.trim(),
+    preset,
     fontFamily: sans ?? "Inter",
     typographyKnobs: {
       fontFamily: { sans, mono },

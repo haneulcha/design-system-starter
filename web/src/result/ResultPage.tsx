@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import type { WizardState, MoodArchetype, FullResult } from "../hooks/useGenerator";
-import { ARCHETYPES, getArchetype } from "@core/schema/archetypes.js";
-import { ColorScale } from "../components/ColorScale";
+import type { WizardState, FullResult, PresetName } from "../hooks/useGenerator";
+import { ARCHETYPES } from "@core/schema/archetypes.js";
+import { ColorPalette } from "../components/ColorPalette";
 import { DSButton } from "../components/DSButton";
 import { DSInput } from "../components/DSInput";
 import { DSCard } from "../components/DSCard";
@@ -9,7 +9,16 @@ import { DSBadge } from "../components/DSBadge";
 import { DSDivider } from "../components/DSDivider";
 import { TypeScale } from "../components/TypeScale";
 import { DownloadPanel } from "./DownloadPanel";
+import { Inspector } from "../inspector/Inspector";
 import { loadGoogleFont, resolveColor, buildFontFamily } from "../lib/tokens";
+
+const SUGGESTED_FONTS: Record<PresetName, string[]> = {
+  "clean-minimal":    ["Inter", "Geist", "Manrope"],
+  "warm-friendly":    ["Inter", "DM Sans", "Plus Jakarta Sans"],
+  "bold-energetic":   ["Inter", "Space Grotesk", "Sora"],
+  "professional":     ["Inter", "IBM Plex Sans", "Source Sans 3"],
+  "playful-creative": ["Inter", "Outfit", "Quicksand"],
+};
 
 export function ResultPage({
   state,
@@ -22,9 +31,7 @@ export function ResultPage({
   onChange: (p: Partial<WizardState>) => void;
   onBack: () => void;
 }) {
-  const archetype = getArchetype(state.mood);
-  const suggestedFonts = archetype.suggestedFonts;
-  const suggestedNames = suggestedFonts.map((f) => f.name);
+  const suggestedNames = SUGGESTED_FONTS[state.preset];
   const isCustom = !suggestedNames.includes(state.fontFamily);
   const [customFontInput, setCustomFontInput] = useState(isCustom ? state.fontFamily : "");
   const [showCustomFont, setShowCustomFont] = useState(isCustom);
@@ -45,15 +52,15 @@ export function ResultPage({
   const { system, tokens } = result;
   const sectionClass = "mb-8";
   const labelClass = "text-xs font-medium text-neutral-400 uppercase tracking-wider mb-3";
-  const textPrimary = resolveColor(tokens, "text/primary");
+  const textPrimary = resolveColor(tokens, "text/ink");
   const textMuted = resolveColor(tokens, "text/muted");
   const fontFamily = buildFontFamily(system);
-  const borderDefault = resolveColor(tokens, "border/default");
+  const borderDefault = resolveColor(tokens, "bg/hairline");
 
   return (
-    <div className="min-h-screen bg-white antialiased flex flex-col md:flex-row">
+    <div className="min-h-screen bg-white antialiased flex flex-col lg:flex-row">
       {/* Sidebar */}
-      <aside className="w-full md:w-80 shrink-0 border-b md:border-b-0 md:border-r border-neutral-200 md:h-screen md:sticky md:top-0 md:overflow-y-auto">
+      <aside className="w-full lg:w-80 shrink-0 border-b lg:border-b-0 lg:border-r border-neutral-200 lg:h-screen lg:sticky lg:top-0 lg:overflow-y-auto">
         <div className="p-5 space-y-6">
           <button
             onClick={onBack}
@@ -80,50 +87,25 @@ export function ResultPage({
 
           <div>
             <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1.5">
-              Primary Color
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={state.primaryColor}
-                onChange={(e) => onChange({ primaryColor: e.target.value })}
-                className="w-9 h-9 rounded cursor-pointer border border-neutral-200 p-0.5 bg-white"
-              />
-              <input
-                type="text"
-                value={state.primaryColor}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  if (/^#[0-9a-fA-F]{6}$/.test(v)) onChange({ primaryColor: v });
-                  else if (v.length <= 7) onChange({ primaryColor: v });
-                }}
-                className="flex-1 font-mono text-sm px-3 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-neutral-500"
-                placeholder="#5e6ad2"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1.5">
               Archetype
             </label>
             <div className="grid grid-cols-2 gap-1.5">
               {archetypeEntries.map((a) => (
                 <label
-                  key={a.mood}
+                  key={a.preset}
                   className={[
                     "flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all text-sm",
-                    state.mood === a.mood
+                    state.preset === a.preset
                       ? "border-neutral-900 bg-neutral-900 text-white"
                       : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-400",
                   ].join(" ")}
                 >
                   <input
                     type="radio"
-                    name="result-mood"
-                    value={a.mood}
-                    checked={state.mood === a.mood}
-                    onChange={() => onChange({ mood: a.mood as MoodArchetype })}
+                    name="result-preset"
+                    value={a.preset}
+                    checked={state.preset === a.preset}
+                    onChange={() => onChange({ preset: a.preset as PresetName })}
                     className="sr-only"
                   />
                   {a.label}
@@ -150,9 +132,9 @@ export function ResultPage({
               }}
               className="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:border-neutral-500 bg-white appearance-none"
             >
-              {suggestedFonts.map((f) => (
-                <option key={f.name} value={f.name}>
-                  {f.name}
+              {suggestedNames.map((f) => (
+                <option key={f} value={f}>
+                  {f}
                 </option>
               ))}
               <option value="custom">Custom…</option>
@@ -189,14 +171,18 @@ export function ResultPage({
               {state.brandName || "Untitled"} Design System
             </h1>
             <p className="text-neutral-500 text-sm capitalize">
-              {state.mood} archetype — {state.fontFamily}
+              {state.preset} archetype — {state.fontFamily}
             </p>
           </div>
 
-          {/* Color scales */}
+          {/* Palette */}
           <section>
-            <h2 className="text-lg font-semibold text-neutral-900 mb-4">Color Scales</h2>
-            <ColorScale scales={system.colors} />
+            <h2 className="text-lg font-semibold text-neutral-900 mb-4">Color Palette</h2>
+            <ColorPalette
+              palette={system.colorTokens.palette}
+              baseScale={system.colorTokens.baseScale}
+              preset={system.colorTokens.preset}
+            />
           </section>
 
           {/* Components */}
@@ -227,9 +213,9 @@ export function ResultPage({
                   <DSInput state="focus" tokens={tokens} system={system} value="Focused input" />
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: resolveColor(tokens, "status/error"), marginBottom: 4, fontFamily }}>Error</div>
+                  <div style={{ fontSize: 11, color: resolveColor(tokens, "status/error-text"), marginBottom: 4, fontFamily }}>Error</div>
                   <DSInput state="error" tokens={tokens} system={system} value="Invalid value" />
-                  <div style={{ fontSize: 11, color: resolveColor(tokens, "status/error"), marginTop: 4, fontFamily }}>
+                  <div style={{ fontSize: 11, color: resolveColor(tokens, "status/error-text"), marginTop: 4, fontFamily }}>
                     This field has an error
                   </div>
                 </div>
@@ -297,6 +283,7 @@ export function ResultPage({
           </section>
         </div>
       </main>
+      <Inspector state={state} onChange={onChange} />
     </div>
   );
 }

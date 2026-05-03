@@ -1,24 +1,39 @@
 import { useEffect, useState } from "react";
-import { getArchetype } from "@core/schema/archetypes.js";
 import type { DesignSystem } from "@core/schema/types.js";
-import type { MoodArchetype } from "../hooks/useGenerator";
+import type { PresetName } from "../hooks/useGenerator";
 import { loadGoogleFont } from "../lib/tokens";
 import { TypeScale } from "../components/TypeScale";
 
+interface FontSuggestion { name: string; fallback: string }
+
+const SUGGESTED_FONTS: Record<PresetName, FontSuggestion[]> = {
+  "clean-minimal":    [{ name: "Inter", fallback: "system-ui, sans-serif" }, { name: "Geist", fallback: "system-ui, sans-serif" }, { name: "Manrope", fallback: "system-ui, sans-serif" }],
+  "warm-friendly":    [{ name: "Inter", fallback: "system-ui, sans-serif" }, { name: "DM Sans", fallback: "system-ui, sans-serif" }, { name: "Plus Jakarta Sans", fallback: "system-ui, sans-serif" }],
+  "bold-energetic":   [{ name: "Inter", fallback: "system-ui, sans-serif" }, { name: "Space Grotesk", fallback: "system-ui, sans-serif" }, { name: "Sora", fallback: "system-ui, sans-serif" }],
+  "professional":     [{ name: "Inter", fallback: "system-ui, sans-serif" }, { name: "IBM Plex Sans", fallback: "system-ui, sans-serif" }, { name: "Source Sans 3", fallback: "system-ui, sans-serif" }],
+  "playful-creative": [{ name: "Inter", fallback: "system-ui, sans-serif" }, { name: "Outfit", fallback: "system-ui, sans-serif" }, { name: "Quicksand", fallback: "system-ui, sans-serif" }],
+};
+
+const DEFAULT_FONT: Record<PresetName, string> = {
+  "clean-minimal": "Inter",
+  "warm-friendly": "Inter",
+  "bold-energetic": "Inter",
+  "professional": "Inter",
+  "playful-creative": "Inter",
+};
+
 export function StepFont({
   value,
-  mood,
+  preset,
   onChange,
   system,
 }: {
   value: string;
-  mood: MoodArchetype;
+  preset: PresetName;
   onChange: (v: string) => void;
   system: DesignSystem | null;
 }) {
-  const archetype = getArchetype(mood);
-  const suggestedFonts = archetype.suggestedFonts;
-
+  const suggestedFonts = SUGGESTED_FONTS[preset];
   const suggestedNames = suggestedFonts.map((f) => f.name);
   const isCustom = !suggestedNames.includes(value);
 
@@ -30,43 +45,19 @@ export function StepFont({
   }, [value]);
 
   useEffect(() => {
-    const newArchetype = getArchetype(mood);
-    const newNames = newArchetype.suggestedFonts.map((f) => f.name);
+    const newNames = SUGGESTED_FONTS[preset].map((f) => f.name);
     if (!newNames.includes(value) && !showCustom) {
-      onChange(newArchetype.defaultFont);
+      onChange(DEFAULT_FONT[preset]);
     }
-  }, [mood]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  function handleSuggestedSelect(name: string) {
-    setShowCustom(false);
-    onChange(name);
-  }
-
-  function handleCustomToggle() {
-    setShowCustom(true);
-    if (customInput) {
-      onChange(customInput);
-    }
-  }
-
-  function handleCustomInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const v = e.target.value;
-    setCustomInput(v);
-    if (v.trim()) {
-      onChange(v.trim());
-    }
-  }
+  }, [preset]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold tracking-tight mb-2">
-        Choose your font
-      </h2>
+      <h2 className="text-2xl font-semibold tracking-tight mb-2">Choose your font</h2>
       <p className="text-neutral-500 mb-8">
         Select from fonts suited to your archetype, or enter any Google Fonts family.
       </p>
 
-      {/* Font selector */}
       <div className="flex flex-col gap-2 mb-8">
         {suggestedFonts.map((font) => {
           const isSelected = !showCustom && value === font.name;
@@ -75,17 +66,13 @@ export function StepFont({
               key={font.name}
               className={[
                 "flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all",
-                isSelected
-                  ? "border-neutral-900 ring-2 ring-neutral-900 bg-white"
-                  : "border-neutral-200 bg-white hover:border-neutral-400",
+                isSelected ? "border-neutral-900 ring-2 ring-neutral-900 bg-white"
+                           : "border-neutral-200 bg-white hover:border-neutral-400",
               ].join(" ")}
             >
               <input
-                type="radio"
-                name="font"
-                value={font.name}
-                checked={isSelected}
-                onChange={() => handleSuggestedSelect(font.name)}
+                type="radio" name="font" value={font.name} checked={isSelected}
+                onChange={() => { setShowCustom(false); onChange(font.name); }}
                 className="accent-neutral-900"
               />
               <div className="flex-1 min-w-0">
@@ -101,41 +88,37 @@ export function StepFont({
           );
         })}
 
-        {/* Custom option */}
         <label
           className={[
             "flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all",
-            showCustom
-              ? "border-neutral-900 ring-2 ring-neutral-900 bg-white"
-              : "border-neutral-200 bg-white hover:border-neutral-400",
+            showCustom ? "border-neutral-900 ring-2 ring-neutral-900 bg-white"
+                       : "border-neutral-200 bg-white hover:border-neutral-400",
           ].join(" ")}
         >
           <input
-            type="radio"
-            name="font"
-            value="custom"
-            checked={showCustom}
-            onChange={handleCustomToggle}
+            type="radio" name="font" value="custom" checked={showCustom}
+            onChange={() => { setShowCustom(true); if (customInput) onChange(customInput); }}
             className="accent-neutral-900"
           />
           <div className="flex-1 flex items-center gap-2">
             <span className="text-sm font-medium text-neutral-900">Custom</span>
             {showCustom && (
               <input
-                type="text"
-                value={customInput}
-                onChange={handleCustomInputChange}
+                type="text" value={customInput}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setCustomInput(v);
+                  if (v.trim()) onChange(v.trim());
+                }}
                 placeholder="e.g. Lato, Raleway, Nunito…"
                 className="flex-1 text-sm px-2 py-1 border border-neutral-300 rounded focus:outline-none focus:border-neutral-600"
-                autoFocus
-                onClick={(e) => e.stopPropagation()}
+                autoFocus onClick={(e) => e.stopPropagation()}
               />
             )}
           </div>
         </label>
       </div>
 
-      {/* Typography preview */}
       {system && <TypeScale system={system} />}
     </div>
   );

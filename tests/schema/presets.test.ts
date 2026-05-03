@@ -16,10 +16,9 @@ describe("preset bundle vocabulary", () => {
 });
 
 describe("preset bundle content sanity", () => {
-  it("every preset sets all 6 category knob fields", () => {
+  it("every preset sets all 5 category knob fields (color now lives in archetype-palettes)", () => {
     for (const name of PRESET_NAMES) {
       const b = PRESETS[name];
-      expect(b.colorKnobs,       `${name}.colorKnobs`).toBeDefined();
       expect(b.typographyKnobs,  `${name}.typographyKnobs`).toBeDefined();
       expect(b.spacingKnobs,     `${name}.spacingKnobs`).toBeDefined();
       expect(b.radiusKnobs,      `${name}.radiusKnobs`).toBeDefined();
@@ -42,9 +41,8 @@ describe("editorial intent encoding", () => {
     expect(b.componentKnobs?.buttonShape).toBe("rect");
   });
 
-  it("professional: cool tint + sharp radius + subtle shadow + outlined card", () => {
+  it("professional: sharp radius + subtle shadow + outlined card", () => {
     const b = PRESETS["professional"];
-    expect(b.colorKnobs?.neutral?.tint).toBe("cool");
     expect(b.radiusKnobs?.style).toBe("sharp");
     expect(b.elevationKnobs?.intensity).toBe("subtle");
     expect(b.componentKnobs?.cardSurface).toBe("outlined");
@@ -68,12 +66,10 @@ describe("editorial intent encoding", () => {
     expect(b.componentKnobs?.buttonShape).toBe("pill");
   });
 
-  it("warm-friendly: filled card + subtle shadow (warm tinted neutral N/A in v1 vocab)", () => {
+  it("warm-friendly: filled card + subtle shadow", () => {
     const b = PRESETS["warm-friendly"];
     expect(b.elevationKnobs?.intensity).toBe("subtle");
     expect(b.componentKnobs?.cardSurface).toBe("filled");
-    // Color category lacks a "warm" tint option (corpus 0/56). Achromatic stands.
-    expect(b.colorKnobs?.neutral?.tint).toBe("achromatic");
   });
 });
 

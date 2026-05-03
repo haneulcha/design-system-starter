@@ -55,6 +55,6 @@ export function generateLayout(
       gutter: `${spacingTokens.aliases.md}px`,
     },
     borderRadius,
-    whitespacePhilosophy: whitespaceMap[archetype.mood],
+    whitespacePhilosophy: whitespaceMap[archetype.preset],
   };
 }

@@ -7,16 +7,16 @@ import type {
   ArchetypePreset,
   DesignSystem,
   DesignTokens,
-  MoodArchetype,
   Oklch,
 } from "../src/schema/types.js";
+import type { PresetName } from "../src/schema/presets.js";
 import type { GenerateResult } from "../src/generator/index.js";
 import { oklchToHex } from "../src/generator/color.js";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface ShowcaseSummary {
-  mood: MoodArchetype;
+  preset: PresetName;
   archetype: ArchetypePreset;
   primary: string;
 }
@@ -137,7 +137,7 @@ function renderHeader(
   return `
 <header class="hero">
   <div class="hero-meta">
-    <span class="mood-badge">${escapeHtml(archetype.label)}</span>
+    <span class="preset-badge">${escapeHtml(archetype.label)}</span>
     <span class="brand">${escapeHtml(system.brandName)}</span>
   </div>
   <h1 class="hero-title">${escapeHtml(archetype.label)}</h1>
@@ -427,7 +427,7 @@ function renderCards(tokens: DesignTokens, system: DesignSystem): string {
   <div class="card-grid">
     <div class="card" style="${cardCommon("default")}">
       <div style="color:${headerColor};font-weight:600;font-size:18px;">Default card</div>
-      <div style="color:${bodyColor};font-size:14px;line-height:1.5;">A card uses semantic tokens for background, border, and text. The shadow follows the mood's elevation system.</div>
+      <div style="color:${bodyColor};font-size:14px;line-height:1.5;">A card uses semantic tokens for background, border, and text. The shadow follows the preset's elevation system.</div>
       <div><button style="${ctaStyle}">Action</button></div>
     </div>
     <div class="card card-compact" style="${cardCommon("compact")}">
@@ -618,7 +618,7 @@ code { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monos
 /* Hero */
 .hero { padding: 32px 0 48px; border-bottom: 1px solid var(--color-border-subtle); margin-bottom: 48px; }
 .hero-meta { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; font-size: 13px; }
-.mood-badge { background: var(--color-brand-primary); color: #fff; padding: 4px 10px; border-radius: 9999px; font-weight: 500; letter-spacing: 0.02em; }
+.preset-badge { background: var(--color-brand-primary); color: #fff; padding: 4px 10px; border-radius: 9999px; font-weight: 500; letter-spacing: 0.02em; }
 .brand { color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
 .hero-title { font-size: 56px; font-weight: 700; letter-spacing: -1.5px; margin: 0 0 12px; line-height: 1.1; }
 .hero-desc { font-size: 18px; color: var(--color-text-secondary); margin: 0 0 24px; max-width: 720px; }
@@ -712,7 +712,7 @@ code { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monos
 // ─── Page renderers ──────────────────────────────────────────────────────────
 
 export function renderShowcaseHtml(
-  mood: MoodArchetype,
+  preset: PresetName,
   archetype: ArchetypePreset,
   result: GenerateResult,
 ): string {
@@ -757,7 +757,7 @@ ${pageCss}
 <div class="container">
 ${body}
 <footer style="margin-top:80px;padding-top:24px;border-top:1px solid var(--color-border-subtle);font-size:12px;color:var(--color-text-muted);">
-  <a href="index.html">← Back to all moods</a>
+  <a href="index.html">← Back to all presets</a>
 </footer>
 </div>
 </body>
@@ -768,13 +768,13 @@ export function renderIndexHtml(summaries: ShowcaseSummary[]): string {
   const cards = summaries
     .map(
       (s) => `
-    <a class="mood-card" href="${escapeHtml(s.mood)}.html">
-      <div class="mood-card-head">
-        <span class="mood-card-swatch" style="background:${escapeHtml(s.primary)}"></span>
-        <span class="mood-card-title">${escapeHtml(s.archetype.label)}</span>
+    <a class="preset-card" href="${escapeHtml(s.preset)}.html">
+      <div class="preset-card-head">
+        <span class="preset-card-swatch" style="background:${escapeHtml(s.primary)}"></span>
+        <span class="preset-card-title">${escapeHtml(s.archetype.label)}</span>
       </div>
-      <p class="mood-card-desc">${escapeHtml(s.archetype.description)}</p>
-      <div class="mood-card-meta">
+      <p class="preset-card-desc">${escapeHtml(s.archetype.description)}</p>
+      <div class="preset-card-meta">
         <span><strong>Primary:</strong> <code>${escapeHtml(s.primary)}</code></span>
       </div>
     </a>`,
@@ -794,21 +794,21 @@ html, body { margin: 0; padding: 0; background: #fafafa; color: #111; font-famil
 h1 { font-size: 48px; font-weight: 700; letter-spacing: -1.4px; margin: 0 0 12px; }
 .subtitle { font-size: 18px; color: #555; margin: 0 0 48px; max-width: 640px; }
 code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85em; background: #eee; padding: 1px 5px; border-radius: 3px; }
-.mood-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-.mood-card { display: flex; flex-direction: column; gap: 10px; padding: 24px; background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; text-decoration: none; color: inherit; transition: transform 0.15s ease, box-shadow 0.15s ease; }
-.mood-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-.mood-card-head { display: flex; align-items: center; gap: 12px; }
-.mood-card-swatch { width: 24px; height: 24px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.08); }
-.mood-card-title { font-size: 18px; font-weight: 600; }
-.mood-card-desc { font-size: 14px; color: #555; margin: 0; line-height: 1.5; }
-.mood-card-meta { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #777; margin-top: 8px; }
+.preset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.preset-card { display: flex; flex-direction: column; gap: 10px; padding: 24px; background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; text-decoration: none; color: inherit; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.preset-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.preset-card-head { display: flex; align-items: center; gap: 12px; }
+.preset-card-swatch { width: 24px; height: 24px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.08); }
+.preset-card-title { font-size: 18px; font-weight: 600; }
+.preset-card-desc { font-size: 14px; color: #555; margin: 0; line-height: 1.5; }
+.preset-card-meta { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #777; margin-top: 8px; }
 </style>
 </head>
 <body>
 <div class="container">
   <h1>Design System Mood Showcase</h1>
-  <p class="subtitle">Five moods, one brand. Each card links to a fully rendered preview generated from the same primary color and brand name.</p>
-  <div class="mood-grid">
+  <p class="subtitle">Five presets, one brand. Each card links to a fully rendered preview generated from the same primary color and brand name.</p>
+  <div class="preset-grid">
 ${cards}
   </div>
 </div>

@@ -6,7 +6,7 @@ import type { SpacingCategoryTokens } from "../generator/spacing-category.js";
 import type { RadiusCategoryTokens } from "../generator/radius-category.js";
 import type { ElevationCategoryTokens } from "../generator/elevation-category.js";
 import type { ComponentCategoryTokens } from "../generator/components-category.js";
-import type { PartialColorKnobs } from "./color.js";
+import type { PaletteOverrides } from "./archetype-palettes.js";
 import type { TypographyInput } from "./typography.js";
 import type { SpacingInput } from "./spacing.js";
 import type { RadiusInput } from "./radius.js";
@@ -16,35 +16,17 @@ import type { PresetName } from "./presets.js";
 
 // ═══ User Inputs ═══
 
-/**
- * Internal-only archetype identifiers. The 5-mood vocabulary is no longer a
- * user-facing input — see docs/research/color-analysis-notes.md §1 for the
- * pivot rationale. Typography/components/layout/elevation generation still
- * consumes a single fixed archetype (DEFAULT_ARCHETYPE) until those categories
- * complete their per-category inductive analyses.
- */
-export type MoodArchetype =
-  | "clean-minimal"
-  | "warm-friendly"
-  | "bold-energetic"
-  | "professional"
-  | "playful-creative";
-
-export type ColorCharacter = "vivid" | "balanced" | "muted";
-
 export interface UserInputs {
   brandName: string;
-  brandColor: string;
-  brandColorSecondary?: string;
   fontFamily: string;
-  colorKnobs?: PartialColorKnobs;
+  /** Per-slot hex overrides on top of the chosen archetype's palette. */
+  paletteOverrides?: PaletteOverrides;
   typographyKnobs?: TypographyInput;
   spacingKnobs?: SpacingInput;
   radiusKnobs?: RadiusInput;
   elevationKnobs?: ElevationInput;
   componentKnobs?: ComponentInput;
-  /** Optional cross-category preset bundle. Each per-category knob the user
-   *  also supplies overrides the preset's value for that whole category. */
+  /** Required. Anchors palette, atmosphere, and per-category knob defaults. */
   preset?: PresetName;
 }
 
@@ -144,7 +126,7 @@ export interface DesignSystem {
 export type NeutralUndertone = "cool" | "warm" | "neutral";
 
 export interface ArchetypePreset {
-  mood: MoodArchetype;
+  preset: PresetName;
   label: string;
   description: string;
   atmosphereTemplate: string;

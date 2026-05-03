@@ -1,10 +1,11 @@
 // src/schema/archetypes.ts
 
-import type { MoodArchetype, ArchetypePreset } from "./types.js";
+import type { ArchetypePreset } from "./types.js";
+import type { PresetName } from "./presets.js";
 
-export const ARCHETYPES: Record<MoodArchetype, ArchetypePreset> = {
+export const ARCHETYPES: Record<PresetName, ArchetypePreset> = {
   "clean-minimal": {
-    mood: "clean-minimal",
+    preset: "clean-minimal",
     label: "Clean & Minimal",
     description: "Restrained rounding, whisper shadow, contemporary lightness",
     neutralUndertone: "neutral",
@@ -48,7 +49,7 @@ Surfaces are nearly flat, separated only by whisper shadows that suggest hierarc
   },
 
   "warm-friendly": {
-    mood: "warm-friendly",
+    preset: "warm-friendly",
     label: "Warm & Friendly",
     description: "Subtle warm depth, generous rounding, atmospheric presence",
     neutralUndertone: "warm",
@@ -92,7 +93,7 @@ Surfaces are nearly flat, separated only by whisper shadows that suggest hierarc
   },
 
   "bold-energetic": {
-    mood: "bold-energetic",
+    preset: "bold-energetic",
     label: "Bold & Energetic",
     description: "Bold typography, pill geometry, dramatic depth, commanding presence",
     neutralUndertone: "neutral",
@@ -136,7 +137,7 @@ Dramatic shadows and pill-radius confidence (9999px buttons and inputs, 12px car
   },
 
   "professional": {
-    mood: "professional",
+    preset: "professional",
     label: "Professional",
     description: "Sharp edges, light typography, structured restraint, anchored depth",
     neutralUndertone: "cool",
@@ -180,7 +181,7 @@ Structured spacing — 16px component grid, 80px section intervals — creates a
   },
 
   "playful-creative": {
-    mood: "playful-creative",
+    preset: "playful-creative",
     label: "Playful & Creative",
     description: "Generous rounding, tactile depth, expressive multi-color rhythm",
     neutralUndertone: "warm",
@@ -224,8 +225,8 @@ Structured spacing — 16px component grid, 80px section intervals — creates a
   },
 };
 
-export function getArchetype(mood: MoodArchetype): ArchetypePreset {
-  return ARCHETYPES[mood];
+export function getArchetype(preset: PresetName): ArchetypePreset {
+  return ARCHETYPES[preset];
 }
 
 /**

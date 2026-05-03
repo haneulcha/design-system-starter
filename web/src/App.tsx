@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { ProgressBar } from "./components/ProgressBar";
-import { StepColor } from "./steps/StepColor";
 import { StepArchetype } from "./steps/StepArchetype";
 import { StepFont } from "./steps/StepFont";
 import { ResultPage } from "./result/ResultPage";
-import { DEFAULT_STATE, useGenerateResult, type WizardState, type MoodArchetype } from "./hooks/useGenerator";
+import { DEFAULT_STATE, useGenerateResult, type WizardState, type PresetName } from "./hooks/useGenerator";
 
 type Screen = "wizard" | "result";
+
+const STEP_COUNT = 2;
 
 export function App() {
   const [screen, setScreen] = useState<Screen>("wizard");
@@ -23,18 +24,16 @@ export function App() {
         state={state}
         result={result}
         onChange={update}
-        onBack={() => { setScreen("wizard"); setStep(2); }}
+        onBack={() => { setScreen("wizard"); setStep(STEP_COUNT - 1); }}
       />
     );
   }
 
   const next = () => {
-    if (step < 2) setStep(step + 1);
+    if (step < STEP_COUNT - 1) setStep(step + 1);
     else setScreen("result");
   };
-  const back = () => {
-    if (step > 0) setStep(step - 1);
-  };
+  const back = () => { if (step > 0) setStep(step - 1); };
 
   return (
     <div className="min-h-screen bg-white antialiased">
@@ -42,24 +41,17 @@ export function App() {
         <ProgressBar current={step} />
         <div className="py-8">
           {step === 0 && (
-            <StepColor
-              value={state.primaryColor}
-              onChange={(c: string) => update({ primaryColor: c })}
-              scales={result?.system.colors ?? null}
+            <StepArchetype
+              value={state.preset}
+              tokens={result?.tokens ?? null}
+              system={result?.system ?? null}
+              onChange={(p: PresetName) => update({ preset: p })}
             />
           )}
           {step === 1 && (
-            <StepArchetype
-              value={state.mood}
-              tokens={result?.tokens ?? null}
-              system={result?.system ?? null}
-              onChange={(m: MoodArchetype) => update({ mood: m })}
-            />
-          )}
-          {step === 2 && (
             <StepFont
               value={state.fontFamily}
-              mood={state.mood}
+              preset={state.preset}
               onChange={(f: string) => update({ fontFamily: f })}
               system={result?.system ?? null}
             />
@@ -69,9 +61,7 @@ export function App() {
           <button
             onClick={back}
             className={`px-6 py-2 rounded text-sm transition-colors ${
-              step === 0
-                ? "invisible"
-                : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+              step === 0 ? "invisible" : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
             }`}
           >
             Back
@@ -80,7 +70,7 @@ export function App() {
             onClick={next}
             className="px-6 py-2 rounded bg-neutral-900 text-white text-sm hover:bg-neutral-800 transition-colors"
           >
-            {step === 2 ? "Generate" : "Next"}
+            {step === STEP_COUNT - 1 ? "Generate" : "Next"}
           </button>
         </div>
       </div>

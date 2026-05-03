@@ -14,7 +14,7 @@ let outputOverride: string;
 beforeAll(() => {
   const result = generate({
     brandName: "MockBrand",
-    brandColor: "#5e6ad2",
+    preset: "professional",
     fontFamily: "Inter",
   });
   system = result.system;
@@ -22,7 +22,8 @@ beforeAll(() => {
 
   const resultOverride = generate({
     brandName: "OverrideBrand",
-    brandColor: "#5e6ad2",
+    preset: "professional",
+    fontFamily: "Mona Sans",
     typographyKnobs: { fontFamily: { sans: "Mona Sans" } },
   });
   systemOverride = resultOverride.system;
@@ -44,34 +45,24 @@ describe("renderDesignMd", () => {
     expect(output).not.toMatch(/\*\*Mood:\*\*/);
   });
 
-  describe("Section 2 — Color System (3-tier)", () => {
-    it("has Tier 1 — Neutral Scale heading", () => {
-      expect(output).toMatch(/^### Tier 1 — Neutral Scale$/m);
+  describe("Section 2 — Color System (palette)", () => {
+    it("has Surface, Text, Accent, Status group headings", () => {
+      for (const heading of ["Surface", "Text", "Accent", "Status"]) {
+        expect(output).toMatch(new RegExp(`^### ${heading}$`, "m"));
+      }
     });
-    it("has Tier 1 — Accent Scale heading", () => {
-      expect(output).toMatch(/^### Tier 1 — Accent Scale$/m);
+    it("declares the anchoring archetype", () => {
+      expect(output).toMatch(/anchored on the \*\*professional\*\* archetype/);
     });
-    it("has Tier 2 — Semantic Palette heading", () => {
-      expect(output).toMatch(/^### Tier 2 — Semantic Palette$/m);
+    it("renders palette slot rows for each group", () => {
+      expect(output).toContain("`canvas`");
+      expect(output).toContain("`ink`");
+      expect(output).toContain("`accent`");
+      expect(output).toContain("`error-bg`");
+      expect(output).toContain("`info-text`");
     });
-    it("has Tier 3 — Role Aliases heading", () => {
-      expect(output).toMatch(/^### Tier 3 — Role Aliases$/m);
-    });
-    it("renders neutral steps with the proposal naming", () => {
-      expect(output).toContain("neutral.50");
-      expect(output).toContain("neutral.900");
-    });
-    it("renders accent contrast slot", () => {
-      expect(output).toContain("accent.contrast");
-    });
-    it("renders surface and text alias bullets", () => {
-      expect(output).toContain("`surface.canvas`");
-      expect(output).toContain("`text.ink`");
-      expect(output).toContain("`text.on-primary`");
-    });
-    it("declares the active knob set", () => {
-      expect(output).toMatch(/Active knobs/);
-      expect(output).toMatch(/neutral\.tint:\s*`achromatic`/);
+    it("notes overrides state when none applied", () => {
+      expect(output).toMatch(/Overrides applied:\*\* none/);
     });
   });
 
@@ -208,8 +199,9 @@ describe("renderDesignMd", () => {
     expect(output).toMatch(/#[0-9a-fA-F]{6}/);
   });
 
-  it("DesignSystem keeps colorTokens as the source of truth", () => {
+  it("DesignSystem keeps colorTokens with the resolved palette", () => {
     expect(system.colorTokens).toBeDefined();
-    expect(Object.keys(system.colorTokens.neutral.stops)).toHaveLength(9);
+    expect(system.colorTokens.preset).toBe("professional");
+    expect(Object.keys(system.colorTokens.palette)).toHaveLength(15);
   });
 });

@@ -1,15 +1,15 @@
 import type { DesignTokens, DesignSystem, Oklch } from "@core/schema/types.js";
 import { formatOklch, formatOklchAlpha } from "@core/generator/color.js";
-import { getArchetype } from "@core/schema/archetypes.js";
 
 // ─── Token Resolution ───────────────────────────────────────────────────────
 
 export function resolveOklch(tokens: DesignTokens, semanticKey: string): Oklch | null {
   const ref = tokens.semantic[semanticKey];
   if (!ref) return null;
-  const lastDash = ref.lastIndexOf("-");
-  const hue = ref.slice(0, lastDash);
-  const step = ref.slice(lastDash + 1);
+  const slash = ref.indexOf("/");
+  if (slash === -1) return null;
+  const hue = ref.slice(0, slash);
+  const step = ref.slice(slash + 1);
   return tokens.primitive.colors[hue]?.[step]?.light ?? null;
 }
 
@@ -31,25 +31,17 @@ export function resolveComponentColor(tokens: DesignTokens, componentPath: strin
   return resolveColor(tokens, semanticKey);
 }
 
-// ─── Shadow ─────────────────────────────────────────────────────────────────
-
-const SHADOW_MAP: Record<string, string> = {
-  whisper: "0 1px 2px rgba(0,0,0,0.04)",
-  subtle: "0 1px 3px rgba(0,0,0,0.08)",
-  medium: "0 4px 12px rgba(0,0,0,0.12)",
-  dramatic: "0 8px 24px rgba(0,0,0,0.2)",
-};
-
-export function resolveShadow(intensity: string): string {
-  return SHADOW_MAP[intensity] ?? SHADOW_MAP.subtle;
-}
-
 // ─── Font ───────────────────────────────────────────────────────────────────
 
+/** Returns the fully-resolved sans font chain from typographyTokens. */
 export function buildFontFamily(system: DesignSystem): string {
-  return system.typography.families.primary
-    ? `'${system.typography.families.primary}', system-ui, sans-serif`
-    : "system-ui, sans-serif";
+  return system.typographyTokens.fontChains.sans;
+}
+
+/** Strips fallback chain to the first family name (for Google Fonts loader). */
+export function primaryFontName(system: DesignSystem): string {
+  const first = system.typographyTokens.fontChains.sans.split(",")[0].trim();
+  return first.replace(/^["']|["']$/g, "");
 }
 
 export function loadGoogleFont(family: string): void {

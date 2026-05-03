@@ -116,11 +116,12 @@ export function transformToFigma(tokens: DesignTokens): FigmaDesignSystem {
   const primitiveColors = tokens.primitive.colors;
 
   function resolveColorMode(ref: string, mode: "light" | "dark"): string {
-    // Parse "{hue}-{step}" format
-    const lastDash = ref.lastIndexOf("-");
-    if (lastDash !== -1) {
-      const hue = ref.slice(0, lastDash);
-      const step = ref.slice(lastDash + 1);
+    // Parse "{hue}/{step}" format. Slash separator chosen so step names with
+    // hyphens (e.g. "error-bg") parse unambiguously.
+    const slash = ref.indexOf("/");
+    if (slash !== -1) {
+      const hue = ref.slice(0, slash);
+      const step = ref.slice(slash + 1);
       const hueMap = primitiveColors[hue];
       if (hueMap && hueMap[step]) {
         return oklchToHex(hueMap[step][mode]);
