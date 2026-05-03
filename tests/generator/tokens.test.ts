@@ -10,7 +10,6 @@ import {
   buildDesignTokens,
 } from "../../src/generator/tokens.js";
 import { generate } from "../../src/generator/index.js";
-import { PALETTE_SLOTS } from "../../src/schema/archetype-palettes.js";
 import type {
   PrimitiveTokens,
   SemanticTokens,
@@ -34,31 +33,46 @@ beforeAll(() => {
 // ─── generatePrimitive ────────────────────────────────────────────────────────
 
 describe("generatePrimitive", () => {
-  it("has a single 'palette' hue containing every slot", () => {
-    expect(primitive.colors).toHaveProperty("palette");
-    const stops = Object.keys(primitive.colors.palette);
-    expect(stops).toHaveLength(PALETTE_SLOTS.length);
-    for (const slot of PALETTE_SLOTS) {
-      expect(stops, `slot "${slot}" missing in palette`).toContain(slot);
-    }
+  it("emits 6 pseudo-hues: neutral, accent, red, green, amber, blue", () => {
+    expect(Object.keys(primitive.colors).sort()).toEqual(
+      ["accent", "amber", "blue", "green", "neutral", "red"],
+    );
   });
 
-  it("each slot has light and dark Oklch values", () => {
-    for (const [step, value] of Object.entries(primitive.colors.palette)) {
-      expect(value.light, `palette/${step}.light`).toHaveProperty("l");
-      expect(value.dark, `palette/${step}.dark`).toHaveProperty("l");
-    }
-  });
-
-  it("also exposes the 'neutral' hue (9 base scale stops) for downstream display", () => {
-    expect(primitive.colors).toHaveProperty("neutral");
+  it("neutral has 9 stops", () => {
     expect(Object.keys(primitive.colors.neutral)).toHaveLength(9);
   });
 
-  it("does NOT contain the per-role hue keys from the prior derivation pipeline", () => {
-    const keys = Object.keys(primitive.colors);
-    for (const legacy of ["error", "success", "warning", "info"]) {
-      expect(keys, `legacy key "${legacy}" should be gone`).not.toContain(legacy);
+  it("accent has a single -500 stop", () => {
+    expect(Object.keys(primitive.colors.accent)).toEqual(["500"]);
+  });
+
+  it("each status hue has -50 (bg) and -500 (text) stops", () => {
+    for (const hue of ["red", "green", "amber", "blue"]) {
+      expect(Object.keys(primitive.colors[hue]).sort()).toEqual(["50", "500"]);
+    }
+  });
+
+  it("neutral.50 inverts in dark mode (Radix-style position semantics)", () => {
+    const stop = primitive.colors.neutral["50"];
+    expect(stop.light.l).toBeGreaterThan(stop.dark.l);
+  });
+
+  it("accent.500 is identical in light and dark", () => {
+    const stop = primitive.colors.accent["500"];
+    expect(stop.light).toEqual(stop.dark);
+  });
+
+  it("does NOT emit the legacy 'palette' pseudo-hue", () => {
+    expect(primitive.colors).not.toHaveProperty("palette");
+  });
+
+  it("every stop has light and dark Oklch values", () => {
+    for (const hue of Object.keys(primitive.colors)) {
+      for (const [stop, value] of Object.entries(primitive.colors[hue])) {
+        expect(value.light, `${hue}.${stop}.light`).toHaveProperty("l");
+        expect(value.dark, `${hue}.${stop}.dark`).toHaveProperty("l");
+      }
     }
   });
 });
@@ -161,8 +175,8 @@ describe("buildDesignTokens — typography", () => {
     expect(Object.keys(tokens.typography.families).sort()).toEqual(["mono", "sans", "serif"]);
   });
 
-  it("styles has exactly 20 keys", () => {
-    expect(Object.keys(tokens.typography.styles)).toHaveLength(20);
+  it("styles has exactly 22 keys", () => {
+    expect(Object.keys(tokens.typography.styles)).toHaveLength(22);
   });
 
   it("all style keys use '-' separator (no dots)", () => {

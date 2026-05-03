@@ -25,6 +25,14 @@ export const NEUTRAL_STOPS: readonly NeutralStop[] = [
   "50", "100", "200", "300", "400", "500", "600", "800", "900",
 ];
 
+/** Maps each neutral stop to its dark-mode counterpart via lightness inversion. */
+export const DARK_NEUTRAL_INVERSION: Record<NeutralStop, NeutralStop> = {
+  "50": "900", "100": "800", "200": "600",
+  "300": "500", "400": "400",
+  "500": "300", "600": "200",
+  "800": "100", "900": "50",
+};
+
 export type SurfaceSlot = "canvas" | "soft" | "hairline";
 export type TextSlot    = "ink" | "body" | "muted";
 export type AccentSlot  = "accent";
@@ -387,3 +395,22 @@ export function resolveBaseScale(
   const base = ARCHETYPE_PALETTES[preset];
   return { ...base.baseScale, ...overrides?.baseScale };
 }
+
+// ─── Status hue naming (downstream emit) ────────────────────────────────────
+//
+// Maps the 4 status roles to fixed hue names. Naming is convention, not hue
+// accuracy — warm-friendly's error-text trends orange but is still emitted
+// under the `red` hue in CSS/Tailwind/Figma exports.
+
+export const STATUS_HUE_NAMES = {
+  error:   "red",
+  success: "green",
+  warning: "amber",
+  info:    "blue",
+} as const;
+
+export type StatusRole = keyof typeof STATUS_HUE_NAMES;
+export type StatusHueName = typeof STATUS_HUE_NAMES[StatusRole];
+
+export const STATUS_ROLES: readonly StatusRole[] = ["error", "success", "warning", "info"];
+export const STATUS_HUE_ORDER: readonly StatusHueName[] = ["red", "green", "amber", "blue"];
