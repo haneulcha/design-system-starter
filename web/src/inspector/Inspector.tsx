@@ -20,10 +20,14 @@ export function Inspector({ state, onChange }: InspectorProps) {
         </div>
         <CategoryTabs active={active} onChange={setActive} />
         <div className="pt-2">
-          {active === "color"  && <ColorPanel  state={state} onChange={onChange} />}
-          {active === "radius" && <RadiusPanel state={state} onChange={onChange} />}
+          {active === "color" && (
+            <ColorPanel state={state} onChange={onChange} />
+          )}
+          {active === "radius" && (
+            <RadiusPanel state={state} onChange={onChange} />
+          )}
           {active !== "color" && active !== "radius" && (
-            <div className="text-[12px] text-neutral-400 italic px-1 py-8 text-center">
+            <div className="text-xs text-neutral-400 italic px-1 py-8 text-center">
               Coming soon — this category panel ships in a follow-up slice.
             </div>
           )}

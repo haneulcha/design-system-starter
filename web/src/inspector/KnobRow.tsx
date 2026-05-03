@@ -9,7 +9,14 @@ interface KnobRowProps {
   tokens: ReactNode;
 }
 
-export function KnobRow({ selected, isPreset, isDefault, onClick, label, tokens }: KnobRowProps) {
+export function KnobRow({
+  selected,
+  isPreset,
+  isDefault,
+  onClick,
+  label,
+  tokens,
+}: KnobRowProps) {
   return (
     <button
       type="button"
@@ -22,17 +29,29 @@ export function KnobRow({ selected, isPreset, isDefault, onClick, label, tokens 
       ].join(" ")}
     >
       <div className="flex-1 flex items-center gap-2 min-w-0">
-        <span className={selected ? "text-neutral-900 font-medium text-[13px]" : "text-neutral-700 text-[13px]"}>
+        <span
+          className={
+            selected
+              ? "text-neutral-900 font-medium text-[13px]"
+              : "text-neutral-700 text-[13px]"
+          }
+        >
           {label}
         </span>
         {selected && isPreset && (
-          <span className="text-[9px] text-neutral-400 uppercase tracking-wider">preset</span>
+          <span className="text-2xs text-neutral-400 uppercase tracking-wider">
+            preset
+          </span>
         )}
         {selected && isDefault && (
-          <span className="text-[9px] text-neutral-400 uppercase tracking-wider">default</span>
+          <span className="text-2xs text-neutral-400 uppercase tracking-wider">
+            default
+          </span>
         )}
       </div>
-      <div className="font-mono text-[10px] text-neutral-500 tabular-nums shrink-0">{tokens}</div>
+      <div className="font-mono text-2xs text-neutral-500 tabular-nums shrink-0">
+        {tokens}
+      </div>
     </button>
   );
 }

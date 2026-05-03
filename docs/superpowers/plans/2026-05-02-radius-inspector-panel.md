@@ -26,6 +26,7 @@ git checkout -b feat/radius-inspector-panel
 
 Run: `cd web && pnpm exec tsc --noEmit 2>&1 | wc -l`
 Expected: 30+ lines of errors, including:
+
 - `'mood' does not exist on type 'DesignSystem'`
 - `'buttonRadius' does not exist on type 'ArchetypePreset'`
 - `'typography' does not exist on type 'DesignSystem'`
@@ -38,6 +39,7 @@ This is what we're fixing. No commit.
 ## Task 2: Schema-wide naming alignment — `MoodArchetype` → `PresetName`, `mood` → `preset`
 
 **Files:**
+
 - Modify: `src/schema/types.ts`
 - Modify: `src/schema/archetypes.ts`
 - Modify: `src/generator/layout.ts`
@@ -57,7 +59,7 @@ Background: `docs/research/_category-analysis-playbook.md` §"Rejected: Mood-bas
 
 ```ts
 export interface ArchetypePreset {
-  preset: PresetName;     // was: mood: MoodArchetype
+  preset: PresetName; // was: mood: MoodArchetype
   label: string;
   description: string;
   atmosphereTemplate: string;
@@ -171,7 +173,7 @@ The other line — `it("brand object has no mood field", () => {` — concerns a
 
 - [ ] **Step 6: `tests/scripts/render-html.test.ts` — rename test fixtures**
 
-Apply the same pattern as Step 4: import `PresetName` from `../../src/schema/presets.js`; `ALL_MOODS` → `ALL_PRESETS`; loop variable `mood` → `preset`; helper signature `function gen(mood: MoodArchetype)` → `function gen(preset: PresetName)`. Inside the helper, `getArchetype(mood)` → `getArchetype(preset)`. Anchor strings — e.g. `it(\`renders a non-empty page with key markers for ${mood}\`)` and `expect(html).toContain(\`href="${mood}.html"\`)` — become `${preset}` accordingly.
+Apply the same pattern as Step 4: import `PresetName` from `../../src/schema/presets.js`; `ALL_MOODS` → `ALL_PRESETS`; loop variable `mood` → `preset`; helper signature `function gen(mood: MoodArchetype)` → `function gen(preset: PresetName)`. Inside the helper, `getArchetype(mood)` → `getArchetype(preset)`. Anchor strings — e.g. `it(\`renders a non-empty page with key markers for ${mood}\`)` and `expect(html).toContain(\`href="${mood}.html"\`)`— become`${preset}` accordingly.
 
 If any assertion checks for the literal CSS class strings `mood-badge` / `mood-card` etc., update them to `preset-badge` / `preset-card` (renamed in Step 8).
 
@@ -205,12 +207,14 @@ Output filenames stay identical (`professional.html`, etc.) because the key stri
 Two kinds of edits:
 
 (a) Type + variable renames:
+
 - `MoodArchetype` import → `PresetName` from `../src/schema/presets.js`
 - `mood: MoodArchetype` (the summary record's field) → `preset: PresetName`
 - `renderShowcaseHtml(mood: MoodArchetype, …)` → `renderShowcaseHtml(preset: PresetName, …)`
 - Inside function bodies: every `mood` local → `preset`; every `s.mood` → `s.preset`.
 
 (b) HTML class + visible-prose renames (these become user-visible in the rendered HTML):
+
 - CSS class names: `mood-badge` → `preset-badge`; `mood-card`, `mood-card-head`, `mood-card-swatch`, `mood-card-title`, `mood-card-desc`, `mood-card-meta` → all `preset-*`; `mood-grid` → `preset-grid`.
 - Visible prose: `← Back to all moods` → `← Back to all presets`; `"Five moods, one brand."` → `"Five presets, one brand."`; `"The shadow follows the mood's elevation system."` → `"The shadow follows the preset's elevation system."`.
 
@@ -228,6 +232,7 @@ sed -i '' \
 ```
 
 Then manually open `scripts/render-html.ts` and confirm:
+
 - All `MoodArchetype` references replaced with `PresetName` (sed didn't catch this — do it via Edit).
 - `s.mood` replaced with `s.preset` and the field rename in the summary type matches.
 - No stray `mood` words remain in user-visible prose unless intentional.
@@ -238,6 +243,7 @@ Then manually open `scripts/render-html.ts` and confirm:
 pnpm exec tsc --noEmit -p .
 pnpm test
 ```
+
 Expected: `src/` tsc clean; all tests pass. (Test count unchanged; only identifiers and CSS strings shift.)
 
 - [ ] **Step 10: Verify the legacy vocabulary is gone**
@@ -265,6 +271,7 @@ After this task, every reference to the cross-category bundle concept uses `pres
 ## Task 3: Fix `lib/tokens.ts` — typography read + remove dead shadow helper
 
 **Files:**
+
 - Modify: `web/src/lib/tokens.ts`
 
 - [ ] **Step 1: Replace the file contents**
@@ -275,7 +282,10 @@ import { formatOklch, formatOklchAlpha } from "@core/generator/color.js";
 
 // ─── Token Resolution ───────────────────────────────────────────────────────
 
-export function resolveOklch(tokens: DesignTokens, semanticKey: string): Oklch | null {
+export function resolveOklch(
+  tokens: DesignTokens,
+  semanticKey: string,
+): Oklch | null {
   const ref = tokens.semantic[semanticKey];
   if (!ref) return null;
   const lastDash = ref.lastIndexOf("-");
@@ -289,12 +299,19 @@ export function resolveColor(tokens: DesignTokens, key: string): string {
   return color ? formatOklch(color) : "oklch(0.8 0 0)";
 }
 
-export function resolveColorAlpha(tokens: DesignTokens, key: string, alpha: number): string {
+export function resolveColorAlpha(
+  tokens: DesignTokens,
+  key: string,
+  alpha: number,
+): string {
   const color = resolveOklch(tokens, key);
   return color ? formatOklchAlpha(color, alpha) : "oklch(0.8 0 0)";
 }
 
-export function resolveComponentColor(tokens: DesignTokens, componentPath: string): string {
+export function resolveComponentColor(
+  tokens: DesignTokens,
+  componentPath: string,
+): string {
   const [comp, variant, prop] = componentPath.split(".");
   const semanticKey = tokens.component[comp]?.[variant]?.[prop];
   if (!semanticKey) return "oklch(0.8 0 0)";
@@ -331,14 +348,22 @@ export function parsePx(size: string): number {
 
 export function weightLabel(weight: number): string {
   const map: Record<number, string> = {
-    100: "Thin", 200: "Extra Light", 300: "Light", 400: "Regular",
-    500: "Medium", 600: "Semi Bold", 700: "Bold", 800: "Extra Bold", 900: "Black",
+    100: "Thin",
+    200: "Extra Light",
+    300: "Light",
+    400: "Regular",
+    500: "Medium",
+    600: "Semi Bold",
+    700: "Bold",
+    800: "Extra Bold",
+    900: "Black",
   };
   return map[weight] ?? String(weight);
 }
 ```
 
 Notes on what changed:
+
 - `buildFontFamily` reads `system.typographyTokens.fontChains.sans` (which already includes the full fallback chain — no need to wrap).
 - `primaryFontName` is a new helper that extracts the first family for `loadGoogleFont`.
 - Removed `resolveShadow` and `SHADOW_MAP` — DS components will read `tokens.elevation.*` directly.
@@ -361,13 +386,18 @@ git commit -m "refactor(web/lib): read typographyTokens; drop dead resolveShadow
 ## Task 4: Fix `DSButton`
 
 **Files:**
+
 - Modify: `web/src/components/DSButton.tsx`
 
 - [ ] **Step 1: Replace the file contents**
 
 ```tsx
 import type { DesignTokens, DesignSystem } from "@core/schema/types.js";
-import { resolveColor, resolveComponentColor, buildFontFamily } from "../lib/tokens";
+import {
+  resolveColor,
+  resolveComponentColor,
+  buildFontFamily,
+} from "../lib/tokens";
 
 type ButtonVariant = "primary" | "secondary" | "ghost";
 
@@ -415,21 +445,49 @@ function computeStyles(
 
   switch (variant) {
     case "primary":
-      return { ...base, backgroundColor: brandPrimary, color: "white", border: "none", boxShadow: shadow };
+      return {
+        ...base,
+        backgroundColor: brandPrimary,
+        color: "white",
+        border: "none",
+        boxShadow: shadow,
+      };
     case "secondary":
-      return { ...base, backgroundColor: `color-mix(in oklch, ${brandPrimary} 10%, transparent)`, color: brandPrimary, border: "none", boxShadow: shadow };
+      return {
+        ...base,
+        backgroundColor: `color-mix(in oklch, ${brandPrimary} 10%, transparent)`,
+        color: brandPrimary,
+        border: "none",
+        boxShadow: shadow,
+      };
     case "ghost":
-      return { ...base, backgroundColor: "transparent", color: brandPrimary, border: `1.5px solid ${brandPrimary}` };
+      return {
+        ...base,
+        backgroundColor: "transparent",
+        color: brandPrimary,
+        border: `1.5px solid ${brandPrimary}`,
+      };
   }
 }
 
-export function DSButton({ variant = "primary", disabled = false, children, tokens, system }: DSButtonProps) {
+export function DSButton({
+  variant = "primary",
+  disabled = false,
+  children,
+  tokens,
+  system,
+}: DSButtonProps) {
   const styles = computeStyles(variant, disabled, tokens, system);
-  return <button style={styles} disabled={disabled}>{children}</button>;
+  return (
+    <button style={styles} disabled={disabled}>
+      {children}
+    </button>
+  );
 }
 ```
 
 Notes:
+
 - Dropped `getArchetype` import and `archetype.buttonRadius`/`archetype.shadowIntensity` reads.
 - `borderRadius` now `tokens.borderRadius.button`.
 - `boxShadow` reads `tokens.elevation.raised`. Generator-emitted elevation keys are `ring | raised | floating | overlay` (the `none` level is skipped at emit time). `raised` is the right level for buttons and cards; if the active elevation style maps `raised` to `"none"`, the level is omitted from the token map and we fall back to CSS `"none"`.
@@ -451,6 +509,7 @@ git commit -m "refactor(web/DSButton): read tokens.borderRadius/elevation; drop 
 ## Task 5: Fix `DSInput`, `DSCard`, `DSBadge`, `DSDivider`
 
 **Files:**
+
 - Modify: `web/src/components/DSInput.tsx`
 - Modify: `web/src/components/DSCard.tsx`
 - Modify: `web/src/components/DSBadge.tsx`
@@ -471,7 +530,11 @@ interface DSInputProps {
   system: DesignSystem;
 }
 
-function computeStyles(state: InputState, tokens: DesignTokens, system: DesignSystem) {
+function computeStyles(
+  state: InputState,
+  tokens: DesignTokens,
+  system: DesignSystem,
+) {
   const fontFamily = buildFontFamily(system);
   const borderRadius = tokens.borderRadius.input;
 
@@ -484,21 +547,64 @@ function computeStyles(state: InputState, tokens: DesignTokens, system: DesignSy
   const errorColor = resolveColor(tokens, "status/error");
 
   const base = {
-    width: "100%", padding: "8px 12px", borderRadius, fontSize: 14,
-    outline: "none", boxSizing: "border-box" as const, fontFamily,
+    width: "100%",
+    padding: "8px 12px",
+    borderRadius,
+    fontSize: 14,
+    outline: "none",
+    boxSizing: "border-box" as const,
+    fontFamily,
   };
 
   switch (state) {
-    case "focus":    return { ...base, border: `2px solid ${brandPrimary}`, backgroundColor: bgBase, color: textPrimary };
-    case "error":    return { ...base, border: `1px solid ${errorColor}`, backgroundColor: bgBase, color: textPrimary };
-    case "disabled": return { ...base, border: `1px solid ${borderDefault}`, backgroundColor: bgSubtle, color: textMuted, cursor: "not-allowed", opacity: 0.7 };
-    default:         return { ...base, border: `1px solid ${borderDefault}`, backgroundColor: bgBase, color: textPrimary };
+    case "focus":
+      return {
+        ...base,
+        border: `2px solid ${brandPrimary}`,
+        backgroundColor: bgBase,
+        color: textPrimary,
+      };
+    case "error":
+      return {
+        ...base,
+        border: `1px solid ${errorColor}`,
+        backgroundColor: bgBase,
+        color: textPrimary,
+      };
+    case "disabled":
+      return {
+        ...base,
+        border: `1px solid ${borderDefault}`,
+        backgroundColor: bgSubtle,
+        color: textMuted,
+        cursor: "not-allowed",
+        opacity: 0.7,
+      };
+    default:
+      return {
+        ...base,
+        border: `1px solid ${borderDefault}`,
+        backgroundColor: bgBase,
+        color: textPrimary,
+      };
   }
 }
 
-export function DSInput({ state = "default", value = "Input value", tokens, system }: DSInputProps) {
+export function DSInput({
+  state = "default",
+  value = "Input value",
+  tokens,
+  system,
+}: DSInputProps) {
   const styles = computeStyles(state, tokens, system);
-  return <input readOnly disabled={state === "disabled"} value={value} style={styles} />;
+  return (
+    <input
+      readOnly
+      disabled={state === "disabled"}
+      value={value}
+      style={styles}
+    />
+  );
 }
 ```
 
@@ -530,7 +636,12 @@ function computeStyles(tokens: DesignTokens, system: DesignSystem) {
       overflow: "hidden" as const,
       fontFamily,
     },
-    image: { width: "100%", height: 160, objectFit: "cover" as const, display: "block" as const },
+    image: {
+      width: "100%",
+      height: 160,
+      objectFit: "cover" as const,
+      display: "block" as const,
+    },
     body: { padding: "16px 20px" },
   };
 }
@@ -550,7 +661,11 @@ export function DSCard({ children, image, tokens, system }: DSCardProps) {
 
 ```tsx
 import type { DesignTokens, DesignSystem } from "@core/schema/types.js";
-import { resolveColor, resolveColorAlpha, buildFontFamily } from "../lib/tokens";
+import {
+  resolveColor,
+  resolveColorAlpha,
+  buildFontFamily,
+} from "../lib/tokens";
 
 type BadgeVariant = "default" | "success" | "error" | "warning" | "info";
 
@@ -561,21 +676,33 @@ interface DSBadgeProps {
   system: DesignSystem;
 }
 
-function computeStyles(variant: BadgeVariant, tokens: DesignTokens, system: DesignSystem) {
+function computeStyles(
+  variant: BadgeVariant,
+  tokens: DesignTokens,
+  system: DesignSystem,
+) {
   const fontFamily = buildFontFamily(system);
   const bgSubtle = resolveColor(tokens, "bg/subtle");
   const textPrimary = resolveColor(tokens, "text/primary");
   const borderDefault = resolveColor(tokens, "border/default");
 
   const base = {
-    display: "inline-flex" as const, alignItems: "center" as const,
+    display: "inline-flex" as const,
+    alignItems: "center" as const,
     padding: "3px 10px",
     borderRadius: tokens.borderRadius.pill,
-    fontSize: 12, fontWeight: 500, fontFamily,
+    fontSize: 12,
+    fontWeight: 500,
+    fontFamily,
   };
 
   if (variant === "default") {
-    return { ...base, backgroundColor: bgSubtle, color: textPrimary, border: `1px solid ${borderDefault}` };
+    return {
+      ...base,
+      backgroundColor: bgSubtle,
+      color: textPrimary,
+      border: `1px solid ${borderDefault}`,
+    };
   }
 
   const statusKey = `status/${variant}` as const;
@@ -587,7 +714,12 @@ function computeStyles(variant: BadgeVariant, tokens: DesignTokens, system: Desi
   };
 }
 
-export function DSBadge({ variant = "default", children, tokens, system }: DSBadgeProps) {
+export function DSBadge({
+  variant = "default",
+  children,
+  tokens,
+  system,
+}: DSBadgeProps) {
   const styles = computeStyles(variant, tokens, system);
   return <span style={styles}>{children}</span>;
 }
@@ -615,6 +747,7 @@ git commit -m "refactor(web/DS): read tokens.borderRadius/elevation; drop archet
 ## Task 6: Fix `TypeScale`
 
 **Files:**
+
 - Modify: `web/src/components/TypeScale.tsx`
 
 - [ ] **Step 1: Replace the file contents**
@@ -625,9 +758,16 @@ import type { DesignSystem } from "@core/schema/types.js";
 import { loadGoogleFont, primaryFontName, weightLabel } from "../lib/tokens";
 
 const DISPLAY_KEYS = [
-  "heading.xl", "heading.lg", "heading.md", "heading.sm", "heading.xs",
-  "body.lg", "body.md", "body.sm",
-  "caption.md", "caption.sm",
+  "heading.xl",
+  "heading.lg",
+  "heading.md",
+  "heading.sm",
+  "heading.xs",
+  "body.lg",
+  "body.md",
+  "body.sm",
+  "caption.md",
+  "caption.sm",
 ] as const;
 
 export function TypeScale({ system }: { system: DesignSystem }) {
@@ -652,10 +792,16 @@ export function TypeScale({ system }: { system: DesignSystem }) {
           return (
             <div key={key} className="px-5 py-3 flex items-baseline gap-4">
               <div className="shrink-0" style={{ width: 120 }}>
-                <div className="text-neutral-400 uppercase tracking-wide" style={{ fontSize: 11 }}>
+                <div
+                  className="text-neutral-400 uppercase tracking-wide"
+                  style={{ fontSize: 11 }}
+                >
                   {key}
                 </div>
-                <div className="text-neutral-400 mt-0.5" style={{ fontSize: 10 }}>
+                <div
+                  className="text-neutral-400 mt-0.5"
+                  style={{ fontSize: 10 }}
+                >
                   {t.size}px / {weightLabel(t.weight)}
                 </div>
               </div>
@@ -681,6 +827,7 @@ export function TypeScale({ system }: { system: DesignSystem }) {
 ```
 
 Notes:
+
 - `system.typography.hierarchy` no longer exists. Iterate `typographyTokens.profiles` (a `Record<string, TypographyToken>` keyed like `"heading.xl"`, `"body.md"`).
 - `DISPLAY_KEYS` whitelists which keys to render and in what order — `profiles` includes button/card/nav/link/badge entries that aren't useful for a type-scale view.
 - `t.size` is a number (px), `t.letterSpacing` is a string (e.g. `"-0.02em"`), `t.fontFamily` is the full chain — pass each through directly.
@@ -702,6 +849,7 @@ git commit -m "refactor(web/TypeScale): read typographyTokens.profiles"
 ## Task 7: Reshape `useGenerator.ts`
 
 **Files:**
+
 - Modify: `web/src/hooks/useGenerator.ts`
 
 - [ ] **Step 1: Replace the file contents**
@@ -752,7 +900,13 @@ export function useGenerateResult(state: WizardState): FullResult | null {
     } catch {
       return null;
     }
-  }, [state.brandName, state.brandColor, state.preset, state.fontFamily, state.radiusKnobs]);
+  }, [
+    state.brandName,
+    state.brandColor,
+    state.preset,
+    state.fontFamily,
+    state.radiusKnobs,
+  ]);
 }
 
 export { PRESET_NAMES };
@@ -760,6 +914,7 @@ export type { PresetName, ColorScales, GenerateResult, RadiusInput };
 ```
 
 Notes:
+
 - `WizardState` field renames: `primaryColor` → `brandColor`, `mood: MoodArchetype` → `preset: PresetName`. Matches `UserInputs`.
 - `radiusKnobs?: RadiusInput` added — undefined means "use preset".
 - Default `preset` changed from invalid `"precise"` to valid `"professional"`.
@@ -782,6 +937,7 @@ git commit -m "refactor(web/useGenerator): reshape WizardState to current UserIn
 ## Task 8: Fix `StepArchetype`
 
 **Files:**
+
 - Modify: `web/src/steps/StepArchetype.tsx`
 
 - [ ] **Step 1: Replace the file contents**
@@ -796,18 +952,26 @@ import { DSInput } from "../components/DSInput";
 import { DSCard } from "../components/DSCard";
 import { DSBadge } from "../components/DSBadge";
 import { DSDivider } from "../components/DSDivider";
-import { resolveColor, resolveComponentColor, buildFontFamily } from "../lib/tokens";
+import {
+  resolveColor,
+  resolveComponentColor,
+  buildFontFamily,
+} from "../lib/tokens";
 
 const REFERENCES: Record<PresetName, string> = {
-  "clean-minimal":    "Vercel, Linear, Notion",
-  "warm-friendly":    "Airbnb, Claude, Stripe",
-  "bold-energetic":   "Spotify, Coinbase, Supabase",
-  "professional":     "Stripe, IBM, X.ai",
+  "clean-minimal": "Vercel, Linear, Notion",
+  "warm-friendly": "Airbnb, Claude, Stripe",
+  "bold-energetic": "Spotify, Coinbase, Supabase",
+  professional: "Stripe, IBM, X.ai",
   "playful-creative": "Figma, Clay, Resend",
 };
 
 const PRESET_KEYS: PresetName[] = [
-  "clean-minimal", "warm-friendly", "bold-energetic", "professional", "playful-creative",
+  "clean-minimal",
+  "warm-friendly",
+  "bold-energetic",
+  "professional",
+  "playful-creative",
 ];
 
 export function StepArchetype({
@@ -822,23 +986,33 @@ export function StepArchetype({
   onChange: (v: PresetName) => void;
 }) {
   const selected = getArchetype(value);
-  const brandColor = tokens ? resolveComponentColor(tokens, "button.primary.bg") : "#6b7280";
+  const brandColor = tokens
+    ? resolveComponentColor(tokens, "button.primary.bg")
+    : "#6b7280";
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold tracking-tight mb-2">Choose your archetype</h2>
+      <h2 className="text-2xl font-semibold tracking-tight mb-2">
+        Choose your archetype
+      </h2>
       <p className="text-neutral-500 mb-8">
-        Each archetype defines a visual personality — radius, weight, shadow, and spacing.
+        Each archetype defines a visual personality — radius, weight, shadow,
+        and spacing.
       </p>
 
       <div className="grid grid-cols-2 gap-3 mb-8">
         {PRESET_KEYS.map((key) => {
           const arch = ARCHETYPES[key];
-          const presetRadiusStyle = PRESETS[key].radiusKnobs?.style ?? "standard";
+          const presetRadiusStyle =
+            PRESETS[key].radiusKnobs?.style ?? "standard";
           const previewRadius =
-            presetRadiusStyle === "pill" ? 9999 :
-            presetRadiusStyle === "sharp" ? 4 :
-            presetRadiusStyle === "generous" ? 12 : 8;
+            presetRadiusStyle === "pill"
+              ? 9999
+              : presetRadiusStyle === "sharp"
+                ? 4
+                : presetRadiusStyle === "generous"
+                  ? 12
+                  : 8;
           const isSelected = key === value;
           return (
             <button
@@ -846,8 +1020,9 @@ export function StepArchetype({
               onClick={() => onChange(key)}
               className={[
                 "text-left p-4 rounded-lg border transition-all",
-                isSelected ? "border-neutral-900 ring-2 ring-neutral-900 bg-white"
-                           : "border-neutral-200 bg-white hover:border-neutral-400",
+                isSelected
+                  ? "border-neutral-900 ring-2 ring-neutral-900 bg-white"
+                  : "border-neutral-200 bg-white hover:border-neutral-400",
               ].join(" ")}
             >
               <div className="mb-3">
@@ -861,90 +1036,178 @@ export function StepArchetype({
                   Button
                 </span>
               </div>
-              <div className="font-semibold text-sm text-neutral-900 mb-1">{arch.label}</div>
-              <div className="text-xs text-neutral-500 mb-2 leading-snug">{arch.description}</div>
-              <div className="text-[11px] text-neutral-400">{REFERENCES[key]}</div>
+              <div className="font-semibold text-sm text-neutral-900 mb-1">
+                {arch.label}
+              </div>
+              <div className="text-xs text-neutral-500 mb-2 leading-snug">
+                {arch.description}
+              </div>
+              <div className="text-2xs text-neutral-400">{REFERENCES[key]}</div>
             </button>
           );
         })}
       </div>
 
-      {tokens && system && (() => {
-        const fontFamily = buildFontFamily(system);
-        const textPrimary = resolveColor(tokens, "text/primary");
-        const textMuted = resolveColor(tokens, "text/muted");
-        const borderDefault = resolveColor(tokens, "border/default");
-        const sectionClass = "mb-6";
-        const labelClass = "text-xs font-medium text-neutral-400 uppercase tracking-wider mb-3";
+      {tokens &&
+        system &&
+        (() => {
+          const fontFamily = buildFontFamily(system);
+          const textPrimary = resolveColor(tokens, "text/primary");
+          const textMuted = resolveColor(tokens, "text/muted");
+          const borderDefault = resolveColor(tokens, "border/default");
+          const sectionClass = "mb-6";
+          const labelClass =
+            "text-xs font-medium text-neutral-400 uppercase tracking-wider mb-3";
 
-        return (
-          <div className="border border-neutral-200 rounded-xl p-6 bg-neutral-50" style={{ fontFamily }}>
-            <div className="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-5">
-              Component Preview — {selected.label}
-            </div>
+          return (
+            <div
+              className="border border-neutral-200 rounded-xl p-6 bg-neutral-50"
+              style={{ fontFamily }}
+            >
+              <div className="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-5">
+                Component Preview — {selected.label}
+              </div>
 
-            <div className={sectionClass}>
-              <div className={labelClass}>Buttons</div>
-              <div className="flex flex-wrap gap-3 items-center">
-                <DSButton variant="primary" tokens={tokens} system={system}>Primary</DSButton>
-                <DSButton variant="secondary" tokens={tokens} system={system}>Secondary</DSButton>
-                <DSButton variant="ghost" tokens={tokens} system={system}>Ghost</DSButton>
-                <DSButton variant="primary" disabled tokens={tokens} system={system}>Disabled</DSButton>
+              <div className={sectionClass}>
+                <div className={labelClass}>Buttons</div>
+                <div className="flex flex-wrap gap-3 items-center">
+                  <DSButton variant="primary" tokens={tokens} system={system}>
+                    Primary
+                  </DSButton>
+                  <DSButton variant="secondary" tokens={tokens} system={system}>
+                    Secondary
+                  </DSButton>
+                  <DSButton variant="ghost" tokens={tokens} system={system}>
+                    Ghost
+                  </DSButton>
+                  <DSButton
+                    variant="primary"
+                    disabled
+                    tokens={tokens}
+                    system={system}
+                  >
+                    Disabled
+                  </DSButton>
+                </div>
+              </div>
+
+              <div className={sectionClass}>
+                <div className={labelClass}>Inputs</div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: textMuted,
+                        marginBottom: 4,
+                        fontFamily,
+                      }}
+                    >
+                      Default
+                    </div>
+                    <DSInput
+                      tokens={tokens}
+                      system={system}
+                      value="Input value"
+                    />
+                  </div>
+                  <div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: textMuted,
+                        marginBottom: 4,
+                        fontFamily,
+                      }}
+                    >
+                      Focus
+                    </div>
+                    <DSInput
+                      state="focus"
+                      tokens={tokens}
+                      system={system}
+                      value="Focused input"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className={sectionClass}>
+                <div className={labelClass}>Card</div>
+                <DSCard tokens={tokens} system={system}>
+                  <div
+                    style={{
+                      fontSize: 16,
+                      fontWeight: 600,
+                      color: textPrimary,
+                      marginBottom: 8,
+                      fontFamily,
+                    }}
+                  >
+                    Card Title
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 14,
+                      color: textMuted,
+                      lineHeight: 1.6,
+                      fontFamily,
+                    }}
+                  >
+                    Sample card content.
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 16,
+                      paddingTop: 16,
+                      borderTop: `1px solid ${borderDefault}`,
+                      display: "flex",
+                      gap: 8,
+                    }}
+                  >
+                    <DSButton variant="primary" tokens={tokens} system={system}>
+                      Action
+                    </DSButton>
+                    <DSButton variant="ghost" tokens={tokens} system={system}>
+                      Cancel
+                    </DSButton>
+                  </div>
+                </DSCard>
+              </div>
+
+              <div className={sectionClass}>
+                <div className={labelClass}>Badges</div>
+                <div className="flex flex-wrap gap-2">
+                  <DSBadge variant="default" tokens={tokens} system={system}>
+                    Default
+                  </DSBadge>
+                  <DSBadge variant="success" tokens={tokens} system={system}>
+                    Success
+                  </DSBadge>
+                  <DSBadge variant="error" tokens={tokens} system={system}>
+                    Error
+                  </DSBadge>
+                </div>
+              </div>
+
+              <div className={sectionClass}>
+                <div className={labelClass}>Divider</div>
+                <DSDivider
+                  label="Section label"
+                  tokens={tokens}
+                  system={system}
+                />
               </div>
             </div>
-
-            <div className={sectionClass}>
-              <div className={labelClass}>Inputs</div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <div style={{ fontSize: 11, color: textMuted, marginBottom: 4, fontFamily }}>Default</div>
-                  <DSInput tokens={tokens} system={system} value="Input value" />
-                </div>
-                <div>
-                  <div style={{ fontSize: 11, color: textMuted, marginBottom: 4, fontFamily }}>Focus</div>
-                  <DSInput state="focus" tokens={tokens} system={system} value="Focused input" />
-                </div>
-              </div>
-            </div>
-
-            <div className={sectionClass}>
-              <div className={labelClass}>Card</div>
-              <DSCard tokens={tokens} system={system}>
-                <div style={{ fontSize: 16, fontWeight: 600, color: textPrimary, marginBottom: 8, fontFamily }}>
-                  Card Title
-                </div>
-                <div style={{ fontSize: 14, color: textMuted, lineHeight: 1.6, fontFamily }}>
-                  Sample card content.
-                </div>
-                <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${borderDefault}`, display: "flex", gap: 8 }}>
-                  <DSButton variant="primary" tokens={tokens} system={system}>Action</DSButton>
-                  <DSButton variant="ghost" tokens={tokens} system={system}>Cancel</DSButton>
-                </div>
-              </DSCard>
-            </div>
-
-            <div className={sectionClass}>
-              <div className={labelClass}>Badges</div>
-              <div className="flex flex-wrap gap-2">
-                <DSBadge variant="default" tokens={tokens} system={system}>Default</DSBadge>
-                <DSBadge variant="success" tokens={tokens} system={system}>Success</DSBadge>
-                <DSBadge variant="error" tokens={tokens} system={system}>Error</DSBadge>
-              </div>
-            </div>
-
-            <div className={sectionClass}>
-              <div className={labelClass}>Divider</div>
-              <DSDivider label="Section label" tokens={tokens} system={system} />
-            </div>
-          </div>
-        );
-      })()}
+          );
+        })()}
     </div>
   );
 }
 ```
 
 Notes:
+
 - Mood vocabulary updated to `PresetName` (clean-minimal / warm-friendly / bold-energetic / professional / playful-creative).
 - Mini-button preview radius derives from `PRESETS[key].radiusKnobs?.style` (since `archetype.buttonRadius` is gone).
 - Image card removed from preview to reduce surface area; restored in the result page.
@@ -966,6 +1229,7 @@ git commit -m "refactor(web/StepArchetype): preset vocabulary; derive preview ra
 ## Task 9: Fix `StepFont`
 
 **Files:**
+
 - Modify: `web/src/steps/StepFont.tsx`
 
 - [ ] **Step 1: Replace the file contents**
@@ -977,21 +1241,44 @@ import type { PresetName } from "../hooks/useGenerator";
 import { loadGoogleFont } from "../lib/tokens";
 import { TypeScale } from "../components/TypeScale";
 
-interface FontSuggestion { name: string; fallback: string }
+interface FontSuggestion {
+  name: string;
+  fallback: string;
+}
 
 const SUGGESTED_FONTS: Record<PresetName, FontSuggestion[]> = {
-  "clean-minimal":    [{ name: "Inter", fallback: "system-ui, sans-serif" }, { name: "Geist", fallback: "system-ui, sans-serif" }, { name: "Manrope", fallback: "system-ui, sans-serif" }],
-  "warm-friendly":    [{ name: "Inter", fallback: "system-ui, sans-serif" }, { name: "DM Sans", fallback: "system-ui, sans-serif" }, { name: "Plus Jakarta Sans", fallback: "system-ui, sans-serif" }],
-  "bold-energetic":   [{ name: "Inter", fallback: "system-ui, sans-serif" }, { name: "Space Grotesk", fallback: "system-ui, sans-serif" }, { name: "Sora", fallback: "system-ui, sans-serif" }],
-  "professional":     [{ name: "Inter", fallback: "system-ui, sans-serif" }, { name: "IBM Plex Sans", fallback: "system-ui, sans-serif" }, { name: "Source Sans 3", fallback: "system-ui, sans-serif" }],
-  "playful-creative": [{ name: "Inter", fallback: "system-ui, sans-serif" }, { name: "Outfit", fallback: "system-ui, sans-serif" }, { name: "Quicksand", fallback: "system-ui, sans-serif" }],
+  "clean-minimal": [
+    { name: "Inter", fallback: "system-ui, sans-serif" },
+    { name: "Geist", fallback: "system-ui, sans-serif" },
+    { name: "Manrope", fallback: "system-ui, sans-serif" },
+  ],
+  "warm-friendly": [
+    { name: "Inter", fallback: "system-ui, sans-serif" },
+    { name: "DM Sans", fallback: "system-ui, sans-serif" },
+    { name: "Plus Jakarta Sans", fallback: "system-ui, sans-serif" },
+  ],
+  "bold-energetic": [
+    { name: "Inter", fallback: "system-ui, sans-serif" },
+    { name: "Space Grotesk", fallback: "system-ui, sans-serif" },
+    { name: "Sora", fallback: "system-ui, sans-serif" },
+  ],
+  professional: [
+    { name: "Inter", fallback: "system-ui, sans-serif" },
+    { name: "IBM Plex Sans", fallback: "system-ui, sans-serif" },
+    { name: "Source Sans 3", fallback: "system-ui, sans-serif" },
+  ],
+  "playful-creative": [
+    { name: "Inter", fallback: "system-ui, sans-serif" },
+    { name: "Outfit", fallback: "system-ui, sans-serif" },
+    { name: "Quicksand", fallback: "system-ui, sans-serif" },
+  ],
 };
 
 const DEFAULT_FONT: Record<PresetName, string> = {
   "clean-minimal": "Inter",
   "warm-friendly": "Inter",
   "bold-energetic": "Inter",
-  "professional": "Inter",
+  professional: "Inter",
   "playful-creative": "Inter",
 };
 
@@ -1026,9 +1313,12 @@ export function StepFont({
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold tracking-tight mb-2">Choose your font</h2>
+      <h2 className="text-2xl font-semibold tracking-tight mb-2">
+        Choose your font
+      </h2>
       <p className="text-neutral-500 mb-8">
-        Select from fonts suited to your archetype, or enter any Google Fonts family.
+        Select from fonts suited to your archetype, or enter any Google Fonts
+        family.
       </p>
 
       <div className="flex flex-col gap-2 mb-8">
@@ -1039,17 +1329,26 @@ export function StepFont({
               key={font.name}
               className={[
                 "flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all",
-                isSelected ? "border-neutral-900 ring-2 ring-neutral-900 bg-white"
-                           : "border-neutral-200 bg-white hover:border-neutral-400",
+                isSelected
+                  ? "border-neutral-900 ring-2 ring-neutral-900 bg-white"
+                  : "border-neutral-200 bg-white hover:border-neutral-400",
               ].join(" ")}
             >
               <input
-                type="radio" name="font" value={font.name} checked={isSelected}
-                onChange={() => { setShowCustom(false); onChange(font.name); }}
+                type="radio"
+                name="font"
+                value={font.name}
+                checked={isSelected}
+                onChange={() => {
+                  setShowCustom(false);
+                  onChange(font.name);
+                }}
                 className="accent-neutral-900"
               />
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-neutral-900">{font.name}</div>
+                <div className="text-sm font-medium text-neutral-900">
+                  {font.name}
+                </div>
                 <div
                   className="text-base text-neutral-600 truncate"
                   style={{ fontFamily: `'${font.name}', ${font.fallback}` }}
@@ -1064,20 +1363,28 @@ export function StepFont({
         <label
           className={[
             "flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all",
-            showCustom ? "border-neutral-900 ring-2 ring-neutral-900 bg-white"
-                       : "border-neutral-200 bg-white hover:border-neutral-400",
+            showCustom
+              ? "border-neutral-900 ring-2 ring-neutral-900 bg-white"
+              : "border-neutral-200 bg-white hover:border-neutral-400",
           ].join(" ")}
         >
           <input
-            type="radio" name="font" value="custom" checked={showCustom}
-            onChange={() => { setShowCustom(true); if (customInput) onChange(customInput); }}
+            type="radio"
+            name="font"
+            value="custom"
+            checked={showCustom}
+            onChange={() => {
+              setShowCustom(true);
+              if (customInput) onChange(customInput);
+            }}
             className="accent-neutral-900"
           />
           <div className="flex-1 flex items-center gap-2">
             <span className="text-sm font-medium text-neutral-900">Custom</span>
             {showCustom && (
               <input
-                type="text" value={customInput}
+                type="text"
+                value={customInput}
                 onChange={(e) => {
                   const v = e.target.value;
                   setCustomInput(v);
@@ -1085,7 +1392,8 @@ export function StepFont({
                 }}
                 placeholder="e.g. Lato, Raleway, Nunito…"
                 className="flex-1 text-sm px-2 py-1 border border-neutral-300 rounded focus:outline-none focus:border-neutral-600"
-                autoFocus onClick={(e) => e.stopPropagation()}
+                autoFocus
+                onClick={(e) => e.stopPropagation()}
               />
             )}
           </div>
@@ -1099,6 +1407,7 @@ export function StepFont({
 ```
 
 Notes:
+
 - `mood: MoodArchetype` prop renamed to `preset: PresetName`.
 - Local `SUGGESTED_FONTS` and `DEFAULT_FONT` maps replace `archetype.suggestedFonts`/`archetype.defaultFont` (which were removed). All 5 keys filled — `Inter` is always first as a safe baseline.
 
@@ -1119,6 +1428,7 @@ git commit -m "refactor(web/StepFont): preset vocabulary; static suggested-fonts
 ## Task 10: Fix `App.tsx` and `ResultPage` to use new state names; verify whole-app type-check
 
 **Files:**
+
 - Modify: `web/src/App.tsx`
 - Modify: `web/src/result/ResultPage.tsx`
 
@@ -1133,7 +1443,12 @@ import { StepColor } from "./steps/StepColor";
 import { StepArchetype } from "./steps/StepArchetype";
 import { StepFont } from "./steps/StepFont";
 import { ResultPage } from "./result/ResultPage";
-import { DEFAULT_STATE, useGenerateResult, type WizardState, type PresetName } from "./hooks/useGenerator";
+import {
+  DEFAULT_STATE,
+  useGenerateResult,
+  type WizardState,
+  type PresetName,
+} from "./hooks/useGenerator";
 
 type Screen = "wizard" | "result";
 
@@ -1152,13 +1467,21 @@ export function App() {
         state={state}
         result={result}
         onChange={update}
-        onBack={() => { setScreen("wizard"); setStep(2); }}
+        onBack={() => {
+          setScreen("wizard");
+          setStep(2);
+        }}
       />
     );
   }
 
-  const next = () => { if (step < 2) setStep(step + 1); else setScreen("result"); };
-  const back = () => { if (step > 0) setStep(step - 1); };
+  const next = () => {
+    if (step < 2) setStep(step + 1);
+    else setScreen("result");
+  };
+  const back = () => {
+    if (step > 0) setStep(step - 1);
+  };
 
   return (
     <div className="min-h-screen bg-white antialiased">
@@ -1193,7 +1516,9 @@ export function App() {
           <button
             onClick={back}
             className={`px-6 py-2 rounded text-sm transition-colors ${
-              step === 0 ? "invisible" : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+              step === 0
+                ? "invisible"
+                : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
             }`}
           >
             Back
@@ -1219,7 +1544,11 @@ Open `web/src/result/ResultPage.tsx` and apply these changes:
 
 ```tsx
 import { useEffect, useState } from "react";
-import type { WizardState, FullResult, PresetName } from "../hooks/useGenerator";
+import type {
+  WizardState,
+  FullResult,
+  PresetName,
+} from "../hooks/useGenerator";
 import { ARCHETYPES, getArchetype } from "@core/schema/archetypes.js";
 import { ColorScale } from "../components/ColorScale";
 import { DSButton } from "../components/DSButton";
@@ -1232,10 +1561,10 @@ import { DownloadPanel } from "./DownloadPanel";
 import { loadGoogleFont, resolveColor, buildFontFamily } from "../lib/tokens";
 
 const SUGGESTED_FONTS: Record<PresetName, string[]> = {
-  "clean-minimal":    ["Inter", "Geist", "Manrope"],
-  "warm-friendly":    ["Inter", "DM Sans", "Plus Jakarta Sans"],
-  "bold-energetic":   ["Inter", "Space Grotesk", "Sora"],
-  "professional":     ["Inter", "IBM Plex Sans", "Source Sans 3"],
+  "clean-minimal": ["Inter", "Geist", "Manrope"],
+  "warm-friendly": ["Inter", "DM Sans", "Plus Jakarta Sans"],
+  "bold-energetic": ["Inter", "Space Grotesk", "Sora"],
+  professional: ["Inter", "IBM Plex Sans", "Source Sans 3"],
   "playful-creative": ["Inter", "Outfit", "Quicksand"],
 };
 ```
@@ -1257,6 +1586,7 @@ Expected: zero errors. (If any remain, fix in place.)
 
 Run: `cd web && pnpm dev` (in another terminal or background).
 Open `http://localhost:5173`. Verify:
+
 - 3-step wizard renders without console errors.
 - Each archetype card shows a small button preview with its preset's radius.
 - Reaching the result page renders color scales, components, and the type scale.
@@ -1273,6 +1603,7 @@ git commit -m "refactor(web): rename primaryColor→brandColor, mood→preset; t
 ## Task 11: Build inspector skeleton (`Inspector`, `CategoryTabs`, `KnobRow`, `ResetButton`)
 
 **Files:**
+
 - Create: `web/src/inspector/Inspector.tsx`
 - Create: `web/src/inspector/CategoryTabs.tsx`
 - Create: `web/src/inspector/KnobRow.tsx`
@@ -1293,7 +1624,15 @@ interface KnobRowProps {
   tokens: string;
 }
 
-export function KnobRow({ selected, isPreset, isDefault, onClick, preview, label, tokens }: KnobRowProps) {
+export function KnobRow({
+  selected,
+  isPreset,
+  isDefault,
+  onClick,
+  preview,
+  label,
+  tokens,
+}: KnobRowProps) {
   return (
     <button
       type="button"
@@ -1309,17 +1648,29 @@ export function KnobRow({ selected, isPreset, isDefault, onClick, preview, label
         {preview}
       </div>
       <div className="flex-1 flex items-center gap-2 min-w-0">
-        <span className={selected ? "text-neutral-900 font-medium text-[13px]" : "text-neutral-700 text-[13px]"}>
+        <span
+          className={
+            selected
+              ? "text-neutral-900 font-medium text-[13px]"
+              : "text-neutral-700 text-[13px]"
+          }
+        >
           {label}
         </span>
         {selected && isPreset && (
-          <span className="text-[9px] text-neutral-400 uppercase tracking-wider">preset</span>
+          <span className="text-2xs text-neutral-400 uppercase tracking-wider">
+            preset
+          </span>
         )}
         {selected && isDefault && (
-          <span className="text-[9px] text-neutral-400 uppercase tracking-wider">default</span>
+          <span className="text-2xs text-neutral-400 uppercase tracking-wider">
+            default
+          </span>
         )}
       </div>
-      <span className="font-mono text-[10px] text-neutral-400 tabular-nums shrink-0">{tokens}</span>
+      <span className="font-mono text-2xs text-neutral-400 tabular-nums shrink-0">
+        {tokens}
+      </span>
     </button>
   );
 }
@@ -1333,7 +1684,7 @@ export function ResetButton({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="text-[11px] text-neutral-500 hover:text-neutral-900 transition-colors flex items-center gap-1"
+      className="text-2xs text-neutral-500 hover:text-neutral-900 transition-colors flex items-center gap-1"
     >
       <span>↺</span> Reset to preset
     </button>
@@ -1344,15 +1695,21 @@ export function ResetButton({ onClick }: { onClick: () => void }) {
 - [ ] **Step 3: Create `CategoryTabs.tsx`**
 
 ```tsx
-export type InspectorCategory = "color" | "typography" | "spacing" | "radius" | "elevation" | "component";
+export type InspectorCategory =
+  | "color"
+  | "typography"
+  | "spacing"
+  | "radius"
+  | "elevation"
+  | "component";
 
 const TABS: { key: InspectorCategory; label: string; enabled: boolean }[] = [
-  { key: "color",      label: "Color",      enabled: false },
-  { key: "typography", label: "Type",       enabled: false },
-  { key: "spacing",    label: "Spacing",    enabled: false },
-  { key: "radius",     label: "Radius",     enabled: true  },
-  { key: "elevation",  label: "Elevation",  enabled: false },
-  { key: "component",  label: "Component",  enabled: false },
+  { key: "color", label: "Color", enabled: false },
+  { key: "typography", label: "Type", enabled: false },
+  { key: "spacing", label: "Spacing", enabled: false },
+  { key: "radius", label: "Radius", enabled: true },
+  { key: "elevation", label: "Elevation", enabled: false },
+  { key: "component", label: "Component", enabled: false },
 ];
 
 export function CategoryTabs({
@@ -1373,10 +1730,12 @@ export function CategoryTabs({
             disabled={!t.enabled}
             onClick={() => t.enabled && onChange(t.key)}
             className={[
-              "px-2 py-1.5 text-[11px] rounded transition-all",
-              !t.enabled       ? "text-neutral-300 cursor-not-allowed" :
-              isActive         ? "bg-white text-neutral-900 shadow-sm font-medium" :
-                                 "text-neutral-600 hover:text-neutral-900",
+              "px-2 py-1.5 text-2xs rounded transition-all",
+              !t.enabled
+                ? "text-neutral-300 cursor-not-allowed"
+                : isActive
+                  ? "bg-white text-neutral-900 shadow-sm font-medium"
+                  : "text-neutral-600 hover:text-neutral-900",
             ].join(" ")}
           >
             {t.label}
@@ -1412,9 +1771,11 @@ export function Inspector({ state, onChange }: InspectorProps) {
         </div>
         <CategoryTabs active={active} onChange={setActive} />
         <div className="pt-2">
-          {active === "radius" && <RadiusPanel state={state} onChange={onChange} />}
+          {active === "radius" && (
+            <RadiusPanel state={state} onChange={onChange} />
+          )}
           {active !== "radius" && (
-            <div className="text-[12px] text-neutral-400 italic px-1 py-8 text-center">
+            <div className="text-xs text-neutral-400 italic px-1 py-8 text-center">
               Coming soon — this category panel ships in a follow-up slice.
             </div>
           )}
@@ -1442,6 +1803,7 @@ git commit -m "feat(web/inspector): skeleton — Inspector, CategoryTabs, KnobRo
 ## Task 12: Build `RadiusPanel`
 
 **Files:**
+
 - Create: `web/src/inspector/panels/RadiusPanel.tsx`
 
 - [ ] **Step 1: Create the panel**
@@ -1449,19 +1811,26 @@ git commit -m "feat(web/inspector): skeleton — Inspector, CategoryTabs, KnobRo
 ```tsx
 import type { WizardState } from "../../hooks/useGenerator";
 import type { RadiusStyle } from "@core/schema/radius.js";
-import { RADIUS_STYLE_OPTIONS, STYLE_PROFILES, DEFAULT_RADIUS_KNOBS } from "@core/schema/radius.js";
+import {
+  RADIUS_STYLE_OPTIONS,
+  STYLE_PROFILES,
+  DEFAULT_RADIUS_KNOBS,
+} from "@core/schema/radius.js";
 import { PRESETS } from "@core/schema/presets.js";
 import { KnobRow } from "../KnobRow";
 import { ResetButton } from "../ResetButton";
 
 const TOKEN_LABEL: Record<RadiusStyle, string> = {
-  sharp:    "4·4·8",
+  sharp: "4·4·8",
   standard: "8·8·12",
   generous: "12·8·16",
-  pill:     "∞·∞·12",
+  pill: "∞·∞·12",
 };
 
-function previewRadiusPx(style: RadiusStyle, slot: "button" | "input"): number | string {
+function previewRadiusPx(
+  style: RadiusStyle,
+  slot: "button" | "input",
+): number | string {
   const v = STYLE_PROFILES[style][slot];
   return v === "pill" ? 9999 : v;
 }
@@ -1471,8 +1840,23 @@ function MiniPreview({ style }: { style: RadiusStyle }) {
   const inp = previewRadiusPx(style, "input");
   return (
     <>
-      <div style={{ width: 22, height: 12, background: "#262626", borderRadius: btn }} />
-      <div style={{ width: 16, height: 12, background: "#fff", border: "1px solid #d4d4d0", borderRadius: inp }} />
+      <div
+        style={{
+          width: 22,
+          height: 12,
+          background: "#262626",
+          borderRadius: btn,
+        }}
+      />
+      <div
+        style={{
+          width: 16,
+          height: 12,
+          background: "#fff",
+          border: "1px solid #d4d4d0",
+          borderRadius: inp,
+        }}
+      />
     </>
   );
 }
@@ -1486,7 +1870,8 @@ export function RadiusPanel({
 }) {
   const presetStyle = PRESETS[state.preset].radiusKnobs?.style;
   const overriddenStyle = state.radiusKnobs?.style;
-  const effective: RadiusStyle = overriddenStyle ?? presetStyle ?? DEFAULT_RADIUS_KNOBS.style;
+  const effective: RadiusStyle =
+    overriddenStyle ?? presetStyle ?? DEFAULT_RADIUS_KNOBS.style;
   const isOverridden = overriddenStyle !== undefined;
 
   function selectStyle(style: RadiusStyle) {
@@ -1503,20 +1888,29 @@ export function RadiusPanel({
         <div>
           <div className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
             Radius
-            {isOverridden && <span className="w-1.5 h-1.5 rounded-full bg-neutral-900" title="Overridden" />}
+            {isOverridden && (
+              <span
+                className="w-1.5 h-1.5 rounded-full bg-neutral-900"
+                title="Overridden"
+              />
+            )}
           </div>
-          <div className="text-[11px] text-neutral-500">Corner geometry</div>
+          <div className="text-2xs text-neutral-500">Corner geometry</div>
         </div>
       </div>
 
       <div className="space-y-1.5">
-        <div className="text-[10px] text-neutral-400 uppercase tracking-wider px-1">Style</div>
+        <div className="text-2xs text-neutral-400 uppercase tracking-wider px-1">
+          Style
+        </div>
         {RADIUS_STYLE_OPTIONS.map((style) => (
           <KnobRow
             key={style}
             selected={effective === style}
             isPreset={presetStyle === style}
-            isDefault={presetStyle == null && DEFAULT_RADIUS_KNOBS.style === style}
+            isDefault={
+              presetStyle == null && DEFAULT_RADIUS_KNOBS.style === style
+            }
             onClick={() => selectStyle(style)}
             preview={<MiniPreview style={style} />}
             label={style}
@@ -1536,6 +1930,7 @@ export function RadiusPanel({
 ```
 
 Notes:
+
 - `effective` selection drives the `selected` highlight: user override > preset > schema default.
 - Clicking a row always writes `{ radiusKnobs: { style } }` — even if it equals the preset (EC-1: store as override, show ↺ Reset + `preset` badge).
 - ResetButton only renders when `isOverridden`.
@@ -1558,6 +1953,7 @@ git commit -m "feat(web/inspector): RadiusPanel — first knob with sticky-prese
 ## Task 13: Wire `ResultPage` to 3-column layout
 
 **Files:**
+
 - Modify: `web/src/result/ResultPage.tsx`
 
 - [ ] **Step 1: Import the Inspector at the top of the file**
@@ -1595,6 +1991,7 @@ Expected: zero errors.
 Run: `cd web && pnpm dev` (background)
 
 Verify in browser at `http://localhost:5173`:
+
 1. Complete the wizard → reach result page.
 2. Confirm 3 columns at ≥ 1024px viewport: left basics, center preview, right inspector with `Radius` tab active.
 3. Click each radius style row (sharp / standard / generous / pill) — each should immediately update the buttons, inputs, and cards in the center preview to use the new corner geometry.

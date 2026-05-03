@@ -10,8 +10,9 @@
 //   - Surface/text slots are REFERENCES into the base scale (canvas →
 //     neutral.50, etc.). Editing a base stop cascades to every slot that
 //     references it.
-//   - Accent: one default + 3 corpus-curated alternatives the inspector
-//     surfaces as recommendation chips.
+//   - Accent: one default + up to 5 corpus-curated alternatives the inspector
+//     surfaces as recommendation chips, each tagged with the brand it came
+//     from so users can see where the color is borrowed from.
 //   - Status: 8 slots, per-archetype curated (warm-friendly's red is warmer,
 //     bold-energetic's red is more saturated, etc. Not universal.)
 
@@ -55,6 +56,15 @@ export type ResolvedPalette = Record<PaletteSlot, string>;
 
 // ─── Archetype palette spec ─────────────────────────────────────────────────
 
+/** A single accent recommendation chip — brand-attributed for transparency
+ *  about where the color was borrowed from. */
+export interface AccentRecommendation {
+  hex: string;
+  /** Display name of the brand this accent is sampled from
+   *  (e.g. "Linear", "Airbnb"). Shown beneath the chip in the inspector. */
+  source: string;
+}
+
 export interface ArchetypePalette {
   /** 9-stop neutral base scale. */
   baseScale: Record<NeutralStop, string>;
@@ -64,8 +74,9 @@ export interface ArchetypePalette {
   textRefs: Record<TextSlot, NeutralStop>;
   /** Default brand accent. */
   accent: string;
-  /** 3 corpus-curated alternative accents the inspector exposes as chips. */
-  recommendedAccents: readonly [string, string, string];
+  /** Up to 5 corpus-curated accent picks shown as inspector chips. The first
+   *  entry should match `accent` so the default is selectable from the row. */
+  recommendedAccents: readonly AccentRecommendation[];
   /** 8 status slots, per-archetype curated. */
   status: Record<StatusSlot, string>;
 }
@@ -103,7 +114,13 @@ export const ARCHETYPE_PALETTES: Record<PresetName, ArchetypePalette> = {
     surfaceRefs: DEFAULT_SURFACE_REFS,
     textRefs: DEFAULT_TEXT_REFS,
     accent: "#5e6ad2",
-    recommendedAccents: ["#5e6ad2", "#000000", "#0070f3"],
+    recommendedAccents: [
+      { hex: "#5e6ad2", source: "Linear" },
+      { hex: "#000000", source: "Figma" },
+      { hex: "#0070f3", source: "Vercel" },
+      { hex: "#0066cc", source: "Apple" },
+      { hex: "#0075de", source: "Notion" },
+    ],
     status: {
       "error-bg":     "#fef2f2",  "error-text":   "#b91c1c",
       "success-bg":   "#f0fdf4",  "success-text": "#166534",
@@ -113,10 +130,13 @@ export const ARCHETYPE_PALETTES: Record<PresetName, ArchetypePalette> = {
   },
 
   // Claude-inspired — warm cream. Every neutral stop carries a cream/sand undertone.
+  // 50 anchors on Claude's canvas (#faf9f5) so the warm signature shows up in
+  // the base scale, not just from 100 onward; 100 steps to a slightly deeper
+  // cream so canvas/soft remain visually distinguishable.
   "warm-friendly": {
     baseScale: {
-      "50":  "#ffffff",
-      "100": "#faf9f5",
+      "50":  "#faf9f5",
+      "100": "#f5f3ec",
       "200": "#f0eee6",
       "300": "#e3dfd3",
       "400": "#b6b1a3",
@@ -128,7 +148,13 @@ export const ARCHETYPE_PALETTES: Record<PresetName, ArchetypePalette> = {
     surfaceRefs: DEFAULT_SURFACE_REFS,
     textRefs: DEFAULT_TEXT_REFS,
     accent: "#cc785c",
-    recommendedAccents: ["#cc785c", "#ff385c", "#635bff"],
+    recommendedAccents: [
+      { hex: "#cc785c", source: "Claude" },
+      { hex: "#ff385c", source: "Airbnb" },
+      { hex: "#ff5600", source: "Intercom" },
+      { hex: "#f54e00", source: "Cursor" },
+      { hex: "#635bff", source: "Stripe" },
+    ],
     status: {
       "error-bg":     "#fef0ee",  "error-text":   "#c2410c",
       "success-bg":   "#f1fbef",  "success-text": "#4d7c0f",
@@ -153,7 +179,13 @@ export const ARCHETYPE_PALETTES: Record<PresetName, ArchetypePalette> = {
     surfaceRefs: DEFAULT_SURFACE_REFS,
     textRefs: DEFAULT_TEXT_REFS,
     accent: "#1db954",
-    recommendedAccents: ["#1db954", "#0052ff", "#3ecf8e"],
+    recommendedAccents: [
+      { hex: "#1db954", source: "Spotify" },
+      { hex: "#0052ff", source: "Coinbase" },
+      { hex: "#3ecf8e", source: "Supabase" },
+      { hex: "#00ed64", source: "MongoDB" },
+      { hex: "#76b900", source: "NVIDIA" },
+    ],
     status: {
       "error-bg":     "#fee2e2",  "error-text":   "#dc2626",
       "success-bg":   "#dcfce7",  "success-text": "#16a34a",
@@ -178,7 +210,13 @@ export const ARCHETYPE_PALETTES: Record<PresetName, ArchetypePalette> = {
     surfaceRefs: DEFAULT_SURFACE_REFS,
     textRefs: DEFAULT_TEXT_REFS,
     accent: "#635bff",
-    recommendedAccents: ["#635bff", "#0f62fe", "#18181b"],
+    recommendedAccents: [
+      { hex: "#635bff", source: "Stripe" },
+      { hex: "#0f62fe", source: "IBM" },
+      { hex: "#18181b", source: "Vercel" },
+      { hex: "#1456f0", source: "MiniMax" },
+      { hex: "#1c69d4", source: "BMW" },
+    ],
     status: {
       "error-bg":     "#fef2f2",  "error-text":   "#b91c1c",
       "success-bg":   "#f0fdf4",  "success-text": "#15803d",
@@ -203,7 +241,13 @@ export const ARCHETYPE_PALETTES: Record<PresetName, ArchetypePalette> = {
     surfaceRefs: DEFAULT_SURFACE_REFS,
     textRefs: DEFAULT_TEXT_REFS,
     accent: "#a259ff",
-    recommendedAccents: ["#a259ff", "#ff5733", "#ff7a59"],
+    recommendedAccents: [
+      { hex: "#a259ff", source: "Figma" },
+      { hex: "#7132f5", source: "Kraken" },
+      { hex: "#ea5ec1", source: "MiniMax" },
+      { hex: "#ff4d8b", source: "Clay" },
+      { hex: "#5b76fe", source: "Miro" },
+    ],
     status: {
       "error-bg":     "#fee2e2",  "error-text":   "#e11d48",
       "success-bg":   "#d1fae5",  "success-text": "#059669",

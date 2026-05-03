@@ -10,20 +10,21 @@
 
 **Breaking changes summary:**
 
-| 변경 | Before | After |
-|------|--------|-------|
-| `ColorStep.light/dark` | `string` (hex) | `Oklch` object |
-| scale keys | hue name (`blue`, `cyan`) | role name (`brand`, `accent`) |
-| `generateScales` signature | `(hex, undertone, colorCharacter)` | `(hex, config?)` |
-| `detectHueName` | exported | removed |
-| `colorCharacter` param | in `UserInputs` | removed |
-| `generateSemantic` refs | `"blue-700"`, `"green-200"` | `"brand-700"`, `"green-200"` |
+| 변경                       | Before                             | After                         |
+| -------------------------- | ---------------------------------- | ----------------------------- |
+| `ColorStep.light/dark`     | `string` (hex)                     | `Oklch` object                |
+| scale keys                 | hue name (`blue`, `cyan`)          | role name (`brand`, `accent`) |
+| `generateScales` signature | `(hex, undertone, colorCharacter)` | `(hex, config?)`              |
+| `detectHueName`            | exported                           | removed                       |
+| `colorCharacter` param     | in `UserInputs`                    | removed                       |
+| `generateSemantic` refs    | `"blue-700"`, `"green-200"`        | `"brand-700"`, `"green-200"`  |
 
 ---
 
 ### Task 1: Add `oklchToHex` utility to color.ts
 
 **Files:**
+
 - Modify: `src/generator/color.ts:1-6`
 - Test: `tests/generator/color.test.ts`
 
@@ -91,6 +92,7 @@ git commit -m "feat(color): add oklchToHex conversion utility"
 ### Task 2: Update types — `PrimitiveTokens`, remove `colorCharacter` from `UserInputs`
 
 **Files:**
+
 - Modify: `src/schema/types.ts:11-19, 214-217`
 
 - [ ] **Step 1: Update `PrimitiveTokens` to use `ColorStep`**
@@ -146,6 +148,7 @@ git commit -m "refactor(types): align PrimitiveTokens with Oklch, remove colorCh
 ### Task 3: Update `tokens.ts` — Semantic layer role references
 
 **Files:**
+
 - Modify: `src/generator/tokens.ts:23-104`
 
 Semantic references must change from detected hue names (`blue-700`) to fixed role names (`brand-700`). The auto-detection logic in `generateSemantic` is no longer needed.
@@ -183,10 +186,12 @@ export function generateSemantic(
     "brand/muted": "brand-100",
 
     // Accent (always "accent" role)
-    ...(accentExists && primitive.colors["accent"] ? {
-      "accent/primary": "accent-700",
-      "accent/subtle": "accent-200",
-    } : {}),
+    ...(accentExists && primitive.colors["accent"]
+      ? {
+          "accent/primary": "accent-700",
+          "accent/subtle": "accent-200",
+        }
+      : {}),
 
     // Status
     "status/success": "green-700",
@@ -203,8 +208,8 @@ export function generateSemantic(
     "status/info-text": "blue-900",
 
     // Constants
-    "white": "gray-100",
-    "black": "gray-1000",
+    white: "gray-100",
+    black: "gray-1000",
   };
 }
 ```
@@ -223,6 +228,7 @@ git commit -m "refactor(tokens): update semantic refs to role-based scale keys"
 ### Task 4: Update `index.ts` — Orchestration
 
 **Files:**
+
 - Modify: `src/generator/index.ts:6-7, 46-152`
 
 This file has the most changes: import cleanup, `generateScales` call, `detectHueName` removal, agent guide hex conversion.
@@ -257,22 +263,22 @@ export function generate(inputs: UserInputs): GenerateResult {
 Replace lines 74-111 (agent guide building):
 
 ```ts
-  // Build agent guide — convert Oklch to hex for display
-  const primaryHex = oklchToHex(scales.brand["700"].light);
-  const surfaceBase = oklchToHex(scales.gray["100"].light);
-  const neutral900 = oklchToHex(scales.gray["900"].light);
-  const neutral600 = oklchToHex(scales.gray["600"].light);
-  const borderDefault = oklchToHex(scales.gray["400"].light);
-  const accentHex = oklchToHex(scales.accent["700"].light);
+// Build agent guide — convert Oklch to hex for display
+const primaryHex = oklchToHex(scales.brand["700"].light);
+const surfaceBase = oklchToHex(scales.gray["100"].light);
+const neutral900 = oklchToHex(scales.gray["900"].light);
+const neutral600 = oklchToHex(scales.gray["600"].light);
+const borderDefault = oklchToHex(scales.gray["400"].light);
+const accentHex = oklchToHex(scales.accent["700"].light);
 
-  const quickColors = [
-    { name: "Primary CTA", hex: primaryHex },
-    { name: "Background", hex: surfaceBase },
-    { name: "Heading Text", hex: neutral900 },
-    { name: "Body Text", hex: neutral600 },
-    { name: "Border", hex: borderDefault },
-    { name: "Accent", hex: accentHex },
-  ];
+const quickColors = [
+  { name: "Primary CTA", hex: primaryHex },
+  { name: "Background", hex: surfaceBase },
+  { name: "Heading Text", hex: neutral900 },
+  { name: "Body Text", hex: neutral600 },
+  { name: "Border", hex: borderDefault },
+  { name: "Accent", hex: accentHex },
+];
 ```
 
 Example prompts and iteration tips: replace `${primaryHex}` references (they now come from the oklchToHex calls above, so variable names stay the same).
@@ -280,11 +286,15 @@ Example prompts and iteration tips: replace `${primaryHex}` references (they now
 - [ ] **Step 4: Update semantic generation call**
 
 ```ts
-  // Before:
-  const semantic = generateSemantic(primitive, brandHueName, accentHueName !== brandHueName ? accentHueName : undefined);
+// Before:
+const semantic = generateSemantic(
+  primitive,
+  brandHueName,
+  accentHueName !== brandHueName ? accentHueName : undefined,
+);
 
-  // After:
-  const semantic = generateSemantic(primitive);
+// After:
+const semantic = generateSemantic(primitive);
 ```
 
 - [ ] **Step 5: Remove all `detectHueName` and `converter` usage**
@@ -303,6 +313,7 @@ git commit -m "refactor(index): adapt orchestration to role-based color system"
 ### Task 5: Update `elevation.ts` and `template.ts`
 
 **Files:**
+
 - Modify: `src/generator/elevation.ts:1-4`
 - Modify: `src/schema/template.ts:24-42`
 
@@ -333,7 +344,9 @@ lines.push(`| ${step} | \`${values.light}\` | \`${values.dark}\` |`);
 // After:
 import { formatOklch } from "../generator/color.js";
 // ... inside renderColors:
-lines.push(`| ${step} | \`${formatOklch(values.light)}\` | \`${formatOklch(values.dark)}\` |`);
+lines.push(
+  `| ${step} | \`${formatOklch(values.light)}\` | \`${formatOklch(values.dark)}\` |`,
+);
 ```
 
 Also update the section description from "Each color has 10 steps" if needed — the steps are still 100-1000, so this is fine.
@@ -350,6 +363,7 @@ git commit -m "refactor(elevation,template): convert Oklch to display format"
 ### Task 6: Update `figma/transformer.ts`
 
 **Files:**
+
 - Modify: `src/figma/transformer.ts:107-155`
 
 The transformer resolves semantic references through `primitive.colors`, which now contain `Oklch` objects instead of hex strings. The `resolveColorMode` function needs to convert Oklch to hex for Figma consumption.
@@ -388,6 +402,7 @@ git commit -m "refactor(figma): resolve Oklch to hex in transformer"
 ### Task 7: Update tests — `tokens.test.ts` and `integration.test.ts`
 
 **Files:**
+
 - Modify: `tests/generator/tokens.test.ts:14, 43-49, 54-64, 69-109`
 - Modify: `tests/generator/integration.test.ts:14-19, 46-53, 55-72`
 
@@ -445,22 +460,41 @@ Update semantic test — remove `accent/primary` and `accent/subtle` from requir
 // The expectedRoles list should match the new semantic output.
 // "accent/primary" and "accent/subtle" are conditional — test separately.
 const expectedRoles = [
-  "bg/base", "bg/subtle", "bg/muted",
-  "text/primary", "text/secondary", "text/muted", "text/disabled",
-  "border/default", "border/subtle", "border/strong",
-  "brand/primary", "brand/secondary", "brand/subtle", "brand/muted",
-  "status/success", "status/success-subtle", "status/success-text",
-  "status/error", "status/error-subtle", "status/error-text",
-  "status/warning", "status/warning-subtle", "status/warning-text",
-  "status/info", "status/info-subtle", "status/info-text",
-  "white", "black",
+  "bg/base",
+  "bg/subtle",
+  "bg/muted",
+  "text/primary",
+  "text/secondary",
+  "text/muted",
+  "text/disabled",
+  "border/default",
+  "border/subtle",
+  "border/strong",
+  "brand/primary",
+  "brand/secondary",
+  "brand/subtle",
+  "brand/muted",
+  "status/success",
+  "status/success-subtle",
+  "status/success-text",
+  "status/error",
+  "status/error-subtle",
+  "status/error-text",
+  "status/warning",
+  "status/warning-subtle",
+  "status/warning-text",
+  "status/info",
+  "status/info-subtle",
+  "status/info-text",
+  "white",
+  "black",
 ];
 ```
 
 Update semantic reference pattern — "brand" is now a valid hue name:
 
 ```ts
-it("ALL values match \"{role}-{step}\" pattern", () => {
+it('ALL values match "{role}-{step}" pattern', () => {
   const pattern = /^[a-z]+-\d{3,4}$/;
   for (const [role, value] of Object.entries(semantic)) {
     expect(value, `semantic["${role}"] = "${value}"`).toMatch(pattern);
@@ -545,6 +579,7 @@ git commit -m "test: update token and integration tests for Oklch color system"
 ### Task 8: Update web UI
 
 **Files:**
+
 - Modify: `web/src/hooks/useGenerator.ts:4, 9-15, 29-44, 48`
 - Modify: `web/src/App.tsx:7, 11-18, 54-59`
 - Modify: `web/src/steps/StepColor.tsx:1-15, 45-63, 80`
@@ -604,7 +639,13 @@ export type { MoodArchetype, ColorScales, GenerateResult };
 Remove `ColorCharacter` import. Update `getBrandColor` to handle Oklch:
 
 ```ts
-import { DEFAULT_STATE, useGenerateResult, type WizardState, type MoodArchetype, type FullResult } from "./hooks/useGenerator";
+import {
+  DEFAULT_STATE,
+  useGenerateResult,
+  type WizardState,
+  type MoodArchetype,
+  type FullResult,
+} from "./hooks/useGenerator";
 import { oklchToHex } from "@core/generator/color.js";
 
 function getBrandColor(result: FullResult): string {
@@ -621,13 +662,15 @@ function getBrandColor(result: FullResult): string {
 Remove `colorCharacter` from StepColor props:
 
 ```tsx
-{step === 0 && (
-  <StepColor
-    value={state.primaryColor}
-    onChange={(c: string) => update({ primaryColor: c })}
-    scales={result?.system.colors ?? null}
-  />
-)}
+{
+  step === 0 && (
+    <StepColor
+      value={state.primaryColor}
+      onChange={(c: string) => update({ primaryColor: c })}
+      scales={result?.system.colors ?? null}
+    />
+  );
+}
 ```
 
 - [ ] **Step 3: Update StepColor.tsx**
@@ -693,7 +736,7 @@ export function StepColor({
                       style={{ backgroundColor: formatOklch(vals.light) }}
                     >
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span className="text-[9px] font-mono px-1 py-0.5 rounded bg-black/70 text-white">
+                        <span className="text-2xs font-mono px-1 py-0.5 rounded bg-black/70 text-white">
                           {step}
                         </span>
                       </div>
@@ -718,11 +761,15 @@ import { formatOklch } from "@core/generator/color.js";
 export function ColorPreview({ scales }: { scales: ColorScales }) {
   return (
     <div>
-      <h2 className="text-lg font-semibold text-neutral-900 mb-4">Color Scales</h2>
+      <h2 className="text-lg font-semibold text-neutral-900 mb-4">
+        Color Scales
+      </h2>
       <div className="space-y-3">
         {Object.entries(scales).map(([hue, scale]) => (
           <div key={hue}>
-            <div className="text-xs font-medium text-neutral-500 mb-1 capitalize">{hue}</div>
+            <div className="text-xs font-medium text-neutral-500 mb-1 capitalize">
+              {hue}
+            </div>
             <div className="flex gap-0.5">
               {Object.entries(scale)
                 .sort(([a], [b]) => Number(a) - Number(b))
@@ -733,7 +780,7 @@ export function ColorPreview({ scales }: { scales: ColorScales }) {
                     style={{ backgroundColor: formatOklch(vals.light) }}
                   >
                     <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                      <span className="text-[9px] font-mono px-1 py-0.5 rounded bg-black/70 text-white leading-tight">
+                      <span className="text-2xs font-mono px-1 py-0.5 rounded bg-black/70 text-white leading-tight">
                         {step}
                       </span>
                       <span className="text-[8px] font-mono px-1 py-0.5 rounded bg-black/70 text-white leading-tight mt-0.5">
@@ -763,6 +810,7 @@ git commit -m "refactor(web): adapt UI to Oklch color system, remove colorCharac
 ### Task 9: Update scripts
 
 **Files:**
+
 - Modify: `scripts/dump-scales.ts`
 - Modify: `scripts/gen.ts:5-10`
 
@@ -806,6 +854,7 @@ Expected: ALL tests pass.
 
 Run: `npx tsx scripts/gen.ts`
 Expected: Generates output files without errors. Check:
+
 - `output/DESIGN.md` renders oklch values in color tables
 - `output/design-tokens.json` contains Oklch objects in primitive.colors
 - `output/figma-system.json` contains hex colors (converted from Oklch)
@@ -821,31 +870,31 @@ Expected: No type errors.
 
 ## Files changed summary
 
-| File | Change type |
-|------|------------|
-| `src/generator/color.ts` | Add `oklchToHex` export |
-| `src/schema/types.ts` | `PrimitiveTokens` uses `ColorStep`, remove `colorCharacter` from `UserInputs` |
-| `src/generator/tokens.ts` | Simplify `generateSemantic` to role-based refs |
-| `src/generator/index.ts` | New `generateScales` call, remove `detectHueName`, Oklch→hex in agent guide |
-| `src/generator/elevation.ts` | Oklch→hex for shadow border |
-| `src/schema/template.ts` | `formatOklch` for markdown display |
-| `src/figma/transformer.ts` | Oklch→hex in `resolveColorMode` |
-| `tests/generator/tokens.test.ts` | Fix signature, Oklch assertions, role-based keys |
-| `tests/generator/integration.test.ts` | Remove `colorCharacter`, Oklch assertions |
-| `tests/generator/color.test.ts` | Add `oklchToHex` tests |
-| `web/src/hooks/useGenerator.ts` | Remove `ColorCharacter`, simplify state |
-| `web/src/App.tsx` | Remove `ColorCharacter`, Oklch→hex in `getBrandColor` |
-| `web/src/steps/StepColor.tsx` | Remove character selector, `formatOklch` for CSS |
-| `web/src/result/ColorPreview.tsx` | `formatOklch` for CSS and display |
-| `scripts/dump-scales.ts` | Fix signature |
-| `scripts/gen.ts` | Remove `colorCharacter` |
+| File                                  | Change type                                                                   |
+| ------------------------------------- | ----------------------------------------------------------------------------- |
+| `src/generator/color.ts`              | Add `oklchToHex` export                                                       |
+| `src/schema/types.ts`                 | `PrimitiveTokens` uses `ColorStep`, remove `colorCharacter` from `UserInputs` |
+| `src/generator/tokens.ts`             | Simplify `generateSemantic` to role-based refs                                |
+| `src/generator/index.ts`              | New `generateScales` call, remove `detectHueName`, Oklch→hex in agent guide   |
+| `src/generator/elevation.ts`          | Oklch→hex for shadow border                                                   |
+| `src/schema/template.ts`              | `formatOklch` for markdown display                                            |
+| `src/figma/transformer.ts`            | Oklch→hex in `resolveColorMode`                                               |
+| `tests/generator/tokens.test.ts`      | Fix signature, Oklch assertions, role-based keys                              |
+| `tests/generator/integration.test.ts` | Remove `colorCharacter`, Oklch assertions                                     |
+| `tests/generator/color.test.ts`       | Add `oklchToHex` tests                                                        |
+| `web/src/hooks/useGenerator.ts`       | Remove `ColorCharacter`, simplify state                                       |
+| `web/src/App.tsx`                     | Remove `ColorCharacter`, Oklch→hex in `getBrandColor`                         |
+| `web/src/steps/StepColor.tsx`         | Remove character selector, `formatOklch` for CSS                              |
+| `web/src/result/ColorPreview.tsx`     | `formatOklch` for CSS and display                                             |
+| `scripts/dump-scales.ts`              | Fix signature                                                                 |
+| `scripts/gen.ts`                      | Remove `colorCharacter`                                                       |
 
 ## Not changed (intentionally)
 
-| File | Reason |
-|------|--------|
-| `src/schema/archetypes.ts` | `neutralUndertone` stays in preset — may be used for future non-color purposes |
-| `ColorCharacter` type definition | Kept in types.ts — only removed from `UserInputs` |
-| `src/generator/token-writer.ts` | Serializes via `JSON.stringify` — Oklch objects serialize fine as `{ l, c, h }` |
-| `web/src/steps/StepArchetype.tsx` | No color dependencies |
-| `web/src/steps/StepFont.tsx` | No color dependencies |
+| File                              | Reason                                                                          |
+| --------------------------------- | ------------------------------------------------------------------------------- |
+| `src/schema/archetypes.ts`        | `neutralUndertone` stays in preset — may be used for future non-color purposes  |
+| `ColorCharacter` type definition  | Kept in types.ts — only removed from `UserInputs`                               |
+| `src/generator/token-writer.ts`   | Serializes via `JSON.stringify` — Oklch objects serialize fine as `{ l, c, h }` |
+| `web/src/steps/StepArchetype.tsx` | No color dependencies                                                           |
+| `web/src/steps/StepFont.tsx`      | No color dependencies                                                           |
