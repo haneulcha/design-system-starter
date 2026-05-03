@@ -156,6 +156,36 @@ export function transformToFigma(tokens: DesignTokens): FigmaDesignSystem {
     };
   });
 
+  // Color Primitives: hue-keyed base layer (neutral.50-900, accent.500,
+  // status hues × {50,500}). Total 18 vars. Semantic Colors collection
+  // resolves through these primitives.
+  const HUE_ORDER = ["neutral", "accent", "red", "green", "amber", "blue"];
+  const colorPrimitiveVariables: FigmaVariable[] = [];
+  for (const hue of HUE_ORDER) {
+    const hueMap = primitiveColors[hue];
+    if (!hueMap) continue;
+    const stops = Object.keys(hueMap).sort((a, b) => Number(a) - Number(b));
+    for (const stop of stops) {
+      colorPrimitiveVariables.push({
+        name: `${hue}-${stop}`,
+        type: "COLOR",
+        valuesByMode: {
+          [lightModeId]: oklchToHex(hueMap[stop].light),
+          [darkModeId]: oklchToHex(hueMap[stop].dark),
+        },
+      });
+    }
+  }
+
+  const colorPrimitivesCollection: FigmaVariableCollection = {
+    name: "Color Primitives",
+    modes: [
+      { name: "Light", modeId: lightModeId },
+      { name: "Dark", modeId: darkModeId },
+    ],
+    variables: colorPrimitiveVariables,
+  };
+
   const colorsCollection: FigmaVariableCollection = {
     name: "Colors",
     modes: [
@@ -182,9 +212,23 @@ export function transformToFigma(tokens: DesignTokens): FigmaDesignSystem {
     variables: spacingVariables,
   };
 
-  // ── Border Radius collection ───────────────────────────────────────────────
+  // ── Border Radius collections ──────────────────────────────────────────────
   const radiusModeId = "mode-default";
 
+  // Primitives: raw px scale stops (e.g. 0, 2, 4, 6, 8, 12, 16, 24)
+  const radiusPrimitiveVariables: FigmaVariable[] = tokens.radiusPrimitives.map((value) => ({
+    name: String(value),
+    type: "FLOAT",
+    valuesByMode: { [radiusModeId]: value },
+  }));
+
+  const radiusPrimitivesCollection: FigmaVariableCollection = {
+    name: "Radius Primitives",
+    modes: [{ name: "Default", modeId: radiusModeId }],
+    variables: radiusPrimitiveVariables,
+  };
+
+  // Semantic: named tokens (none, subtle, button, input, card, large, pill)
   const radiusVariables: FigmaVariable[] = Object.entries(tokens.borderRadius)
     .filter(([, value]) => value >= 0) // exclude -1 (circle / 50%)
     .map(([name, value]) => ({
@@ -224,7 +268,13 @@ export function transformToFigma(tokens: DesignTokens): FigmaDesignSystem {
     .filter((e): e is FigmaEffectStyle => e !== null);
 
   return {
-    variableCollections: [colorsCollection, spacingCollection, radiusCollection],
+    variableCollections: [
+      colorPrimitivesCollection,
+      colorsCollection,
+      spacingCollection,
+      radiusPrimitivesCollection,
+      radiusCollection,
+    ],
     textStyles,
     effectStyles,
   };
