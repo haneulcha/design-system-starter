@@ -24,12 +24,10 @@ export function ResultPage({
   state,
   result,
   onChange,
-  onBack,
 }: {
   state: WizardState;
   result: FullResult | null;
   onChange: (p: Partial<WizardState>) => void;
-  onBack: () => void;
 }) {
   const suggestedNames = SUGGESTED_FONTS[state.preset];
   const isCustom = !suggestedNames.includes(state.fontFamily);
@@ -62,16 +60,6 @@ export function ResultPage({
       {/* Sidebar */}
       <aside className="w-full lg:w-80 shrink-0 border-b lg:border-b-0 lg:border-r border-neutral-200 lg:h-screen lg:sticky lg:top-0 lg:overflow-y-auto">
         <div className="p-5 space-y-6">
-          <button
-            onClick={onBack}
-            className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors flex items-center gap-1.5"
-          >
-            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-            </svg>
-            Back to wizard
-          </button>
-
           <div>
             <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1.5">
               Brand Name

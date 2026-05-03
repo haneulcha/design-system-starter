@@ -2,7 +2,11 @@ import { useState } from "react";
 import type { WizardState } from "../hooks/useGenerator";
 import { CategoryTabs, type InspectorCategory } from "./CategoryTabs";
 import { ColorPanel } from "./panels/ColorPanel";
+import { TypographyPanel } from "./panels/TypographyPanel";
+import { SpacingPanel } from "./panels/SpacingPanel";
 import { RadiusPanel } from "./panels/RadiusPanel";
+import { ElevationPanel } from "./panels/ElevationPanel";
+import { ComponentPanel } from "./panels/ComponentPanel";
 
 interface InspectorProps {
   state: WizardState;
@@ -23,13 +27,20 @@ export function Inspector({ state, onChange }: InspectorProps) {
           {active === "color" && (
             <ColorPanel state={state} onChange={onChange} />
           )}
+          {active === "typography" && (
+            <TypographyPanel state={state} onChange={onChange} />
+          )}
+          {active === "spacing" && (
+            <SpacingPanel state={state} onChange={onChange} />
+          )}
           {active === "radius" && (
             <RadiusPanel state={state} onChange={onChange} />
           )}
-          {active !== "color" && active !== "radius" && (
-            <div className="text-xs text-neutral-400 italic px-1 py-8 text-center">
-              Coming soon — this category panel ships in a follow-up slice.
-            </div>
+          {active === "elevation" && (
+            <ElevationPanel state={state} onChange={onChange} />
+          )}
+          {active === "component" && (
+            <ComponentPanel state={state} onChange={onChange} />
           )}
         </div>
       </div>

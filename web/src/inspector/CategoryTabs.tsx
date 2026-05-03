@@ -8,11 +8,11 @@ export type InspectorCategory =
 
 const TABS: { key: InspectorCategory; label: string; enabled: boolean }[] = [
   { key: "color", label: "Color", enabled: true },
-  { key: "typography", label: "Type", enabled: false },
-  { key: "spacing", label: "Spacing", enabled: false },
+  { key: "typography", label: "Type", enabled: true },
+  { key: "spacing", label: "Spacing", enabled: true },
   { key: "radius", label: "Radius", enabled: true },
-  { key: "elevation", label: "Elevation", enabled: false },
-  { key: "component", label: "Component", enabled: false },
+  { key: "elevation", label: "Elevation", enabled: true },
+  { key: "component", label: "Component", enabled: true },
 ];
 
 export function CategoryTabs({

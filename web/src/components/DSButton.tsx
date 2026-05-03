@@ -18,7 +18,8 @@ function computeStyles(
   system: DesignSystem,
 ) {
   const fontFamily = buildFontFamily(system);
-  const borderRadius = tokens.borderRadius.button;
+  const shape = system.componentTokens.knobs.buttonShape;
+  const borderRadius = shape === "pill" ? 9999 : tokens.borderRadius.button;
   const shadow = tokens.elevation.raised ?? "none";
 
   const brandPrimary = resolveComponentColor(tokens, "button.primary.bg");
