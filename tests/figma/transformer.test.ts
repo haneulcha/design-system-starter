@@ -106,10 +106,32 @@ describe("transformToFigma", () => {
     expect(hero!.fontSize).toBe(64);
   });
 
-  it("creates effect styles from elevation tokens", () => {
+  it("creates effect styles from elevation tokens (sm/md/lg names)", () => {
     expect(figma.effectStyles.length).toBeGreaterThanOrEqual(2);
-    const raised = figma.effectStyles.find((s) => s.name === "Raised");
-    expect(raised).toBeTruthy();
-    expect(raised!.shadows.length).toBeGreaterThanOrEqual(1);
+    const sm = figma.effectStyles.find((s) => s.name === "Sm");
+    expect(sm).toBeTruthy();
+    expect(sm!.shadows.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("creates Shadow Primitives collection (base layer)", () => {
+    const sp = figma.variableCollections.find((c) => c.name === "Shadow Primitives");
+    expect(sp).toBeTruthy();
+    // some elevation styles produce 'none' which Figma still emits as a
+    // STRING var. Expect 5 base aliases at most; at least 4 must be present.
+    expect(sp!.variables.length).toBeGreaterThanOrEqual(4);
+    const names = sp!.variables.map((v) => v.name);
+    for (const n of ["xs", "sm", "md", "lg"]) {
+      expect(names, `missing shadow alias: ${n}`).toContain(n);
+    }
+  });
+
+  it("creates Shadows collection (semantic layer)", () => {
+    const s = figma.variableCollections.find((c) => c.name === "Shadows");
+    expect(s).toBeTruthy();
+    expect(s!.variables).toHaveLength(4);
+    const names = s!.variables.map((v) => v.name);
+    for (const n of ["hairline", "card", "popover", "modal"]) {
+      expect(names, `missing semantic shadow: ${n}`).toContain(n);
+    }
   });
 });

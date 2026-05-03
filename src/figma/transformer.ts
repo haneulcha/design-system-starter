@@ -255,6 +255,58 @@ export function transformToFigma(tokens: DesignTokens): FigmaDesignSystem {
     variables: radiusVariables,
   };
 
+  // ── Shadow collections ─────────────────────────────────────────────────────
+  const shadowModeId = "mode-default";
+
+  const ELEVATION_TO_BASE: Record<string, string> = {
+    none: "none",
+    ring: "xs",
+    raised: "sm",
+    floating: "md",
+    overlay: "lg",
+  };
+  const SHADOW_BASE_ORDER = ["none", "xs", "sm", "md", "lg"];
+
+  const shadowByAlias: Record<string, string> = {};
+  for (const [levelName, value] of Object.entries(tokens.elevation)) {
+    const alias = ELEVATION_TO_BASE[levelName];
+    if (alias) shadowByAlias[alias] = value;
+  }
+
+  const shadowPrimitiveVariables: FigmaVariable[] = SHADOW_BASE_ORDER
+    .filter((alias) => shadowByAlias[alias] !== undefined)
+    .map((alias) => ({
+      name: alias,
+      type: "STRING",
+      valuesByMode: { [shadowModeId]: shadowByAlias[alias] },
+    }));
+
+  const shadowPrimitivesCollection: FigmaVariableCollection = {
+    name: "Shadow Primitives",
+    modes: [{ name: "Default", modeId: shadowModeId }],
+    variables: shadowPrimitiveVariables,
+  };
+
+  const SHADOW_SEMANTIC: Array<[string, string]> = [
+    ["hairline", "xs"],
+    ["card", "sm"],
+    ["popover", "md"],
+    ["modal", "lg"],
+  ];
+  const shadowSemanticVariables: FigmaVariable[] = SHADOW_SEMANTIC
+    .filter(([, base]) => shadowByAlias[base] !== undefined)
+    .map(([name, base]) => ({
+      name,
+      type: "STRING",
+      valuesByMode: { [shadowModeId]: shadowByAlias[base] },
+    }));
+
+  const shadowsCollection: FigmaVariableCollection = {
+    name: "Shadows",
+    modes: [{ name: "Default", modeId: shadowModeId }],
+    variables: shadowSemanticVariables,
+  };
+
   // ── Text styles ────────────────────────────────────────────────────────────
   const textStyles: FigmaTextStyle[] = Object.entries(
     tokens.typography.styles
@@ -268,12 +320,16 @@ export function transformToFigma(tokens: DesignTokens): FigmaDesignSystem {
   }));
 
   // ── Effect styles ──────────────────────────────────────────────────────────
-  const effectStyles: FigmaEffectStyle[] = Object.entries(tokens.elevation)
-    .map(([key, shadowStr]) => {
+  // Use the alias names (Sm/Md/Lg) so designers see the same nomenclature
+  // as the variable collections.
+  const effectStyles: FigmaEffectStyle[] = SHADOW_BASE_ORDER
+    .map((alias) => {
+      const shadowStr = shadowByAlias[alias];
+      if (!shadowStr) return null;
       const shadows = parseShadowString(shadowStr);
       if (shadows.length === 0) return null;
       return {
-        name: kebabToTitleCase(key),
+        name: kebabToTitleCase(alias),
         shadows,
       };
     })
@@ -286,6 +342,8 @@ export function transformToFigma(tokens: DesignTokens): FigmaDesignSystem {
       spacingCollection,
       radiusPrimitivesCollection,
       radiusCollection,
+      shadowPrimitivesCollection,
+      shadowsCollection,
     ],
     textStyles,
     effectStyles,

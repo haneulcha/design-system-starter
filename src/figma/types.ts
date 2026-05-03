@@ -7,7 +7,7 @@ export interface FigmaColor {
 
 export interface FigmaVariable {
   name: string;
-  type: "COLOR" | "FLOAT";
+  type: "COLOR" | "FLOAT" | "STRING";
   valuesByMode: Record<string, string | number>;
 }
 
