@@ -252,7 +252,6 @@ export function buildDesignTokens(
   // ── elevation ───────────────────────────────────────────────────────────────
   const elevation: Record<string, string> = {};
   for (const lvl of system.elevation.levels) {
-    if (lvl.shadow === "none") continue;
     elevation[kebab(lvl.name)] = lvl.shadow;
   }
 

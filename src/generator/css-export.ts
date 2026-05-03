@@ -147,11 +147,45 @@ export function generateCssVariables(tokens: DesignTokens): string {
     );
   }
 
-  // ── Elevation ─────────────────────────────────────────────────────────────
+  // ── Shadow Primitives (base layer) ───────────────────────────────────────
+  // Map elevation level → base alias.
+  const ELEVATION_TO_BASE: Record<string, string> = {
+    none: "none",
+    ring: "xs",
+    raised: "sm",
+    floating: "md",
+    overlay: "lg",
+  };
+  const SHADOW_BASE_ORDER = ["none", "xs", "sm", "md", "lg"];
+
+  // Resolve base alias → shadow string. Use tokens.elevation values.
+  const shadowByAlias: Record<string, string> = {};
+  for (const [levelName, value] of Object.entries(tokens.elevation)) {
+    const alias = ELEVATION_TO_BASE[levelName];
+    if (alias) shadowByAlias[alias] = value;
+  }
+
   lines.push("");
-  lines.push("  /* Elevation (shadows) */");
-  for (const [name, shadow] of Object.entries(tokens.elevation)) {
-    lines.push(`  ${varName("shadow", name)}: ${shadow};`);
+  lines.push("  /* Shadow Primitives */");
+  for (const alias of SHADOW_BASE_ORDER) {
+    if (shadowByAlias[alias] !== undefined) {
+      lines.push(`  --shadow-${alias}: ${shadowByAlias[alias]};`);
+    }
+  }
+
+  // ── Shadow Semantic (alias layer) ────────────────────────────────────────
+  lines.push("");
+  lines.push("  /* Shadows (semantic) */");
+  const SHADOW_SEMANTIC: Array<[string, string]> = [
+    ["hairline", "xs"],
+    ["card", "sm"],
+    ["popover", "md"],
+    ["modal", "lg"],
+  ];
+  for (const [role, base] of SHADOW_SEMANTIC) {
+    if (shadowByAlias[base] !== undefined) {
+      lines.push(`  --shadow-${role}: var(--shadow-${base});`);
+    }
   }
 
   // ── Breakpoints ───────────────────────────────────────────────────────────

@@ -80,6 +80,30 @@ describe("css-export — radius", () => {
   });
 });
 
+describe("css-export — shadow", () => {
+  it("emits 5 base shadow primitives", () => {
+    expect(cssVariables).toContain("--shadow-none: none;");
+    expect(cssVariables).toMatch(/--shadow-xs: .+;/);
+    expect(cssVariables).toMatch(/--shadow-sm: .+;/);
+    expect(cssVariables).toMatch(/--shadow-md: .+;/);
+    expect(cssVariables).toMatch(/--shadow-lg: .+;/);
+  });
+
+  it("emits 4 semantic shadow aliases referencing base", () => {
+    expect(cssVariables).toContain("--shadow-hairline: var(--shadow-xs);");
+    expect(cssVariables).toContain("--shadow-card: var(--shadow-sm);");
+    expect(cssVariables).toContain("--shadow-popover: var(--shadow-md);");
+    expect(cssVariables).toContain("--shadow-modal: var(--shadow-lg);");
+  });
+
+  it("does not emit the legacy --shadow-{ring,raised,floating,overlay} names", () => {
+    expect(cssVariables).not.toMatch(/--shadow-raised:\s/);
+    expect(cssVariables).not.toMatch(/--shadow-floating:\s/);
+    expect(cssVariables).not.toMatch(/--shadow-overlay:\s/);
+    expect(cssVariables).not.toMatch(/--shadow-ring:\s/);
+  });
+});
+
 describe("css-export — dark mode", () => {
   const darkMatch = cssVariables.match(
     /@media \(prefers-color-scheme: dark\) \{\s*:root \{([\s\S]*?)\}\s*\}/,
