@@ -1,0 +1,78 @@
+import { describe, it, expect } from "vitest";
+import { generate } from "../../src/generator/index.js";
+
+const { cssVariables } = generate({
+  brandName: "CssTest",
+  preset: "professional",
+  fontFamily: "Inter",
+});
+
+describe("css-export — color primitives (base layer)", () => {
+  it("emits all 9 neutral stops", () => {
+    for (const stop of ["50", "100", "200", "300", "400", "500", "600", "800", "900"]) {
+      expect(cssVariables).toMatch(new RegExp(`--color-neutral-${stop}: oklch\\(`));
+    }
+  });
+
+  it("emits accent-500", () => {
+    expect(cssVariables).toMatch(/--color-accent-500: oklch\(/);
+  });
+
+  it("emits 4 status hues × 2 stops each", () => {
+    for (const hue of ["red", "green", "amber", "blue"]) {
+      expect(cssVariables).toMatch(new RegExp(`--color-${hue}-50: oklch\\(`));
+      expect(cssVariables).toMatch(new RegExp(`--color-${hue}-500: oklch\\(`));
+    }
+  });
+
+  it("does not emit the legacy --color-palette-* primitives", () => {
+    expect(cssVariables).not.toMatch(/--color-palette-/);
+  });
+});
+
+describe("css-export — color semantics (alias layer)", () => {
+  it("bg-canvas references a neutral stop", () => {
+    expect(cssVariables).toMatch(/--color-bg-canvas: var\(--color-neutral-\d+\);/);
+  });
+
+  it("text-ink references a neutral stop", () => {
+    expect(cssVariables).toMatch(/--color-text-ink: var\(--color-neutral-\d+\);/);
+  });
+
+  it("accent-primary references --color-accent-500", () => {
+    expect(cssVariables).toContain("--color-accent-primary: var(--color-accent-500);");
+  });
+
+  it("status semantics reference status hue stops", () => {
+    expect(cssVariables).toMatch(/--color-status-error-bg:\s*var\(--color-red-50\);/);
+    expect(cssVariables).toMatch(/--color-status-error-text:\s*var\(--color-red-500\);/);
+    expect(cssVariables).toMatch(/--color-status-success-bg:\s*var\(--color-green-50\);/);
+    expect(cssVariables).toMatch(/--color-status-info-text:\s*var\(--color-blue-500\);/);
+  });
+});
+
+describe("css-export — dark mode", () => {
+  const darkMatch = cssVariables.match(
+    /@media \(prefers-color-scheme: dark\) \{\s*:root \{([\s\S]*?)\}\s*\}/,
+  );
+
+  it("emits a dark @media block", () => {
+    expect(darkMatch, "dark block missing").toBeTruthy();
+  });
+
+  it("dark block contains primitive overrides only (no semantic vars)", () => {
+    const darkBody = darkMatch![1];
+    // Must contain primitives
+    expect(darkBody).toMatch(/--color-neutral-50:/);
+    // Must NOT contain semantics
+    expect(darkBody).not.toMatch(/--color-bg-canvas:/);
+    expect(darkBody).not.toMatch(/--color-text-ink:/);
+    expect(darkBody).not.toMatch(/--color-status-error-/);
+    expect(darkBody).not.toMatch(/--color-accent-primary:/);
+  });
+
+  it("dark block does NOT override accent-500 (same in both modes)", () => {
+    const darkBody = darkMatch![1];
+    expect(darkBody).not.toMatch(/--color-accent-500:/);
+  });
+});
