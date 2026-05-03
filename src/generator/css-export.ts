@@ -114,9 +114,14 @@ export function generateCssVariables(tokens: DesignTokens): string {
   }
 
   // ── Border Radius Semantic (alias layer) ─────────────────────────────────
+  // Skip names that already exist as base aliases (none/pill/circle) —
+  // emitting `--radius-none: var(--radius-none)` would be a self-reference
+  // cycle that resolves to invalid in CSS.
+  const RADIUS_BASE_NAMES = new Set(RADIUS_ALIAS_ORDER);
   lines.push("");
   lines.push("  /* Border Radius (semantic) */");
   for (const [name, value] of Object.entries(tokens.borderRadius)) {
+    if (RADIUS_BASE_NAMES.has(name)) continue;
     const v = varName("radius", name);
     const alias = RADIUS_PX_TO_ALIAS[value];
     if (alias) {
