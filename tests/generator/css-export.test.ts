@@ -51,6 +51,35 @@ describe("css-export — color semantics (alias layer)", () => {
   });
 });
 
+describe("css-export — radius", () => {
+  it("emits 9 base radius primitives with sm/md/lg names", () => {
+    expect(cssVariables).toContain("--radius-none: 0;");
+    expect(cssVariables).toContain("--radius-xs: 2px;");
+    expect(cssVariables).toContain("--radius-sm: 4px;");
+    expect(cssVariables).toContain("--radius-md: 8px;");
+    expect(cssVariables).toContain("--radius-lg: 12px;");
+    expect(cssVariables).toContain("--radius-xl: 16px;");
+    expect(cssVariables).toContain("--radius-2xl: 24px;");
+    expect(cssVariables).toContain("--radius-pill: 9999px;");
+    expect(cssVariables).toContain("--radius-circle: 50%;");
+  });
+
+  it("does not emit the reserved 6px stop", () => {
+    expect(cssVariables).not.toMatch(/--radius-(scale-)?6:/);
+  });
+
+  it("does not emit legacy --radius-scale-N primitives", () => {
+    expect(cssVariables).not.toMatch(/--radius-scale-/);
+  });
+
+  it("semantic radius refs the base layer via var()", () => {
+    expect(cssVariables).toMatch(/--radius-button: var\(--radius-(xs|sm|md|lg|xl|2xl|pill)\);/);
+    expect(cssVariables).toMatch(/--radius-card: var\(--radius-(sm|md|lg|xl|2xl)\);/);
+    expect(cssVariables).toMatch(/--radius-subtle: var\(--radius-sm\);/);
+    expect(cssVariables).toMatch(/--radius-large: var\(--radius-2xl\);/);
+  });
+});
+
 describe("css-export — dark mode", () => {
   const darkMatch = cssVariables.match(
     /@media \(prefers-color-scheme: dark\) \{\s*:root \{([\s\S]*?)\}\s*\}/,

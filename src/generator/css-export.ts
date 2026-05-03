@@ -81,24 +81,46 @@ export function generateCssVariables(tokens: DesignTokens): string {
     lines.push(`  ${varName("spacing", name)}: ${value}px;`);
   }
 
-  // ── Radius Primitives (base layer) ───────────────────────────────────────
+  // ── Radius Primitives (base layer, sm/md/lg names) ───────────────────────
+  // Reserved 6px stop is NOT exposed; every other SCALE stop maps to an alias.
+  const RADIUS_PX_TO_ALIAS: Record<number, string> = {
+    0: "none",
+    2: "xs",
+    4: "sm",
+    8: "md",
+    12: "lg",
+    16: "xl",
+    24: "2xl",
+    9999: "pill",
+    [-1]: "circle", // -1 sentinel = 50%
+  };
+  const RADIUS_ALIAS_VALUE: Record<string, string> = {
+    none: "0",
+    xs: "2px",
+    sm: "4px",
+    md: "8px",
+    lg: "12px",
+    xl: "16px",
+    "2xl": "24px",
+    pill: "9999px",
+    circle: "50%",
+  };
+  const RADIUS_ALIAS_ORDER = ["none", "xs", "sm", "md", "lg", "xl", "2xl", "pill", "circle"];
+
   lines.push("");
-  lines.push("  /* Radius Scale (primitives) */");
-  for (const value of tokens.radiusPrimitives) {
-    lines.push(`  --radius-scale-${value}: ${fmtRadius(value)};`);
+  lines.push("  /* Radius Primitives */");
+  for (const alias of RADIUS_ALIAS_ORDER) {
+    lines.push(`  --radius-${alias}: ${RADIUS_ALIAS_VALUE[alias]};`);
   }
 
   // ── Border Radius Semantic (alias layer) ─────────────────────────────────
-  const radiusSet = new Set(tokens.radiusPrimitives);
   lines.push("");
   lines.push("  /* Border Radius (semantic) */");
   for (const [name, value] of Object.entries(tokens.borderRadius)) {
     const v = varName("radius", name);
-    if (value === -1 || value === 9999) {
-      // circle (50%) and pill (9999px) are not scale stops
-      lines.push(`  ${v}: ${fmtRadius(value)};`);
-    } else if (radiusSet.has(value)) {
-      lines.push(`  ${v}: var(--radius-scale-${value});`);
+    const alias = RADIUS_PX_TO_ALIAS[value];
+    if (alias) {
+      lines.push(`  ${v}: var(--radius-${alias});`);
     } else {
       lines.push(`  ${v}: ${fmtRadius(value)};`);
     }
