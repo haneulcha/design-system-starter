@@ -21,6 +21,8 @@ import {
   ColorScaleStrip,
   type ColorScaleStop,
 } from "../../components/ColorScaleStrip";
+import { OklchPicker } from "../../components/OklchPicker";
+import { formatOklchCompact } from "../../lib/oklch";
 import { ResetButton } from "../ResetButton";
 
 // ─── Layout ────────────────────────────────────────────────────────────────
@@ -36,7 +38,7 @@ function Section({
 }) {
   return (
     <div className="space-y-1.5">
-      <div className="text-2xs text-neutral-400 uppercase tracking-wider px-1 flex items-center gap-1.5">
+      <div className="text-2xs text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
         {label}
         {overridden && (
           <span
@@ -70,7 +72,6 @@ function buildAdapters(state: WizardState): {
     effective: string;
     overridden: boolean;
     recommendations: readonly AccentRecommendation[];
-    selectedIsCustom: boolean;
   };
   statusRows: { slot: StatusSlot; hex: string; overridden: boolean }[];
   isOverridden: boolean;
@@ -105,7 +106,6 @@ function buildAdapters(state: WizardState): {
   const accentEffective = effectivePalette.accent;
   const accentOverridden = accentEffective !== archetype.accent;
   const recs = archetype.recommendedAccents;
-  const selectedIsCustom = !recs.some((r) => r.hex === accentEffective);
 
   const statusRows = STATUS_SLOTS.map((slot) => ({
     slot,
@@ -126,7 +126,6 @@ function buildAdapters(state: WizardState): {
       effective: accentEffective,
       overridden: accentOverridden,
       recommendations: recs,
-      selectedIsCustom,
     },
     statusRows,
     isOverridden: overrideCount > 0,
@@ -140,34 +139,53 @@ function AccentSection({
   effective,
   overridden,
   recommendations,
-  selectedIsCustom,
   onChange,
 }: {
   effective: string;
   overridden: boolean;
   recommendations: readonly AccentRecommendation[];
-  selectedIsCustom: boolean;
   onChange: (hex: string) => void;
 }) {
+  const matchedBrand = recommendations.find(
+    (r) => r.hex.toLowerCase() === effective.toLowerCase(),
+  );
+  const oklch = formatOklchCompact(effective);
   return (
     <Section label="Accent" overridden={overridden}>
-      {recommendations.map((rec) => (
-        <ColorRow
-          key={rec.hex}
-          hex={rec.hex}
-          title={rec.source}
-          subtitle={rec.hex}
-          selected={effective === rec.hex}
-          onSelect={() => onChange(rec.hex)}
+      <div className="flex items-stretch gap-2">
+        <div
+          className="w-8 h-8 rounded shrink-0 ring ring-neutral-500 ring-offset-1"
+          title={`${matchedBrand ? matchedBrand.source : "Custom"} · ${effective}`}
+          style={{ background: effective }}
         />
-      ))}
-      <ColorRow
-        hex={effective}
-        title="Custom"
-        subtitle={effective}
-        selected={selectedIsCustom}
-        onPick={onChange}
-      />
+        <div className="font-mono text-2xs text-neutral-500 truncate mt-2 mb-3">
+          {matchedBrand ? matchedBrand.source : "Custom"} · {effective}
+          {oklch ? ` · ${oklch}` : ""}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-1.5 mt-2 mb-4 flex-wrap">
+        {recommendations.map((rec) => {
+          const active = rec.hex.toLowerCase() === effective.toLowerCase();
+          return (
+            <button
+              key={rec.hex}
+              type="button"
+              onClick={() => onChange(rec.hex)}
+              title={`${rec.source} · ${rec.hex}`}
+              className={[
+                "w-8 h-8 rounded transition-all shrink-0",
+                active
+                  ? "ring ring-neutral-400 ring-offset-1"
+                  : "border border-neutral-200 hover:border-neutral-400",
+              ].join(" ")}
+              style={{ background: rec.hex }}
+            />
+          );
+        })}
+      </div>
+
+      <OklchPicker hex={effective} onChange={onChange} />
     </Section>
   );
 }
@@ -263,7 +281,6 @@ export function ColorPanel({
         effective={adapters.accent.effective}
         overridden={adapters.accent.overridden}
         recommendations={adapters.accent.recommendations}
-        selectedIsCustom={adapters.accent.selectedIsCustom}
         onChange={setAccent}
       />
 

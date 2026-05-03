@@ -74,7 +74,7 @@ export interface ArchetypePalette {
   textRefs: Record<TextSlot, NeutralStop>;
   /** Default brand accent. */
   accent: string;
-  /** Up to 5 corpus-curated accent picks shown as inspector chips. The first
+  /** ~10 corpus-curated accent picks shown as inspector chips. The first
    *  entry should match `accent` so the default is selectable from the row. */
   recommendedAccents: readonly AccentRecommendation[];
   /** 8 status slots, per-archetype curated. */
@@ -116,10 +116,15 @@ export const ARCHETYPE_PALETTES: Record<PresetName, ArchetypePalette> = {
     accent: "#5e6ad2",
     recommendedAccents: [
       { hex: "#5e6ad2", source: "Linear" },
-      { hex: "#000000", source: "Figma" },
-      { hex: "#0070f3", source: "Vercel" },
       { hex: "#0066cc", source: "Apple" },
       { hex: "#0075de", source: "Notion" },
+      { hex: "#000000", source: "Vercel" },
+      { hex: "#111111", source: "Cal" },
+      { hex: "#146ef5", source: "Webflow" },
+      { hex: "#0fa76e", source: "Mintlify" },
+      { hex: "#0052ef", source: "Sanity" },
+      { hex: "#1c1c1c", source: "Lovable" },
+      { hex: "#181d26", source: "Airtable" },
     ],
     status: {
       "error-bg":     "#fef2f2",  "error-text":   "#b91c1c",
@@ -153,7 +158,12 @@ export const ARCHETYPE_PALETTES: Record<PresetName, ArchetypePalette> = {
       { hex: "#ff385c", source: "Airbnb" },
       { hex: "#ff5600", source: "Intercom" },
       { hex: "#f54e00", source: "Cursor" },
-      { hex: "#635bff", source: "Stripe" },
+      { hex: "#fa520f", source: "Mistral" },
+      { hex: "#ff4f00", source: "Zapier" },
+      { hex: "#e60023", source: "Pinterest" },
+      { hex: "#ff5900", source: "Resend" },
+      { hex: "#ff7759", source: "Cohere" },
+      { hex: "#f7a501", source: "PostHog" },
     ],
     status: {
       "error-bg":     "#fef0ee",  "error-text":   "#c2410c",
@@ -185,6 +195,11 @@ export const ARCHETYPE_PALETTES: Record<PresetName, ArchetypePalette> = {
       { hex: "#3ecf8e", source: "Supabase" },
       { hex: "#00ed64", source: "MongoDB" },
       { hex: "#76b900", source: "NVIDIA" },
+      { hex: "#19d600", source: "Sanity" },
+      { hex: "#ef2cc1", source: "Together" },
+      { hex: "#ea2804", source: "Replicate" },
+      { hex: "#9fe870", source: "Wise" },
+      { hex: "#00d992", source: "Voltagent" },
     ],
     status: {
       "error-bg":     "#fee2e2",  "error-text":   "#dc2626",
@@ -216,6 +231,11 @@ export const ARCHETYPE_PALETTES: Record<PresetName, ArchetypePalette> = {
       { hex: "#18181b", source: "Vercel" },
       { hex: "#1456f0", source: "MiniMax" },
       { hex: "#1c69d4", source: "BMW" },
+      { hex: "#3e6ae1", source: "Tesla" },
+      { hex: "#1863dc", source: "Cohere" },
+      { hex: "#0007cd", source: "Composio" },
+      { hex: "#494fdf", source: "Revolut" },
+      { hex: "#3860be", source: "Lamborghini" },
     ],
     status: {
       "error-bg":     "#fef2f2",  "error-text":   "#b91c1c",
@@ -247,6 +267,11 @@ export const ARCHETYPE_PALETTES: Record<PresetName, ArchetypePalette> = {
       { hex: "#ea5ec1", source: "MiniMax" },
       { hex: "#ff4d8b", source: "Clay" },
       { hex: "#5b76fe", source: "Miro" },
+      { hex: "#7b42bc", source: "HashiCorp" },
+      { hex: "#6a5fc1", source: "Sentry" },
+      { hex: "#ff64c8", source: "Notion" },
+      { hex: "#de1d8d", source: "Vercel" },
+      { hex: "#714cb6", source: "Superhuman" },
     ],
     status: {
       "error-bg":     "#fee2e2",  "error-text":   "#e11d48",

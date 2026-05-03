@@ -46,12 +46,12 @@ describe("archetype palettes", () => {
     }
   });
 
-  it("every archetype ships an accent + 1–5 recommended alternatives, each with a source", () => {
+  it("every archetype ships an accent + 1–10 recommended alternatives, each with a source", () => {
     for (const preset of PRESET_NAMES) {
       const p = ARCHETYPE_PALETTES[preset];
       expect(p.accent, `${preset}.accent`).toMatch(/^#[0-9a-fA-F]{6}$/);
       expect(p.recommendedAccents.length, `${preset}.recommendedAccents length`).toBeGreaterThanOrEqual(1);
-      expect(p.recommendedAccents.length, `${preset}.recommendedAccents length`).toBeLessThanOrEqual(5);
+      expect(p.recommendedAccents.length, `${preset}.recommendedAccents length`).toBeLessThanOrEqual(10);
       // First chip must match the default accent so it can be selected from the row.
       expect(p.recommendedAccents[0].hex, `${preset}.recommendedAccents[0]`).toBe(p.accent);
       for (const rec of p.recommendedAccents) {
