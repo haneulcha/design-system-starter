@@ -215,9 +215,21 @@ export function transformToFigma(tokens: DesignTokens): FigmaDesignSystem {
   // ── Border Radius collections ──────────────────────────────────────────────
   const radiusModeId = "mode-default";
 
-  // Primitives: raw px scale stops (e.g. 0, 2, 4, 6, 8, 12, 16, 24)
-  const radiusPrimitiveVariables: FigmaVariable[] = tokens.radiusPrimitives.map((value) => ({
-    name: String(value),
+  // Primitives: 8 named scale stops (sm/md/lg/xl/2xl + none/xs/pill).
+  // circle (50%) excluded — not numeric, can't be a Figma FLOAT.
+  // Reserved 6px stop also excluded.
+  const RADIUS_ALIASES: Array<[string, number]> = [
+    ["none", 0],
+    ["xs", 2],
+    ["sm", 4],
+    ["md", 8],
+    ["lg", 12],
+    ["xl", 16],
+    ["2xl", 24],
+    ["pill", 9999],
+  ];
+  const radiusPrimitiveVariables: FigmaVariable[] = RADIUS_ALIASES.map(([name, value]) => ({
+    name,
     type: "FLOAT",
     valuesByMode: { [radiusModeId]: value },
   }));

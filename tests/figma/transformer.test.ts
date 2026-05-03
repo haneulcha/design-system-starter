@@ -79,15 +79,18 @@ describe("transformToFigma", () => {
     expect(spacing!.variables[0].type).toBe("FLOAT");
   });
 
-  it("creates Radius Primitives collection (scale stops)", () => {
+  it("creates Radius Primitives collection with sm/md/lg names", () => {
     const rp = figma.variableCollections.find((c) => c.name === "Radius Primitives");
     expect(rp).toBeTruthy();
-    expect(rp!.variables.length).toBe(8); // SCALE has 8 stops
-    // All values are FLOAT
+    // 8 alias names — circle (50%) excluded as not numeric, 6 px reserved
+    expect(rp!.variables).toHaveLength(8);
     expect(rp!.variables.every((v) => v.type === "FLOAT")).toBe(true);
-    // Named by their px value
-    expect(rp!.variables.map((v) => v.name)).toContain("4");
-    expect(rp!.variables.map((v) => v.name)).toContain("24");
+    const names = rp!.variables.map((v) => v.name);
+    for (const n of ["none", "xs", "sm", "md", "lg", "xl", "2xl", "pill"]) {
+      expect(names, `missing radius alias: ${n}`).toContain(n);
+    }
+    expect(names).not.toContain("4");
+    expect(names).not.toContain("24");
   });
 
   it("creates Border Radius collection (semantic tokens)", () => {
