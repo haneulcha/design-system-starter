@@ -36,10 +36,10 @@ for (const archetype of ALL_ARCHETYPES) {
       expect(result.designMd).toContain("# Design System: TestBrand");
     });
 
-    it("tokens.primitive.colors collapses to a single 'palette' hue", () => {
-      expect(result.tokens.primitive.colors).toHaveProperty("palette");
-      const stops = Object.keys(result.tokens.primitive.colors.palette);
-      expect(stops).toHaveLength(PALETTE_SLOTS.length);
+    it("tokens.primitive.colors has 6 hue keys: neutral/accent/red/green/amber/blue", () => {
+      expect(Object.keys(result.tokens.primitive.colors).sort()).toEqual(
+        ["accent", "amber", "blue", "green", "neutral", "red"],
+      );
     });
 
     it("resolved palette matches the archetype baseline (no overrides)", () => {
@@ -52,16 +52,18 @@ for (const archetype of ALL_ARCHETYPES) {
       expect(result.system.colorTokens.palette["error-text"]).toBe(arche.status["error-text"]);
     });
 
-    it("each palette slot has light and dark Oklch", () => {
-      for (const [slot, value] of Object.entries(result.tokens.primitive.colors.palette)) {
-        expect(value.light, `palette/${slot}.light`).toHaveProperty("l");
-        expect(value.dark, `palette/${slot}.dark`).toHaveProperty("l");
+    it("each primitive stop has light and dark Oklch", () => {
+      for (const [hue, hueMap] of Object.entries(result.tokens.primitive.colors)) {
+        for (const [stop, value] of Object.entries(hueMap)) {
+          expect(value.light, `${hue}.${stop}.light`).toHaveProperty("l");
+          expect(value.dark, `${hue}.${stop}.dark`).toHaveProperty("l");
+        }
       }
     });
 
-    it("tokens.semantic values use the 'palette/<slot>' format", () => {
+    it("tokens.semantic values use the '<hue>/<stop>' format", () => {
       for (const [role, value] of Object.entries(result.tokens.semantic)) {
-        expect(value, `semantic["${role}"] = "${value}"`).toMatch(/^palette\/[a-z0-9-]+$/);
+        expect(value, `semantic["${role}"] = "${value}"`).toMatch(/^[a-z]+\/[a-z0-9]+$/);
       }
     });
 
@@ -69,8 +71,14 @@ for (const archetype of ALL_ARCHETYPES) {
       expect(result.tokens.component.button.primary.bg).toBeTruthy();
     });
 
-    it("tokenFiles has 4 entries", () => {
-      expect(Object.keys(result.tokenFiles)).toHaveLength(4);
+    it("emits cssVariables with :root block and a dark-mode override", () => {
+      expect(result.cssVariables).toContain(":root {");
+      expect(result.cssVariables).toContain("@media (prefers-color-scheme: dark)");
+    });
+
+    it("emits tailwindConfig as a CommonJS module preset", () => {
+      expect(result.tailwindConfig).toContain("module.exports = {");
+      expect(result.tailwindConfig).toContain("theme:");
     });
 
     it("system has 6 component primitives via componentTokens", () => {
@@ -83,8 +91,8 @@ for (const archetype of ALL_ARCHETYPES) {
       expect(c.avatar.variants).toEqual(["circle"]);
     });
 
-    it("system.typographyTokens has 20 profiles", () => {
-      expect(Object.keys(result.system.typographyTokens.profiles)).toHaveLength(20);
+    it("system.typographyTokens has 22 profiles", () => {
+      expect(Object.keys(result.system.typographyTokens.profiles)).toHaveLength(22);
     });
   });
 }

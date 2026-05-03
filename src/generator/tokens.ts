@@ -9,6 +9,10 @@ import type {
 } from "../schema/types.js";
 import type { ColorScales } from "./color.js";
 import type { ColorCategoryTokens } from "./color-category.js";
+import {
+  ARCHETYPE_PALETTES,
+  STATUS_HUE_NAMES,
+} from "../schema/archetype-palettes.js";
 
 function kebab(s: string): string {
   return s.toLowerCase().replace(/\s+/g, "-");
@@ -51,47 +55,52 @@ export function generatePrimitive(scales: ColorScales): PrimitiveTokens {
 // ─── Layer 2: Semantic ────────────────────────────────────────────────────────
 
 /**
- * Builds the flat semantic alias map from the palette-driven color category.
- * Each semantic name maps to a palette slot via "palette/<slot>" refs;
- * resolveOklch parses on the first "/" so slot names with hyphens
- * (e.g. "error-bg") resolve unambiguously.
+ * Builds the flat semantic alias map. Each value is a "<hue>/<stop>" ref into
+ * the primitive layer (see generatePrimitive). Surface/text refs follow the
+ * archetype palette's surfaceRefs/textRefs (per-archetype overrides cascade);
+ * status refs map through STATUS_HUE_NAMES (error → red, success → green,
+ * warning → amber, info → blue).
  *
- * Hover/active/strong accent variants all alias the single accent slot
- * for v1 — the corpus model is "one brand color, full stop". Future tonal
- * variants can be derived in CSS via color-mix().
+ * Hover/active/strong accent variants alias the single accent stop for v1 —
+ * the corpus model is "one brand color, full stop". Future tonal variants
+ * can be derived in CSS via color-mix().
  */
-export function generateSemantic(_colorTokens: ColorCategoryTokens): SemanticTokens {
+export function generateSemantic(colorTokens: ColorCategoryTokens): SemanticTokens {
+  const arche = ARCHETYPE_PALETTES[colorTokens.preset];
+  const surfaceRefs = arche.surfaceRefs;
+  const textRefs = arche.textRefs;
+
   return {
     // Surface
-    "bg/canvas":   "palette/canvas",
-    "bg/soft":     "palette/soft",
-    "bg/strong":   "palette/soft",     // collapsed — palette has no "strong" slot
-    "bg/card":     "palette/canvas",
-    "bg/hairline": "palette/hairline",
+    "bg/canvas":   `neutral/${surfaceRefs.canvas}`,
+    "bg/soft":     `neutral/${surfaceRefs.soft}`,
+    "bg/strong":   `neutral/${surfaceRefs.soft}`,    // collapsed — no "strong" slot
+    "bg/card":     `neutral/${surfaceRefs.canvas}`,
+    "bg/hairline": `neutral/${surfaceRefs.hairline}`,
 
     // Text
-    "text/ink":          "palette/ink",
-    "text/body":         "palette/body",
-    "text/body-strong":  "palette/ink",
-    "text/muted":        "palette/muted",
-    "text/muted-soft":   "palette/muted",
-    "text/on-primary":   "palette/canvas",  // assume light text on the brand accent
+    "text/ink":         `neutral/${textRefs.ink}`,
+    "text/body":        `neutral/${textRefs.body}`,
+    "text/body-strong": `neutral/${textRefs.ink}`,
+    "text/muted":       `neutral/${textRefs.muted}`,
+    "text/muted-soft":  `neutral/${textRefs.muted}`,
+    "text/on-primary":  `neutral/${surfaceRefs.canvas}`,  // light text on accent
 
     // Accent
-    "accent/primary": "palette/accent",
-    "accent/hover":   "palette/accent",
-    "accent/active":  "palette/accent",
-    "accent/strong":  "palette/accent",
+    "accent/primary": "accent/500",
+    "accent/hover":   "accent/500",
+    "accent/active":  "accent/500",
+    "accent/strong":  "accent/500",
 
     // Status
-    "status/error-bg":     "palette/error-bg",
-    "status/error-text":   "palette/error-text",
-    "status/success-bg":   "palette/success-bg",
-    "status/success-text": "palette/success-text",
-    "status/warning-bg":   "palette/warning-bg",
-    "status/warning-text": "palette/warning-text",
-    "status/info-bg":      "palette/info-bg",
-    "status/info-text":    "palette/info-text",
+    "status/error-bg":     `${STATUS_HUE_NAMES.error}/50`,
+    "status/error-text":   `${STATUS_HUE_NAMES.error}/500`,
+    "status/success-bg":   `${STATUS_HUE_NAMES.success}/50`,
+    "status/success-text": `${STATUS_HUE_NAMES.success}/500`,
+    "status/warning-bg":   `${STATUS_HUE_NAMES.warning}/50`,
+    "status/warning-text": `${STATUS_HUE_NAMES.warning}/500`,
+    "status/info-bg":      `${STATUS_HUE_NAMES.info}/50`,
+    "status/info-text":    `${STATUS_HUE_NAMES.info}/500`,
   };
 }
 
@@ -261,6 +270,7 @@ export function buildDesignTokens(
     typography: { families, styles },
     spacing,
     borderRadius,
+    radiusPrimitives: system.radiusTokens.scale,
     elevation,
     breakpoint,
   };

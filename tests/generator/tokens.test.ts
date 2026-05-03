@@ -101,17 +101,24 @@ describe("generateSemantic", () => {
     }
   });
 
-  it("every value uses the 'palette/<slot>' format", () => {
+  it("every value uses the '<hue>/<stop>' format with new pseudo-hues", () => {
+    const validHues = new Set(["neutral", "accent", "red", "green", "amber", "blue"]);
     for (const [role, ref] of Object.entries(semantic)) {
-      expect(ref, `${role} must start with 'palette/'`).toMatch(/^palette\//);
+      const slash = ref.indexOf("/");
+      expect(slash, `${role}: ref "${ref}" missing slash`).toBeGreaterThan(0);
+      const hue = ref.slice(0, slash);
+      expect(validHues, `${role} hue "${hue}" not in valid set`).toContain(hue);
     }
   });
 
-  it("every referenced slot exists in primitive.colors.palette", () => {
-    const palette = primitive.colors.palette;
+  it("every referenced stop exists in the matching primitive hue map", () => {
     for (const [role, ref] of Object.entries(semantic)) {
-      const slot = ref.slice("palette/".length);
-      expect(palette, `semantic["${role}"] = "${ref}" — slot "${slot}" missing`).toHaveProperty(slot);
+      const slash = ref.indexOf("/");
+      const hue = ref.slice(0, slash);
+      const stop = ref.slice(slash + 1);
+      const hueMap = primitive.colors[hue];
+      expect(hueMap, `hue "${hue}" missing from primitive.colors`).toBeTruthy();
+      expect(hueMap, `${role} → ${ref}: stop "${stop}" missing`).toHaveProperty(stop);
     }
   });
 });
