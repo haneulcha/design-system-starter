@@ -34,6 +34,16 @@ export type StatusSlot =
   | "warning-bg" | "warning-text"
   | "info-bg"    | "info-text";
 
+/** The four "ink" half of the status palette — the values designers
+ *  actually pick. The matching `-bg` slot is conceptually paired (same hue,
+ *  high L, low C) and is curated per-archetype rather than user-edited. */
+export type StatusTextSlot =
+  | "error-text" | "success-text" | "warning-text" | "info-text";
+
+export const STATUS_TEXT_SLOTS: readonly StatusTextSlot[] = [
+  "error-text", "success-text", "warning-text", "info-text",
+];
+
 export type PaletteSlot = SurfaceSlot | TextSlot | AccentSlot | StatusSlot;
 
 export const SURFACE_SLOTS: readonly SurfaceSlot[] = ["canvas", "soft", "hairline"];
@@ -65,6 +75,15 @@ export interface AccentRecommendation {
   source: string;
 }
 
+/** A complete 4-slot status -text palette, attributed to a brand or design
+ *  system. Inspector surfaces these as one-click "set the whole row"
+ *  recommendations. The matching -bg values stay archetype-curated and are
+ *  not part of the picker. */
+export interface StatusTextSet {
+  source: string;
+  text: Record<StatusTextSlot, string>;
+}
+
 export interface ArchetypePalette {
   /** 9-stop neutral base scale. */
   baseScale: Record<NeutralStop, string>;
@@ -79,6 +98,10 @@ export interface ArchetypePalette {
   recommendedAccents: readonly AccentRecommendation[];
   /** 8 status slots, per-archetype curated. */
   status: Record<StatusSlot, string>;
+  /** ~5 corpus-curated 4-slot -text recommendations. The first entry should
+   *  match the archetype's own `status[*-text]` values so the default is
+   *  selectable from the list. */
+  recommendedStatusSets: readonly StatusTextSet[];
 }
 
 // ─── Default ref mapping (shared across archetypes) ─────────────────────────
@@ -132,6 +155,13 @@ export const ARCHETYPE_PALETTES: Record<PresetName, ArchetypePalette> = {
       "warning-bg":   "#fefce8",  "warning-text": "#a16207",
       "info-bg":      "#eff6ff",  "info-text":    "#1e40af",
     },
+    recommendedStatusSets: [
+      { source: "Linear",     text: { "error-text": "#b91c1c", "success-text": "#166534", "warning-text": "#a16207", "info-text": "#1e40af" } },
+      { source: "Vercel",     text: { "error-text": "#e5484d", "success-text": "#30a46c", "warning-text": "#f5a623", "info-text": "#0070f3" } },
+      { source: "Notion",     text: { "error-text": "#e03e3e", "success-text": "#0f7b6c", "warning-text": "#cb912f", "info-text": "#337ea9" } },
+      { source: "IBM Carbon", text: { "error-text": "#da1e28", "success-text": "#24a148", "warning-text": "#f1c21b", "info-text": "#0f62fe" } },
+      { source: "Stripe",     text: { "error-text": "#df1b41", "success-text": "#15803d", "warning-text": "#b45309", "info-text": "#1d4ed8" } },
+    ],
   },
 
   // Claude-inspired — warm cream. Every neutral stop carries a cream/sand undertone.
@@ -171,6 +201,13 @@ export const ARCHETYPE_PALETTES: Record<PresetName, ArchetypePalette> = {
       "warning-bg":   "#fff5e6",  "warning-text": "#ad6209",
       "info-bg":      "#eff6ff",  "info-text":    "#3b5cb8",
     },
+    recommendedStatusSets: [
+      { source: "Claude",      text: { "error-text": "#c2410c", "success-text": "#4d7c0f", "warning-text": "#ad6209", "info-text": "#3b5cb8" } },
+      { source: "Airbnb",      text: { "error-text": "#c13515", "success-text": "#0d8f4f", "warning-text": "#b25e09", "info-text": "#1b61c9" } },
+      { source: "Intercom",    text: { "error-text": "#d4380d", "success-text": "#3b8132", "warning-text": "#c0791d", "info-text": "#1f5582" } },
+      { source: "Cursor",      text: { "error-text": "#cf2d56", "success-text": "#1f8a65", "warning-text": "#cb912f", "info-text": "#4f46e5" } },
+      { source: "Mistral",     text: { "error-text": "#fb6424", "success-text": "#4d7c0f", "warning-text": "#c0791d", "info-text": "#3b5cb8" } },
+    ],
   },
 
   // Spotify-inspired — pure achromatic, hard contrast.
@@ -207,6 +244,13 @@ export const ARCHETYPE_PALETTES: Record<PresetName, ArchetypePalette> = {
       "warning-bg":   "#fef3c7",  "warning-text": "#d97706",
       "info-bg":      "#dbeafe",  "info-text":    "#2563eb",
     },
+    recommendedStatusSets: [
+      { source: "Tailwind 600", text: { "error-text": "#dc2626", "success-text": "#16a34a", "warning-text": "#d97706", "info-text": "#2563eb" } },
+      { source: "Apple HIG",    text: { "error-text": "#ff3b30", "success-text": "#34c759", "warning-text": "#ff9500", "info-text": "#007aff" } },
+      { source: "Spotify",      text: { "error-text": "#ff5630", "success-text": "#1ed760", "warning-text": "#ffab00", "info-text": "#2563eb" } },
+      { source: "NVIDIA",       text: { "error-text": "#e52020", "success-text": "#3f8500", "warning-text": "#ef9100", "info-text": "#0046a4" } },
+      { source: "ClickHouse",   text: { "error-text": "#ef4444", "success-text": "#22c55e", "warning-text": "#f59e0b", "info-text": "#3b82f6" } },
+    ],
   },
 
   // Stripe-inspired — cool slate blue undertones throughout the scale.
@@ -243,6 +287,13 @@ export const ARCHETYPE_PALETTES: Record<PresetName, ArchetypePalette> = {
       "warning-bg":   "#fffbeb",  "warning-text": "#b45309",
       "info-bg":      "#eff6ff",  "info-text":    "#1d4ed8",
     },
+    recommendedStatusSets: [
+      { source: "Stripe",     text: { "error-text": "#b91c1c", "success-text": "#15803d", "warning-text": "#b45309", "info-text": "#1d4ed8" } },
+      { source: "IBM Carbon", text: { "error-text": "#da1e28", "success-text": "#24a148", "warning-text": "#f1c21b", "info-text": "#0f62fe" } },
+      { source: "BMW",        text: { "error-text": "#dc2626", "success-text": "#22c55e", "warning-text": "#f59e0b", "info-text": "#1c69d4" } },
+      { source: "Tesla",      text: { "error-text": "#cf202f", "success-text": "#05b169", "warning-text": "#f5a623", "info-text": "#3e6ae1" } },
+      { source: "Cohere",     text: { "error-text": "#b30000", "success-text": "#0e7c5a", "warning-text": "#a35a00", "info-text": "#1863dc" } },
+    ],
   },
 
   // Figma-inspired — clean achromatic, expressive accent.
@@ -279,6 +330,13 @@ export const ARCHETYPE_PALETTES: Record<PresetName, ArchetypePalette> = {
       "warning-bg":   "#fef3c7",  "warning-text": "#d97706",
       "info-bg":      "#e0e7ff",  "info-text":    "#4f46e5",
     },
+    recommendedStatusSets: [
+      { source: "Figma",   text: { "error-text": "#e11d48", "success-text": "#059669", "warning-text": "#d97706", "info-text": "#4f46e5" } },
+      { source: "Notion",  text: { "error-text": "#e03e3e", "success-text": "#0f7b6c", "warning-text": "#cb912f", "info-text": "#337ea9" } },
+      { source: "Sentry",  text: { "error-text": "#fa7faa", "success-text": "#c2ef4e", "warning-text": "#ffb287", "info-text": "#6a5fc1" } },
+      { source: "MiniMax", text: { "error-text": "#ef4444", "success-text": "#16a34a", "warning-text": "#f59e0b", "info-text": "#1456f0" } },
+      { source: "Clay",    text: { "error-text": "#ff6b5a", "success-text": "#22c55e", "warning-text": "#e8b94a", "info-text": "#b8a4ed" } },
+    ],
   },
 };
 

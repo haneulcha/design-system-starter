@@ -3,14 +3,15 @@ import type {
   AccentRecommendation,
   NeutralStop,
   PaletteOverrides,
-  StatusSlot,
+  StatusTextSet,
+  StatusTextSlot,
   SurfaceSlot,
   TextSlot,
 } from "@core/schema/archetype-palettes.js";
 import {
   ARCHETYPE_PALETTES,
   NEUTRAL_STOPS,
-  STATUS_SLOTS,
+  STATUS_TEXT_SLOTS,
   SURFACE_SLOTS,
   TEXT_SLOTS,
   resolveBaseScale,
@@ -73,7 +74,11 @@ function buildAdapters(state: WizardState): {
     overridden: boolean;
     recommendations: readonly AccentRecommendation[];
   };
-  statusRows: { slot: StatusSlot; hex: string; overridden: boolean }[];
+  status: {
+    text: Record<StatusTextSlot, string>;
+    overridden: boolean;
+    recommendations: readonly StatusTextSet[];
+  };
   isOverridden: boolean;
   overrideCount: number;
 } {
@@ -107,11 +112,12 @@ function buildAdapters(state: WizardState): {
   const accentOverridden = accentEffective !== archetype.accent;
   const recs = archetype.recommendedAccents;
 
-  const statusRows = STATUS_SLOTS.map((slot) => ({
-    slot,
-    hex: effectivePalette[slot],
-    overridden: archetype.status[slot] !== effectivePalette[slot],
-  }));
+  const statusText = Object.fromEntries(
+    STATUS_TEXT_SLOTS.map((slot) => [slot, effectivePalette[slot]]),
+  ) as Record<StatusTextSlot, string>;
+  const statusTextOverridden = STATUS_TEXT_SLOTS.some(
+    (slot) => archetype.status[slot] !== statusText[slot],
+  );
 
   const overrideCount =
     Object.keys(overrides?.baseScale ?? {}).length +
@@ -127,7 +133,11 @@ function buildAdapters(state: WizardState): {
       overridden: accentOverridden,
       recommendations: recs,
     },
-    statusRows,
+    status: {
+      text: statusText,
+      overridden: statusTextOverridden,
+      recommendations: archetype.recommendedStatusSets,
+    },
     isOverridden: overrideCount > 0,
     overrideCount,
   };
@@ -190,6 +200,81 @@ function AccentSection({
   );
 }
 
+function StatusSection({
+  text,
+  overridden,
+  recommendations,
+  onApplySet,
+}: {
+  text: Record<StatusTextSlot, string>;
+  overridden: boolean;
+  recommendations: readonly StatusTextSet[];
+  onApplySet: (set: StatusTextSet) => void;
+}) {
+  const matchesSet = (set: StatusTextSet) =>
+    STATUS_TEXT_SLOTS.every(
+      (slot) => set.text[slot].toLowerCase() === text[slot].toLowerCase(),
+    );
+
+  return (
+    <Section label="Status" overridden={overridden}>
+      <p className="text-2xs text-neutral-500 leading-snug -mt-0.5 mb-2">
+        배경(<span className="font-mono">-bg</span>)은 같은 hue를 lightness↑ ·
+        chroma↓로 자동 도출됩니다.
+      </p>
+
+      <div className="flex items-center gap-1.5 mb-3">
+        {STATUS_TEXT_SLOTS.map((slot) => (
+          <div
+            key={slot}
+            className="w-8 h-8 rounded shrink-0 ring ring-neutral-500 ring-offset-1"
+            title={`${slot} · ${text[slot]}`}
+            style={{ background: text[slot] }}
+          />
+        ))}
+      </div>
+
+      <div className="space-y-1">
+        {recommendations.map((set) => {
+          const active = matchesSet(set);
+          return (
+            <button
+              key={set.source}
+              type="button"
+              onClick={() => onApplySet(set)}
+              title={set.source}
+              className={[
+                "w-full flex items-center gap-2 px-1.5 py-1 rounded text-left transition-colors",
+                active
+                  ? "bg-neutral-100"
+                  : "hover:bg-neutral-50",
+              ].join(" ")}
+            >
+              <span
+                className={[
+                  "text-2xs w-20 shrink-0 truncate",
+                  active ? "text-neutral-900 font-medium" : "text-neutral-600",
+                ].join(" ")}
+              >
+                {set.source}
+              </span>
+              <span className="flex items-center gap-1">
+                {STATUS_TEXT_SLOTS.map((slot) => (
+                  <span
+                    key={slot}
+                    className="w-5 h-5 rounded border border-neutral-200 shrink-0"
+                    style={{ background: set.text[slot] }}
+                  />
+                ))}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </Section>
+  );
+}
+
 // ─── Panel ─────────────────────────────────────────────────────────────────
 
 export function ColorPanel({
@@ -224,11 +309,12 @@ export function ColorPanel({
     onChange({ paletteOverrides: Object.keys(next).length ? next : undefined });
   }
 
-  function setStatus(slot: StatusSlot, hex: string) {
-    const baselineHex = archetype.status[slot];
+  function applyStatusSet(set: StatusTextSet) {
     const nextStatus = { ...(overrides?.status ?? {}) };
-    if (hex === baselineHex) delete nextStatus[slot];
-    else nextStatus[slot] = hex;
+    for (const slot of STATUS_TEXT_SLOTS) {
+      if (set.text[slot] === archetype.status[slot]) delete nextStatus[slot];
+      else nextStatus[slot] = set.text[slot];
+    }
     const next: PaletteOverrides = {
       ...(overrides ?? {}),
       status: Object.keys(nextStatus).length ? nextStatus : undefined,
@@ -284,18 +370,12 @@ export function ColorPanel({
         onChange={setAccent}
       />
 
-      <Section label="Status">
-        {adapters.statusRows.map((row) => (
-          <ColorRow
-            key={row.slot}
-            hex={row.hex}
-            title={row.slot}
-            subtitle={row.hex}
-            overridden={row.overridden}
-            onPick={(hex) => setStatus(row.slot, hex)}
-          />
-        ))}
-      </Section>
+      <StatusSection
+        text={adapters.status.text}
+        overridden={adapters.status.overridden}
+        recommendations={adapters.status.recommendations}
+        onApplySet={applyStatusSet}
+      />
 
       {adapters.isOverridden && (
         <div className="pt-1">

@@ -6,6 +6,7 @@ import {
   TEXT_SLOTS,
   ACCENT_SLOTS,
   STATUS_SLOTS,
+  STATUS_TEXT_SLOTS,
   NEUTRAL_STOPS,
   resolvePalette,
   resolveBaseScale,
@@ -57,6 +58,26 @@ describe("archetype palettes", () => {
       for (const rec of p.recommendedAccents) {
         expect(rec.hex).toMatch(/^#[0-9a-fA-F]{6}$/);
         expect(rec.source.length, `${preset} accent ${rec.hex} source`).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("every archetype ships 1–10 recommended status -text sets, first matching the default status", () => {
+    for (const preset of PRESET_NAMES) {
+      const p = ARCHETYPE_PALETTES[preset];
+      expect(p.recommendedStatusSets.length, `${preset}.recommendedStatusSets length`).toBeGreaterThanOrEqual(1);
+      expect(p.recommendedStatusSets.length, `${preset}.recommendedStatusSets length`).toBeLessThanOrEqual(10);
+      // First entry must mirror the archetype's own status -text values so
+      // the default is selectable from the row.
+      const first = p.recommendedStatusSets[0];
+      for (const slot of STATUS_TEXT_SLOTS) {
+        expect(first.text[slot], `${preset}.recommendedStatusSets[0].${slot}`).toBe(p.status[slot]);
+      }
+      for (const set of p.recommendedStatusSets) {
+        expect(set.source.length, `${preset} status set source`).toBeGreaterThan(0);
+        for (const slot of STATUS_TEXT_SLOTS) {
+          expect(set.text[slot], `${preset} ${set.source}.${slot}`).toMatch(/^#[0-9a-fA-F]{6}$/);
+        }
       }
     }
   });
