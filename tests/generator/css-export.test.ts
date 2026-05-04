@@ -104,6 +104,64 @@ describe("css-export — shadow", () => {
   });
 });
 
+describe("css-export — typography primitives", () => {
+  it("emits all 13 size scale stops", () => {
+    for (const px of [10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 64]) {
+      expect(cssVariables).toContain(`--type-size-${px}: ${px}px;`);
+    }
+  });
+
+  it("emits all 4 weight scale stops", () => {
+    for (const w of [400, 500, 600, 700]) {
+      expect(cssVariables).toContain(`--type-weight-${w}: ${w};`);
+    }
+  });
+
+  it("emits all 6 line-height scale stops keyed ×100", () => {
+    expect(cssVariables).toContain("--type-line-height-100: 1;");
+    expect(cssVariables).toContain("--type-line-height-110: 1.1;");
+    expect(cssVariables).toContain("--type-line-height-150: 1.5;");
+  });
+
+  it("emits 3 letter-spacing primitives with semantic names", () => {
+    expect(cssVariables).toContain("--type-letter-spacing-tight: -0.02em;");
+    expect(cssVariables).toContain("--type-letter-spacing-normal: 0;");
+    expect(cssVariables).toContain("--type-letter-spacing-wide: 0.05em;");
+  });
+});
+
+describe("css-export — typography semantic refs base", () => {
+  it("--type-{key}-size refs --type-size-N", () => {
+    // heading.xl (size 64), body.md (size 16)
+    expect(cssVariables).toContain("--type-heading-xl-size: var(--type-size-64);");
+    expect(cssVariables).toContain("--type-body-md-size: var(--type-size-16);");
+    expect(cssVariables).toContain("--type-button-md-size: var(--type-size-16);");
+  });
+
+  it("--type-{key}-weight refs --type-weight-N", () => {
+    expect(cssVariables).toContain("--type-heading-xl-weight: var(--type-weight-500);");
+    expect(cssVariables).toContain("--type-body-md-weight: var(--type-weight-400);");
+    expect(cssVariables).toContain("--type-card-weight: var(--type-weight-600);");
+  });
+
+  it("--type-{key}-line-height refs --type-line-height-N", () => {
+    expect(cssVariables).toContain("--type-body-md-line-height: var(--type-line-height-150);");
+    expect(cssVariables).toContain("--type-card-line-height: var(--type-line-height-130);");
+  });
+
+  it("--type-{key}-letter-spacing refs --type-letter-spacing-{name}", () => {
+    expect(cssVariables).toContain("--type-heading-xl-letter-spacing: var(--type-letter-spacing-tight);");
+    expect(cssVariables).toContain("--type-body-md-letter-spacing: var(--type-letter-spacing-normal);");
+    expect(cssVariables).toContain("--type-badge-letter-spacing: var(--type-letter-spacing-wide);");
+  });
+
+  it("does not emit raw px/em values for typography semantics in scale", () => {
+    // Sample: button.md should not have `--type-button-md-size: 16px;` literal.
+    expect(cssVariables).not.toMatch(/--type-button-md-size:\s*16px;/);
+    expect(cssVariables).not.toMatch(/--type-card-weight:\s*600;/);
+  });
+});
+
 describe("css-export — dark mode", () => {
   const darkMatch = cssVariables.match(
     /@media \(prefers-color-scheme: dark\) \{\s*:root \{([\s\S]*?)\}\s*\}/,

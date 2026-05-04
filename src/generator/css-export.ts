@@ -6,6 +6,11 @@
 
 import type { DesignTokens, Oklch } from "../schema/types.js";
 import { formatOklch } from "./color.js";
+import {
+  SIZE_SCALE,
+  WEIGHT_SCALE,
+  LINE_HEIGHT_SCALE,
+} from "../schema/typography.js";
 
 function fmtOklch(o: Oklch): string {
   return formatOklch(o);
@@ -138,18 +143,73 @@ export function generateCssVariables(tokens: DesignTokens): string {
     lines.push(`  ${varName("font", slot)}: ${chain};`);
   }
 
-  // ── Typography — styles ───────────────────────────────────────────────────
+  // ── Typography Primitives (base layer) ───────────────────────────────────
+  // Raw scale values from src/schema/typography.ts. Semantic --type-* styles
+  // reference these via var() so the underlying scale is editable in one
+  // place and consumers can use raw scale stops directly if they want.
+
+  /** letter-spacing values keyed by semantic name (no decimals/minus in id). */
+  const LETTER_SPACING_NAME: Record<string, string> = {
+    "-0.02em": "tight",
+    "0":       "normal",
+    "0.05em":  "wide",
+  };
+  /** Numeric letter-spacing → name map (DesignTokens stores as number, em). */
+  const LETTER_SPACING_NUMBER_TO_NAME: Record<number, string> = {
+    [-0.02]: "tight",
+    [0]:     "normal",
+    [0.05]:  "wide",
+  };
+
+  lines.push("");
+  lines.push("  /* Typography Primitives — Size */");
+  for (const px of SIZE_SCALE) {
+    lines.push(`  --type-size-${px}: ${px}px;`);
+  }
+  lines.push("");
+  lines.push("  /* Typography Primitives — Weight */");
+  for (const w of WEIGHT_SCALE) {
+    lines.push(`  --type-weight-${w}: ${w};`);
+  }
+  lines.push("");
+  lines.push("  /* Typography Primitives — Line Height */");
+  for (const lh of LINE_HEIGHT_SCALE) {
+    // 1.0 → 100, 1.5 → 150 — keeps the var name unambiguous and decimal-free.
+    const id = Math.round(lh * 100);
+    lines.push(`  --type-line-height-${id}: ${lh};`);
+  }
+  lines.push("");
+  lines.push("  /* Typography Primitives — Letter Spacing */");
+  for (const ls of Object.keys(LETTER_SPACING_NAME)) {
+    const name = LETTER_SPACING_NAME[ls];
+    lines.push(`  --type-letter-spacing-${name}: ${ls};`);
+  }
+
+  // ── Typography Styles (semantic layer) ───────────────────────────────────
   lines.push("");
   lines.push("  /* Typography — styles */");
+  const SIZE_SET = new Set<number>(SIZE_SCALE);
+  const WEIGHT_SET = new Set<number>(WEIGHT_SCALE);
+  const LH_SET = new Set<number>(LINE_HEIGHT_SCALE);
   for (const [key, style] of Object.entries(tokens.typography.styles)) {
-    lines.push(`  ${varName("type", key)}-size: ${style.fontSize}px;`);
-    lines.push(`  ${varName("type", key)}-weight: ${style.fontWeight};`);
-    lines.push(`  ${varName("type", key)}-line-height: ${style.lineHeight};`);
-    lines.push(
-      `  ${varName("type", key)}-letter-spacing: ${
-        style.letterSpacing === 0 ? "0" : `${style.letterSpacing}em`
-      };`,
-    );
+    const sizeRef = SIZE_SET.has(style.fontSize)
+      ? `var(--type-size-${style.fontSize})`
+      : `${style.fontSize}px`;
+    const weightRef = WEIGHT_SET.has(style.fontWeight)
+      ? `var(--type-weight-${style.fontWeight})`
+      : `${style.fontWeight}`;
+    const lhId = Math.round(style.lineHeight * 100);
+    const lhRef = LH_SET.has(style.lineHeight)
+      ? `var(--type-line-height-${lhId})`
+      : `${style.lineHeight}`;
+    const lsName = LETTER_SPACING_NUMBER_TO_NAME[style.letterSpacing];
+    const lsRef = lsName
+      ? `var(--type-letter-spacing-${lsName})`
+      : style.letterSpacing === 0 ? "0" : `${style.letterSpacing}em`;
+    lines.push(`  ${varName("type", key)}-size: ${sizeRef};`);
+    lines.push(`  ${varName("type", key)}-weight: ${weightRef};`);
+    lines.push(`  ${varName("type", key)}-line-height: ${lhRef};`);
+    lines.push(`  ${varName("type", key)}-letter-spacing: ${lsRef};`);
   }
 
   // ── Shadow Primitives (base layer) ───────────────────────────────────────
