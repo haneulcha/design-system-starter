@@ -29,18 +29,17 @@ import {
   generateComponent,
   buildDesignTokens,
 } from "./tokens.js";
-import {
-  writePrimitiveTs,
-  writeSemanticTs,
-  writeComponentTs,
-  writeIndexTs,
-} from "./token-writer.js";
+import { generateCssVariables } from "./css-export.js";
+import { generateTailwindConfig } from "./tailwind-export.js";
 
 export interface GenerateResult {
   system: DesignSystem;
   designMd: string;
   tokens: DesignTokens;
-  tokenFiles: Record<string, string>;
+  /** CSS file with `:root` custom properties for every token (light + dark). */
+  cssVariables: string;
+  /** Tailwind v3 preset that references the CSS variable names. */
+  tailwindConfig: string;
 }
 
 function replacePlaceholders(
@@ -193,12 +192,8 @@ export function generate(
   const component = generateComponent(semantic);
   const tokens = buildDesignTokens(system, primitive, semantic, component);
 
-  const tokenFiles: Record<string, string> = {
-    "primitive.ts": writePrimitiveTs(primitive),
-    "semantic.ts": writeSemanticTs(semantic),
-    "component.ts": writeComponentTs(component),
-    "index.ts": writeIndexTs(),
-  };
+  const cssVariables = generateCssVariables(tokens);
+  const tailwindConfig = generateTailwindConfig(tokens);
 
-  return { system, designMd, tokens, tokenFiles };
+  return { system, designMd, tokens, cssVariables, tailwindConfig };
 }

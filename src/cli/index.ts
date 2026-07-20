@@ -65,34 +65,25 @@ async function main() {
   mkdirSync(outDir, { recursive: true });
 
   writeFileSync(join(outDir, "DESIGN.md"), result.designMd, "utf-8");
-  writeFileSync(
-    join(outDir, "design-tokens.json"),
-    JSON.stringify(result.tokens, null, 2),
-    "utf-8"
-  );
+  writeFileSync(join(outDir, "design-tokens.css"), result.cssVariables, "utf-8");
+  writeFileSync(join(outDir, "tailwind.config.js"), result.tailwindConfig, "utf-8");
   writeFileSync(
     join(outDir, "figma-system.json"),
     JSON.stringify(figmaData, null, 2),
     "utf-8"
   );
 
-  // Write token TS files
-  const tokensDir = join(outDir, "tokens");
-  mkdirSync(tokensDir, { recursive: true });
-  for (const [filename, content] of Object.entries(result.tokenFiles)) {
-    writeFileSync(join(tokensDir, filename), content, "utf-8");
-  }
-
   console.log("  Generated:");
-  console.log("    output/DESIGN.md            Design system definition");
-  console.log("    output/design-tokens.json   Universal design tokens");
-  console.log("    output/figma-system.json    Figma MCP-ready structure");
-  console.log("    output/tokens/              3-layer design tokens (TS)");
+  console.log("    output/DESIGN.md            Design system definition (AI-ready spec)");
+  console.log("    output/design-tokens.css    CSS variables (light + dark)");
+  console.log("    output/tailwind.config.js   Tailwind preset (references the CSS vars)");
+  console.log("    output/figma-system.json    Figma MCP-ready variable + style payload");
   console.log("");
   console.log("  Next steps:");
   console.log("    1. Review and customize output/DESIGN.md");
-  console.log("    2. Use figma-system.json with Figma MCP to create Figma variables");
-  console.log("    3. Copy DESIGN.md into your project for AI-assisted development");
+  console.log("    2. Import design-tokens.css into your global stylesheet");
+  console.log("    3. Apply tailwind.config.js as a preset (Tailwind users)");
+  console.log("    4. Use figma-system.json with Figma MCP to create variables/styles");
   console.log("");
 }
 

@@ -1,7 +1,7 @@
 import type { FullResult } from "../hooks/useGenerator";
 
-function downloadFile(filename: string, content: string) {
-  const blob = new Blob([content], { type: "text/plain" });
+function downloadFile(filename: string, content: string, mime = "text/plain") {
+  const blob = new Blob([content], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -10,23 +10,10 @@ function downloadFile(filename: string, content: string) {
   URL.revokeObjectURL(url);
 }
 
-async function downloadZip(files: Record<string, string>) {
-  const JSZip = (await import("jszip")).default;
-  const zip = new JSZip();
-  for (const [name, content] of Object.entries(files)) {
-    zip.file(name, content);
-  }
-  const blob = await zip.generateAsync({ type: "blob" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "tokens.zip";
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
 const buttonClass =
   "w-full flex items-center gap-2.5 px-4 py-2.5 rounded-lg border border-neutral-200 bg-white text-sm font-medium text-neutral-700 hover:bg-neutral-50 hover:border-neutral-300 transition-colors text-left";
+
+const iconClass = "shrink-0 text-neutral-400";
 
 export function DownloadPanel({ result }: { result: FullResult }) {
   return (
@@ -37,10 +24,24 @@ export function DownloadPanel({ result }: { result: FullResult }) {
 
       <button
         className={buttonClass}
-        onClick={() => downloadFile("DESIGN.md", result.designMd)}
+        onClick={() =>
+          downloadFile("DESIGN.md", result.designMd, "text/markdown")
+        }
       >
-        <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" className="shrink-0 text-neutral-400">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+        <svg
+          width="14"
+          height="14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          viewBox="0 0 24 24"
+          className={iconClass}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+          />
         </svg>
         DESIGN.md
       </button>
@@ -48,33 +49,80 @@ export function DownloadPanel({ result }: { result: FullResult }) {
       <button
         className={buttonClass}
         onClick={() =>
-          downloadFile("design-tokens.json", JSON.stringify(result.tokens, null, 2))
+          downloadFile("design-tokens.css", result.cssVariables, "text/css")
         }
       >
-        <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" className="shrink-0 text-neutral-400">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
+        <svg
+          width="14"
+          height="14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          viewBox="0 0 24 24"
+          className={iconClass}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"
+          />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6Z" />
         </svg>
-        design-tokens.json
-      </button>
-
-      <button
-        className={buttonClass}
-        onClick={() => downloadZip(result.tokenFiles)}
-      >
-        <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" className="shrink-0 text-neutral-400">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
-        </svg>
-        tokens.zip
+        design-tokens.css
       </button>
 
       <button
         className={buttonClass}
         onClick={() =>
-          downloadFile("figma-system.json", JSON.stringify(result.figma, null, 2))
+          downloadFile(
+            "tailwind.config.js",
+            result.tailwindConfig,
+            "application/javascript",
+          )
         }
       >
-        <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" className="shrink-0 text-neutral-400">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42" />
+        <svg
+          width="14"
+          height="14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          viewBox="0 0 24 24"
+          className={iconClass}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="m6.75 7.5 3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0 0 21 18V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v12a2.25 2.25 0 0 0 2.25 2.25Z"
+          />
+        </svg>
+        tailwind.config.js
+      </button>
+
+      <button
+        className={buttonClass}
+        onClick={() =>
+          downloadFile(
+            "figma-system.json",
+            JSON.stringify(result.figma, null, 2),
+            "application/json",
+          )
+        }
+      >
+        <svg
+          width="14"
+          height="14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          viewBox="0 0 24 24"
+          className={iconClass}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42"
+          />
         </svg>
         figma-system.json
       </button>

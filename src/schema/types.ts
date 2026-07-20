@@ -174,6 +174,8 @@ export interface DesignTokens {
   };
   spacing: Record<string, number>;
   borderRadius: Record<string, number>;
+  /** Raw radius scale stops in px (primitive tier). Emitted as Figma Radius Primitives collection. */
+  radiusPrimitives: readonly number[];
   elevation: Record<string, string>;
   breakpoint: Record<string, number>;
 }
