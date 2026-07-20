@@ -13,8 +13,24 @@ interface InspectorProps {
   onChange: (partial: Partial<WizardState>) => void;
 }
 
+const SCROLL_TARGET: Record<InspectorCategory, string> = {
+  color: "section-color",
+  typography: "section-typography",
+  spacing: "section-component",
+  radius: "section-component",
+  elevation: "section-component",
+  component: "section-component",
+};
+
 export function Inspector({ state, onChange }: InspectorProps) {
   const [active, setActive] = useState<InspectorCategory>("radius");
+
+  function selectCategory(cat: InspectorCategory) {
+    setActive(cat);
+    const id = SCROLL_TARGET[cat];
+    const el = document.getElementById(id);
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   return (
     <aside className="w-full lg:w-80 shrink-0 border-t lg:border-t-0 lg:border-l border-neutral-200 lg:h-screen lg:sticky lg:top-0 lg:overflow-y-auto">
@@ -22,7 +38,7 @@ export function Inspector({ state, onChange }: InspectorProps) {
         <div className="text-xs font-medium text-neutral-500 uppercase tracking-wider">
           Inspector
         </div>
-        <CategoryTabs active={active} onChange={setActive} />
+        <CategoryTabs active={active} onChange={selectCategory} />
         <div className="pt-2">
           {active === "color" && (
             <ColorPanel state={state} onChange={onChange} />

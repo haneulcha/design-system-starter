@@ -164,7 +164,7 @@ export function ResultPage({
           </div>
 
           {/* Palette */}
-          <section>
+          <section id="section-color" style={{ scrollMarginTop: 24 }}>
             <h2 className="text-lg font-semibold text-neutral-900 mb-4">Color Palette</h2>
             <ColorPalette
               palette={system.colorTokens.palette}
@@ -174,7 +174,7 @@ export function ResultPage({
           </section>
 
           {/* Components */}
-          <section style={{ fontFamily }}>
+          <section id="section-component" style={{ fontFamily, scrollMarginTop: 24 }}>
             <h2 className="text-lg font-semibold text-neutral-900 mb-6">Components</h2>
 
             {/* Buttons */}
@@ -265,7 +265,7 @@ export function ResultPage({
           </section>
 
           {/* Typography */}
-          <section>
+          <section id="section-typography" style={{ scrollMarginTop: 24 }}>
             <h2 className="text-lg font-semibold text-neutral-900 mb-4">Typography</h2>
             <TypeScale system={system} />
           </section>
