@@ -8,11 +8,14 @@ const DISPLAY_KEYS = [
   "heading.md",
   "heading.sm",
   "heading.xs",
+  "heading.xxs",
   "body.lg",
   "body.md",
   "body.sm",
   "caption.md",
   "caption.sm",
+  "caption.xs",
+  "caption.xxs",
 ] as const;
 
 type Lang = "en" | "ko";

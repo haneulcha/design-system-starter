@@ -68,8 +68,8 @@ describe("CATEGORY_PROFILES scale consistency — proposal §2", () => {
 // ─── Profile cardinality — proposal §3 ──────────────────────────────────────
 
 describe("CATEGORY_PROFILES cardinality — proposal §3", () => {
-  it("has exactly 20 entries", () => {
-    expect(Object.keys(CATEGORY_PROFILES)).toHaveLength(20);
+  it("has exactly 22 entries", () => {
+    expect(Object.keys(CATEGORY_PROFILES)).toHaveLength(22);
   });
 
   it("contains exactly the expected set of keys", () => {
@@ -83,6 +83,7 @@ describe("CATEGORY_PROFILES cardinality — proposal §3", () => {
       "caption.md",
       "caption.sm",
       "caption.xs",
+      "caption.xxs",
       "card",
       "code.md",
       "code.sm",
@@ -92,6 +93,7 @@ describe("CATEGORY_PROFILES cardinality — proposal §3", () => {
       "heading.sm",
       "heading.xl",
       "heading.xs",
+      "heading.xxs",
       "link",
       "nav",
     ];
@@ -108,34 +110,39 @@ describe("Embedded patterns — proposal §4", () => {
     expect(CATEGORY_PROFILES["heading.lg"].weight).toBe(500);
   });
 
-  it("heading.md, heading.sm, heading.xs use weight 600 (inverse curve)", () => {
+  it("heading.md, heading.sm, heading.xs, heading.xxs use weight 600 (inverse curve)", () => {
     expect(CATEGORY_PROFILES["heading.md"].weight).toBe(600);
     expect(CATEGORY_PROFILES["heading.sm"].weight).toBe(600);
     expect(CATEGORY_PROFILES["heading.xs"].weight).toBe(600);
+    expect(CATEGORY_PROFILES["heading.xxs"].weight).toBe(600);
   });
 
-  it("heading sizes decrease monotonically: xl > lg > md > sm > xs", () => {
+  it("heading sizes decrease monotonically: xl > lg > md > sm > xs > xxs", () => {
     const xl = CATEGORY_PROFILES["heading.xl"].size;
     const lg = CATEGORY_PROFILES["heading.lg"].size;
     const md = CATEGORY_PROFILES["heading.md"].size;
     const sm = CATEGORY_PROFILES["heading.sm"].size;
     const xs = CATEGORY_PROFILES["heading.xs"].size;
+    const xxs = CATEGORY_PROFILES["heading.xxs"].size;
     expect(xl).toBeGreaterThan(lg);
     expect(lg).toBeGreaterThan(md);
     expect(md).toBeGreaterThan(sm);
     expect(sm).toBeGreaterThan(xs);
+    expect(xs).toBeGreaterThan(xxs);
   });
 
-  it("heading lineHeights increase monotonically: xl <= lg < md < sm < xs", () => {
+  it("heading lineHeights increase monotonically: xl <= lg < md < sm < xs <= xxs", () => {
     const xl = CATEGORY_PROFILES["heading.xl"].lineHeight;
     const lg = CATEGORY_PROFILES["heading.lg"].lineHeight;
     const md = CATEGORY_PROFILES["heading.md"].lineHeight;
     const sm = CATEGORY_PROFILES["heading.sm"].lineHeight;
     const xs = CATEGORY_PROFILES["heading.xs"].lineHeight;
+    const xxs = CATEGORY_PROFILES["heading.xxs"].lineHeight;
     expect(xl).toBeLessThanOrEqual(lg);
     expect(lg).toBeLessThan(md);
     expect(md).toBeLessThan(sm);
     expect(sm).toBeLessThan(xs);
+    expect(xs).toBeLessThanOrEqual(xxs);
   });
 
   it("all body.* profiles have lineHeight 1.5", () => {

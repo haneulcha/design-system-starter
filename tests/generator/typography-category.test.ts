@@ -22,8 +22,8 @@ import {
 describe("generateTypographyCategory @ all defaults — proposal §7", () => {
   const tokens = generateTypographyCategory();
 
-  it("returns exactly 20 profiles", () => {
-    expect(Object.keys(tokens.profiles)).toHaveLength(20);
+  it("returns exactly 22 profiles", () => {
+    expect(Object.keys(tokens.profiles)).toHaveLength(22);
   });
 
   it("all profiles have the 5 required fields populated (no nulls)", () => {
@@ -79,7 +79,7 @@ describe("profile invariants (post-generation values match schema defaults)", ()
 
 describe("headingStyle='flat' — all heading.* get weight 400", () => {
   const tokens = generateTypographyCategory({ headingStyle: "flat" });
-  const headingKeys = ["heading.xs", "heading.sm", "heading.md", "heading.lg", "heading.xl"];
+  const headingKeys = ["heading.xxs", "heading.xs", "heading.sm", "heading.md", "heading.lg", "heading.xl"];
   const nonHeadingKeys = ["body.md", "code.md", "badge", "card", "nav"];
 
   it.each(headingKeys)("%s.weight === 400", (key) => {
@@ -93,7 +93,7 @@ describe("headingStyle='flat' — all heading.* get weight 400", () => {
 
 describe("headingStyle='bold' — all heading.* get weight 700", () => {
   const tokens = generateTypographyCategory({ headingStyle: "bold" });
-  const headingKeys = ["heading.xs", "heading.sm", "heading.md", "heading.lg", "heading.xl"];
+  const headingKeys = ["heading.xxs", "heading.xs", "heading.sm", "heading.md", "heading.lg", "heading.xl"];
   const nonHeadingKeys = ["body.md", "code.md", "badge", "card", "nav"];
 
   it.each(headingKeys)("%s.weight === 700", (key) => {
@@ -107,7 +107,7 @@ describe("headingStyle='bold' — all heading.* get weight 700", () => {
 
 describe("headingStyle='default' — matches schema CATEGORY_PROFILES weights", () => {
   const tokens = generateTypographyCategory({ headingStyle: "default" });
-  const headingKeys = ["heading.xs", "heading.sm", "heading.md", "heading.lg", "heading.xl"];
+  const headingKeys = ["heading.xxs", "heading.xs", "heading.sm", "heading.md", "heading.lg", "heading.xl"];
 
   it.each(headingKeys)("%s.weight matches schema", (key) => {
     expect(tokens.profiles[key].weight).toBe(CATEGORY_PROFILES[key].weight);
@@ -298,8 +298,8 @@ describe("applyHeadingStyle", () => {
 // ─── countEmittedTokens ──────────────────────────────────────────────────────
 
 describe("countEmittedTokens — proposal §7", () => {
-  it("returns 49 for default output (20 profiles + 29 Tier 1 tokens)", () => {
+  it("returns 51 for default output (22 profiles + 29 Tier 1 tokens)", () => {
     const tokens = generateTypographyCategory();
-    expect(countEmittedTokens(tokens)).toBe(49);
+    expect(countEmittedTokens(tokens)).toBe(51);
   });
 });

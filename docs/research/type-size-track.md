@@ -70,6 +70,21 @@ _Source: `docs/research/type-styles-normalized.md` — 799 rows tagged with `(ca
 - **`link.sm` dropped, link single**: keeps the `<a>` token surface area minimal. Designers needing emphasized links can use `link` at any size context (size is inherited from parent).
 - **`heading.md` mode dispersion** (24/48/36 nearly equal): this category is the most "branded" — different systems use it for very different purposes (section headings vs feature headings). 32 picked as the middle-of-spread compromise.
 
+## Post-v1 Refinement (2026-05-03)
+
+Three changes after dogfooding the inspector preview revealed that each category's size range was too narrow and `heading.xs`(16) collided with `body.md`(16):
+
+| change | from | to | corpus rationale |
+| --- | --- | --- | --- |
+| `heading.xs` | 16 | **18** | Title-cluster at 18 (title-md ×10, sub-heading ×5, body emphasis edge cases). Previously masked by heading.sm bimodal absorbing 18 into 24. |
+| `heading.xxs` (new) | — | **16** | Preserves the strong heading.xs n=18 mode 16×11 signal as a secondary tier. |
+| `body.lg` | 18 | **20** | Resolves the heading.xs/body.lg overlap at 18. 20 is body.lg's bimodal secondary mode (Body Large×9 + body emphasis variants). Trades primary mode for category separation. |
+| `caption.xxs` (new) | — | **10** | caption.xs corpus mode is 10×11 (proposal picked median 11); 10 was the next-most signal. Now both 10 and 11 are exposed. |
+
+Result: heading 6-stop (xxs/xs/sm/md/lg/xl), body 3-stop sizes redistributed (14/16/20), caption 4-stop (xxs/xs/sm/md). All values still within the existing 13-stop SIZE_SCALE — no scale change.
+
+`body-12` was also considered and rejected: corpus 12px is 100% caption/label/badge/code territory; no body-tagged rows.
+
 ## Carry-forward to Sessions D–H
 
 - Session D (weight): per-bucket weight modes, intersect with `[400, 500, 600, 700]`.

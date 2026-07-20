@@ -2,11 +2,12 @@
 //
 // Typography category generator (starter v1).
 // Consumes schema constants from src/schema/typography.ts and emits
-// per-token output for all 20 category profiles.
+// per-token output for all 22 category profiles.
 //
-// At all defaults the output contains 49 tokens (proposal §7):
+// At all defaults the output contains 51 tokens:
 //   13 (size) + 4 (weight) + 6 (lineHeight) + 3 (letterSpacing)
-//   + 3 (font chains) + 20 (profiles).
+//   + 3 (font chains) + 22 (profiles).
+// (20 profiles from proposal §7 + 2 post-v1 refinements: heading.xxs, caption.xxs)
 
 import {
   CATEGORY_PROFILES,
@@ -125,8 +126,9 @@ export function generateTypographyCategory(
 // ─── Token counter ────────────────────────────────────────────────────────────
 
 /**
- * Returns the total token count across all tiers per proposal §7:
- * 13 (size) + 4 (weight) + 6 (lineHeight) + 3 (letterSpacing) + 3 (font chains) + 20 (profiles) = 49
+ * Returns the total token count across all tiers:
+ * 13 (size) + 4 (weight) + 6 (lineHeight) + 3 (letterSpacing) + 3 (font chains) + 22 (profiles) = 51
+ * (proposal §7 base: 49; +2 post-v1 variants heading.xxs and caption.xxs)
  */
 export function countEmittedTokens(tokens: TypographyCategoryTokens): number {
   const profileCount = Object.keys(tokens.profiles).length;

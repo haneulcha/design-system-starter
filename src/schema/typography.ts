@@ -65,22 +65,26 @@ export interface CategoryProfile {
 }
 
 /**
- * All 20 settled category profiles from proposal §3.
+ * 22 settled category profiles. 20 from proposal §3 plus 2 post-v1 refinements
+ * (heading.xxs=16, caption.xxs=10) and a body.lg shift 18→20 to clear the
+ * heading.xs/body.lg overlap. See type-size-track.md "Post-v1 refinement" note.
  * Keys: "${category}.${variant}" for multi-variant categories,
  *       "${category}" for single-variant categories (card, nav, link, badge).
  */
 export const CATEGORY_PROFILES: Record<string, CategoryProfile> = {
-  "heading.xl": { fontFamily: "sans", size: 64, weight: 500, lineHeight: 1.1, letterSpacing: "-0.02em" },
-  "heading.lg": { fontFamily: "sans", size: 48, weight: 500, lineHeight: 1.1, letterSpacing: "-0.02em" },
-  "heading.md": { fontFamily: "sans", size: 32, weight: 600, lineHeight: 1.2, letterSpacing: "0" },
-  "heading.sm": { fontFamily: "sans", size: 24, weight: 600, lineHeight: 1.3, letterSpacing: "0" },
-  "heading.xs": { fontFamily: "sans", size: 16, weight: 600, lineHeight: 1.4, letterSpacing: "0" },
-  "body.lg":    { fontFamily: "sans", size: 18, weight: 400, lineHeight: 1.5, letterSpacing: "0" },
-  "body.md":    { fontFamily: "sans", size: 16, weight: 400, lineHeight: 1.5, letterSpacing: "0" },
-  "body.sm":    { fontFamily: "sans", size: 14, weight: 400, lineHeight: 1.5, letterSpacing: "0" },
-  "caption.md": { fontFamily: "sans", size: 14, weight: 400, lineHeight: 1.4, letterSpacing: "0" },
-  "caption.sm": { fontFamily: "sans", size: 12, weight: 400, lineHeight: 1.4, letterSpacing: "0" },
-  "caption.xs": { fontFamily: "sans", size: 11, weight: 400, lineHeight: 1.3, letterSpacing: "0" },
+  "heading.xl":  { fontFamily: "sans", size: 64, weight: 500, lineHeight: 1.1, letterSpacing: "-0.02em" },
+  "heading.lg":  { fontFamily: "sans", size: 48, weight: 500, lineHeight: 1.1, letterSpacing: "-0.02em" },
+  "heading.md":  { fontFamily: "sans", size: 32, weight: 600, lineHeight: 1.2, letterSpacing: "0" },
+  "heading.sm":  { fontFamily: "sans", size: 24, weight: 600, lineHeight: 1.3, letterSpacing: "0" },
+  "heading.xs":  { fontFamily: "sans", size: 18, weight: 600, lineHeight: 1.4, letterSpacing: "0" },
+  "heading.xxs": { fontFamily: "sans", size: 16, weight: 600, lineHeight: 1.4, letterSpacing: "0" },
+  "body.lg":     { fontFamily: "sans", size: 20, weight: 400, lineHeight: 1.5, letterSpacing: "0" },
+  "body.md":     { fontFamily: "sans", size: 16, weight: 400, lineHeight: 1.5, letterSpacing: "0" },
+  "body.sm":     { fontFamily: "sans", size: 14, weight: 400, lineHeight: 1.5, letterSpacing: "0" },
+  "caption.md":  { fontFamily: "sans", size: 14, weight: 400, lineHeight: 1.4, letterSpacing: "0" },
+  "caption.sm":  { fontFamily: "sans", size: 12, weight: 400, lineHeight: 1.4, letterSpacing: "0" },
+  "caption.xs":  { fontFamily: "sans", size: 11, weight: 400, lineHeight: 1.3, letterSpacing: "0" },
+  "caption.xxs": { fontFamily: "sans", size: 10, weight: 400, lineHeight: 1.3, letterSpacing: "0" },
   "code.md":    { fontFamily: "mono", size: 14, weight: 400, lineHeight: 1.5, letterSpacing: "0" },
   "code.sm":    { fontFamily: "mono", size: 12, weight: 400, lineHeight: 1.4, letterSpacing: "0" },
   "code.xs":    { fontFamily: "mono", size: 10, weight: 400, lineHeight: 1.5, letterSpacing: "0" },
