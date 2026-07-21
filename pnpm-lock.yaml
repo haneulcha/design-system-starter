@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  '@material/material-color-utilities':
+    hash: 5ae369572616359de8f2088dbd25ed9a8a4737198439bc97bea4656d07aaa930
+    path: patches/@material__material-color-utilities.patch
+
 importers:
 
   .:
@@ -23,7 +28,7 @@ importers:
         version: 7.10.1(@types/node@22.19.17)
       '@material/material-color-utilities':
         specifier: ^0.4.0
-        version: 0.4.0
+        version: 0.4.0(patch_hash=5ae369572616359de8f2088dbd25ed9a8a4737198439bc97bea4656d07aaa930)
       '@radix-ui/colors':
         specifier: ^3.0.0
         version: 3.0.0
@@ -1054,7 +1059,7 @@ snapshots:
 
   '@jridgewell/sourcemap-codec@1.5.5': {}
 
-  '@material/material-color-utilities@0.4.0': {}
+  '@material/material-color-utilities@0.4.0(patch_hash=5ae369572616359de8f2088dbd25ed9a8a4737198439bc97bea4656d07aaa930)': {}
 
   '@radix-ui/colors@3.0.0': {}
 
