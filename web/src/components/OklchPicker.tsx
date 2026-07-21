@@ -10,7 +10,7 @@
 // the pad render transparent so the user can see where the boundary is.
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { hexToOklch, oklchToHex } from "../lib/oklch";
+import { hexToOklch, oklchToHex, oklchToHexIfDisplayable } from "../lib/oklch";
 
 const CHROMA_MAX = 0.4;
 const PAD_W = 200;
@@ -93,7 +93,8 @@ function LcPad({
       const L = 1 - y / (PAD_H - 1);
       for (let x = 0; x < PAD_W; x++) {
         const C = (x / (PAD_W - 1)) * CHROMA_MAX;
-        const out = oklchToHex({ l: L, c: C, h: hue });
+        // 범위 밖은 null → 알파 0으로 남아 체커보드가 비쳐 보인다 (gamut 경계 시각화)
+        const out = oklchToHexIfDisplayable({ l: L, c: C, h: hue });
         const i = (y * PAD_W + x) * 4;
         if (out) {
           img.data[i] = parseInt(out.slice(1, 3), 16);

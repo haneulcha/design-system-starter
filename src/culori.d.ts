@@ -6,6 +6,8 @@ declare module "culori" {
     h?: number;
     a?: number;
     b?: number;
+    r?: number;
+    g?: number;
     [key: string]: unknown;
   }
   export function parse(color: string): Color | undefined;

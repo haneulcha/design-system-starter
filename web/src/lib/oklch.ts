@@ -40,9 +40,10 @@ export function formatOklchCompact(hex: string): string | null {
   return `oklch ${l} ${c} ${h}`;
 }
 
-/** Build a hex string from OKLCH components. Returns null if culori can't
- *  render the color (out-of-gamut, NaN, etc). Hue defaults to 0 for
- *  achromatic input. */
+/** Build a hex string from OKLCH components. Out-of-gamut colors are
+ *  CLAMPED to the nearest displayable hex by culori — this never returns
+ *  null for a finite color. Returns null only for unrenderable input (NaN).
+ *  Hue defaults to 0 for achromatic input. */
 export function oklchToHex({
   l,
   c,
@@ -54,4 +55,27 @@ export function oklchToHex({
 }): string | null {
   const out = formatHex({ mode: "oklch", l, c, h: h ?? 0 });
   return out ?? null;
+}
+
+const toRgb = converter("rgb");
+
+/** sRGB 안에 실제로 존재하는 색일 때만 hex를 반환하고, 범위 밖이면 null.
+ *  oklchToHex와 달리 클램프하지 않는다 — 피커가 gamut 경계를 투명 셀로
+ *  그릴 수 있게 하는 용도. eps는 경계에서의 부동소수 스펙클 방지. */
+export function oklchToHexIfDisplayable({
+  l,
+  c,
+  h,
+}: {
+  l: number;
+  c: number;
+  h: number | null;
+}): string | null {
+  const rgb = toRgb({ mode: "oklch", l, c, h: h ?? 0 });
+  if (!rgb) return null;
+  const eps = 1e-4;
+  const inRange = (v: number | undefined) =>
+    typeof v === "number" && v >= -eps && v <= 1 + eps;
+  if (!inRange(rgb.r) || !inRange(rgb.g) || !inRange(rgb.b)) return null;
+  return formatHex(rgb) ?? null;
 }
