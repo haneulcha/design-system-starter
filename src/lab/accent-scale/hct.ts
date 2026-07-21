@@ -22,6 +22,19 @@
 //   동적 import + top-level await)는 쓰지 않는다 — 이 어댑터는 Task 9에서
 //   웹 랩(Vite/브라우저 번들)에도 로드되므로, node: 빌트인이나 파일시스템
 //   절대경로는 여기서 금지.
+//
+// 패치 도달 경로 (Task 9에서 검증, 2026-07-21):
+// 이 파일(`src/lab/accent-scale/hct.ts`)의 서브패스 import는 Node/Vite의
+// 디렉터리 walk-up 리졸루션으로 이 파일 기준 조상 경로를 타고 올라가
+// **repo 루트의 node_modules**(pnpm patch 적용됨, patches/ + pnpm-workspace.yaml)에서
+// 해석된다. `web/node_modules`에도 같은 패키지가 존재하지만(`web/package.json`에
+// devDependency로 명시 — 의존성 위생 목적) 그건 plain npm install이 받은
+// **패치 안 된** 사본이고, walk-up 경로상 이 파일에서는 구조적으로 도달 불가능하다
+// (web/이 이 파일의 조상 디렉터리가 아니므로).
+// ⚠️ 만약 이 파일(또는 lab 모듈 전체)이 나중에 web/ 아래로 옮겨지거나, repo가
+// pnpm workspace로 전환되어 node_modules 리졸루션 위치가 바뀌면 — 서브패스
+// import가 패치 안 된 사본에 걸려 깨질 수 있다. 그럴 때는 반드시 어느 사본이
+// 실제로 리졸브되는지, 그 사본에 패치가 적용돼 있는지 다시 검증할 것.
 import { Hct } from "@material/material-color-utilities/hct/hct.js";
 import { TonalPalette } from "@material/material-color-utilities/palettes/tonal_palette.js";
 import { argbFromHex, hexFromArgb } from "@material/material-color-utilities/utils/string_utils.js";
