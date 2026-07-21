@@ -14,7 +14,7 @@ export const naiveAlgorithm: AccentAlgorithm = {
   id: "naive",
   label: "나이브 보간 (컨트롤)",
   description:
-    "흰색 ↔ 입력색 ↔ 검정을 OKLCH에서 직선으로 잇는 하한 기준점. 입력색을 앵커 자리에 그대로 보존하지만, 끝단의 채도 정리나 hue 보정은 전혀 없다.",
+    "흰색 ↔ 입력색 ↔ 검정을 직선으로 잇기만 하는 가장 단순한 방식(비교용 기준점). 입력색은 스케일에 그대로 남지만, 밝은 끝·어두운 끝을 다듬는 처리가 전혀 없다.",
   nativeSpec: { count: 11, anchorIndex: 5 },
   derive(anchorHex: string, spec: ScaleSpec): Oklch[] {
     const anchor = parsePrimary(anchorHex);

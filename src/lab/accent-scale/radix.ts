@@ -276,7 +276,7 @@ export const radixAlgorithm: AccentAlgorithm = {
   id: "radix",
   label: "Radix custom color (ported)",
   description:
-    "입력색을 가장 가까운 Radix 원본 스케일에 스냅한 뒤 보정한다. 입력색은 항상 step 9(솔리드 배경 용도)에 놓인다 — 12-step 각각에 용도가 배정된 체계.",
+    "입력색과 가장 비슷한 Radix 손튜닝 원본 스케일에 맞춘(스냅) 뒤 미세 보정한다. 입력색은 항상 9번째 단계(버튼 같은 진한 배경 용도)에 놓인다.",
   nativeSpec: { count: 12, anchorIndex: 8 },
   // 주의(comparability): spec.anchorIndex는 읽지 않는다 — 항상 네이티브 12-step
   // (앵커=인덱스 8)을 유도한 뒤 resample()로 재표집하므로, count≠12인 레퍼런스와

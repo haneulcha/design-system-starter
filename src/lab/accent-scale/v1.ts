@@ -36,7 +36,7 @@ export const v1Algorithm: AccentAlgorithm = {
   id: "v1",
   label: "v1 현행 (고정 L 사다리)",
   description:
-    "고정된 밝기 사다리(0.96→0.14)에 입력색의 채도·색상만 얹는다. 입력색의 밝기는 무시 — 내 브랜드 컬러가 스케일 안에 그대로 존재하지 않을 수 있다.",
+    "밝음→어두움 10단계의 밝기 값이 미리 고정돼 있고, 거기에 입력색의 채도·색상만 얹는다. 입력색 자체의 밝기는 무시 — 내 브랜드 컬러가 스케일 안에 그대로 존재하지 않을 수 있다.",
   nativeSpec: { count: 10, anchorIndex: 6 },
   derive(anchorHex: string, spec: ScaleSpec): Oklch[] {
     const anchor = parsePrimary(anchorHex);

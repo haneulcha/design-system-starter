@@ -6,6 +6,7 @@
 import { useState } from "react";
 import { ALGORITHMS } from "@core/lab/accent-scale/index.js";
 import {
+  GLOSSARY,
   nativeScale,
   nearestReferences,
   REF_NOTES,
@@ -130,6 +131,22 @@ export function LabPage() {
             stops={r.stops}
           />
         ))}
+      </section>
+
+      <section className="space-y-2 border-t border-neutral-200 pt-6">
+        <h2 className="text-sm font-medium text-neutral-500 uppercase tracking-wider">
+          용어
+        </h2>
+        <dl className="space-y-1">
+          {GLOSSARY.map(([term, def]) => (
+            <div key={term} className="flex gap-3 text-[11px] leading-4">
+              <dt className="shrink-0 w-28 font-medium text-neutral-600">
+                {term}
+              </dt>
+              <dd className="text-neutral-400">{def}</dd>
+            </div>
+          ))}
+        </dl>
       </section>
     </div>
   );

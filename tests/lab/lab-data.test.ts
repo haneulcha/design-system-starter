@@ -49,3 +49,12 @@ describe("study notes (교보재 카피)", () => {
     }
   });
 });
+
+describe("GLOSSARY", () => {
+  it("has unique terms with nonempty definitions", async () => {
+    const { GLOSSARY } = await import("../../src/lab/accent-scale/lab-data.js");
+    expect(GLOSSARY.length).toBeGreaterThanOrEqual(8);
+    expect(new Set(GLOSSARY.map(([t]) => t)).size).toBe(GLOSSARY.length);
+    for (const [term, def] of GLOSSARY) expect(def.length, term).toBeGreaterThan(5);
+  });
+});
