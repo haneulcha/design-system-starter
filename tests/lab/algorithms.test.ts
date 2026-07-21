@@ -1,0 +1,38 @@
+import { describe, it, expect } from "vitest";
+import { v1Algorithm } from "../../src/lab/accent-scale/v1.js";
+import { naiveAlgorithm } from "../../src/lab/accent-scale/naive.js";
+import type { AccentAlgorithm } from "../../src/lab/accent-scale/types.js";
+
+const SPEC = { count: 11, anchorIndex: 5 };
+const ANCHOR = "#3b82f6"; // tailwind blue-500 근방
+
+function checkContract(algo: AccentAlgorithm) {
+  const scale = algo.derive(ANCHOR, SPEC);
+  it(`${algo.id}: returns spec.count colors`, () => {
+    expect(scale).toHaveLength(SPEC.count);
+  });
+  it(`${algo.id}: lightness strictly decreases (밝은→어두운)`, () => {
+    for (let i = 1; i < scale.length; i++) {
+      expect(scale[i].l).toBeLessThan(scale[i - 1].l);
+    }
+  });
+  it(`${algo.id}: preserves anchor hue within 15deg`, () => {
+    for (const c of scale) {
+      if (c.c < 0.02) continue; // 무채색 끝단은 hue 무의미
+      let d = Math.abs(c.h - 259.2) % 360; // #3b82f6 ≈ oklch h 259.2
+      if (d > 180) d = 360 - d;
+      expect(d).toBeLessThan(15);
+    }
+  });
+}
+
+describe("v1Algorithm", () => checkContract(v1Algorithm));
+describe("naiveAlgorithm", () => {
+  checkContract(naiveAlgorithm);
+  it("returns the anchor color exactly at anchorIndex", () => {
+    const scale = naiveAlgorithm.derive(ANCHOR, SPEC);
+    const anchor = scale[SPEC.anchorIndex];
+    expect(anchor.l).toBeCloseTo(0.6, 1); // #3b82f6 L≈0.62
+    expect(anchor.c).toBeGreaterThan(0.15);
+  });
+});
