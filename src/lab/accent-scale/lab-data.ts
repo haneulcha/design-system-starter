@@ -31,6 +31,15 @@ export interface NearestReference {
   stops: LabStop[];
 }
 
+/** 레퍼런스 소스별 한 줄 특징 — 랩 UI subtitle (교보재 목적).
+ *  근거: docs/research/accent-derivation-survey.md */
+export const REF_NOTES: Record<string, string> = {
+  tailwind:
+    "손튜닝 레퍼런스. 사람이 hue별로 직접 튜닝한 11-stop — 끝단에서 채도를 줄이고 hue를 미세 보정한 결과물. 알고리즘들이 재현하려는 목표가 이 모양이다.",
+  radix:
+    "손튜닝 레퍼런스. 12-step 각각에 용도가 배정됨 (1-2 배경 · 3-5 컴포넌트 상태 · 6-8 보더 · 9-10 솔리드 · 11-12 텍스트) — 스텝에 의미를 부여하는 설계.",
+};
+
 /** 입력 색과 앵커 hue가 가장 가까운 팔레트를 소스(tailwind/radix)별 1개씩 */
 export function nearestReferences(
   hex: string,

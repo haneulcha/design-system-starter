@@ -32,6 +32,8 @@ function ratioLadder(count: number): number[] {
 export const leonardoAlgorithm: AccentAlgorithm = {
   id: "leonardo",
   label: "Adobe Leonardo (contrast ladder)",
+  description:
+    "흰 배경 대비 콘트라스트 비율(1.06→19)에서 밝기를 역산하는 접근성-우선 방식. 각 stop이 \"어떤 비율을 만족하는가\"로 정의된다.",
   nativeSpec: { count: 11, anchorIndex: 5 },
   derive(anchorHex: string, spec: ScaleSpec): Oklch[] {
     const accent = new Color({

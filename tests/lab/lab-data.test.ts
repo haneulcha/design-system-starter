@@ -34,3 +34,18 @@ describe("nearestReferences", () => {
     expect(near[0].palette).toBe("red");
   });
 });
+
+describe("study notes (교보재 카피)", () => {
+  it("every registered algorithm carries a nonempty description", async () => {
+    const { ALGORITHMS } = await import("../../src/lab/accent-scale/index.js");
+    for (const algo of ALGORITHMS) {
+      expect(algo.description.length, `${algo.id} description`).toBeGreaterThan(10);
+    }
+  });
+  it("REF_NOTES covers every reference source used by the lab", async () => {
+    const { REF_NOTES } = await import("../../src/lab/accent-scale/lab-data.js");
+    for (const source of ["tailwind", "radix"]) {
+      expect(REF_NOTES[source], `REF_NOTES.${source}`).toBeTruthy();
+    }
+  });
+});

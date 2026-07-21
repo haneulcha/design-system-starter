@@ -50,6 +50,8 @@ const TONE_BOTTOM = 8;
 export const hctAlgorithm: AccentAlgorithm = {
   id: "hct",
   label: "Material HCT (tonal palette)",
+  description:
+    "입력색의 CAM16 hue·chroma를 고정하고 tone(지각 밝기)만 98→8 사다리로 배치. 지각적으로 균일하지만 v1처럼 입력색의 밝기는 무시한다.",
   nativeSpec: { count: 11, anchorIndex: 5 },
   derive(anchorHex: string, spec: ScaleSpec): Oklch[] {
     const hct = Hct.fromInt(argbFromHex(anchorHex));
