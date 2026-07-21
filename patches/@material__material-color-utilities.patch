@@ -1,0 +1,14 @@
+diff --git a/package.json b/package.json
+index 30ca4ac79453a16cf6a124eb126575af26146a69..98aae78741f5a1fa8a6fc09048da2787ce803dd3 100644
+--- a/package.json
++++ b/package.json
+@@ -40,7 +40,8 @@
+       "types": "./index.d.ts",
+       "import": "./index.js",
+       "default": "./index.js"
+-    }
++    },
++    "./*": "./*"
+   },
+   "scripts": {
+     "build": "wireit",
