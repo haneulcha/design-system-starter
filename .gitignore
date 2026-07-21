@@ -2,6 +2,7 @@ node_modules/
 dist/
 output/
 .superpowers/
-data/
+data/*
+!data/references/
 
 .playwright-mcp/
