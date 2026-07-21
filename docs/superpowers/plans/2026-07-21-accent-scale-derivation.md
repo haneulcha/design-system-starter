@@ -55,7 +55,7 @@ docs/research/accent-scale-bench-report.md  # 생성물 (스크립트가 재생�
 - Create: `docs/research/accent-derivation-survey.md`
 
 **Interfaces:**
-- Produces: 서베이 문서. 특히 **Radix 알고리즘의 정확한 소스 파일 URL + 커밋 해시 + 라이선스**를 기록 — Task 8이 이를 소비한다.
+- Produces: 서베이 문서 — **이 트랙의 1급 산출물** (스펙 §서베이 문서 = 1급 산출물). 목적은 기존 제품에서 배우는 것이므로 각 대상의 설계 철학·원문 링크·시사점까지 담는다. 특히 **Radix 알고리즘의 정확한 소스 파일 URL + 커밋 해시 + 라이선스**를 기록 — Task 8이 이를 소비한다.
 
 - [ ] **Step 1: 브랜치 생성**
 
@@ -65,12 +65,13 @@ git checkout main && git pull --ff-only 2>/dev/null; git checkout -b research/ac
 
 - [ ] **Step 2: 각 알고리즘 조사 (WebFetch/WebSearch 사용)**
 
-조사 소스 (시작점; 링크가 이동했으면 검색으로 현재 위치 확인):
-1. **Material HCT** — https://github.com/material-foundation/material-color-utilities (README + `typescript/palettes/tonal_palette.ts`). HCT 색공간이 무엇인지(CAM16 hue/chroma + L* tone), tonal palette가 tone만 바꾸는 방식, chroma가 gamut에 따라 잘리는 동작.
-2. **Adobe Leonardo** — https://github.com/adobe/leonardo (`packages/contrast-colors` README). 콘트라스트 비율 기반 보간, colorKeys/ratios/smooth 파라미터, 어떤 색공간에서 보간하는지.
-3. **Radix custom color** — https://github.com/radix-ui/website 리포에서 `generateRadixColors` 파일을 찾는다 (예상 경로 `components/generateRadixColors.ts`; GitHub 코드 검색 "generateRadixColors" 사용). **정확한 파일 경로, 최신 커밋 해시, 라이선스(MIT 여부)를 문서에 기록.** 알고리즘 요지: 입력 색을 기존 radix 스케일에 스냅 후 보정하는지, 어떤 색공간/이징을 쓰는지.
-4. **Tailwind v4** — 알고리즘이 아니라 손튜닝 레퍼런스임을 명시. `node_modules/tailwindcss/theme.css`의 oklch 값 구조(22 hue × 11 stop) 확인.
+조사 소스 (시작점; 링크가 이동했으면 검색으로 현재 위치 확인). 각 대상마다 메커니즘만이 아니라 **설계 철학(만든 사람들이 밝힌 이유)과 원문 링크**를 수집한다:
+1. **Material HCT** — https://github.com/material-foundation/material-color-utilities (README + `typescript/palettes/tonal_palette.ts`) + Material Design 블로그의 HCT 소개 글("The Science of Color & Design" 등 — 검색으로 확보). HCT 색공간이 무엇인지(CAM16 hue/chroma + L* tone), 왜 CIELAB/HSL이 아닌 HCT를 새로 만들었는지, tonal palette가 tone만 바꾸는 방식, chroma가 gamut에 따라 잘리는 동작.
+2. **Adobe Leonardo** — https://github.com/adobe/leonardo (`packages/contrast-colors` README) + Adobe 블로그의 Leonardo 소개 시리즈. 왜 콘트라스트 비율을 1급 입력으로 삼았는지(접근성-우선 철학), colorKeys/ratios/smooth 파라미터, 어떤 색공간에서 보간하는지.
+3. **Radix custom color** — https://github.com/radix-ui/website 리포에서 `generateRadixColors` 파일을 찾는다 (예상 경로 `components/generateRadixColors.ts`; GitHub 코드 검색 "generateRadixColors" 사용). **정확한 파일 경로, 최신 커밋 해시, 라이선스(MIT 여부)를 문서에 기록.** 알고리즘 요지: 입력 색을 기존 radix 스케일에 스냅 후 보정하는지, 어떤 색공간/이징을 쓰는지. 추가로 https://www.radix-ui.com/colors/docs 의 **12-step 의미 체계**(1-2 배경, 3-5 컴포넌트 상태, 6-8 보더, 9-10 솔리드, 11-12 텍스트)를 정리 — 스텝에 용도를 배정하는 설계는 우리 팔레트 slot 체계와 직접 비교 대상.
+4. **Tailwind v4** — 알고리즘이 아니라 손튜닝 레퍼런스임을 명시. `node_modules/tailwindcss/theme.css`의 oklch 값 구조(22 hue × 11 stop) 확인 + 팀이 밝힌 튜닝 관점(v4 릴리즈 노트의 OKLCH 전환 이유, "Designing in the browser" 계열 글 검색).
 5. **v1 현행** — `src/generator/color.ts:32-43` CHROMATIC_STEPS 테이블 요약 (고정 L 사다리 + cMult 곡선, 입력 L 무시).
+6. **Refactoring UI 수동 방법론** (알고리즘 아님 — 가이드드 빌더의 원형) — 책의 색 챕터 요지: accent(500) 먼저 → 가장 밝은/어두운 끝 정하기 → 사이를 절반씩 채우기, 스케일 끝단에서 hue를 회전시켜 채도감을 유지하는 요령 등. 각 알고리즘이 이 수동 판단의 어느 부분을 자동화하는지 대응표로 정리.
 
 - [ ] **Step 3: 서베이 문서 작성**
 
@@ -80,19 +81,24 @@ git checkout main && git pull --ff-only 2>/dev/null; git checkout -b research/ac
 # Accent Derivation Survey
 
 _2026-07-XX. 스펙: docs/superpowers/specs/2026-07-21-accent-scale-derivation-design.md.
-각 알고리즘의 메커니즘 요약 + 가이드드 빌더의 후보 생성기로 쓸 수 있는지 평가._
+이 트랙의 1급 산출물: 기존 제품들이 팔레트를 어떻게 설계했는지 공부한 기록.
+각 대상의 설계 철학 + 메커니즘 + 우리에게 주는 시사점, 그리고
+가이드드 빌더의 후보 생성기로 쓸 수 있는지 평가._
 
-## <알고리즘 이름>
-- **소스**: <URL, 버전/커밋, 라이선스>
-- **색공간**: <OKLCH / HCT / ...>
+## <대상 이름>
+- **소스**: <URL, 버전/커밋, 라이선스 + 철학을 밝힌 원문(블로그/문서) 링크들>
+- **설계 철학**: <만든 사람들이 밝힌 "왜 이렇게 만들었나" — 2~5문장 요약>
+- **색공간**: <OKLCH / HCT / ...> 와 그 선택의 이유
 - **커브 형태**: <L을 어떻게 배치하는가 — 고정 사다리 / 콘트라스트 비율 / tone>
-- **채도 처리**: <스케일 끝단에서 C를 어떻게 줄이는가>
+- **채도 처리**: <스케일 끝단에서 C를 어떻게 줄이는가; hue 회전 여부>
 - **앵커 의미**: <입력 색이 스케일 어디에 놓이는가; 입력 L을 존중하는가>
+- **스텝 의미 체계**: <각 스텝에 용도가 배정되어 있는가 (예: Radix 1-2 배경 … 11-12 텍스트)>
+- **시사점**: <우리 스타터/가이드드 빌더가 가져갈 것, 버릴 것>
 - **후보 생성기 관점**: <이 알고리즘에서 "선택지 축"으로 노출할 만한 파라미터>
-- **포팅/패키지 결정**: <npm 패키지 사용 / 포팅 필요 + 예상 난이도>
+- **포팅/패키지 결정**: <npm 패키지 사용 / 포팅 필요 + 예상 난이도 (해당 시)>
 ```
 
-말미에 비교 표 1개 (알고리즘 × {색공간, 앵커 존중, 파라미터 수}).
+말미에: (a) 비교 표 (대상 × {색공간, 앵커 존중, 스텝 의미 체계, 파라미터 수}), (b) **Refactoring UI 수동 단계 ↔ 각 알고리즘 대응표**, (c) "이 조사에서 배운 것" 종합 섹션 (벤치·눈 평가 후 발견도 여기로 환류).
 
 - [ ] **Step 4: 커밋**
 
