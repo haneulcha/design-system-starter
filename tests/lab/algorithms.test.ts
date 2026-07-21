@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { v1Algorithm } from "../../src/lab/accent-scale/v1.js";
 import { naiveAlgorithm } from "../../src/lab/accent-scale/naive.js";
 import { hctAlgorithm } from "../../src/lab/accent-scale/hct.js";
+import { leonardoAlgorithm } from "../../src/lab/accent-scale/leonardo.js";
 import type { AccentAlgorithm } from "../../src/lab/accent-scale/types.js";
 
 const SPEC = { count: 11, anchorIndex: 5 };
@@ -38,3 +39,4 @@ describe("naiveAlgorithm", () => {
   });
 });
 describe("hctAlgorithm", () => checkContract(hctAlgorithm));
+describe("leonardoAlgorithm", () => checkContract(leonardoAlgorithm));
