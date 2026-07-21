@@ -7,12 +7,14 @@ import { v1Algorithm } from "./v1.js";
 import { naiveAlgorithm } from "./naive.js";
 import { hctAlgorithm } from "./hct.js";
 import { leonardoAlgorithm } from "./leonardo.js";
+import { radixAlgorithm } from "./radix.js";
 
 export const ALGORITHMS: readonly AccentAlgorithm[] = [
   v1Algorithm,
   naiveAlgorithm,
   hctAlgorithm,
   leonardoAlgorithm,
+  radixAlgorithm,
 ];
 
 export type { AccentAlgorithm, ScaleSpec } from "./types.js";

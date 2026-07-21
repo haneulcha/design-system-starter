@@ -35,6 +35,12 @@ importers:
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.17
+      bezier-easing:
+        specifier: ^3.0.1
+        version: 3.0.1
+      colorjs.io:
+        specifier: ^0.7.0
+        version: 0.7.0
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -533,6 +539,9 @@ packages:
     resolution: {integrity: sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==, tarball: https://registry.npmjs.org/assertion-error/-/assertion-error-2.0.1.tgz}
     engines: {node: '>=12'}
 
+  bezier-easing@3.0.1:
+    resolution: {integrity: sha512-vvvg10Anq7py0+KkIqlwJpUVdde9Z8kSzeUzAkQNYAJdA3mZnLG9r9ExdwtjcASCYER6UkNHdBNHHMnVimnU7A==, tarball: https://registry.npmjs.org/bezier-easing/-/bezier-easing-3.0.1.tgz}
+
   cac@6.7.14:
     resolution: {integrity: sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ==, tarball: https://registry.npmjs.org/cac/-/cac-6.7.14.tgz}
     engines: {node: '>=8'}
@@ -567,6 +576,9 @@ packages:
 
   color-name@1.1.4:
     resolution: {integrity: sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==, tarball: https://registry.npmjs.org/color-name/-/color-name-1.1.4.tgz}
+
+  colorjs.io@0.7.0:
+    resolution: {integrity: sha512-JfLy3aZW1Xp2iwSFzGlLn0XSMnIdItH3BmzsXtwHVFEWwVUJIwKBWNzjQq2Tgf3998OY7qW2R6klrlYo8vmEGg==, tarball: https://registry.npmjs.org/colorjs.io/-/colorjs.io-0.7.0.tgz}
 
   colorparsley@0.1.8:
     resolution: {integrity: sha512-rObESTTTE6G5qO5WFwFxWPggpw4KfpxnLC6Ssl8bITBnNVRhDsyCeTRAUxWQNVTx2pRknKlO2nddYTxjkdNFaw==, tarball: https://registry.npmjs.org/colorparsley/-/colorparsley-0.1.8.tgz}
@@ -1205,6 +1217,8 @@ snapshots:
 
   assertion-error@2.0.1: {}
 
+  bezier-easing@3.0.1: {}
+
   cac@6.7.14: {}
 
   chai@5.3.3:
@@ -1237,6 +1251,8 @@ snapshots:
       color-name: 1.1.4
 
   color-name@1.1.4: {}
+
+  colorjs.io@0.7.0: {}
 
   colorparsley@0.1.8: {}
 
