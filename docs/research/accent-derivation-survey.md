@@ -43,6 +43,7 @@ _2026-07-21. 스펙: docs/superpowers/specs/2026-07-21-accent-scale-derivation-d
 
 ## Tailwind v4 (레퍼런스, 알고리즘 아님)
 - **소스**: 알고리즘이 아니라 손튜닝 결과물. 실측: `web/node_modules/tailwindcss/theme.css` (설치 버전 4.2.2). 공식 설명: [Tailwind CSS v4.0 블로그](https://tailwindcss.com/blog/tailwindcss-v4) "Modernized P3 color palette" 섹션(WebFetch로 원문 확보).
+  - _버전 참고: 이 섹션의 실측치는 4.2.2(`web/node_modules`) 기준이다. 벤치마크가 쓰는 고정 레퍼런스 `data/references/tailwind-v4.json`과 `pnpm accent-scale-bench`는 루트에 설치된 4.3.3 기준이라, 두 버전 사이 수치가 정확히 일치하지 않을 수 있다._
 - **설계 철학**: 공식 블로그 원문 인용 — *"We've upgraded the entire default color palette from rgb to oklch, taking advantage of the wider gamut to make the colors more vivid in places where we were previously limited by the sRGB color space."* 동시에 *"we've tried to keep the balance between all the colors the same as it was in v3"* — 즉 OKLCH 전환의 목적은 "새 팔레트 설계"가 아니라 "기존 v3 팔레트의 균형을 유지하면서 P3 gamut에서 더 선명하게" 재인코딩하는 것. 알고리즘적 재설계가 아니라 **색공간 업그레이드**에 가깝다.
 - **색공간**: OKLCH. sRGB 대비 넓은 P3 gamut을 활용.
 - **커브 형태**: 알고리즘 없음 — 색상군(hue family)별로 11개 스텝(50,100,200,...,900,950)의 L/C/H 값이 개별적으로 손튜닝되어 하드코딩됨. 실측 결과 chromatic 계열 17개(amber, blue, cyan, emerald, fuchsia, green, indigo, lime, orange, pink, purple, red, rose, sky, teal, violet, yellow) + neutral 계열 9개(gray, mauve, mist, neutral, olive, slate, stone, taupe, zinc), 계 26개 × 11 스텝. (참고: 브리프의 예상 "22 hue"와 실측이 다른데, 이는 버전 차이/그레이 포함 여부로 보이며 본 서베이는 실제 설치본 4.2.2 실측치를 기록한다.)

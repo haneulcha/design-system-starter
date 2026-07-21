@@ -14,5 +14,5 @@
       "@data/*": ["../data/*"]
     }
   },
-  "include": ["src", "../src", "../data"]
+  "include": ["src", "../src", "../data/references"]
 }

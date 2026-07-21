@@ -251,6 +251,11 @@ function deriveRadix12(anchorHex: string): Oklch[] {
 }
 
 // count !== 12 인 spec 요청 시: 12-step 결과를 위치 비례로 선형 재표집.
+// 주의(comparability): 이 선형 위치 재표집은 앵커를 항상 12-step 결과의 인덱스 8
+// (스텝 9)에 고정한 뒤 스케일링하므로, 호출자가 요청한 spec.anchorIndex는 count가
+// 12가 아닌 한 무시된다 — 예: count=11 요청이면 앵커는 실제로 인덱스 ≈7.3 근방에
+// 놓인다(요청한 5가 아님). derive()의 anchorIndex 파라미터는 count=12일 때만
+// 유효하다. 벤치마크에서 tailwind(11-step) 대비 ΔE에는 이 앵커 불일치가 섞여있다.
 function resample(scale12: Oklch[], count: number): Oklch[] {
   if (count === 12) return scale12;
   return Array.from({ length: count }, (_, i) => {
@@ -271,6 +276,9 @@ export const radixAlgorithm: AccentAlgorithm = {
   id: "radix",
   label: "Radix custom color (ported)",
   nativeSpec: { count: 12, anchorIndex: 8 },
+  // 주의(comparability): spec.anchorIndex는 읽지 않는다 — 항상 네이티브 12-step
+  // (앵커=인덱스 8)을 유도한 뒤 resample()로 재표집하므로, count≠12인 레퍼런스와
+  // 비교할 때 요청한 앵커 위치가 실제로 존중되지 않는다 (resample() 주석 참고).
   derive(anchorHex: string, spec: ScaleSpec): Oklch[] {
     const scale12 = deriveRadix12(anchorHex);
     return resample(scale12, spec.count);

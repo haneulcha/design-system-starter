@@ -3,7 +3,10 @@
 _`pnpm accent-scale-bench` 가 재생성하는 파일 — 손으로 수정하지 말 것._
 _References: tailwind@4.3.3, radix@3.0.0. ΔE = Oklab 유클리드 거리._
 
-## Summary (전체 mean/max ΔE, 낮을수록 재현력 좋음)
+## Summary — pooled (전체 mean/max ΔE, 낮을수록 재현력 좋음)
+
+_모든 레퍼런스 출처(tailwind+radix 등)를 합산한 값. 아래 §Comparability caveats 참고 —_
+_radix 알고리즘은 레퍼런스 팔레트 중 25/42가 자기 자신의 스냅 타겟이라 pooled 순위가 낙관적이다._
 
 | algorithm | palettes | mean ΔE | max ΔE |
 | --- | ---: | ---: | ---: |
@@ -12,6 +15,24 @@ _References: tailwind@4.3.3, radix@3.0.0. ΔE = Oklab 유클리드 거리._
 | hct | 42 | 0.1479 | 0.5659 |
 | leonardo | 42 | 0.1661 | 0.5602 |
 | radix | 42 | 0.0560 | 0.3036 |
+
+## Summary by source (mean ΔE)
+
+_출처별로 분리한 mean ΔE — pooled 표가 감추는 알고리즘별 편향을 드러낸다._
+
+| algorithm | tailwind | radix |
+| --- | ---: | ---: |
+| v1 | 0.0892 | 0.2052 |
+| naive | 0.0803 | 0.1059 |
+| hct | 0.0805 | 0.1937 |
+| leonardo | 0.1005 | 0.2106 |
+| radix | 0.1284 | 0.0067 |
+
+## Comparability caveats
+
+- radix 레퍼런스는 radix.ts 자신의 스냅 타겟(24개 Radix 공식 스케일)에서 파생되었으므로, radix 알고리즘의 radix-출처 ΔE는 구조적으로 거의 0에 가깝다(자기참조) — 다른 알고리즘과 공정 비교 불가.
+- radix 알고리즘은 요청된 anchorIndex를 count≠12일 때 존중하지 않는다 — 자신의 네이티브 12-step에서 위치 비례로 선형 재표집하므로, tailwind ΔE에는 앵커 위치 불일치가 일부 섞여 있다.
+- hct/v1은 입력 L을 무시하는 고정 lightness 사다리를 쓰고, leonardo는 고정 1.06→19 contrast-ratio 사다리를 쓴다 — 모두 레퍼런스별로 튜닝되지 않은 어댑터 파라미터화 선택이며, 벤치마크 대상 알고리즘의 근본 한계이지 버그가 아니다.
 
 ## By hue family (mean ΔE)
 
@@ -24,6 +45,8 @@ _References: tailwind@4.3.3, radix@3.0.0. ΔE = Oklab 유클리드 거리._
 | radix | 0.0682 | 0.0509 | 0.0493 | 0.0484 | 0.0490 | 0.0633 | 0.0702 | 0.0430 |
 
 ## Corpus fit (accent-baseline.md 중앙값 대비)
+
+_L(low)/L(high) = 유도 스케일들의 앵커 ±2 스텝 구간 내 최소/최대 L 각각의, 팔레트 전체에 대한 중앙값._
 
 | algorithm | median C_max | median L(low) | median L(high) |
 | --- | ---: | ---: | ---: |

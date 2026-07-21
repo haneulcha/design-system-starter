@@ -122,6 +122,39 @@ export function summarize(results: readonly PaletteResult[]): Summary {
   return { byAlgorithm, byAlgorithmFamily };
 }
 
+export type SummaryBySource = Record<
+  string,
+  Record<string, { mean: number; max: number; n: number }>
+>;
+
+/** algorithm × source(레퍼런스 출처) 별 mean/max ΔE. tailwind+radix를 풀링하는
+ *  summarize()의 pooled 집계와 달리, 출처별로 분리해 radix 알고리즘이 자기 자신의
+ *  스냅 타겟(radix 출처)에서만 유리해지는 자기참조 편향을 드러낸다. */
+export function summarizeBySource(results: readonly PaletteResult[]): SummaryBySource {
+  const bySource: SummaryBySource = {};
+  const grouped = new Map<string, PaletteResult[]>();
+  for (const r of results) {
+    if (!grouped.has(r.algorithmId)) grouped.set(r.algorithmId, []);
+    grouped.get(r.algorithmId)!.push(r);
+  }
+  for (const [id, rows] of grouped) {
+    bySource[id] = {};
+    const bySrc = new Map<string, PaletteResult[]>();
+    for (const r of rows) {
+      if (!bySrc.has(r.source)) bySrc.set(r.source, []);
+      bySrc.get(r.source)!.push(r);
+    }
+    for (const [src, srcRows] of bySrc) {
+      bySource[id][src] = {
+        mean: mean(srcRows.map((r) => r.mean)),
+        max: Math.max(...srcRows.map((r) => r.max)),
+        n: srcRows.length,
+      };
+    }
+  }
+  return bySource;
+}
+
 export interface CorpusFit {
   medianCMax: number;
   medianLLow: number;
@@ -166,13 +199,18 @@ export function renderReport(
   refSets: readonly ReferenceSet[],
 ): string {
   const s = summarize(results);
+  const bySource = summarizeBySource(results);
+  const sources = [...new Set(results.map((r) => r.source))];
   const lines: string[] = [
     "# Accent Scale Bench Report",
     "",
     "_`pnpm accent-scale-bench` 가 재생성하는 파일 — 손으로 수정하지 말 것._",
     `_References: ${refSets.map((r) => `${r.source}@${r.version}`).join(", ")}. ΔE = Oklab 유클리드 거리._`,
     "",
-    "## Summary (전체 mean/max ΔE, 낮을수록 재현력 좋음)",
+    "## Summary — pooled (전체 mean/max ΔE, 낮을수록 재현력 좋음)",
+    "",
+    "_모든 레퍼런스 출처(tailwind+radix 등)를 합산한 값. 아래 §Comparability caveats 참고 —_",
+    "_radix 알고리즘은 레퍼런스 팔레트 중 25/42가 자기 자신의 스냅 타겟이라 pooled 순위가 낙관적이다._",
     "",
     "| algorithm | palettes | mean ΔE | max ΔE |",
     "| --- | ---: | ---: | ---: |",
@@ -182,6 +220,25 @@ export function renderReport(
         const row = s.byAlgorithm[a.id];
         return `| ${a.id} | ${row.n} | ${f(row.mean)} | ${f(row.max)} |`;
       }),
+    "",
+    "## Summary by source (mean ΔE)",
+    "",
+    "_출처별로 분리한 mean ΔE — pooled 표가 감추는 알고리즘별 편향을 드러낸다._",
+    "",
+    `| algorithm | ${sources.join(" | ")} |`,
+    `| --- | ${sources.map(() => "---:").join(" | ")} |`,
+    ...algos
+      .filter((a) => bySource[a.id])
+      .map((a) => {
+        const row = bySource[a.id];
+        return `| ${a.id} | ${sources.map((src) => (row[src] ? f(row[src].mean) : "—")).join(" | ")} |`;
+      }),
+    "",
+    "## Comparability caveats",
+    "",
+    "- radix 레퍼런스는 radix.ts 자신의 스냅 타겟(24개 Radix 공식 스케일)에서 파생되었으므로, radix 알고리즘의 radix-출처 ΔE는 구조적으로 거의 0에 가깝다(자기참조) — 다른 알고리즘과 공정 비교 불가.",
+    "- radix 알고리즘은 요청된 anchorIndex를 count≠12일 때 존중하지 않는다 — 자신의 네이티브 12-step에서 위치 비례로 선형 재표집하므로, tailwind ΔE에는 앵커 위치 불일치가 일부 섞여 있다.",
+    "- hct/v1은 입력 L을 무시하는 고정 lightness 사다리를 쓰고, leonardo는 고정 1.06→19 contrast-ratio 사다리를 쓴다 — 모두 레퍼런스별로 튜닝되지 않은 어댑터 파라미터화 선택이며, 벤치마크 대상 알고리즘의 근본 한계이지 버그가 아니다.",
     "",
     "## By hue family (mean ΔE)",
     "",
@@ -201,6 +258,8 @@ export function renderReport(
   lines.push(
     "",
     "## Corpus fit (accent-baseline.md 중앙값 대비)",
+    "",
+    "_L(low)/L(high) = 유도 스케일들의 앵커 ±2 스텝 구간 내 최소/최대 L 각각의, 팔레트 전체에 대한 중앙값._",
     "",
     "| algorithm | median C_max | median L(low) | median L(high) |",
     "| --- | ---: | ---: | ---: |",
