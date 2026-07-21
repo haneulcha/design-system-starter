@@ -10,8 +10,13 @@ import * as radix from "@radix-ui/colors";
 
 const VAR_RE = /--color-([a-z]+)-(\d+):\s*(oklch\([^)]+\))/g;
 
+/** 무채색/뉴트럴 계열 — 액센트 벤치마크(뉴트럴은 스코프 외)에서 제외. */
+const TAILWIND_EXCLUDE = new Set([
+  "gray", "mauve", "mist", "neutral", "olive", "slate", "stone", "taupe", "zinc",
+]);
+
 /** theme.css 텍스트에서 hue → hex[] (stopKeys 순서) 추출.
- *  요청한 stop이 하나라도 없는 hue는 제외. */
+ *  요청한 stop이 하나라도 없는 hue는 제외. 뉴트럴 계열(TAILWIND_EXCLUDE)도 제외. */
 export function parseTailwindTheme(
   css: string,
   stopKeys: readonly string[],
@@ -19,6 +24,7 @@ export function parseTailwindTheme(
   const byHue = new Map<string, Map<string, string>>();
   for (const m of css.matchAll(VAR_RE)) {
     const [, hue, stop, oklch] = m;
+    if (TAILWIND_EXCLUDE.has(hue)) continue;
     const parsed = parse(oklch);
     if (!parsed) continue;
     const hex = formatHex(parsed);
