@@ -79,3 +79,23 @@ export function oklchToHexIfDisplayable({
   if (!inRange(rgb.r) || !inRange(rgb.g) || !inRange(rgb.b)) return null;
   return formatHex(rgb) ?? null;
 }
+
+/** 해당 밝기·색상(hue)에서 sRGB로 표현 가능한 최대치로 채도를 잘라 반환.
+ *  이미 범위 안이면 그대로. 피커 패드에서 범위 밖을 찍었을 때 마커와
+ *  실제 색이 어긋나지 않도록 gamut 경계로 스냅하는 용도 (이진 탐색 20회,
+ *  채도 해상도 ≈ 0.4 / 2^20 — 픽셀 단위보다 훨씬 정밀). */
+export function clampChromaToGamut(
+  l: number,
+  c: number,
+  h: number | null,
+): number {
+  if (oklchToHexIfDisplayable({ l, c, h }) !== null) return c;
+  let lo = 0;
+  let hi = c;
+  for (let i = 0; i < 20; i++) {
+    const mid = (lo + hi) / 2;
+    if (oklchToHexIfDisplayable({ l, c: mid, h }) !== null) lo = mid;
+    else hi = mid;
+  }
+  return lo;
+}

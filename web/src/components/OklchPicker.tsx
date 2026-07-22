@@ -10,7 +10,12 @@
 // the pad render transparent so the user can see where the boundary is.
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { hexToOklch, oklchToHex, oklchToHexIfDisplayable } from "../lib/oklch";
+import {
+  clampChromaToGamut,
+  hexToOklch,
+  oklchToHex,
+  oklchToHexIfDisplayable,
+} from "../lib/oklch";
 
 const CHROMA_MAX = 0.4;
 const PAD_W = 200;
@@ -114,9 +119,12 @@ function LcPad({
       const rect = wrap.getBoundingClientRect();
       const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
       const y = Math.max(0, Math.min(rect.height, clientY - rect.top));
-      onPick(1 - y / rect.height, (x / rect.width) * CHROMA_MAX);
+      const l = 1 - y / rect.height;
+      const c = (x / rect.width) * CHROMA_MAX;
+      // 체커보드(범위 밖)를 찍으면 gamut 경계로 스냅 — 마커 위치 = 실제 색
+      onPick(l, clampChromaToGamut(l, c, hue));
     },
-    [onPick],
+    [onPick, hue],
   );
 
   useEffect(() => {
