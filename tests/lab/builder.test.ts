@@ -5,6 +5,9 @@ import {
   SCALE_SIZE,
   STOP_KEYS,
   type Pin,
+  BUILDER_STEPS,
+  STEP_META,
+  candidatesFor,
 } from "../../src/lab/accent-scale/builder.js";
 import { oursAlgorithm } from "../../src/lab/accent-scale/ours.js";
 import { parsePrimary } from "../../src/generator/color.js";
@@ -161,5 +164,56 @@ describe("STOP_KEYS", () => {
     expect(STOP_KEYS[5]).toBe("500");
     expect(STOP_KEYS[0]).toBe("50");
     expect(STOP_KEYS[10]).toBe("950");
+  });
+});
+
+describe("BUILDER_STEPS / STEP_META", () => {
+  it("follows the RUI order 500→50→950→300→700", () => {
+    expect(BUILDER_STEPS).toEqual([5, 0, 10, 3, 7]);
+  });
+  it("has title+description for every step (교보재 계약)", () => {
+    for (const idx of BUILDER_STEPS) {
+      expect(STEP_META[idx].title.length, `step ${idx}`).toBeGreaterThan(0);
+      expect(STEP_META[idx].description.length, `step ${idx}`).toBeGreaterThan(10);
+    }
+  });
+});
+
+describe("candidatesFor", () => {
+  const pins = [anchorPin("#3b82f6")];
+
+  it("throws without the anchor pin / on non-candidate stops", () => {
+    expect(() => candidatesFor(0, [])).toThrow(/anchor/);
+    expect(() => candidatesFor(5, pins)).toThrow(/unsupported/);
+  });
+
+  it.each([0, 10, 3, 7])(
+    "stop %i: three displayable candidates with 교보재 labels",
+    (stop) => {
+      for (const hex of PRESET_HEXES) {
+        const cands = candidatesFor(stop, [anchorPin(hex)]);
+        expect(cands).toHaveLength(3);
+        for (const cd of cands) {
+          expect(cd.label.length).toBeGreaterThan(0);
+          expect(cd.note.length).toBeGreaterThan(10);
+          // clampToGamut는 in-gamut 색을 그대로 반환한다 (표시 가능성 증명)
+          expect(clampToGamut(cd.color)).toEqual(cd.color);
+        }
+      }
+    },
+  );
+
+  it("950 includes gold hue-drift for warm anchors only", () => {
+    const warm = candidatesFor(10, [anchorPin("#eab308")]); // h≈92 ∈ [30,110]
+    const cool = candidatesFor(10, [anchorPin("#3b82f6")]); // h≈259
+    expect(warm.some((c) => c.label.includes("골드"))).toBe(true);
+    expect(cool.some((c) => c.label.includes("골드"))).toBe(false);
+    expect(cool.some((c) => c.label.includes("얕게"))).toBe(true);
+  });
+
+  it("marks degenerate (clamp-collapsed) candidates in the note instead of hiding", () => {
+    // 저채도 뮤트 앵커도 후보 3개 유지 — 겹치면 note에 표시된다는 계약만 고정
+    const cands = candidatesFor(0, [anchorPin("#cc785c")]);
+    expect(cands).toHaveLength(3);
   });
 });
