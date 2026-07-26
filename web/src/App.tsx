@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ResultPage } from "./result/ResultPage";
 import { DEFAULT_STATE, useGenerateResult, type WizardState } from "./hooks/useGenerator";
 import { LabPage } from "./lab/LabPage";
+import { BuilderPage } from "./builder/BuilderPage";
 
 export function App() {
   const [hash, setHash] = useState(() => window.location.hash);
@@ -15,6 +16,7 @@ export function App() {
   const result = useGenerateResult(state);
 
   if (hash === "#lab") return <LabPage />;
+  if (hash === "#builder") return <BuilderPage />;
 
   const update = (partial: Partial<WizardState>) =>
     setState((prev) => ({ ...prev, ...partial }));
