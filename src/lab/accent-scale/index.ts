@@ -8,6 +8,7 @@ import { naiveAlgorithm } from "./naive.js";
 import { hctAlgorithm } from "./hct.js";
 import { leonardoAlgorithm } from "./leonardo.js";
 import { radixAlgorithm } from "./radix.js";
+import { oursAlgorithm } from "./ours.js";
 
 export const ALGORITHMS: readonly AccentAlgorithm[] = [
   v1Algorithm,
@@ -15,6 +16,7 @@ export const ALGORITHMS: readonly AccentAlgorithm[] = [
   hctAlgorithm,
   leonardoAlgorithm,
   radixAlgorithm,
+  oursAlgorithm,
 ];
 
 export type { AccentAlgorithm, ScaleSpec } from "./types.js";

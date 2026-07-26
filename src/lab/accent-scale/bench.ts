@@ -239,6 +239,7 @@ export function renderReport(
     "- radix 레퍼런스는 radix.ts 자신의 스냅 타겟(24개 Radix 공식 스케일)에서 파생되었으므로, radix 알고리즘의 radix-출처 ΔE는 구조적으로 거의 0에 가깝다(자기참조) — 다른 알고리즘과 공정 비교 불가.",
     "- radix 알고리즘은 요청된 anchorIndex를 count≠12일 때 존중하지 않는다 — 자신의 네이티브 12-step에서 위치 비례로 선형 재표집하므로, tailwind ΔE에는 앵커 위치 불일치가 일부 섞여 있다.",
     "- hct/v1은 입력 L을 무시하는 고정 lightness 사다리를 쓰고, leonardo는 고정 1.06→19 contrast-ratio 사다리를 쓴다 — 모두 레퍼런스별로 튜닝되지 않은 어댑터 파라미터화 선택이며, 벤치마크 대상 알고리즘의 근본 한계이지 버그가 아니다.",
+    "- ours의 곡선 테이블(OURS_CURVE)은 tailwind 17개 팔레트의 평균에 적합시킨 것이다 — tailwind-출처 ΔE는 in-sample(홈그라운드)이므로 낙관적이며, 일반화 성능은 radix-출처 열로 판단할 것.",
     "",
     "## By hue family (mean ΔE)",
     "",
