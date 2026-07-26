@@ -6,6 +6,7 @@
 import { useState } from "react";
 import { ALGORITHMS } from "@core/lab/accent-scale/index.js";
 import {
+  EVAL_PRESETS,
   GLOSSARY,
   nativeScale,
   nearestReferences,
@@ -101,6 +102,30 @@ export function LabPage() {
             }}
             className="border border-neutral-300 rounded px-2 py-1 text-sm font-mono w-24"
           />
+          <div className="flex flex-wrap gap-1 max-w-xs">
+            {EVAL_PRESETS.map((p) => (
+              <button
+                key={p.hex}
+                type="button"
+                onClick={() => setHex(p.hex)}
+                title={`${p.label} ${p.hex} — ${p.why}`}
+                className={`flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] ${
+                  hex === p.hex
+                    ? "border-neutral-900 text-neutral-900"
+                    : "border-neutral-200 text-neutral-500 hover:border-neutral-400"
+                }`}
+              >
+                <span
+                  className="inline-block w-2.5 h-2.5 rounded-sm"
+                  style={{ background: p.hex }}
+                />
+                {p.label}
+              </button>
+            ))}
+          </div>
+          <p className="text-[11px] leading-4 text-neutral-400 max-w-xs">
+            눈 평가용 프리셋 — 관찰은 docs/research/accent-eye-eval.md 에 기록
+          </p>
           <PickerGuide />
         </div>
       </div>

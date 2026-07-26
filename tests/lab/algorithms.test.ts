@@ -3,6 +3,8 @@ import { v1Algorithm } from "../../src/lab/accent-scale/v1.js";
 import { naiveAlgorithm } from "../../src/lab/accent-scale/naive.js";
 import { hctAlgorithm } from "../../src/lab/accent-scale/hct.js";
 import { leonardoAlgorithm } from "../../src/lab/accent-scale/leonardo.js";
+import { oursAlgorithm } from "../../src/lab/accent-scale/ours.js";
+import { parsePrimary } from "../../src/generator/color.js";
 import type { AccentAlgorithm } from "../../src/lab/accent-scale/types.js";
 
 const SPEC = { count: 11, anchorIndex: 5 };
@@ -40,3 +42,25 @@ describe("naiveAlgorithm", () => {
 });
 describe("hctAlgorithm", () => checkContract(hctAlgorithm));
 describe("leonardoAlgorithm", () => checkContract(leonardoAlgorithm));
+
+describe("oursAlgorithm", () => {
+  checkContract(oursAlgorithm);
+  it("returns the anchor verbatim at anchorIndex", () => {
+    const scale = oursAlgorithm.derive(ANCHOR, SPEC);
+    const anchor = parsePrimary(ANCHOR);
+    expect(scale[SPEC.anchorIndex]).toEqual(anchor);
+  });
+  it("keeps chroma at the light end (나이브의 탁한 밝은 끝 교정)", () => {
+    const scale = oursAlgorithm.derive(ANCHOR, SPEC);
+    expect(scale[0].c).toBeGreaterThan(0.01);
+  });
+  it.each(["#eab308", "#93c5fd", "#1e40af", "#cc785c"])(
+    "lightness stays strictly decreasing for extreme anchor %s",
+    (hex) => {
+      const scale = oursAlgorithm.derive(hex, SPEC);
+      for (let i = 1; i < scale.length; i++) {
+        expect(scale[i].l, `stop ${i}`).toBeLessThan(scale[i - 1].l);
+      }
+    },
+  );
+});

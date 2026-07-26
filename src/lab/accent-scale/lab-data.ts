@@ -46,6 +46,26 @@ export const REF_NOTES: Record<string, string> = {
     "손튜닝 레퍼런스. 12단계 각각에 쓰임새가 정해져 있다 (1-2 배경 · 3-5 버튼 상태 · 6-8 테두리 · 9-10 진한 배경 · 11-12 글자) — 단계에 의미를 부여하는 설계.",
 };
 
+/** 눈 평가용 프리셋 hue 세트 — docs/research/accent-eye-eval.md 의 테스트
+ *  목록과 1:1. 순서·hex를 바꾸면 평가 문서도 같이 갱신할 것. */
+export const EVAL_PRESETS: readonly {
+  hex: string;
+  label: string;
+  why: string;
+}[] = [
+  { hex: "#3b82f6", label: "파랑", why: "기준점 — 대부분 무난히 잘하는 hue" },
+  { hex: "#ef4444", label: "빨강", why: "고채도 웜톤" },
+  { hex: "#f97316", label: "주황", why: "어두운 쪽이 갈색화되기 쉬움" },
+  { hex: "#eab308", label: "노랑", why: "최난관 — 어두운 노랑이 탁해짐" },
+  { hex: "#16a34a", label: "초록", why: "중채도 쿨톤" },
+  { hex: "#06b6d4", label: "시안", why: "밝은 앵커 계열 — 어두운 쪽 전개" },
+  { hex: "#8b5cf6", label: "보라", why: "파랑↔보라 hue 드리프트 감지" },
+  { hex: "#ec4899", label: "핑크", why: "고채도 마젠타 계열" },
+  { hex: "#cc785c", label: "뮤트", why: "저채도 앵커 — 끝단 채도 처리" },
+  { hex: "#93c5fd", label: "파스텔", why: "밝은 앵커 — 위쪽 공간 좁음" },
+  { hex: "#1e40af", label: "딥", why: "어두운 앵커 — 아래쪽 공간 좁음" },
+];
+
 /** 하단 용어 섹션 (교보재). [용어, 풀이] 순서 유지 렌더. */
 export const GLOSSARY: readonly [string, string][] = [
   ["앵커", "내가 입력한 브랜드 컬러. 스케일이 이 색을 기준으로 만들어진다"],
