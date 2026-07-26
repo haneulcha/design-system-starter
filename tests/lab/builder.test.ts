@@ -212,8 +212,42 @@ describe("candidatesFor", () => {
   });
 
   it("marks degenerate (clamp-collapsed) candidates in the note instead of hiding", () => {
-    // 저채도 뮤트 앵커도 후보 3개 유지 — 겹치면 note에 표시된다는 계약만 고정
-    const cands = candidatesFor(0, [anchorPin("#cc785c")]);
+    // #3b82f6 (blue, h≈259, c≈0.158) 실제로 stop 0에서 클램프 붕괴 확인됨
+    // 3개 후보 모두 반환하되, 겹친 후보는 note에 표시
+    const cands = candidatesFor(0, [anchorPin("#3b82f6")]);
     expect(cands).toHaveLength(3);
+    expect(cands.some((c) => c.note.includes("후보 폭이 좁아"))).toBe(true);
+  });
+
+  it("warm-hue boundaries (30°/110°) show gold drift, outside show shallow", () => {
+    // hue 정확 제어: Oklch 직접 구성
+    const edgeBoundaryMin = { index: 5, color: { l: 0.6, c: 0.15, h: 30 } as const };
+    const edgeBoundaryMax = { index: 5, color: { l: 0.6, c: 0.15, h: 110 } as const };
+    const outsideMin = { index: 5, color: { l: 0.6, c: 0.15, h: 29.9 } as const };
+    const outsideMax = { index: 5, color: { l: 0.6, c: 0.15, h: 110.1 } as const };
+
+    // 30° 정확: 골드 드리프트
+    expect(candidatesFor(10, [edgeBoundaryMin]).some((c) => c.label.includes("골드")))
+      .toBe(true);
+    // 110° 정확: 골드 드리프트
+    expect(candidatesFor(10, [edgeBoundaryMax]).some((c) => c.label.includes("골드")))
+      .toBe(true);
+    // 29.9° (따뜻 경계 밖): 얕게
+    expect(candidatesFor(10, [outsideMin]).some((c) => c.label.includes("얕게")))
+      .toBe(true);
+    expect(candidatesFor(10, [outsideMin]).some((c) => c.label.includes("골드")))
+      .toBe(false);
+    // 110.1° (따뜻 경계 밖): 얕게
+    expect(candidatesFor(10, [outsideMax]).some((c) => c.label.includes("얕게")))
+      .toBe(true);
+    expect(candidatesFor(10, [outsideMax]).some((c) => c.label.includes("골드")))
+      .toBe(false);
+  });
+
+  it("does NOT mark collapsed candidates at non-collapsed stops", () => {
+    // stop 10 (950)은 #3b82f6에서 붕괴 안 됨 — note에 표시 없어야 함
+    const cands = candidatesFor(10, [anchorPin("#3b82f6")]);
+    expect(cands).toHaveLength(3);
+    expect(cands.every((c) => !c.note.includes("후보 폭이 좁아"))).toBe(true);
   });
 });
