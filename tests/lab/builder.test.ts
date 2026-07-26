@@ -250,4 +250,42 @@ describe("candidatesFor", () => {
     expect(cands).toHaveLength(3);
     expect(cands.every((c) => !c.note.includes("후보 폭이 좁아"))).toBe(true);
   });
+
+  it("950 candidates stay below a dark in-band anchor's L and keep the scale monotone", () => {
+    // 앵커 L=0.30은 지원 대역 (0.278, 0.32] 안의 어두운 앵커 — 캡 이전에는 "얕게"
+    // (L .32) 후보가 앵커보다 밝아 fillScale의 어두운 절반이 역전됐다 (최종 리뷰 #1).
+    const darkPin: Pin = { index: 5, color: { l: 0.3, c: 0.08, h: 260 } };
+    const cands = candidatesFor(10, [darkPin]);
+    for (const cd of cands) {
+      expect(cd.color.l, cd.label).toBeLessThan(0.3);
+      const out = fillScale([darkPin, { index: 10, color: cd.color }]);
+      for (let i = 1; i < out.length; i++) {
+        expect(out[i].l, `${cd.label} stop ${i}`).toBeLessThan(out[i - 1].l);
+      }
+    }
+  });
+
+  it("spec invariant sweep: every 후보 조합 (11 presets × 3^4 candidate combos) yields a strictly decreasing scale", () => {
+    // 스펙 "테스트" 표의 단조성 불변식("프리셋 11종 × 후보 조합")을 코드로 옮긴 것.
+    // 각 프리셋에서 앵커를 고정하고 stop [0, 10, 3, 7]을 이 순서로 candidatesFor의
+    // 3개 후보 전부와 조합한다 (누적 pins 기준, 재귀) — 프리셋당 3^4=81개 pin 집합.
+    const combineStop = (pins: Pin[], stops: readonly number[]): Pin[][] => {
+      if (stops.length === 0) return [pins];
+      const [stop, ...rest] = stops;
+      return candidatesFor(stop, pins).flatMap((cd) =>
+        combineStop([...pins, { index: stop, color: cd.color }], rest),
+      );
+    };
+
+    for (const hex of PRESET_HEXES) {
+      const combos = combineStop([anchorPin(hex)], [0, 10, 3, 7]);
+      expect(combos, hex).toHaveLength(81);
+      for (const pins of combos) {
+        const out = fillScale(pins);
+        for (let i = 1; i < out.length; i++) {
+          expect(out[i].l, `${hex} stop ${i}`).toBeLessThan(out[i - 1].l);
+        }
+      }
+    }
+  });
 });

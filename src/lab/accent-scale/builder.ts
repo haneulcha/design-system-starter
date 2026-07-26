@@ -216,25 +216,27 @@ export function candidatesFor(
       break;
     case 10: {
       const warm = ah >= WARM_HUE_MIN && ah <= WARM_HUE_MAX;
+      // 어두운 앵커에서 950 후보가 앵커보다 밝아져 스케일이 역전되는 것 방지 — 최종 리뷰 발견
+      const capL = (l: number) => Math.min(l, anchor.color.l - 0.01);
       list = [
         {
-          color: { l: 0.278, c: ref.c, h: ah },
+          color: { l: capL(0.278), c: ref.c, h: ah },
           label: "기본",
           note: "tailwind 950 평균 깊이 — 무난하게 깊은 바닥",
         },
         {
-          color: { l: 0.22, c: ref.c, h: ah },
+          color: { l: capL(0.22), c: ref.c, h: ah },
           label: "더 깊게",
           note: "거의 검정에 가까운 바닥 — 대비가 최대, 무게감 있는 인상",
         },
         warm
           ? {
-              color: { l: 0.278, c: ref.c, h: ah - 25 },
+              color: { l: capL(0.278), c: ref.c, h: ah - 25 },
               label: "골드로 틀기",
               note: "어두운 노랑·주황은 hue를 틀지 않으면 올리브(탁색)가 된다 — tailwind의 웜톤 손튜닝 기법",
             }
           : {
-              color: { l: 0.32, c: ref.c, h: ah },
+              color: { l: capL(0.32), c: ref.c, h: ah },
               label: "얕게",
               note: "바닥을 덜 눌러 부드러운 인상 — 대신 어두운 쪽 대비 폭은 줄어든다",
             },
@@ -247,7 +249,7 @@ export function candidatesFor(
         label: MID_LABELS[i],
         note:
           i === 1
-            ? "tailwind 평균 곡선 그대로 — 곡선 기본값과 거의 일치"
+            ? "tailwind 평균 곡선값 — 표준적인 선택"
             : i === 0
               ? "밝은 쪽 절반을 차분하게 — 배경·태그가 점잖아진다"
               : "밝은 쪽 절반을 화사하게 — 호버·강조가 또렷해진다",
@@ -259,7 +261,7 @@ export function candidatesFor(
         label: MID_LABELS[i],
         note:
           i === 1
-            ? "tailwind 평균 곡선 그대로 — 곡선 기본값과 거의 일치"
+            ? "tailwind 평균 곡선값 — 표준적인 선택"
             : i === 0
               ? "텍스트·진한 버튼을 차분하게 — 오래 봐도 피로가 적다"
               : "어두운 쪽을 선명하게 — 강조는 세지만 텍스트로는 피로할 수 있다",
