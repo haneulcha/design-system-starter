@@ -33,7 +33,7 @@ export const leonardoAlgorithm: AccentAlgorithm = {
   id: "leonardo",
   label: "Adobe Leonardo (contrast ladder)",
   description:
-    "흰 배경과의 콘트라스트 비율(글자가 얼마나 잘 읽히는지의 기준)을 단계별로 먼저 정해두고, 그 비율이 나오도록 밝기를 역산한다. 접근성을 1순위에 둔 설계.",
+    "흰 배경과의 콘트라스트 비율(글자가 얼마나 잘 읽히는지의 기준)을 단계별로 먼저 정해두고, 그 비율이 나오도록 밝기를 역산한다. 접근성을 1순위에 둔 설계 — 입력색의 콘트라스트가 우연히 사다리에 걸리지 않는 한 입력색 자체는 스케일에 남지 않는다.",
   nativeSpec: { count: 11, anchorIndex: 5 },
   derive(anchorHex: string, spec: ScaleSpec): Oklch[] {
     const accent = new Color({

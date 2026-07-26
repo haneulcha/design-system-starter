@@ -20,6 +20,16 @@ describe("nativeScale", () => {
     expect(stops.every((s) => /^#[0-9a-f]{6}$/.test(s.hex))).toBe(true);
     expect(new Set(stops.map((s) => s.key)).size).toBe(stops.length);
   });
+  it("marks exactly the verbatim-preserved input stop as anchor (naive)", () => {
+    const stops = nativeScale(naiveAlgorithm, "#3b82f6");
+    expect(stops[naiveAlgorithm.nativeSpec.anchorIndex].anchor).toBe(true);
+    expect(stops.filter((s) => s.anchor)).toHaveLength(1);
+  });
+  it("marks no anchor when a fixed-ladder algorithm drops the input (v1)", async () => {
+    const { v1Algorithm } = await import("../../src/lab/accent-scale/v1.js");
+    const stops = nativeScale(v1Algorithm, "#3b82f6");
+    expect(stops.some((s) => s.anchor)).toBe(false);
+  });
 });
 
 describe("nearestReferences", () => {
@@ -32,6 +42,10 @@ describe("nearestReferences", () => {
   it("picks red for a pinkish-red input (#e11d48, h≈17°)", () => {
     const near = nearestReferences("#e11d48", REFS);
     expect(near[0].palette).toBe("red");
+  });
+  it("marks a reference stop as anchor when the input hex is in the palette", () => {
+    const near = nearestReferences("#3b82f6", REFS);
+    expect(near[0].stops.map((s) => s.anchor)).toEqual([false, true]);
   });
 });
 

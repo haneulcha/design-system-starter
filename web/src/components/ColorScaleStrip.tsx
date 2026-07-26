@@ -9,6 +9,9 @@ export interface ColorScaleStop {
   key: string;
   hex: string;
   overridden?: boolean;
+  /** Highlighted with a distinct ring — e.g. the stop that equals the picked
+   *  anchor color verbatim in the lab's algorithm comparison. */
+  anchor?: boolean;
 }
 
 interface ColorScaleStripProps {
@@ -22,10 +25,14 @@ export function ColorScaleStrip({ stops, onPick }: ColorScaleStripProps) {
       className="grid gap-0.5"
       style={{ gridTemplateColumns: `repeat(${stops.length}, minmax(0, 1fr))` }}
     >
-      {stops.map(({ key, hex, overridden }) => {
+      {stops.map(({ key, hex, overridden, anchor }) => {
         const swatch = (
           <div
-            className="h-9 rounded-sm border border-neutral-200"
+            className={
+              anchor
+                ? "h-9 rounded-sm ring-1 ring-offset-1 ring-neutral-900"
+                : "h-9 rounded-sm border border-neutral-200"
+            }
             style={{ background: hex }}
           />
         );
@@ -35,20 +42,17 @@ export function ColorScaleStrip({ stops, onPick }: ColorScaleStripProps) {
             {overridden ? "●" : ""}
           </div>
         );
+        const title = `${key} · ${hex}${anchor ? " · 선택한 색 그대로" : ""}`;
         if (!onPick) {
           return (
-            <div key={key} title={`${key} · ${hex}`}>
+            <div key={key} title={title}>
               {swatch}
               {caption}
             </div>
           );
         }
         return (
-          <label
-            key={key}
-            className="block cursor-pointer"
-            title={`${key} · ${hex}`}
-          >
+          <label key={key} className="block cursor-pointer" title={title}>
             <input
               type="color"
               value={hex}

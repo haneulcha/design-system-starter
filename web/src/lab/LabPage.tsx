@@ -109,6 +109,10 @@ export function LabPage() {
         <h2 className="text-sm font-medium text-neutral-500 uppercase tracking-wider">
           Algorithms
         </h2>
+        <p className="text-[11px] leading-4 text-neutral-400">
+          진한 테두리 칸 = 지금 선택한 색이 정확히 그대로 남은 자리. 테두리가
+          없으면 그 알고리즘은 입력색을 변형해서 원본이 스케일에 없다는 뜻.
+        </p>
         {ALGORITHMS.map((algo) => (
           <StripRow
             key={algo.id}

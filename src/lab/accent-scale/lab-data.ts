@@ -12,12 +12,18 @@ const toOklch = converter("oklch");
 export interface LabStop {
   key: string;
   hex: string;
+  /** 입력색이 이 칸에 정확히 그대로 남았는가 (hex 단위 일치, 앵커 보존 시각화) */
+  anchor?: boolean;
 }
 
 /** 알고리즘의 native stop 구성으로 유도해 표시용 stop 배열 생성 */
 export function nativeScale(algo: AccentAlgorithm, hex: string): LabStop[] {
+  const input = hex.toLowerCase();
   const scale = algo.derive(hex, algo.nativeSpec);
-  return scale.map((c, i) => ({ key: String(i + 1), hex: oklchToHex(c) }));
+  return scale.map((c, i) => {
+    const out = oklchToHex(c);
+    return { key: String(i + 1), hex: out, anchor: out.toLowerCase() === input };
+  });
 }
 
 function hueDistance(a: number, b: number): number {
@@ -59,6 +65,7 @@ export function nearestReferences(
   hex: string,
   refSets: readonly ReferenceSet[],
 ): NearestReference[] {
+  const input = hex.toLowerCase();
   const inputH = parsePrimary(hex).h;
   return refSets.map((ref) => {
     let best: { name: string; d: number } | null = null;
@@ -71,7 +78,11 @@ export function nearestReferences(
     return {
       source: ref.source,
       palette: best!.name,
-      stops: hexes.map((h, i) => ({ key: ref.stopKeys[i], hex: h })),
+      stops: hexes.map((h, i) => ({
+        key: ref.stopKeys[i],
+        hex: h,
+        anchor: h.toLowerCase() === input,
+      })),
     };
   });
 }
