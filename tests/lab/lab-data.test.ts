@@ -64,6 +64,19 @@ describe("study notes (교보재 카피)", () => {
   });
 });
 
+describe("EVAL_PRESETS", () => {
+  it("has unique valid hexes with labels (eye-eval doc과 1:1 계약)", async () => {
+    const { EVAL_PRESETS } = await import("../../src/lab/accent-scale/lab-data.js");
+    expect(EVAL_PRESETS.length).toBeGreaterThanOrEqual(8);
+    expect(new Set(EVAL_PRESETS.map((p) => p.hex)).size).toBe(EVAL_PRESETS.length);
+    for (const p of EVAL_PRESETS) {
+      expect(p.hex, p.label).toMatch(/^#[0-9a-f]{6}$/);
+      expect(p.label.length).toBeGreaterThan(0);
+      expect(p.why.length).toBeGreaterThan(3);
+    }
+  });
+});
+
 describe("GLOSSARY", () => {
   it("has unique terms with nonempty definitions", async () => {
     const { GLOSSARY } = await import("../../src/lab/accent-scale/lab-data.js");
