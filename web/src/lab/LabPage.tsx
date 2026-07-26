@@ -6,8 +6,10 @@
 import { useState } from "react";
 import { ALGORITHMS } from "@core/lab/accent-scale/index.js";
 import {
+  GLOSSARY,
   nativeScale,
   nearestReferences,
+  REF_NOTES,
   type LabStop,
 } from "@core/lab/accent-scale/lab-data.js";
 import type { ReferenceSet } from "@core/lab/accent-scale/bench.js";
@@ -19,7 +21,15 @@ import { OklchPicker } from "../components/OklchPicker";
 // JSON 모듈의 추론 타입(리터럴 키)과 ReferenceSet(Record)이 달라 unknown 경유 캐스팅
 const REF_SETS = [tailwindRef, radixRef] as unknown as ReferenceSet[];
 
-function StripRow({ title, stops }: { title: string; stops: LabStop[] }) {
+function StripRow({
+  title,
+  description,
+  stops,
+}: {
+  title: string;
+  description?: string;
+  stops: LabStop[];
+}) {
   const copyAll = () =>
     navigator.clipboard.writeText(stops.map((s) => s.hex).join(", "));
   return (
@@ -34,7 +44,36 @@ function StripRow({ title, stops }: { title: string; stops: LabStop[] }) {
           copy hex
         </button>
       </div>
+      {description && (
+        <p className="text-[11px] leading-4 text-neutral-400 mb-1.5">
+          {description}
+        </p>
+      )}
       <ColorScaleStrip stops={stops} />
+    </div>
+  );
+}
+
+/** 피커 축 이동 → 효과 안내 (OklchPicker: 패드 세로=L, 가로=C, 아래 스트립=H) */
+function PickerGuide() {
+  const rows: [string, string][] = [
+    ["↑ 위로", "밝고 가벼운 인상 — 파스텔·배경색 쪽으로"],
+    ["↓ 아래로", "진하고 무게감 있게 — 텍스트·강조색 쪽으로"],
+    ["→ 오른쪽", "선명하고 쨍한 느낌 (채도↑) — 체커보드로 비는 영역은 화면(sRGB)이 표현할 수 없는 색이라는 뜻"],
+    ["← 왼쪽", "차분하고 뮤트된 톤 (채도↓) — 끝까지 가면 무채색"],
+    ["아래 스트립", "색상(hue) 자체를 바꾼다 — 브랜드의 성격이 달라지는 축"],
+  ];
+  return (
+    <div className="text-[11px] leading-4 text-neutral-400 space-y-1 max-w-xs">
+      <div className="font-medium text-neutral-500">
+        피커에서 움직여보기 — 원하는 효과별 방향
+      </div>
+      {rows.map(([dir, effect]) => (
+        <div key={dir} className="flex gap-2">
+          <span className="shrink-0 w-16 font-mono text-neutral-500">{dir}</span>
+          <span>{effect}</span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -52,23 +91,35 @@ export function LabPage() {
         </p>
       </header>
 
-      <div className="flex items-start gap-4">
+      <div className="flex items-start gap-6">
         <OklchPicker hex={hex} onChange={setHex} />
-        <input
-          value={hex}
-          onChange={(e) => {
-            if (/^#[0-9a-fA-F]{6}$/.test(e.target.value)) setHex(e.target.value);
-          }}
-          className="border border-neutral-300 rounded px-2 py-1 text-sm font-mono w-24"
-        />
+        <div className="space-y-3">
+          <input
+            value={hex}
+            onChange={(e) => {
+              if (/^#[0-9a-fA-F]{6}$/.test(e.target.value)) setHex(e.target.value);
+            }}
+            className="border border-neutral-300 rounded px-2 py-1 text-sm font-mono w-24"
+          />
+          <PickerGuide />
+        </div>
       </div>
 
       <section className="space-y-4">
         <h2 className="text-sm font-medium text-neutral-500 uppercase tracking-wider">
           Algorithms
         </h2>
+        <p className="text-[11px] leading-4 text-neutral-400">
+          진한 테두리 칸 = 지금 선택한 색이 정확히 그대로 남은 자리. 테두리가
+          없으면 그 알고리즘은 입력색을 변형해서 원본이 스케일에 없다는 뜻.
+        </p>
         {ALGORITHMS.map((algo) => (
-          <StripRow key={algo.id} title={algo.label} stops={nativeScale(algo, hex)} />
+          <StripRow
+            key={algo.id}
+            title={algo.label}
+            description={algo.description}
+            stops={nativeScale(algo, hex)}
+          />
         ))}
       </section>
 
@@ -80,9 +131,26 @@ export function LabPage() {
           <StripRow
             key={r.source}
             title={`${r.source} · ${r.palette}`}
+            description={REF_NOTES[r.source]}
             stops={r.stops}
           />
         ))}
+      </section>
+
+      <section className="space-y-2 border-t border-neutral-200 pt-6">
+        <h2 className="text-sm font-medium text-neutral-500 uppercase tracking-wider">
+          용어
+        </h2>
+        <dl className="space-y-1">
+          {GLOSSARY.map(([term, def]) => (
+            <div key={term} className="flex gap-3 text-[11px] leading-4">
+              <dt className="shrink-0 w-28 font-medium text-neutral-600">
+                {term}
+              </dt>
+              <dd className="text-neutral-400">{def}</dd>
+            </div>
+          ))}
+        </dl>
       </section>
     </div>
   );

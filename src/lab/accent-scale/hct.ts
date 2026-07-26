@@ -50,6 +50,8 @@ const TONE_BOTTOM = 8;
 export const hctAlgorithm: AccentAlgorithm = {
   id: "hct",
   label: "Material HCT (tonal palette)",
+  description:
+    "입력색의 색상·채도는 고정하고 밝기(tone)만 계단식으로 바꾼다. 사람 눈 기준으로 고르게 밝아지고 어두워지는 게 장점이지만, v1처럼 입력색 자체의 밝기는 무시한다.",
   nativeSpec: { count: 11, anchorIndex: 5 },
   derive(anchorHex: string, spec: ScaleSpec): Oklch[] {
     const hct = Hct.fromInt(argbFromHex(anchorHex));

@@ -275,6 +275,8 @@ function resample(scale12: Oklch[], count: number): Oklch[] {
 export const radixAlgorithm: AccentAlgorithm = {
   id: "radix",
   label: "Radix custom color (ported)",
+  description:
+    "입력색과 가장 비슷한 Radix 손튜닝 원본 스케일에 맞춘(스냅) 뒤 미세 보정한다. 입력색은 9번째 단계(버튼 같은 진한 배경 용도)에 그대로 들어간다 — 배경(흰색)과 거의 같은 입력일 때만 예외.",
   nativeSpec: { count: 12, anchorIndex: 8 },
   // 주의(comparability): spec.anchorIndex는 읽지 않는다 — 항상 네이티브 12-step
   // (앵커=인덱스 8)을 유도한 뒤 resample()로 재표집하므로, count≠12인 레퍼런스와
