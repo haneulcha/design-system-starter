@@ -22,6 +22,10 @@ describe("fillScale", () => {
   });
 
   it("with only the anchor pin ≡ ours v0 (gamut-clamped)", () => {
+    // 동치는 앵커 L ∈ [0.32, 0.93] (v0 warp 대역) 에서만 성립.
+    // PRESET_HEXES는 모두 이 범위 내 (L 약 0.42..0.81).
+    // 범위 밖에서는 fillScale이 true anchor L 사용 → v0와 의도적으로 발산
+    // (v0의 clamp는 단조성 손실 유발; fillScale이 더 나음).
     for (const hex of PRESET_HEXES) {
       const built = fillScale([anchorPin(hex)]);
       const v0 = oursAlgorithm
@@ -39,6 +43,7 @@ describe("fillScale", () => {
     const pins: Pin[] = [
       anchorPin("#3b82f6"),
       { index: 0, color: { l: 0.977, c: 0.02, h: 259 } },
+      { index: 3, color: { l: 0.84, c: 0.1, h: 259 } },
       { index: 10, color: { l: 0.25, c: 0.08, h: 240 } },
     ];
     const out = fillScale(pins);
@@ -82,6 +87,20 @@ describe("fillScale", () => {
     for (let i = 6; i <= 10; i++) {
       expect(out[i].h, `stop ${i}`).toBeLessThanOrEqual(out[i - 1].h + 1e-9);
       expect(out[i].h).toBeGreaterThanOrEqual(a.h - 25 - 1e-9);
+    }
+  });
+
+  it("keeps lightness strictly decreasing even with extreme anchor L outside v0 band", () => {
+    // v0 warp 대역 [0.32, 0.93] 밖의 앵커는 v0에서 단조성 손실 유발.
+    // fillScale은 true anchor L 사용해 단조성 항상 보존 (더 나은 동작).
+    // 극값: 0.3 (어두움), 0.9 (밝음) — 경계 근처지만 곡선 형태 수용 가능.
+    const extremeHigh = { l: 0.9, c: 0.02, h: 260 };
+    const extremeLow = { l: 0.3, c: 0.05, h: 260 };
+    for (const anchor of [extremeHigh, extremeLow]) {
+      const out = fillScale([{ index: 5, color: anchor }]);
+      for (let i = 1; i < out.length; i++) {
+        expect(out[i].l, `anchor L=${anchor.l} stop ${i}`).toBeLessThan(out[i - 1].l);
+      }
     }
   });
 });

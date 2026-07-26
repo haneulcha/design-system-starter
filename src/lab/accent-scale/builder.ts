@@ -61,7 +61,10 @@ function hueLerp(a: number, b: number, t: number): number {
 /** 고정점 사이를 OURS_CURVE 모양으로 채운 11-stop 스케일.
  *  - 앵커 pin(index 5) 필수. pin 색은 in-gamut 가정 (UI가 보장) → verbatim 보존.
  *  - 실제 pin이 없는 양 끝은 곡선 끝 L + 최근접 pin에 비례한 채도의 가상 고정점.
- *  - 보간 stop과 가상 끝점은 gamut 클램프 후 반환. */
+ *  - 보간 stop과 가상 끝점은 gamut 클램프 후 반환.
+ *  - v0 동치: pins=[{index: 5, color: anchor}] 일 때, 앵커 L ∈ [0.32, 0.93]이면
+ *    oursAlgorithm.derive(hex, nativeSpec) + clampToGamut[]와 동일. 범위 밖에서는
+ *    fillScale이 true anchor L을 사용해 단조성 보존 (v0의 clamp는 문서화된 한계). */
 export function fillScale(pins: readonly Pin[]): Oklch[] {
   if (!pins.some((p) => p.index === 5)) {
     throw new Error("fillScale: anchor pin (index 5) is required");
@@ -70,13 +73,17 @@ export function fillScale(pins: readonly Pin[]): Oklch[] {
   const eff: { index: number; color: Oklch; virtual: boolean }[] = sorted.map(
     (p) => ({ ...p, virtual: false }),
   );
+  const eps = 1e-7;
   const first = sorted[0];
   if (first.index !== 0) {
+    // 가상 끝점 L(밝은 쪽): OURS_CURVE[0] 또는 최근접 pin 중 더 밝은 쪽 사용.
+    // 극단적 light anchor도 처리: 항상 최소 eps만큼 더 밝아야 함.
+    const candidate = Math.max(OURS_CURVE[0].l, first.color.l + eps);
     eff.unshift({
       index: 0,
       virtual: true,
       color: {
-        l: OURS_CURVE[0].l,
+        l: candidate,
         c: first.color.c * (OURS_CURVE[0].cMult / OURS_CURVE[first.index].cMult),
         h: first.color.h,
       },
@@ -84,11 +91,14 @@ export function fillScale(pins: readonly Pin[]): Oklch[] {
   }
   const last = sorted[sorted.length - 1];
   if (last.index !== SCALE_SIZE - 1) {
+    // 가상 끝점 L(어두운 쪽): OURS_CURVE[10]과 최근접 pin 사이에서 더 어두운 쪽 사용.
+    // 극단적 dark anchor도 처리: 항상 최소 eps만큼 더 어두워야 함.
+    const candidate = Math.min(OURS_CURVE[SCALE_SIZE - 1].l, last.color.l - eps);
     eff.push({
       index: SCALE_SIZE - 1,
       virtual: true,
       color: {
-        l: OURS_CURVE[SCALE_SIZE - 1].l,
+        l: candidate,
         c: last.color.c * (OURS_CURVE[SCALE_SIZE - 1].cMult / OURS_CURVE[last.index].cMult),
         h: last.color.h,
       },
