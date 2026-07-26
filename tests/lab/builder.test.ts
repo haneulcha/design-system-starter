@@ -90,16 +90,52 @@ describe("fillScale", () => {
     }
   });
 
-  it("keeps lightness strictly decreasing even with extreme anchor L outside v0 band", () => {
-    // v0 warp 대역 [0.32, 0.93] 밖의 앵커는 v0에서 단조성 손실 유발.
-    // fillScale은 true anchor L 사용해 단조성 항상 보존 (더 나은 동작).
-    // 극값: 0.3 (어두움), 0.9 (밝음) — 경계 근처지만 곡선 형태 수용 가능.
-    const extremeHigh = { l: 0.9, c: 0.02, h: 260 };
-    const extremeLow = { l: 0.3, c: 0.05, h: 260 };
-    for (const anchor of [extremeHigh, extremeLow]) {
+  it("keeps L strictly decreasing for anchors outside v0 warp band but inside curve range", () => {
+    // v0 warp 대역 [0.32, 0.93] 밖이지만 곡선 범위 [0.2777, 0.9772] 안:
+    // fillScale은 true anchor L 사용해 단조성 보존 (v0는 clamp로 인해 손실).
+    // L=0.3 (OURS_CURVE[10]=0.2777보다 밝음), L=0.95 (OURS_CURVE[0]=0.9772보다 밝음)
+    const outsideWarpBand = [
+      { l: 0.3, c: 0.05, h: 260 },   // dark: outside v0's min 0.32, inside curve's range
+      { l: 0.95, c: 0.02, h: 260 },  // light: outside v0's max 0.93, inside curve's range
+    ];
+    for (const anchor of outsideWarpBand) {
       const out = fillScale([{ index: 5, color: anchor }]);
       for (let i = 1; i < out.length; i++) {
         expect(out[i].l, `anchor L=${anchor.l} stop ${i}`).toBeLessThan(out[i - 1].l);
+      }
+    }
+  });
+
+  it("collapses stops toward anchor for truly extreme L beyond curve range (eps-branch)", () => {
+    // Curve range [0.2777, 0.9772]. 범위 밖 anchor는 eps-guard 발동:
+    // 같은 쪽 stop들이 anchor.l 근처로 붕괴 (headroom 없음 — 고정 한계).
+    // 명시적으로 테스트: v1 spec에서 근-white/근-black은 지원 범위 밖.
+    const beyondCurveRange = [
+      { l: 0.99, c: 0.02, h: 260 },   // beyond light end: 0.9772
+      { l: 0.1, c: 0.05, h: 260 },    // beyond dark end: 0.2777
+    ];
+    for (const anchor of beyondCurveRange) {
+      const out = fillScale([{ index: 5, color: anchor }]);
+      // (i) Strict monotonicity maintained
+      for (let i = 1; i < out.length; i++) {
+        expect(out[i].l, `anchor L=${anchor.l} stop ${i}`).toBeLessThan(out[i - 1].l);
+      }
+      // (ii) Collapse assertion: stops on anchor's side within 1e-6 of anchor.l
+      const tolerance = 1e-6;
+      if (anchor.l > 0.9772) {
+        // Light anchor: stops 0-4 collapse toward anchor
+        for (let i = 0; i < 5; i++) {
+          expect(out[i].l, `light anchor L=${anchor.l} stop ${i} collapse`).toBeGreaterThan(
+            anchor.l - tolerance
+          );
+        }
+      } else if (anchor.l < 0.2777) {
+        // Dark anchor: stops 6-10 collapse toward anchor
+        for (let i = 6; i < 11; i++) {
+          expect(out[i].l, `dark anchor L=${anchor.l} stop ${i} collapse`).toBeLessThan(
+            anchor.l + tolerance
+          );
+        }
       }
     }
   });

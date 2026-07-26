@@ -73,11 +73,14 @@ export function fillScale(pins: readonly Pin[]): Oklch[] {
   const eff: { index: number; color: Oklch; virtual: boolean }[] = sorted.map(
     (p) => ({ ...p, virtual: false }),
   );
+  // eps-guard: anchor.l이 곡선 범위 [0.2777, 0.9772] 밖이면 같은 쪽 stop들이
+  // anchor.l에 붕괴 (headroom 없음 — v1 spec에서 근-white/근-black 앵커 범위 밖).
   const eps = 1e-7;
   const first = sorted[0];
   if (first.index !== 0) {
-    // 가상 끝점 L(밝은 쪽): OURS_CURVE[0] 또는 최근접 pin 중 더 밝은 쪽 사용.
-    // 극단적 light anchor도 처리: 항상 최소 eps만큼 더 밝아야 함.
+    // 가상 끝점 L(밝은 쪽): OURS_CURVE[0] 또는 (anchor.l + eps) 중 더 밝은 쪽 사용.
+    // anchor.l > 0.9772이면 eps-guard 발동: candidate = anchor.l + eps,
+    // 그러면 stop 0..4가 anchor 근처로 붕괴 (선택지 부족).
     const candidate = Math.max(OURS_CURVE[0].l, first.color.l + eps);
     eff.unshift({
       index: 0,
@@ -91,8 +94,9 @@ export function fillScale(pins: readonly Pin[]): Oklch[] {
   }
   const last = sorted[sorted.length - 1];
   if (last.index !== SCALE_SIZE - 1) {
-    // 가상 끝점 L(어두운 쪽): OURS_CURVE[10]과 최근접 pin 사이에서 더 어두운 쪽 사용.
-    // 극단적 dark anchor도 처리: 항상 최소 eps만큼 더 어두워야 함.
+    // 가상 끝점 L(어두운 쪽): OURS_CURVE[10] 또는 (anchor.l - eps) 중 더 어두운 쪽 사용.
+    // anchor.l < 0.2777이면 eps-guard 발동: candidate = anchor.l - eps,
+    // 그러면 stop 6..10이 anchor 근처로 붕괴 (선택지 부족).
     const candidate = Math.min(OURS_CURVE[SCALE_SIZE - 1].l, last.color.l - eps);
     eff.push({
       index: SCALE_SIZE - 1,
