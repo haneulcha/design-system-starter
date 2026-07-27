@@ -25,7 +25,7 @@ import type { Oklch } from "../../schema/types.js";
 import type { AccentAlgorithm, ScaleSpec } from "./types.js";
 
 // stop 50..950 (11개, 앵커=인덱스 5). l = 평균 L, cMult = 평균 C_i/C_anchor.
-const OURS_CURVE: readonly { l: number; cMult: number }[] = [
+export const OURS_CURVE: readonly { l: number; cMult: number }[] = [
   { l: 0.9772, cMult: 0.092 },
   { l: 0.9503, cMult: 0.221 },
   { l: 0.9052, cMult: 0.425 },

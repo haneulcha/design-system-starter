@@ -62,6 +62,13 @@
   -22~-28°, amber -20°, orange -8°; 평균 Δh~0은 쿨톤과의 상쇄). hue 드리프트
   knob의 1순위 근거가 됨.
 
+## 빌더 구현 (2026-07-27)
+
+가이드드 빌더 v1 구현 완료 — 스펙 `docs/superpowers/specs/2026-07-27-guided-palette-builder-design.md`,
+엔진 `src/lab/accent-scale/builder.ts` (fillScale 다중 고정점 워프 = v0의 일반화,
+동치 테스트로 고정), UI `web` `#builder` 라우트. knob 후보 중 밝은 끝 색끼·어두운 끝
+깊이·웜톤 hue 드리프트가 후보 축으로 편입됨.
+
 ## knob 후보 (가이드드 빌더로 이월)
 
 눈 평가와 v0 한계에서 도출. 빌더 스펙 작성 시 이 목록에서 출발할 것.
