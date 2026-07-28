@@ -5,6 +5,7 @@
 // 스펙: docs/superpowers/specs/2026-07-27-guided-palette-builder-design.md
 
 import { useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 import {
   BUILDER_STEPS,
   candidatesFor,
@@ -14,6 +15,11 @@ import {
   type Candidate,
   type Pin,
 } from "@core/lab/accent-scale/builder.js";
+import {
+  ACCENT_ROLES,
+  cssSnippet,
+  type AccentRole,
+} from "@core/lab/accent-scale/roles.js";
 import { oklchToHex, parsePrimary } from "@core/generator/color.js";
 import { ColorScaleStrip } from "../components/ColorScaleStrip";
 import { OklchPicker } from "../components/OklchPicker";
@@ -30,6 +36,135 @@ function toStrip(pins: readonly Pin[], scale = fillScale(pins)) {
     hex: oklchToHex(c),
     anchor: pinSet.has(i),
   }));
+}
+
+/** 역할표의 색 칩 + stop 번호. ring = 솔리드(앵커 고정) 강조. */
+function RoleChip({ hex, stop, ring }: { hex: string; stop: string; ring: boolean }) {
+  return (
+    <span className="inline-flex items-center gap-1">
+      <span
+        className={`inline-block w-3.5 h-3.5 rounded-sm border border-neutral-200 ${
+          ring ? "ring-1 ring-offset-1 ring-neutral-900" : ""
+        }`}
+        style={{ background: hex }}
+      />
+      <span className="font-mono text-neutral-500">{stop}</span>
+    </span>
+  );
+}
+
+/** 6역할이 전부 등장하는 미니 목업 — 라이트/다크 같은 마크업, CSS 변수만 교체.
+ *  컨테이너가 --accent-* 시맨틱 변수를 주입하고 내용물은 var()만 참조 —
+ *  copy CSS로 가져가는 스니펫이 곧 이 목업을 그린 CSS다. */
+function MockPanel({ mode, hexes }: { mode: "light" | "dark"; hexes: readonly string[] }) {
+  const role = (id: AccentRole["id"]) => ACCENT_ROLES.find((r) => r.id === id)!;
+  const tip = (id: AccentRole["id"]) => {
+    const r = role(id);
+    return `${r.id} — 라이트 ${STOP_KEYS[r.lightIndex]} / 다크 ${STOP_KEYS[r.darkIndex]}`;
+  };
+  const vars = Object.fromEntries(
+    ACCENT_ROLES.map((r) => [
+      `--accent-${r.id}`,
+      hexes[mode === "light" ? r.lightIndex : r.darkIndex],
+    ]),
+  );
+  return (
+    <div
+      className="flex-1 rounded border border-neutral-200 p-4 space-y-3"
+      style={{ ...vars, background: mode === "light" ? "#ffffff" : "#171717" } as CSSProperties}
+    >
+      <div
+        title={`${tip("subtle-bg")} · ${tip("border")}`}
+        className="rounded border p-3 space-y-1"
+        style={{ background: "var(--accent-subtle-bg)", borderColor: "var(--accent-border)" }}
+      >
+        <div
+          title={tip("text-strong")}
+          className="text-xs font-semibold"
+          style={{ color: "var(--accent-text-strong)" }}
+        >
+          알림 카드 제목
+        </div>
+        <div title={tip("text")} className="text-[11px]" style={{ color: "var(--accent-text)" }}>
+          링크 텍스트가 이 색으로 보입니다
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          title={tip("solid")}
+          className="text-xs rounded px-3 py-1.5 text-white"
+          style={{ background: "var(--accent-solid)" }}
+        >
+          솔리드 버튼
+        </button>
+        <button
+          type="button"
+          title={tip("hover-bg")}
+          className="text-xs rounded px-3 py-1.5"
+          style={{ background: "var(--accent-hover-bg)", color: "var(--accent-text-strong)" }}
+        >
+          호버 배경
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** 완료 화면 다크 섹션 — 역할 재배치 교보재. 계산은 roles.ts, 여긴 렌더만. */
+function DarkSection({ hexes }: { hexes: readonly string[] }) {
+  const copyCss = () => navigator.clipboard.writeText(cssSnippet(hexes));
+  return (
+    <div className="space-y-3 border-t border-neutral-200 pt-4">
+      <div className="flex items-baseline justify-between">
+        <h2 className="text-sm font-medium">다크 테마 — 역할 재배치</h2>
+        <button
+          type="button"
+          onClick={copyCss}
+          className="text-[10px] text-neutral-400 hover:text-neutral-700"
+        >
+          copy CSS
+        </button>
+      </div>
+      <p className="text-[11px] leading-4 text-neutral-400">
+        다크에서 색(프리미티브)은 그대로, 역할(시맨틱)만 재배치 — 같은 사다리를
+        반대쪽에서 오른다. 규칙: 인덱스 미러(i → 10−i), 솔리드(앵커)만 자리 고정.
+      </p>
+      <div className="flex gap-3">
+        <MockPanel mode="light" hexes={hexes} />
+        <MockPanel mode="dark" hexes={hexes} />
+      </div>
+      <p className="text-[11px] leading-4 text-neutral-400">
+        패널 배경은 고정값(#ffffff / #171717) — 실제 앱에선 뉴트럴 스케일이 이 자리.
+      </p>
+      <table className="w-full text-[11px]">
+        <thead>
+          <tr className="text-left text-neutral-500">
+            <th className="font-medium py-1 pr-2">역할</th>
+            <th className="font-medium py-1 pr-2">라이트</th>
+            <th className="font-medium py-1 pr-2">다크</th>
+            <th className="font-medium py-1">왜?</th>
+          </tr>
+        </thead>
+        <tbody>
+          {ACCENT_ROLES.map((r) => (
+            <tr key={r.id} className="border-t border-neutral-100 align-top">
+              <td className={`py-1.5 pr-2 ${r.id === "solid" ? "font-medium text-neutral-800" : "text-neutral-600"}`}>
+                {r.label}
+              </td>
+              <td className="py-1.5 pr-2">
+                <RoleChip hex={hexes[r.lightIndex]} stop={STOP_KEYS[r.lightIndex]} ring={r.id === "solid"} />
+              </td>
+              <td className="py-1.5 pr-2">
+                <RoleChip hex={hexes[r.darkIndex]} stop={STOP_KEYS[r.darkIndex]} ring={r.id === "solid"} />
+              </td>
+              <td className="py-1.5 leading-4 text-neutral-400">{r.note}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 export function BuilderPage() {
@@ -219,6 +354,7 @@ export function BuilderPage() {
               </div>
             ))}
           </div>
+          <DarkSection hexes={finalStops.map((s) => s.hex)} />
           <div className="text-[11px] leading-4 text-neutral-400">
             <span className="font-medium text-neutral-500">내가 고른 여정 — </span>
             {choices.map((c) => `${STEP_META[c.stopIndex].title}: ${c.label}`).join(" → ")}
