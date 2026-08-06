@@ -33,7 +33,7 @@
 - Consumes: `SCALE_SIZE`, `STOP_KEYS` (`src/lab/accent-scale/builder.ts`); 테스트에서 `fillScale`, `Pin`(builder), `parsePrimary`, `oklchToHex`(`src/generator/color.ts`).
 - Produces: `AccentRole` 인터페이스, `ACCENT_ROLES: readonly AccentRole[]`(6개), `cssSnippet(hexes: readonly string[]): string` — Task 2가 이 세 이름을 그대로 import한다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `tests/lab/roles.test.ts` 전체:
 
@@ -142,12 +142,12 @@ describe("cssSnippet", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트가 실패하는지 확인**
+- [x] **Step 2: 테스트가 실패하는지 확인**
 
 Run: `pnpm vitest run tests/lab/roles.test.ts`
 Expected: FAIL — `Cannot find module '../../src/lab/accent-scale/roles.js'` (혹은 동등한 모듈 없음 에러)
 
-- [ ] **Step 3: 엔진 구현**
+- [x] **Step 3: 엔진 구현**
 
 `src/lab/accent-scale/roles.ts` 전체:
 
@@ -254,17 +254,17 @@ export function cssSnippet(hexes: readonly string[]): string {
 }
 ```
 
-- [ ] **Step 4: 테스트 통과 확인**
+- [x] **Step 4: 테스트 통과 확인**
 
 Run: `pnpm vitest run tests/lab/roles.test.ts`
 Expected: PASS (7 tests)
 
-- [ ] **Step 5: 전체 테스트 + 타입 체크**
+- [x] **Step 5: 전체 테스트 + 타입 체크**
 
 Run: `pnpm test && npx tsc --noEmit`
 Expected: 전체 PASS, 타입 에러 0
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/lab/accent-scale/roles.ts tests/lab/roles.test.ts
@@ -284,7 +284,7 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 - Consumes: Task 1의 `ACCENT_ROLES`, `cssSnippet`, `type AccentRole` (`@core/lab/accent-scale/roles.js`); 기존 `STOP_KEYS`(builder), `finalStops`(완료 화면 로컬 변수 — `{ key, hex, anchor }[]`).
 - Produces: 없음 (말단 UI). 렌더 전용 — 새 React 상태를 만들지 않는다.
 
-- [ ] **Step 1: import 추가**
+- [x] **Step 1: import 추가**
 
 `web/src/builder/BuilderPage.tsx` 상단, 기존 builder import 블록 아래에 추가:
 
@@ -299,7 +299,7 @@ import {
 
 (기존 `import { useMemo, useState } from "react";`는 그대로 둔다 — `CSSProperties`는 별도 type import.)
 
-- [ ] **Step 2: 렌더 헬퍼 3개 추가**
+- [x] **Step 2: 렌더 헬퍼 3개 추가**
 
 `toStrip` 함수 정의 아래에 추가:
 
@@ -434,7 +434,7 @@ function DarkSection({ hexes }: { hexes: readonly string[] }) {
 }
 ```
 
-- [ ] **Step 3: 완료 화면에 섹션 배치**
+- [x] **Step 3: 완료 화면에 섹션 배치**
 
 완료 화면 JSX에서 hex 목록(`<div className="text-[11px] leading-5 font-mono text-neutral-500">…</div>`)과 "내가 고른 여정" `<div>` **사이**에 한 줄 삽입:
 
@@ -457,18 +457,18 @@ function DarkSection({ hexes }: { hexes: readonly string[] }) {
       )}
 ```
 
-- [ ] **Step 4: 타입 체크 + 빌드**
+- [x] **Step 4: 타입 체크 + 빌드**
 
 Run: `cd web && npx tsc --noEmit && npm run build`
 Expected: 에러 0, 빌드 성공.
 (주의: `style={{ ...vars, … } as CSSProperties}` 캐스팅이 없으면 커스텀 프로퍼티 키(`--accent-*`)에서 타입 에러 — 위 코드에 이미 포함됨.)
 
-- [ ] **Step 5: 루트 회귀 확인**
+- [x] **Step 5: 루트 회귀 확인**
 
 Run: `pnpm test`
 Expected: 전체 PASS (web 변경은 루트 테스트와 무관하지만 회귀 없음 확인).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add web/src/builder/BuilderPage.tsx
@@ -483,7 +483,15 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 
 Playwright로 `http://localhost:5199/#builder`:
 
-1. 5-pick 완주 (#3b82f6) → 완료 화면에 다크 섹션 렌더: 목업 2패널(라이트 흰 배경 / 다크 `#171717`), 역할표 6행, 솔리드 행 칩에 링.
-2. 목업 다크 패널에서 텍스트가 라이트보다 밝은 stop(400/300)으로 보이는지, 솔리드 버튼은 양쪽 동일색인지.
-3. copy CSS 클릭 → 클립보드 내용이 `:root` 11+6 선언 + `.dark` 5 선언인지 눈검사.
-4. 콘솔 에러 0.
+- [x] 1. 5-pick 완주 (#3b82f6) → 완료 화면에 다크 섹션 렌더: 목업 2패널(라이트 흰 배경 / 다크 `#171717`), 역할표 6행, 솔리드 행 칩에 링.
+- [x] 2. 목업 다크 패널에서 텍스트가 라이트보다 밝은 stop(400/300)으로 보이는지, 솔리드 버튼은 양쪽 동일색인지.
+- [x] 3. copy CSS 클릭 → 클립보드 내용이 `:root` 11+6 선언 + `.dark` 5 선언인지 눈검사.
+- [x] 4. 콘솔 에러 0.
+
+**결과 (2026-08-06, 500=#3b82f6 / 50·300·700=균형 / 950=기본):**
+
+- 다크 섹션 정상 렌더 — 역할표 6행이 `50→950 / 100→900 / 200→800 / 500→500 / 600→400 / 700→300`,
+  솔리드 행만 양쪽 칩에 링.
+- 목업: 다크 패널에서 제목 300 / 링크 400으로 밝아지고, 솔리드 버튼은 양쪽 `#3b82f6` 동일.
+- copy CSS 클립보드 = `:root` 11 프리미티브 + 6 시맨틱, `.dark` 5 선언(`--accent-solid` 부재).
+- 콘솔 에러는 `favicon.ico` 404 하나뿐 — 앱 무관, 기존부터 있던 것.
