@@ -44,7 +44,7 @@
 동작 변경 0. 이후 모든 태스크가 새 경로 위에서 진행되므로 먼저 한다.
 
 **Files:**
-- Move: `src/lab/accent-scale/` → `src/lab/palette/` (14파일)
+- Move: `src/lab/accent-scale/` → `src/lab/palette/` (13파일)
 - Modify: `tests/lab/*.test.ts` (7파일), `web/src/lab/LabPage.tsx`, `web/src/builder/BuilderPage.tsx`, `scripts/analysis/accent-scale-bench.ts`, `scripts/analysis/ours-curve-stats.ts`의 import 경로
 
 - [ ] **Step 1: 현재 테스트가 전부 통과하는지 확인 (기준선)**
@@ -688,7 +688,7 @@ export function neutralCandidates(accentHue: number): Candidate[] {
     {
       color: representative({ hue: snapped.hue, strength: TINT_STRENGTHS.soft }),
       label: `${snapped.label} (은은)`,
-      note: `당신의 액센트에 가장 가까운 그레이 자리로 붙였습니다 — ${snapped.note}`,
+      note: `당신의 액센트에서 가장 가까운 "${snapped.label}" 자리로 붙였습니다 — ${snapped.note}`,
     },
     {
       color: representative({ hue: snapped.hue, strength: TINT_STRENGTHS.strong }),
@@ -737,6 +737,41 @@ EOF
   - `interface SemanticAnchor { id; label; anchor: Oklch; hueRamp: readonly number[]; note: string }`
   - `SEMANTIC_ANCHORS: readonly SemanticAnchor[]` — 정확히 4개
   - `buildSemantic(anchor: SemanticAnchor): Oklch[]` — 길이 11
+
+- [ ] **Step 0: `fillScale`에 선택적 hue 램프 인자 추가**
+
+hue 램프를 **gamut 클램프 이전에** 적용해야 한다. 앵커 hue에서 클램프한 뒤 hue를
+돌리면 최종 hue에서 표현 가능한 채도를 미리 잘라버린다 — amber 실측으로 stop 200에서
+0.0799 → 0.0550 (**31% 손실**, 순서를 고치면 +45% 회복), stop 700에서 0.1639 → 0.1231.
+
+`src/lab/palette/builder.ts`의 `fillScale` 시그니처와 두 클램프 지점을 고친다:
+
+```ts
+export function fillScale(
+  pins: readonly Pin[],
+  /** stop별 Δh (11개). 클램프 직전에 적용된다 — 시맨틱 스케일용. */
+  hueRamp?: readonly number[],
+): Oklch[] {
+```
+
+본문에서 `hueRamp`를 적용하는 헬퍼를 두고, 기존 `clampToGamut(...)` 호출 두 곳
+(가상 끝점 `out[p.index] = p.virtual ? clampToGamut(p.color) : ...` 와 보간 루프의
+`out[k] = clampToGamut({...})`)을 이 헬퍼로 감싼다:
+
+```ts
+  const ramped = (c: Oklch, i: number): Oklch =>
+    hueRamp ? { ...c, h: (((c.h + hueRamp[i]) % 360) + 360) % 360 } : c;
+  // 가상 끝점:  out[p.index] = p.virtual ? clampToGamut(ramped(p.color, p.index)) : { ...p.color };
+  // 보간 루프:  out[k] = clampToGamut(ramped({ l: …, c: …, h: … }, k));
+```
+
+**핀 자리는 verbatim을 유지한다** — R1(앵커 보존). 시맨틱 앵커의 `hueRamp[5]`는 0이라
+어차피 동일하다.
+
+- [ ] **Step 0b: 기존 동작이 안 바뀌는지 확인**
+
+Run: `pnpm vitest run tests/lab/builder.test.ts tests/lab/algorithms.test.ts`
+Expected: PASS — `hueRamp`를 넘기지 않으면 이전과 완전히 같아야 한다 (ours v0 동치 테스트가 이걸 지킨다).
 
 - [ ] **Step 1: 실패하는 테스트 작성**
 
@@ -824,6 +859,13 @@ describe("buildSemantic", () => {
     expect(scale[10].h).toBeLessThan(warning.anchor.h - 20);    // 어두운 쪽 주황으로
   });
 
+  it("applies the hue ramp before clamping, not after", () => {
+    // 순서가 뒤집히면 앵커 hue에서 잘린 채도를 들고 hue만 도는 꼴이 된다.
+    // amber stop 200은 올바른 순서에서 0.079 근처, 뒤집히면 0.055 근처.
+    const warning = SEMANTIC_ANCHORS.find((a) => a.id === "warning")!;
+    expect(buildSemantic(warning)[2].c).toBeGreaterThan(0.07);
+  });
+
   it("keeps every stop inside sRGB", () => {
     for (const a of SEMANTIC_ANCHORS) {
       for (const s of buildSemantic(a)) {
@@ -857,7 +899,7 @@ Expected: FAIL — 모듈 해석 실패
 // 앵커·hueRamp 출처: tailwind v4.3.3의 red/green/amber/blue 실측 (2026-08-09).
 // 규칙을 발명하지 않고 레퍼런스 실측을 그대로 싣는다.
 
-import { SCALE_SIZE, clampToGamut, fillScale } from "./builder.js";
+import { SCALE_SIZE, fillScale } from "./builder.js";
 import type { Oklch } from "../../schema/types.js";
 
 export type SemanticId = "error" | "success" | "warning" | "info";
@@ -908,15 +950,10 @@ const ANCHOR_INDEX = 5;
 /** 앵커 + 실측 hue 램프 → 11-stop.
  *  L·C 워프는 fillScale이 이미 하는 일이다 (앵커 하나짜리 고정점 = 우리 곡선 v0와
  *  동치, 양 끝은 곡선 자체 값에 고정되고 구간별 아핀 리매핑이 단조를 보장한다).
- *  여기서 더하는 건 hue 램프뿐 — 워프를 다시 구현하지 않는다. */
+ *  hue 램프는 fillScale에 넘겨 **클램프 이전에** 적용시킨다 — 순서가 계약이다
+ *  (Step 0 참조). 워프를 다시 구현하지 않는다. */
 export function buildSemantic(anchor: SemanticAnchor): Oklch[] {
-  const base = fillScale([{ index: ANCHOR_INDEX, color: anchor.anchor }]);
-  return base.map((c, i) =>
-    clampToGamut({
-      ...c,
-      h: (((anchor.anchor.h + anchor.hueRamp[i]) % 360) + 360) % 360,
-    }),
-  );
+  return fillScale([{ index: ANCHOR_INDEX, color: anchor.anchor }], anchor.hueRamp);
 }
 
 // 램프 길이 계약 — 스케일 길이와 어긋나면 즉시 터진다.
@@ -1123,8 +1160,10 @@ export function cssSnippet(scales: ScaleSet): string {
 
 ```tsx
 import { SCALE_ROLES, cssSnippet, type ScaleRole, type ScaleSet } from "@core/lab/palette/roles.js";
-import { SEMANTIC_ANCHORS } from "@core/lab/palette/semantic.js";
+import { SEMANTIC_ANCHORS, buildSemantic } from "@core/lab/palette/semantic.js";
 ```
+
+(`buildSemantic`은 Task 8이 쓴다 — 여기서 함께 import해 두면 Task 8이 import 줄을 다시 건드리지 않는다.)
 
 `cssSnippet` 호출부는 Task 8에서 고치므로, 지금은 `DarkSection`의 `copyCss`를 임시로 다음과 같이 둔다 (Task 8이 정식 교체):
 
@@ -1275,7 +1314,24 @@ import {
   type NeutralTint,
 } from "@core/lab/palette/neutral.js";
 ```
-2. 상태에 뉴트럴 틴트 추가하고 파생값을 스텝 종류로 분기:
+2. **`Choice`가 stop 인덱스를 키로 쓰는 걸 먼저 고친다.** 현재 `Choice`는
+`{ stopIndex, label }`이고 `BuilderPage.tsx:256`·`:360`이 `STEP_META[c.stopIndex].title`을
+읽는다. 뉴트럴 선택은 stop이 없어 `-1`이 들어가고 `STEP_META[-1]`은 `undefined` →
+런타임 크래시다. 키를 스텝 메타 키로 바꾼다:
+
+```tsx
+interface Choice {
+  metaKey: number | "neutral"; // STEP_META 조회용
+  label: string;
+}
+```
+
+그리고 세 곳을 갱신:
+- `:252` `key={c.stopIndex}` → `key={i}`
+- `:256` `STEP_META[c.stopIndex].title` → `STEP_META[c.metaKey].title`
+- `:360` `STEP_META[c.stopIndex].title` → `STEP_META[c.metaKey].title`
+
+3. 상태에 뉴트럴 틴트 추가하고 파생값을 스텝 종류로 분기:
 
 ```tsx
   const [neutralTint, setNeutralTint] = useState<NeutralTint | null>(null);
@@ -1299,22 +1355,67 @@ import {
   }, [step, pins, accentHue]);
 ```
 
-3. `confirm()`에 뉴트럴 분기 추가 — 후보 인덱스로 틴트를 복원한다 (후보 0=무채색, 1=은은, 2=뚜렷):
+4. **후보 미리보기 스트립을 스텝 종류로 분기한다.** `BuilderPage.tsx:317`은 후보마다
+`toStrip([...pins, { index: stopIndex, color: cd.color }])`를 그리는데, 뉴트럴 단계의
+`stopIndex`는 `-1`이라 `fillScale`이 `OURS_CURVE[-1].cMult`를 읽고 터진다. 또한 뉴트럴
+후보를 액센트 스케일로 미리보는 것 자체가 틀렸다 — 뉴트럴 스케일을 보여줘야 한다:
+
+```tsx
+  const previewStrip = (cd: Candidate) =>
+    isNeutralStep
+      ? tintOf(cd).hue === null || tintOf(cd).strength === 0
+        ? toNeutralStrip(buildNeutral({ hue: null, strength: 0 }))
+        : toNeutralStrip(buildNeutral(tintOf(cd)))
+      : toStrip([...pins, { index: stopIndex, color: cd.color }]);
+```
+
+`toNeutralStrip`은 pin 강조가 없는 단순 변환이다 (뉴트럴엔 앵커가 없다):
+
+```tsx
+const toNeutralStrip = (scale: readonly Oklch[]) =>
+  scale.map((c, i) => ({ key: STOP_KEYS[i], hex: oklchToHex(c), anchor: false }));
+```
+
+`tintOf`는 후보 → 틴트 복원 (후보 0=무채색, 1=은은, 2=뚜렷):
+
+```tsx
+  const tintOf = (cd: Candidate): NeutralTint => {
+    const idx = candidates.indexOf(cd);
+    if (idx === 0) return { hue: null, strength: 0 };
+    const snapped = snapTint(accentHue);
+    return { hue: snapped.hue, strength: idx === 1 ? TINT_STRENGTHS.soft : TINT_STRENGTHS.strong };
+  };
+```
+
+5. **하단 상시 미리보기(`previewPins`, `:187-192` → `:373-378`에서 렌더)도 분기한다.**
+뉴트럴 단계에서는 pin 기반 미리보기가 무의미하므로 확정된 액센트 스케일을 그대로 두고,
+임시 선택한 뉴트럴 스트립을 그 아래 한 줄로 덧붙인다:
+
+```tsx
+  const previewPins = useMemo<Pin[]>(() => {
+    if (isAccentStep && !done) return [{ index: 5, color: parsePrimary(accentHex) }];
+    if (isNeutralStep) return pins;            // 액센트는 이미 확정 — 그대로 보여준다
+    return picked ? [...pins, { index: stopIndex, color: picked.color }] : pins;
+  }, [isAccentStep, isNeutralStep, done, accentHex, picked, pins, stopIndex]);
+
+  const neutralPreview = isNeutralStep && picked ? toNeutralStrip(buildNeutral(tintOf(picked))) : null;
+```
+
+`:373-378`의 미리보기 아래에 `{neutralPreview && <ColorScaleStrip stops={neutralPreview} />}`를 둔다.
+
+6. `confirm()`에 뉴트럴 분기 추가:
 
 ```tsx
     } else if (isNeutralStep && picked) {
-      const idx = candidates.indexOf(picked);
-      const snapped = snapTint(accentHue);
-      setNeutralTint(
-        idx === 0
-          ? { hue: null, strength: 0 }
-          : { hue: snapped.hue, strength: idx === 1 ? TINT_STRENGTHS.soft : TINT_STRENGTHS.strong },
-      );
-      setChoices([...choices, { stopIndex: -1, label: picked.label }]);
+      setNeutralTint(tintOf(picked));
+      setChoices([...choices, { metaKey: "neutral", label: picked.label }]);
     } else if (picked) {
 ```
 
-4. `STEP_META` 조회를 스텝 종류로 분기:
+기존 두 분기의 `setChoices`도 `metaKey`로 바꾼다 — 앵커는 `{ metaKey: 5, label: accentHex }`,
+액센트 stop은 `{ metaKey: stopIndex, label: picked.label }`.
+
+7. `STEP_META` 조회를 스텝 종류로 분기:
 
 ```tsx
   const meta = step && STEP_META[
@@ -1322,20 +1423,27 @@ import {
   ];
 ```
 
-5. 진행 표시(`BUILDER_STEPS.map`)를 `BUILDER_FLOW.map`으로 바꾸고, 키를 인덱스로 준다 (스텝이 더 이상 고유한 숫자가 아니다):
+8. 진행 표시(`:238-245`)는 클릭 불가능한 `<span>` 점이다. **버튼으로 바꾸지 말 것** —
+아직 도달하지 않은 단계로 점프하면 앵커 없이 `candidatesFor`가 호출되어
+`"anchor pin (index 5) is required"`로 터진다. `BUILDER_FLOW`로만 바꾸고 `key`를
+인덱스로 준다 (스텝이 더 이상 고유한 숫자가 아니라 `key={s}`가 충돌한다):
 
 ```tsx
-          {BUILDER_FLOW.map((s, i) => (
-            <button key={i} type="button" onClick={() => goToStep(i)} /* …기존 스타일 유지… */>
-              {i + 1}
-            </button>
+          {BUILDER_FLOW.map((_, i) => (
+            <span
+              key={i}
+              className={`w-2 h-2 rounded-full ${
+                i < stepIdx ? "bg-neutral-800" : i === stepIdx ? "bg-neutral-400" : "bg-neutral-200"
+              }`}
+            />
           ))}
 ```
 
-6. 되돌아가기(`goToStep`)는 기존에 `BUILDER_STEPS.slice(0, targetStep)`으로 유지할 stop을 계산한다. `BUILDER_FLOW` 기준으로 바꾸고 뉴트럴을 함께 무효화한다:
+9. 되돌아가기 함수의 이름은 `goToStep`이 아니라 **`redo`**다 (`:210`). `BUILDER_STEPS`
+기준의 stop 필터를 `BUILDER_FLOW` 기준으로 바꾸고 뉴트럴을 함께 무효화한다:
 
 ```tsx
-  const goToStep = (targetStep: number) => {
+  const redo = (targetStep: number) => {
     const keptStops = BUILDER_FLOW.slice(0, targetStep).flatMap((s) =>
       s.kind === "accent-anchor" ? [5] : s.kind === "accent-stop" ? [s.stopIndex] : [],
     );
@@ -1347,8 +1455,10 @@ import {
   };
 ```
 
-> `choices`를 `slice`로 자르는 것은 기존의 `stopIndex` 필터를 대체한다 — 뉴트럴
-> 선택은 `stopIndex: -1`이라 stop 기반 필터로는 걸러지지 않기 때문이다.
+> `choices`를 `slice`로 자르는 것이 기존 `stopIndex` 필터를 대체한다 — 뉴트럴
+> 선택에는 stop이 없어 stop 기반 필터로는 걸러지지 않기 때문이다.
+
+10. `restart()`(`:218`)에도 `setNeutralTint(null)`을 추가한다.
 
 - [ ] **Step 6: 브라우저 수동 확인**
 

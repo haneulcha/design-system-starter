@@ -72,11 +72,18 @@ tailwind 뉴트럴 5종(`slate`/`gray`/`zinc`/`neutral`/`stone`) stop별 평균 
 | `stone` | 58.1° | 0.0130 | | `sand` | 106.7° | 0.0102 |
 | | | | | `gray` | — | 0 |
 
-- 두 독립 시스템이 같은 지대를 가리킨다: 무채색 · ~258 · ~278–293 · ~137–168 · ~58–107.
-- 채도가 액센트의 **1/5 ~ 1/20** (액센트 C_max 코퍼스 중앙값 0.213).
+- 두 독립 시스템이 비슷한 지대를 가리킨다: 무채색 · ~258 · ~278–293 · ~137–168 · ~58–107.
+  단 "같은 자리"라고 말하면 과장이다 — 파랑과 페어링되는 그레이가 tailwind에선
+  `slate` 257.4°, radix에선 `slate` 277.7°로 20° 벌어져 있고, 아래 어트랙터
+  분할(258 / 286)에서는 서로 다른 어트랙터에 배정된다.
+- 채도가 액센트의 **1/5 ~ 1/20**. 분모는 이 계보의 레퍼런스 기준 액센트 C_max
+  중앙값 **0.187**(tailwind 17 + radix). 레거시 코퍼스 58종의 0.213도 같은
+  결론을 주지만, 그건 교차 검증용 숫자다.
 - **웜 쪽이 결정적**: radix `sand`는 웜 액센트와 페어링되는 그레이인데 hue가 106.7°
   — 오렌지 액센트(30–50°)에서 60° 이상 밀려 있다. tailwind `stone`도 58.1°이고
-  stop별로 34–74°를 오간다(웜 그레이는 hue가 불안정). 레거시 코퍼스에서도 같은
+  채도가 유의미한 stop들(C > 0.002)에서 34–74°를 오간다. 전 stop으로 넓히면
+  34–106°인데, 양 끝 두 stop은 C ≈ 0.001이라 hue가 사실상 무의미하다
+  (웜 그레이는 hue가 불안정하다는 관찰 자체는 어느 쪽으로 재도 성립). 레거시 코퍼스에서도 같은
   방향이 관측된다(claude 액센트 39° → 뉴트럴 82°, mistral 59° → 92°,
   posthog 74° → 117°; 그리고 58종 중 **웜 틴트 뉴트럴은 0종**).
 - 결론: `neutral.h = accent.h`는 **성립하지 않는다.** 순수 웜 그레이는 갈색이 된다.
@@ -136,6 +143,28 @@ tailwind red/amber/green/blue가 `OURS_CURVE`에서 벗어나는 정도:
 > 코퍼스 밴드(254–262°) 밖이다. 두 독립 소스가 259.8°/258°를 가리키므로 생성기
 > 계보에서는 tailwind 실측값을 쓴다. 레거시 값 정정은 사이클 2 범위.
 
+### 알려진 한계 (검증 자체의 한계 — 2026-08-09 리뷰에서 추가)
+
+`ours.ts`의 "알려진 한계" 선례를 따라, 위 결론이 데이터를 어디까지 넘어서는지 적어둔다.
+
+- **V1의 sd는 한 벤더 안의 일관성이다.** 0.001~0.008은 tailwind 5종이 서로
+  같다는 뜻이지 "업계 상수"라는 뜻이 아니다. radix의 12-step 그레이는 hue만
+  대조했고 L 곡선은 대조하지 않았다. "취향 축이 아니다"는 **디폴트로 삼기에
+  충분한 근거**이지 증명이 아니다.
+- **V4는 부분적으로 순환 논증이다.** `OURS_CURVE`는 tailwind 17개 팔레트의
+  평균인데 **그 17개에 red/amber/green/blue가 포함**된다. 넷이 자기가 속한
+  평균에서 덜 벗어나는 건 어느 정도 당연하다. 독립 검증(radix red/green 등)은
+  하지 않았다 — 시맨틱에 불만이 생기면 여기부터 확인할 것.
+- **채도 재현도는 균일하지 않다.** `OURS_CURVE`의 `cMult`는 앵커에서 1.0으로
+  천장을 치는데 tailwind blue는 앵커를 지나서 채도가 더 오른다. 결과적으로
+  built blue-700이 tailwind blue-700보다 눈에 띄게 덜 선명하다. V4 표의
+  mean|ΔL|은 밝기만 재므로 이 차이를 드러내지 못한다.
+- **레퍼런스가 Display P3다.** tailwind v4 팔레트는 P3 색역이라 sRGB로
+  클램프하면 앵커부터 채도가 깎인다 (amber-500: 0.188 → 0.1665). 생성 결과가
+  tailwind보다 전반적으로 차분한 것은 버그가 아니라 이 때문이다. sRGB 고정은
+  기존 빌더의 결정을 잇는 것이고, P3 출력은 이월 항목이다.
+- **V3의 강도-종속은 그룹당 n=2다** (zinc·stone vs slate·gray).
+
 ## 확정된 결정
 
 | 결정 | 내용 | 근거 |
@@ -156,7 +185,7 @@ tailwind red/amber/green/blue가 `OURS_CURVE`에서 벗어나는 정도:
 
 | 대상 | 조치 |
 | --- | --- |
-| `src/lab/accent-scale/**` (14파일) | `src/lab/palette/**`로 이동 + 헤더 주석 갱신 |
+| `src/lab/accent-scale/**` (13파일) | `src/lab/palette/**`로 이동 + 헤더 주석 갱신 |
 | `tests/lab/**` (7파일), `web/src/{lab,builder}/**` (2파일) | import 경로 갱신 |
 | `scripts/analysis/accent-scale-{bench,refs}.ts`, `scripts/analysis/accent-scale/`, `package.json`의 동명 스크립트 | **개명하지 않는다** — 이들은 실제로 액센트 스케일 벤치/레퍼런스 추출이 맞다 |
 
@@ -185,8 +214,8 @@ FP 원칙 유지: 계산과 UI 문구(라벨·note)는 엔진에, `web/`은 렌�
 ### `neutral.ts`
 
 ```ts
-/** stop 50..950. l = tailwind 뉴트럴 5종 평균 L, cShape = 틴트 4종 정규화 C 평균. */
-export const NEUTRAL_CURVE: readonly { l: number; cShape: number }[];
+/** stop 50..950. l = tailwind 뉴트럴 5종 평균 L. 채도는 아래 두 모양 테이블이 따로 맡는다. */
+export const NEUTRAL_CURVE: readonly { l: number }[];
 
 export interface TintAttractor {
   readonly id: "achromatic" | "cool" | "purple" | "green" | "warm";
@@ -248,6 +277,13 @@ export function buildSemantic(anchor: SemanticAnchor): Oklch[];
 
 `hueRamp`는 규칙을 발명하지 않고 **레퍼런스 실측을 그대로 싣는다** (V4 표의 Δh).
 amber의 +25.2 → −24.4가 여기 들어간다.
+
+> **클램프 순서가 계약이다.** hue 램프는 **gamut 클램프 이전에** 적용해야 한다.
+> 앵커 hue에서 클램프한 뒤 hue를 회전시키면, 최종 hue에서는 표현 가능한 채도를
+> 미리 잘라버린 셈이 된다. amber 실측: stop 200에서 의도 채도 0.0799가
+> 0.0550으로 **31% 손실**(회복 시 +45%), stop 700에서 0.1639 → 0.1231(회복 +24%).
+> 따라서 `fillScale`에 선택적 `hueRamp` 인자를 추가해 워프 내부에서 클램프 직전에
+> 적용한다 — 워프를 두 벌로 복제하지 않기 위해서다.
 
 ### `roles.ts` 일반화
 
@@ -340,8 +376,8 @@ UI는 관례대로 Playwright 수동 검증 — 6-pick 완주 → 3종 스케일
 빌더 스펙 원칙("엔진에 실패 경로를 만들지 않는다")을 잇고, 계약 위반 가드만 둔다:
 
 - `cssSnippet`: 세 스케일 중 하나라도 길이 11이 아니면 throw.
-- `buildNeutral`: `strength < 0` 또는 hue 범위 밖이면 throw.
-- `snapTint`: 전 범위에서 반드시 어트랙터를 반환 (실패 경로 없음).
+- `buildNeutral`: `strength < 0`이면 throw. **hue는 throw하지 않고 mod 360으로 정규화한다** — hue는 본래 순환량이라 370°를 오류로 볼 근거가 없다.
+- `snapTint`: 전 범위에서 반드시 어트랙터를 반환 (실패 경로 없음). 입력 hue도 정규화.
 
 ## v0 범위 밖 (명시적 이월)
 
