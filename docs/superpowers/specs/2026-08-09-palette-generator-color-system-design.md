@@ -322,13 +322,16 @@ UI는 관례대로 Playwright 수동 검증 — 6-pick 완주 → 3종 스케일
 
 ## 구현 시 정식화
 
-검증에 쓴 스크래치 스크립트를 `scripts/analysis/`에 정식 편입한다:
+검증에 쓴 스크래치 스크립트를 `scripts/analysis/neutral-curve-stats.ts`로 정식
+편입한다 — `NEUTRAL_CURVE`·`C_SHAPE_*` 재생성용. 레퍼런스 갱신 시 다시 돌려
+비교할 것.
 
-- `scripts/analysis/accent-scale/extract-references.ts`의 `TAILWIND_EXCLUDE` /
-  `RADIX_EXCLUDE`에서 뉴트럴 계열을 **제외 대신 별도 산출**로 돌려
-  `data/references/{tailwind-v4,radix-light}-neutral.json` 생성.
-- `scripts/analysis/ours-curve-stats.ts`의 뉴트럴 변형(`neutral-curve-stats.ts`)
-  — `NEUTRAL_CURVE` 재생성용. 레퍼런스 갱신 시 다시 돌려 비교할 것.
+> **2026-08-09 판단 변경 기록:** 초안은 `accent-scale/extract-references.ts`의
+> 제외 목록을 풀어 `data/references/*-neutral.json`을 별도 생성하는 안이었다.
+> 계획 작성 중 철회 — 액센트 JSON은 소비자(`bench.ts`·`radix.ts`)가 있어
+> 중간 산출물이 정당하지만, 뉴트럴 JSON은 통계 스크립트 하나 말고는 아무도
+> 읽지 않는다. `theme.css`를 직접 읽는 쪽이 계보가 짧고 갱신 지점이 하나다.
+> 뉴트럴 레퍼런스를 여러 곳이 읽게 되면 그때 JSON으로 승격한다.
 
 `ours.ts`의 선례를 따라 각 테이블 상단에 산출 스크립트와 산출 일자를 주석으로 남긴다.
 
