@@ -13,6 +13,7 @@ import { SCALE_SIZE } from "../../src/lab/palette/builder.js";
 import {
   buildNeutral,
   neutralCandidates,
+  tintAttractor,
   TINT_STRENGTHS,
   type NeutralCandidate,
 } from "../../src/lab/palette/neutral.js";
@@ -133,6 +134,29 @@ describe("snapTint", () => {
   it("handles hues outside 0..360 by normalizing", () => {
     expect(snapTint(-100).id).toBe(snapTint(260).id);
     expect(snapTint(620).id).toBe(snapTint(260).id);
+  });
+});
+
+describe("tintAttractor", () => {
+  it("returns the achromatic attractor for { hue: null, strength: 0 }", () => {
+    // null === null 매칭이 핵심 동작이다 — hue 0(빨강 근처 실측)과 혼동되면
+    // 무채색 틴트가 엉뚱한 유채색 어트랙터로 되짚힌다.
+    const found = tintAttractor({ hue: null, strength: 0 });
+    expect(found.id).toBe("achromatic");
+  });
+
+  it("returns the matching attractor for each chromatic hue", () => {
+    for (const a of TINT_ATTRACTORS) {
+      if (a.hue === null) continue;
+      const found = tintAttractor({ hue: a.hue, strength: TINT_STRENGTHS.soft });
+      expect(found.id, a.id).toBe(a.id);
+    }
+  });
+
+  it("throws when the hue is not one of the attractors (engine contract violation)", () => {
+    expect(() => tintAttractor({ hue: 40, strength: TINT_STRENGTHS.soft })).toThrow(
+      /no attractor matches hue/,
+    );
   });
 });
 
