@@ -1,0 +1,112 @@
+// src/lab/palette/neutral.ts
+//
+// 뉴트럴 스케일 파생. 액센트와 달리 자체 L 곡선을 쓰고, hue는 액센트에서
+// 이산 어트랙터로 스냅한다 (neutral.h = accent.h는 웜에서 갈색으로 붕괴).
+// 스펙: docs/superpowers/specs/2026-08-09-palette-generator-color-system-design.md
+//
+// 상수 출처: scripts/analysis/neutral-curve-stats.ts (tailwind v4.3.3, 2026-08-09).
+// 레퍼런스 갱신 시 다시 돌려 비교할 것.
+
+import { SCALE_SIZE } from "./builder.js";
+
+/** stop 50..950의 평균 L. tailwind 뉴트럴 5종(slate·gray·zinc·neutral·stone)
+ *  의 sd가 0.001~0.008 — 다섯 램프가 같은 사다리를 쓴다. 즉 취향 축이 아니다. */
+export const NEUTRAL_CURVE: readonly { l: number }[] = [
+  { l: 0.9848 }, { l: 0.9684 }, { l: 0.9244 }, { l: 0.8702 },
+  { l: 0.7066 }, { l: 0.5532 }, { l: 0.4434 }, { l: 0.372 },
+  { l: 0.2736 }, { l: 0.2098 }, { l: 0.1384 },
+];
+
+/** C_max로 정규화한 채도 모양 — 틴트가 옅은 램프(zinc·stone). */
+export const C_SHAPE_SOFT: readonly number[] = [
+  0.038, 0.068, 0.233, 0.369, 0.826, 0.971, 0.923, 0.767, 0.446, 0.407, 0.301,
+];
+
+/** 같은 모양 — 틴트가 진한 램프(slate·gray). 어두운 쪽에서 채도를 유지한다. */
+export const C_SHAPE_STRONG: readonly number[] = [
+  0.062, 0.12, 0.23, 0.386, 0.758, 0.897, 0.909, 0.978, 0.931, 0.957, 0.868,
+];
+
+/** 두 모양 테이블의 기준 C_max (해당 램프들의 평균). */
+export const SOFT_REF_CMAX = 0.015;
+export const STRONG_REF_CMAX = 0.04;
+
+/** 채도 모양은 독립 축이 아니라 틴트 강도의 종속 변수다 —
+ *  진한 램프일수록 어두운 쪽까지 채도를 끌고 간다(C_max와 상관).
+ *  두 기준 테이블 사이를 강도로 보간하고, 범위 밖은 외삽 없이 클램프. */
+export function cShape(index: number, strength: number): number {
+  const t = Math.min(
+    1,
+    Math.max(0, (strength - SOFT_REF_CMAX) / (STRONG_REF_CMAX - SOFT_REF_CMAX)),
+  );
+  return C_SHAPE_SOFT[index] + (C_SHAPE_STRONG[index] - C_SHAPE_SOFT[index]) * t;
+}
+
+export interface TintAttractor {
+  readonly id: "achromatic" | "cool" | "purple" | "green" | "warm";
+  readonly label: string;
+  /** null = 무채색 (hue 없음 — 스냅 대상이 아니다). */
+  readonly hue: number | null;
+  readonly note: string;
+}
+
+/** hue 값은 tailwind 5종 + radix 6종 실측의 종합.
+ *  cool: tw slate 257.4 / gray 259.7 · purple: tw zinc 285.8, radix mauve 292.9 / slate 277.7
+ *  green: radix sage 167.6 / olive 136.6 · warm: tw stone 58.1, radix sand 106.7 */
+export const TINT_ATTRACTORS: readonly TintAttractor[] = [
+  {
+    id: "achromatic",
+    label: "무채색",
+    hue: null,
+    note: "순수 회색. tailwind neutral·radix gray가 여기 — 브랜드 기운을 배경에 전혀 섞지 않는 선택.",
+  },
+  {
+    id: "cool",
+    label: "쿨 그레이",
+    hue: 258,
+    note: "파랑 쪽으로 살짝 기운 회색. tailwind slate(257°)·gray(260°)가 쓰는 자리 — 가장 흔한 틴트.",
+  },
+  {
+    id: "purple",
+    label: "퍼플 그레이",
+    hue: 286,
+    note: "보라 쪽 회색. tailwind zinc(286°)·radix mauve(293°) — 보라·남색 브랜드와 어울린다.",
+  },
+  {
+    id: "green",
+    label: "그린 그레이",
+    hue: 150,
+    note: "초록 쪽 회색. radix sage(168°)·olive(137°) — 초록·청록 브랜드의 배경.",
+  },
+  {
+    id: "warm",
+    label: "웜 그레이",
+    hue: 85,
+    note: "따뜻한 회색. 주황 브랜드라도 hue를 그대로 쓰면 갈색이 되므로 노랑·올리브 쪽으로 크게 민다 — tailwind stone(58°)·radix sand(107°)가 그렇게 한다.",
+  },
+];
+
+const CHROMATIC = TINT_ATTRACTORS.filter(
+  (a): a is TintAttractor & { hue: number } => a.hue !== null,
+);
+
+/** 원형 최단거리 (0..180) */
+function hueDistance(a: number, b: number): number {
+  return Math.abs(((a - b + 540) % 360) - 180);
+}
+
+/** 액센트 hue → 최근접 유채색 어트랙터.
+ *  무채색은 hue가 없어 거리 계산 대상이 아니다 — 사용자가 후보에서 직접 고른다. */
+export function snapTint(accentHue: number): TintAttractor {
+  const h = ((accentHue % 360) + 360) % 360;
+  let best = CHROMATIC[0];
+  for (const a of CHROMATIC) {
+    if (hueDistance(h, a.hue) < hueDistance(h, best.hue)) best = a;
+  }
+  return best;
+}
+
+// SCALE_SIZE 계약 확인 — 곡선 테이블이 스케일 길이와 어긋나면 즉시 터진다.
+if (NEUTRAL_CURVE.length !== SCALE_SIZE) {
+  throw new Error("neutral.ts: NEUTRAL_CURVE length must equal SCALE_SIZE");
+}
