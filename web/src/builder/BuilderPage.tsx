@@ -1,7 +1,7 @@
 // web/src/builder/BuilderPage.tsx
 //
 // #builder — 가이드드 팔레트 빌더 (RUI 5-pick 플로우). 렌더 전용:
-// 스케일 계산·후보 생성은 전부 @core/lab/accent-scale/builder (순수).
+// 스케일 계산·후보 생성은 전부 @core/lab/palette/builder (순수).
 // 스펙: docs/superpowers/specs/2026-07-27-guided-palette-builder-design.md
 
 import { useMemo, useState } from "react";
@@ -14,12 +14,12 @@ import {
   STOP_KEYS,
   type Candidate,
   type Pin,
-} from "@core/lab/accent-scale/builder.js";
+} from "@core/lab/palette/builder.js";
 import {
   ACCENT_ROLES,
   cssSnippet,
   type AccentRole,
-} from "@core/lab/accent-scale/roles.js";
+} from "@core/lab/palette/roles.js";
 import { oklchToHex, parsePrimary } from "@core/generator/color.js";
 import { ColorScaleStrip } from "../components/ColorScaleStrip";
 import { OklchPicker } from "../components/OklchPicker";

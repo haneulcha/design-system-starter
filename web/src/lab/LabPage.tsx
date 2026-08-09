@@ -1,10 +1,10 @@
 // web/src/lab/LabPage.tsx
 //
 // #lab — 액센트 스케일 유도 알고리즘 비교 랩 (연구용, 제품 UI 아님).
-// 스케일 계산은 전부 @core/lab/accent-scale (순수)에서; 이 파일은 렌더만.
+// 스케일 계산은 전부 @core/lab/palette (순수)에서; 이 파일은 렌더만.
 
 import { useState } from "react";
-import { ALGORITHMS } from "@core/lab/accent-scale/index.js";
+import { ALGORITHMS } from "@core/lab/palette/index.js";
 import {
   EVAL_PRESETS,
   GLOSSARY,
@@ -12,8 +12,8 @@ import {
   nearestReferences,
   REF_NOTES,
   type LabStop,
-} from "@core/lab/accent-scale/lab-data.js";
-import type { ReferenceSet } from "@core/lab/accent-scale/bench.js";
+} from "@core/lab/palette/lab-data.js";
+import type { ReferenceSet } from "@core/lab/palette/bench.js";
 import tailwindRef from "@data/references/tailwind-v4.json";
 import radixRef from "@data/references/radix-light.json";
 import { ColorScaleStrip } from "../components/ColorScaleStrip";

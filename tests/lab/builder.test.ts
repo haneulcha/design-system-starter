@@ -8,8 +8,8 @@ import {
   BUILDER_STEPS,
   STEP_META,
   candidatesFor,
-} from "../../src/lab/accent-scale/builder.js";
-import { oursAlgorithm } from "../../src/lab/accent-scale/ours.js";
+} from "../../src/lab/palette/builder.js";
+import { oursAlgorithm } from "../../src/lab/palette/ours.js";
 import { parsePrimary } from "../../src/generator/color.js";
 
 const anchorPin = (hex: string): Pin => ({ index: 5, color: parsePrimary(hex) });

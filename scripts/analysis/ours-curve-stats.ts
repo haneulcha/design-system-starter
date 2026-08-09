@@ -1,6 +1,6 @@
 // scripts/analysis/ours-curve-stats.ts
 //
-// "우리 곡선"(src/lab/accent-scale/ours.ts)의 곡선 테이블 산출 스크립트.
+// "우리 곡선"(src/lab/palette/ours.ts)의 곡선 테이블 산출 스크립트.
 // tailwind 레퍼런스 17개 팔레트를 앵커 기준으로 정규화해 stop별
 // 평균 L / 평균 C비율(C_i/C_anchor) / 평균 hue 드리프트를 뽑는다.
 // 레퍼런스가 갱신되면(pnpm accent-scale-refs) 이걸 다시 돌려 ours.ts의

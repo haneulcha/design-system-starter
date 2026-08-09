@@ -1,4 +1,4 @@
-// src/lab/accent-scale/builder.ts
+// src/lab/palette/builder.ts
 //
 // 가이드드 팔레트 빌더 엔진 (순수 함수만, 렌더 없음).
 // 스펙: docs/superpowers/specs/2026-07-27-guided-palette-builder-design.md

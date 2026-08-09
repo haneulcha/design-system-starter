@@ -1,4 +1,4 @@
-// src/lab/accent-scale/lab-data.ts
+// src/lab/palette/lab-data.ts
 //
 // 랩 UI용 순수 데이터 변환. 렌더 로직 없음 (FP/분리 원칙).
 

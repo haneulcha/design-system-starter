@@ -5,9 +5,9 @@ import {
   summarizeBySource,
   corpusStats,
   renderReport,
-} from "../../src/lab/accent-scale/bench.js";
-import { naiveAlgorithm } from "../../src/lab/accent-scale/naive.js";
-import type { ReferenceSet } from "../../src/lab/accent-scale/bench.js";
+} from "../../src/lab/palette/bench.js";
+import { naiveAlgorithm } from "../../src/lab/palette/naive.js";
+import type { ReferenceSet } from "../../src/lab/palette/bench.js";
 
 // 2-stop 초소형 레퍼런스 (파랑 계열): 검증 가능한 크기
 const TINY_REF: ReferenceSet = {

@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { ACCENT_ROLES, cssSnippet } from "../../src/lab/accent-scale/roles.js";
+import { ACCENT_ROLES, cssSnippet } from "../../src/lab/palette/roles.js";
 import {
   fillScale,
   STOP_KEYS,
   type Pin,
-} from "../../src/lab/accent-scale/builder.js";
+} from "../../src/lab/palette/builder.js";
 import { oklchToHex, parsePrimary } from "../../src/generator/color.js";
 
 describe("ACCENT_ROLES", () => {

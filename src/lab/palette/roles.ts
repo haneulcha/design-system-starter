@@ -1,4 +1,4 @@
-// src/lab/accent-scale/roles.ts
+// src/lab/palette/roles.ts
 //
 // 다크 액센트 역할 재배치 — 접근안 A(순수 인덱스 재배치).
 // 다크 색을 새로 만들지 않고, 완성된 11-stop 안에서 역할만 재배치한다.

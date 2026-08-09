@@ -1,4 +1,4 @@
-// src/lab/accent-scale/radix.ts
+// src/lab/palette/radix.ts
 //
 // Radix custom-color 알고리즘 포팅 (accent 스케일 경로만).
 //

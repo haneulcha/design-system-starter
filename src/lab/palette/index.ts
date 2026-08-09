@@ -1,4 +1,4 @@
-// src/lab/accent-scale/index.ts
+// src/lab/palette/index.ts
 //
 // 알고리즘 레지스트리. 벤치 CLI와 web 랩이 공유하는 단일 목록.
 

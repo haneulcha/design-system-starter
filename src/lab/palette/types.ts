@@ -1,4 +1,4 @@
-// src/lab/accent-scale/types.ts
+// src/lab/palette/types.ts
 //
 // 유도 알고리즘 공통 인터페이스. 실험 코드 — 제품 파이프라인에서 import 금지.
 

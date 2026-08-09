@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { v1Algorithm } from "../../src/lab/accent-scale/v1.js";
-import { naiveAlgorithm } from "../../src/lab/accent-scale/naive.js";
-import { hctAlgorithm } from "../../src/lab/accent-scale/hct.js";
-import { leonardoAlgorithm } from "../../src/lab/accent-scale/leonardo.js";
-import { oursAlgorithm } from "../../src/lab/accent-scale/ours.js";
+import { v1Algorithm } from "../../src/lab/palette/v1.js";
+import { naiveAlgorithm } from "../../src/lab/palette/naive.js";
+import { hctAlgorithm } from "../../src/lab/palette/hct.js";
+import { leonardoAlgorithm } from "../../src/lab/palette/leonardo.js";
+import { oursAlgorithm } from "../../src/lab/palette/ours.js";
 import { parsePrimary } from "../../src/generator/color.js";
-import type { AccentAlgorithm } from "../../src/lab/accent-scale/types.js";
+import type { AccentAlgorithm } from "../../src/lab/palette/types.js";
 
 const SPEC = { count: 11, anchorIndex: 5 };
 const ANCHOR = "#3b82f6"; // tailwind blue-500 근방

@@ -1,4 +1,4 @@
-// src/lab/accent-scale/naive.ts
+// src/lab/palette/naive.ts
 //
 // 나이브 컨트롤: OKLCH에서 흰 근방 → 앵커 → 검정 근방을 L/C 선형 보간.
 // "알고리즘 없음"의 하한 기준점. 앵커는 anchorIndex에 정확히 놓인다.
