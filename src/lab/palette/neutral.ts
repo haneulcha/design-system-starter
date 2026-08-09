@@ -131,30 +131,44 @@ export function buildNeutral(tint: NeutralTint): Oklch[] {
   );
 }
 
-/** 대표색(스케일의 500 자리)으로 칩을 그린다 — 액센트 후보와 같은 형태. */
+export interface NeutralCandidate extends Candidate {
+  /** 이 후보를 고르면 확정될 틴트 — UI가 순서로 되짚지 않게 엔진이 들려 보낸다. */
+  readonly tint: NeutralTint;
+}
+
+/** 대표색(스케일의 500 자리)으로 칩을 그린다 — 액센트 후보와 같은 형태.
+ *  candidate가 실제로 들고 갈 tint를 그대로 받아 색을 뽑는다 — color와 tint가
+ *  서로 다른 값에서 따로 만들어져 어긋날 수 없게. */
 function representative(tint: NeutralTint): Oklch {
   return buildNeutral(tint)[5];
 }
 
 /** 후보 3개: 무채색 / 자동 틴트(스냅, 은은) / 뚜렷한 틴트(같은 hue, 진하게).
- *  스냅된 어트랙터 이름을 note에 노출해 "왜 이 hue인가"가 화면에서 읽히게 한다. */
-export function neutralCandidates(accentHue: number): Candidate[] {
+ *  스냅된 어트랙터 이름을 note에 노출해 "왜 이 hue인가"가 화면에서 읽히게 한다.
+ *  각 후보는 자신을 만든 tint를 들고 다닌다 — UI가 라벨·순서로 tint를 되짚지 않게. */
+export function neutralCandidates(accentHue: number): NeutralCandidate[] {
   const snapped = snapTint(accentHue);
+  const achromatic: NeutralTint = { hue: null, strength: 0 };
+  const soft: NeutralTint = { hue: snapped.hue, strength: TINT_STRENGTHS.soft };
+  const strong: NeutralTint = { hue: snapped.hue, strength: TINT_STRENGTHS.strong };
   return [
     {
-      color: representative({ hue: null, strength: 0 }),
+      color: representative(achromatic),
       label: "무채색",
       note: "브랜드 기운을 배경에 섞지 않는 선택 — tailwind neutral·radix gray의 자리. 콘텐츠가 주인공일 때.",
+      tint: achromatic,
     },
     {
-      color: representative({ hue: snapped.hue, strength: TINT_STRENGTHS.soft }),
+      color: representative(soft),
       label: `${snapped.label} (은은)`,
       note: `당신의 액센트에서 가장 가까운 "${snapped.label}" 자리로 붙였습니다 — ${snapped.note}`,
+      tint: soft,
     },
     {
-      color: representative({ hue: snapped.hue, strength: TINT_STRENGTHS.strong }),
+      color: representative(strong),
       label: `${snapped.label} (뚜렷)`,
       note: "같은 hue를 더 진하게. 어두운 쪽까지 색끼가 남아 배경 전체에 인격이 생긴다 — 그래도 액센트 채도의 1/5 수준.",
+      tint: strong,
     },
   ];
 }

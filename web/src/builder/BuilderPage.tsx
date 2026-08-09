@@ -19,8 +19,7 @@ import {
 import {
   neutralCandidates,
   buildNeutral,
-  snapTint,
-  TINT_STRENGTHS,
+  type NeutralCandidate,
   type NeutralTint,
 } from "@core/lab/palette/neutral.js";
 import {
@@ -220,19 +219,22 @@ export function BuilderPage() {
     return candidatesFor(step.stopIndex, pins);
   }, [step, pins, accentHue]);
 
-  /** 후보 → 틴트 복원 (후보 0=무채색, 1=은은, 2=뚜렷) */
-  const tintOf = (cd: Candidate): NeutralTint => {
-    const idx = candidates.indexOf(cd);
-    if (idx === 0) return { hue: null, strength: 0 };
-    const snapped = snapTint(accentHue);
-    return { hue: snapped.hue, strength: idx === 1 ? TINT_STRENGTHS.soft : TINT_STRENGTHS.strong };
+  /** 뉴트럴 후보는 엔진이 자신을 만든 tint를 실어 보낸다 — UI가 순서·라벨로
+   *  되짚지 않는다. 뉴트럴 단계인데 tint가 없으면 엔진 계약 위반이므로
+   *  기본값으로 조용히 덮지 않고 그대로 터뜨린다. */
+  const isNeutralCandidate = (c: Candidate): c is NeutralCandidate => "tint" in c;
+  const tintOrThrow = (cd: Candidate, where: string): NeutralTint => {
+    if (!isNeutralCandidate(cd)) {
+      throw new Error(`${where}: neutral step candidate is missing its tint (engine contract violation)`);
+    }
+    return cd.tint;
   };
 
   /** 후보 미리보기 스트립 — 뉴트럴 단계는 뉴트럴 스케일을, 액센트 stop 단계는
    *  pin에 후보를 끼운 액센트 스케일을 보여준다. */
   const previewStrip = (cd: Candidate) =>
     isNeutralStep
-      ? toNeutralStrip(buildNeutral(tintOf(cd)))
+      ? toNeutralStrip(buildNeutral(tintOrThrow(cd, "previewStrip")))
       : toStrip([...pins, { index: stopIndex, color: cd.color }]);
 
   // 하단 상시 미리보기: 확정 pin + 임시 선택 반영
@@ -243,7 +245,9 @@ export function BuilderPage() {
   }, [isAccentStep, isNeutralStep, done, accentHex, picked, pins, stopIndex]);
 
   const neutralPreview =
-    isNeutralStep && picked ? toNeutralStrip(buildNeutral(tintOf(picked))) : null;
+    isNeutralStep && picked
+      ? toNeutralStrip(buildNeutral(tintOrThrow(picked, "neutralPreview")))
+      : null;
 
   const confirm = () => {
     if (isAccentStep) {
@@ -251,7 +255,7 @@ export function BuilderPage() {
       setPins([{ index: 5, color }]);
       setChoices([{ metaKey: 5, label: accentHex }]);
     } else if (isNeutralStep && picked) {
-      setNeutralTint(tintOf(picked));
+      setNeutralTint(tintOrThrow(picked, "confirm"));
       setChoices([...choices, { metaKey: "neutral", label: picked.label }]);
     } else if (picked) {
       setPins([...pins, { index: stopIndex, color: picked.color }]);

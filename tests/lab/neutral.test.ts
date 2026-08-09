@@ -10,7 +10,12 @@ import {
   STRONG_REF_CMAX,
 } from "../../src/lab/palette/neutral.js";
 import { SCALE_SIZE } from "../../src/lab/palette/builder.js";
-import { buildNeutral, neutralCandidates, TINT_STRENGTHS } from "../../src/lab/palette/neutral.js";
+import {
+  buildNeutral,
+  neutralCandidates,
+  TINT_STRENGTHS,
+  type NeutralCandidate,
+} from "../../src/lab/palette/neutral.js";
 
 describe("NEUTRAL_CURVE", () => {
   it("has 11 stops with strictly decreasing lightness", () => {
@@ -208,5 +213,27 @@ describe("neutralCandidates", () => {
       expect(c.color.h).toBeCloseTo(85, 6);
       expect(Math.abs(c.color.h - 40)).toBeGreaterThan(25);
     }
+  });
+
+  it("carries the tint that actually produced its own color (color and tint cannot disagree)", () => {
+    // UI가 순서로 tint를 되짚는 대신 이 필드를 읽는다 — 각 후보의 tint로 buildNeutral을
+    // 다시 돌리면 정확히 그 후보의 color(스케일 500 자리)가 나와야 한다.
+    for (const hex of [259, 40, 150]) {
+      for (const c of neutralCandidates(hex) as NeutralCandidate[]) {
+        expect(buildNeutral(c.tint)[5]).toEqual(c.color);
+      }
+    }
+  });
+
+  it("candidate 0's tint is achromatic ({ hue: null, strength: 0 })", () => {
+    const [achromatic] = neutralCandidates(259) as NeutralCandidate[];
+    expect(achromatic.tint).toEqual({ hue: null, strength: 0 });
+  });
+
+  it("candidates 1 and 2 carry the snapped attractor's hue with soft/strong strength", () => {
+    const snapped = snapTint(259);
+    const [, soft, strong] = neutralCandidates(259) as NeutralCandidate[];
+    expect(soft.tint).toEqual({ hue: snapped.hue, strength: TINT_STRENGTHS.soft });
+    expect(strong.tint).toEqual({ hue: snapped.hue, strength: TINT_STRENGTHS.strong });
   });
 });

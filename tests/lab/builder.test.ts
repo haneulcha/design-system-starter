@@ -305,7 +305,7 @@ describe("BUILDER_FLOW", () => {
     const stops = BUILDER_FLOW.flatMap((s) =>
       s.kind === "accent-stop" ? [s.stopIndex] : s.kind === "accent-anchor" ? [5] : [],
     );
-    expect(stops).toEqual([5, 0, 10, 3, 7]);
+    expect(stops).toEqual([...BUILDER_STEPS]);
   });
 
   it("has copy for every step including the neutral one", () => {
