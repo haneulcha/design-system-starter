@@ -19,7 +19,8 @@
     "type-styles": "tsx scripts/analysis/type-styles.ts",
     "component-roles": "tsx scripts/analysis/component-roles.ts",
     "accent-scale-refs": "tsx scripts/analysis/accent-scale-refs.ts",
-    "accent-scale-bench": "tsx scripts/analysis/accent-scale-bench.ts"
+    "accent-scale-bench": "tsx scripts/analysis/accent-scale-bench.ts",
+    "neutral-curve-stats": "tsx scripts/analysis/neutral-curve-stats.ts"
   },
   "dependencies": {
     "culori": "^4.0.0",
