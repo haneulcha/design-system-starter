@@ -165,7 +165,15 @@ describe("buildNeutral", () => {
   });
 
   it("throws on a negative strength (programmer error guard)", () => {
-    expect(() => buildNeutral({ hue: 258, strength: -0.01 })).toThrow();
+    expect(() => buildNeutral({ hue: 258, strength: -0.01 })).toThrow(
+      /strength must be >= 0/,
+    );
+  });
+
+  it("throws on NaN strength (the >= 0 guard catches it too)", () => {
+    expect(() => buildNeutral({ hue: 258, strength: NaN })).toThrow(
+      /strength must be >= 0/,
+    );
   });
 });
 
@@ -191,5 +199,14 @@ describe("neutralCandidates", () => {
     expect(warm[1].note).toContain("웜");
     const cool = neutralCandidates(259);
     expect(cool[1].note).toContain("쿨");
+  });
+
+  it("hands the warm attractor's hue to the grey, not the accent's own", () => {
+    // V2의 핵심 주장: 주황 액센트에 자기 hue를 그대로 주면 회색이 갈색이 된다.
+    const [, soft, strong] = neutralCandidates(40);
+    for (const c of [soft, strong]) {
+      expect(c.color.h).toBeCloseTo(85, 6);
+      expect(Math.abs(c.color.h - 40)).toBeGreaterThan(25);
+    }
   });
 });
