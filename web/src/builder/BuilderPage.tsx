@@ -16,10 +16,12 @@ import {
   type Pin,
 } from "@core/lab/palette/builder.js";
 import {
-  ACCENT_ROLES,
+  SCALE_ROLES,
   cssSnippet,
-  type AccentRole,
+  type ScaleRole,
+  type ScaleSet,
 } from "@core/lab/palette/roles.js";
+import { SEMANTIC_ANCHORS, buildSemantic } from "@core/lab/palette/semantic.js";
 import { oklchToHex, parsePrimary } from "@core/generator/color.js";
 import { ColorScaleStrip } from "../components/ColorScaleStrip";
 import { OklchPicker } from "../components/OklchPicker";
@@ -57,13 +59,13 @@ function RoleChip({ hex, stop, ring }: { hex: string; stop: string; ring: boolea
  *  컨테이너가 --accent-* 시맨틱 변수를 주입하고 내용물은 var()만 참조 —
  *  copy CSS로 가져가는 스니펫이 곧 이 목업을 그린 CSS다. */
 function MockPanel({ mode, hexes }: { mode: "light" | "dark"; hexes: readonly string[] }) {
-  const role = (id: AccentRole["id"]) => ACCENT_ROLES.find((r) => r.id === id)!;
-  const tip = (id: AccentRole["id"]) => {
+  const role = (id: ScaleRole["id"]) => SCALE_ROLES.find((r) => r.id === id)!;
+  const tip = (id: ScaleRole["id"]) => {
     const r = role(id);
     return `${r.id} — 라이트 ${STOP_KEYS[r.lightIndex]} / 다크 ${STOP_KEYS[r.darkIndex]}`;
   };
   const vars = Object.fromEntries(
-    ACCENT_ROLES.map((r) => [
+    SCALE_ROLES.map((r) => [
       `--accent-${r.id}`,
       hexes[mode === "light" ? r.lightIndex : r.darkIndex],
     ]),
@@ -113,7 +115,15 @@ function MockPanel({ mode, hexes }: { mode: "light" | "dark"; hexes: readonly st
 
 /** 완료 화면 다크 섹션 — 역할 재배치 교보재. 계산은 roles.ts, 여긴 렌더만. */
 function DarkSection({ hexes }: { hexes: readonly string[] }) {
-  const copyCss = () => navigator.clipboard.writeText(cssSnippet(hexes));
+  // TODO(task 8): 지금은 neutral·semantic 슬롯에 accent hex를 임시로 채워
+  // web이 컴파일되게만 한다 — 실제 뉴트럴/시맨틱 스케일로 교체될 자리.
+  const copyCss = () => navigator.clipboard.writeText(cssSnippet({
+    accent: hexes,
+    neutral: hexes,
+    semantic: Object.fromEntries(
+      SEMANTIC_ANCHORS.map((a) => [a.id, hexes]),
+    ) as ScaleSet["semantic"],
+  }));
   return (
     <div className="space-y-3 border-t border-neutral-200 pt-4">
       <div className="flex items-baseline justify-between">
@@ -147,7 +157,7 @@ function DarkSection({ hexes }: { hexes: readonly string[] }) {
           </tr>
         </thead>
         <tbody>
-          {ACCENT_ROLES.map((r) => (
+          {SCALE_ROLES.map((r) => (
             <tr key={r.id} className="border-t border-neutral-100 align-top">
               <td className={`py-1.5 pr-2 ${r.id === "solid" ? "font-medium text-neutral-800" : "text-neutral-600"}`}>
                 {r.label}

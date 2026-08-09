@@ -1,14 +1,15 @@
 // src/lab/palette/roles.ts
 //
-// 다크 액센트 역할 재배치 — 접근안 A(순수 인덱스 재배치).
+// 역할 레이어 — 세 종류 스케일(액센트·뉴트럴·시맨틱) 공통.
 // 다크 색을 새로 만들지 않고, 완성된 11-stop 안에서 역할만 재배치한다.
 // 규칙: 인덱스 미러(i → 10−i), 단 솔리드(앵커)만 예외로 자리 고정 —
 // 제품 뉴트럴의 DARK_NEUTRAL_INVERSION과 같은 미러 원리.
-// 스펙: docs/superpowers/specs/2026-07-28-dark-accent-roles-design.md
+// 스펙: docs/superpowers/specs/2026-08-09-palette-generator-color-system-design.md
 
 import { SCALE_SIZE, STOP_KEYS } from "./builder.js";
+import type { SemanticId } from "./semantic.js";
 
-export interface AccentRole {
+export interface ScaleRole {
   readonly id:
     | "subtle-bg"
     | "hover-bg"
@@ -25,7 +26,7 @@ export interface AccentRole {
   readonly note: string;
 }
 
-export const ACCENT_ROLES: readonly AccentRole[] = [
+export const SCALE_ROLES: readonly ScaleRole[] = [
   {
     id: "subtle-bg",
     label: "은은한 배경",
@@ -70,29 +71,47 @@ export const ACCENT_ROLES: readonly AccentRole[] = [
   },
 ];
 
-/** 완성된 11-stop hex → 2-레이어 CSS 커스텀 프로퍼티 스니펫.
- *  .dark에는 매핑이 실제로 바뀌는 역할만 — 재선언하지 않은 것 = 안 바뀐 것. */
-export function cssSnippet(hexes: readonly string[]): string {
-  if (hexes.length !== SCALE_SIZE) {
-    throw new Error(
-      `cssSnippet: expected ${SCALE_SIZE} hexes, got ${hexes.length}`,
-    );
+export type ScaleName = "accent" | "neutral" | SemanticId;
+
+export interface ScaleSet {
+  readonly accent: readonly string[];
+  readonly neutral: readonly string[];
+  readonly semantic: Readonly<Record<SemanticId, readonly string[]>>;
+}
+
+/** 스케일 3종 → 2-레이어 CSS 커스텀 프로퍼티 스니펫.
+ *  .dark에는 매핑이 실제로 바뀌는 역할만 — 재선언하지 않은 것 = 안 바뀐 것.
+ *  세 종류가 같은 역할표·같은 미러 규칙을 쓴다: 다크 규칙이 시스템에 하나뿐이다. */
+export function cssSnippet(scales: ScaleSet): string {
+  const named: [ScaleName, readonly string[]][] = [
+    ["accent", scales.accent],
+    ["neutral", scales.neutral],
+    ...(Object.entries(scales.semantic) as [SemanticId, readonly string[]][]),
+  ];
+  for (const [name, hexes] of named) {
+    if (hexes.length !== SCALE_SIZE) {
+      throw new Error(
+        `cssSnippet: ${name} expected ${SCALE_SIZE} hexes, got ${hexes.length}`,
+      );
+    }
   }
+
   const lines: string[] = [":root {"];
-  STOP_KEYS.forEach((key, i) => {
-    lines.push(`  --accent-${key}: ${hexes[i]};`);
-  });
-  for (const role of ACCENT_ROLES) {
-    lines.push(
-      `  --accent-${role.id}: var(--accent-${STOP_KEYS[role.lightIndex]});`,
-    );
+  for (const [name, hexes] of named) {
+    STOP_KEYS.forEach((key, i) => lines.push(`  --${name}-${key}: ${hexes[i]};`));
+  }
+  lines.push("");
+  for (const [name] of named) {
+    for (const role of SCALE_ROLES) {
+      lines.push(`  --${name}-${role.id}: var(--${name}-${STOP_KEYS[role.lightIndex]});`);
+    }
   }
   lines.push("}", "", ".dark {");
-  for (const role of ACCENT_ROLES) {
-    if (role.darkIndex !== role.lightIndex) {
-      lines.push(
-        `  --accent-${role.id}: var(--accent-${STOP_KEYS[role.darkIndex]});`,
-      );
+  for (const [name] of named) {
+    for (const role of SCALE_ROLES) {
+      if (role.darkIndex !== role.lightIndex) {
+        lines.push(`  --${name}-${role.id}: var(--${name}-${STOP_KEYS[role.darkIndex]});`);
+      }
     }
   }
   lines.push("}");
