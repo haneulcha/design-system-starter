@@ -4,7 +4,8 @@ import {
   buildSemantic,
   type SemanticId,
 } from "../../src/lab/palette/semantic.js";
-import { SCALE_SIZE } from "../../src/lab/palette/builder.js";
+import { SCALE_SIZE, clampToGamut } from "../../src/lab/palette/builder.js";
+import { oklchToHex, parsePrimary } from "../../src/generator/color.js";
 
 /** status-hue-principles.md의 코퍼스 관측 밴드 — tailwind 앵커가 여기 들어야 한다. */
 const CORPUS_BANDS: Record<SemanticId, [number, number]> = {
@@ -63,12 +64,17 @@ describe("buildSemantic", () => {
     }
   });
 
-  it("preserves the anchor verbatim at index 5", () => {
+  it("preserves the gamut-clamped anchor at index 5 (not the raw Display-P3 measurement)", () => {
+    // buildSemantic clamps the anchor before handing it to fillScale (unlike the
+    // accent flow's R1, which returns the user's pin verbatim) — see semantic.ts.
+    // error's anchor is already inside sRGB so it survives untouched; the other
+    // three are not, so scale[5] must equal clampToGamut(a.anchor), not a.anchor.
     for (const a of SEMANTIC_ANCHORS) {
       const scale = buildSemantic(a);
-      expect(scale[5].l, a.id).toBeCloseTo(a.anchor.l, 6);
-      expect(scale[5].c, a.id).toBeCloseTo(a.anchor.c, 6);
-      expect(scale[5].h, a.id).toBeCloseTo(a.anchor.h, 6);
+      const clamped = clampToGamut(a.anchor);
+      expect(scale[5].l, a.id).toBeCloseTo(clamped.l, 6);
+      expect(scale[5].c, a.id).toBeCloseTo(clamped.c, 6);
+      expect(scale[5].h, a.id).toBeCloseTo(clamped.h, 6);
     }
   });
 
@@ -87,11 +93,14 @@ describe("buildSemantic", () => {
   });
 
   it("keeps every stop inside sRGB", () => {
+    // A chroma/lightness sanity check (c >= 0, l in (0,1]) does not prove a stop is
+    // displayable — round-trip through the hex converter instead: if the stop were
+    // still outside sRGB, oklchToHex's naive per-channel clip would have to shave
+    // chroma off to make a valid hex, and that loss would show up on the way back.
     for (const a of SEMANTIC_ANCHORS) {
       for (const s of buildSemantic(a)) {
-        expect(s.c, a.id).toBeGreaterThanOrEqual(0);
-        expect(s.l, a.id).toBeGreaterThan(0);
-        expect(s.l, a.id).toBeLessThanOrEqual(1);
+        const roundTripped = parsePrimary(oklchToHex(s));
+        expect(roundTripped.c, a.id).toBeCloseTo(s.c, 2);
       }
     }
   });

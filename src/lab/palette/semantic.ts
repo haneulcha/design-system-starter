@@ -6,10 +6,13 @@
 // 그 곡선에서 벗어나는 정도가 mean|ΔL| 0.018~0.029뿐이다.
 // 스펙: docs/superpowers/specs/2026-08-09-palette-generator-color-system-design.md
 //
-// 앵커·hueRamp 출처: tailwind v4.3.3의 red/green/amber/blue 실측 (2026-08-09).
-// 규칙을 발명하지 않고 레퍼런스 실측을 그대로 싣는다.
+// 앵커·hueRamp 출처: scripts/analysis/neutral-curve-stats.ts (tailwind v4.3.3,
+// 2026-08-09) — 이름은 뉴트럴만 가리키지만 시맨틱 파트도 같은 스크립트가 낸다
+// (이미 theme.css를 파싱하고 있어 자연스러운 자리). 레퍼런스 갱신 시 다시 돌려
+// 이 테이블과 자릿수까지 대조할 것. 규칙을 발명하지 않고 레퍼런스 실측을
+// 그대로 싣는다.
 
-import { SCALE_SIZE, fillScale } from "./builder.js";
+import { SCALE_SIZE, clampToGamut, fillScale } from "./builder.js";
 import type { Oklch } from "../../schema/types.js";
 
 export type SemanticId = "error" | "success" | "warning" | "info";
@@ -67,9 +70,20 @@ const ANCHOR_INDEX = 5;
  *  L·C 워프는 fillScale이 이미 하는 일이다 (앵커 하나짜리 고정점 = 우리 곡선 v0와
  *  동치, 양 끝은 곡선 자체 값에 고정되고 구간별 아핀 리매핑이 단조를 보장한다).
  *  hue 램프는 fillScale에 넘겨 **클램프 이전에** 적용시킨다 — 순서가 계약이다
- *  (Step 0 참조). 워프를 다시 구현하지 않는다. */
+ *  (Step 0 참조). 워프를 다시 구현하지 않는다.
+ *
+ *  앵커를 fillScale에 넘기기 전에 clampToGamut을 직접 적용한다 — fillScale의
+ *  R1(비-가상 pin은 verbatim 보존)은 액센트 플로우 전용 계약이다: 액센트 앵커는
+ *  사용자가 고른 실재 색이라 UI가 이미 gamut을 보장하므로 다시 유도하면 안 된다.
+ *  시맨틱 앵커는 사용자 입력이 아니라 하드코딩된 Display-P3 실측값이고, 그중
+ *  셋(warning·success·info)이 sRGB 밖이다. 클램프하지 않으면 이 앵커만
+ *  oklchToHex의 채널별 naive clip을 타 hue가 틀어진다(amber 70.1°→65.4°) —
+ *  나머지 10개 stop은 fillScale 내부에서 이미 clampToGamut을 거치므로 hue가
+ *  보존된다. 여기서 먼저 클램프해 열한 stop 모두 같은 규칙을 따르게 한다.
+ *  fillScale 자체는 건드리지 않는다 — R1은 그대로, 변경은 이 호출부에 국한된다. */
 export function buildSemantic(anchor: SemanticAnchor): Oklch[] {
-  return fillScale([{ index: ANCHOR_INDEX, color: anchor.anchor }], anchor.hueRamp);
+  const clampedAnchor = clampToGamut(anchor.anchor);
+  return fillScale([{ index: ANCHOR_INDEX, color: clampedAnchor }], anchor.hueRamp);
 }
 
 // 램프 길이 계약 — 스케일 길이와 어긋나면 즉시 터진다.
