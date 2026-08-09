@@ -65,10 +65,16 @@ function hueLerp(a: number, b: number, t: number): number {
  *  - v0 동치: pins=[{index: 5, color: anchor}] 일 때, 앵커 L ∈ [0.32, 0.93]이면
  *    oursAlgorithm.derive(hex, nativeSpec) + clampToGamut[]와 동일. 범위 밖에서는
  *    fillScale이 true anchor L을 사용해 단조성 보존 (v0의 clamp는 문서화된 한계). */
-export function fillScale(pins: readonly Pin[]): Oklch[] {
+export function fillScale(
+  pins: readonly Pin[],
+  /** stop별 Δh (11개). 클램프 직전에 적용된다 — 시맨틱 스케일용. */
+  hueRamp?: readonly number[],
+): Oklch[] {
   if (!pins.some((p) => p.index === 5)) {
     throw new Error("fillScale: anchor pin (index 5) is required");
   }
+  const ramped = (c: Oklch, i: number): Oklch =>
+    hueRamp ? { ...c, h: (((c.h + hueRamp[i]) % 360) + 360) % 360 } : c;
   const sorted = [...pins].sort((a, b) => a.index - b.index);
   const eff: { index: number; color: Oklch; virtual: boolean }[] = sorted.map(
     (p) => ({ ...p, virtual: false }),
@@ -111,7 +117,7 @@ export function fillScale(pins: readonly Pin[]): Oklch[] {
 
   const out: Oklch[] = new Array(SCALE_SIZE);
   for (const p of eff) {
-    out[p.index] = p.virtual ? clampToGamut(p.color) : { ...p.color };
+    out[p.index] = p.virtual ? clampToGamut(ramped(p.color, p.index)) : { ...p.color };
   }
   for (let s = 0; s < eff.length - 1; s++) {
     const a = eff[s];
@@ -122,11 +128,16 @@ export function fillScale(pins: readonly Pin[]): Oklch[] {
     const rb = b.color.c / OURS_CURVE[b.index].cMult;
     for (let k = a.index + 1; k < b.index; k++) {
       const t = (li - OURS_CURVE[k].l) / (li - lj);
-      out[k] = clampToGamut({
-        l: a.color.l - t * (a.color.l - b.color.l),
-        c: OURS_CURVE[k].cMult * (ra + (rb - ra) * t),
-        h: hueLerp(a.color.h, b.color.h, t),
-      });
+      out[k] = clampToGamut(
+        ramped(
+          {
+            l: a.color.l - t * (a.color.l - b.color.l),
+            c: OURS_CURVE[k].cMult * (ra + (rb - ra) * t),
+            h: hueLerp(a.color.h, b.color.h, t),
+          },
+          k,
+        ),
+      );
     }
   }
   return out;
