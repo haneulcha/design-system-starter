@@ -26,6 +26,8 @@ import {
 import {
   SCALE_ROLES,
   cssSnippet,
+  scaleHasAnchor,
+  type ScaleName,
   type ScaleRole,
   type ScaleSet,
 } from "@core/lab/palette/roles.js";
@@ -145,10 +147,12 @@ function MockPanel({
 /** 완료 화면 다크 섹션 — 역할 재배치 교보재. 계산은 roles.ts, 여긴 렌더만. */
 function DarkSection({ scales }: { scales: ScaleSet }) {
   const copyCss = () => navigator.clipboard.writeText(cssSnippet(scales));
-  const named: [string, readonly string[]][] = [
-    ["액센트", scales.accent],
-    ["뉴트럴", scales.neutral],
-    ...SEMANTIC_ANCHORS.map((a) => [a.label, scales.semantic[a.id]] as [string, readonly string[]]),
+  const named: [ScaleName, string, readonly string[]][] = [
+    ["accent", "액센트", scales.accent],
+    ["neutral", "뉴트럴", scales.neutral],
+    ...SEMANTIC_ANCHORS.map(
+      (a) => [a.id, a.label, scales.semantic[a.id]] as [ScaleName, string, readonly string[]],
+    ),
   ];
   return (
     <div className="space-y-3 border-t border-neutral-200 pt-4">
@@ -174,7 +178,11 @@ function DarkSection({ scales }: { scales: ScaleSet }) {
         패널 배경이 이제 당신의 뉴트럴 50/950입니다 — 액센트와 뉴트럴이 같은
         화면에서 어떻게 만나는지 보세요.
       </p>
-      {named.map(([label, hexes], i) => {
+      {named.map(([name, label, hexes], i) => {
+        // 링(ring)은 role id가 아니라 "이 스케일이 실제 앵커를 갖는가"로 정한다 —
+        // 뉴트럴엔 앵커가 없다(위 뉴트럴 스트립도 anchor: false로 그린다), 엔진의
+        // scaleHasAnchor가 그 사실을 들고 있다.
+        const anchored = scaleHasAnchor(name);
         const table = (
           <table className="w-full text-[11px]">
             <thead>
@@ -192,10 +200,10 @@ function DarkSection({ scales }: { scales: ScaleSet }) {
                     {r.label}
                   </td>
                   <td className="py-1.5 pr-2">
-                    <RoleChip hex={hexes[r.lightIndex]} stop={STOP_KEYS[r.lightIndex]} ring={r.id === "solid"} />
+                    <RoleChip hex={hexes[r.lightIndex]} stop={STOP_KEYS[r.lightIndex]} ring={anchored && r.id === "solid"} />
                   </td>
                   <td className="py-1.5 pr-2">
-                    <RoleChip hex={hexes[r.darkIndex]} stop={STOP_KEYS[r.darkIndex]} ring={r.id === "solid"} />
+                    <RoleChip hex={hexes[r.darkIndex]} stop={STOP_KEYS[r.darkIndex]} ring={anchored && r.id === "solid"} />
                   </td>
                   <td className="py-1.5 leading-4 text-neutral-400">{r.note}</td>
                 </tr>
