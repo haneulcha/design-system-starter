@@ -10,6 +10,7 @@ import {
   STRONG_REF_CMAX,
 } from "../../src/lab/palette/neutral.js";
 import { SCALE_SIZE } from "../../src/lab/palette/builder.js";
+import { buildNeutral, neutralCandidates, TINT_STRENGTHS } from "../../src/lab/palette/neutral.js";
 
 describe("NEUTRAL_CURVE", () => {
   it("has 11 stops with strictly decreasing lightness", () => {
@@ -127,5 +128,68 @@ describe("snapTint", () => {
   it("handles hues outside 0..360 by normalizing", () => {
     expect(snapTint(-100).id).toBe(snapTint(260).id);
     expect(snapTint(620).id).toBe(snapTint(260).id);
+  });
+});
+
+describe("buildNeutral", () => {
+  it("returns 11 stops with strictly decreasing lightness", () => {
+    const scale = buildNeutral({ hue: 258, strength: TINT_STRENGTHS.soft });
+    expect(scale).toHaveLength(SCALE_SIZE);
+    for (let i = 1; i < scale.length; i++) {
+      expect(scale[i].l, `stop ${i}`).toBeLessThan(scale[i - 1].l);
+    }
+  });
+
+  it("keeps chroma far below accent territory", () => {
+    const scale = buildNeutral({ hue: 258, strength: TINT_STRENGTHS.strong });
+    // 액센트 C_max 코퍼스 중앙값은 0.213 — 뉴트럴은 그 1/5 아래에 머문다.
+    for (const s of scale) expect(s.c).toBeLessThan(0.05);
+  });
+
+  it("emits pure grey when the tint is achromatic", () => {
+    const scale = buildNeutral({ hue: null, strength: 0 });
+    for (const s of scale) expect(s.c).toBe(0);
+  });
+
+  it("carries the requested hue on every chromatic stop", () => {
+    const scale = buildNeutral({ hue: 85, strength: TINT_STRENGTHS.soft });
+    for (const s of scale) {
+      if (s.c > 0) expect(s.h).toBeCloseTo(85, 6);
+    }
+  });
+
+  it("strong tint holds more chroma at the dark end than soft", () => {
+    const soft = buildNeutral({ hue: 258, strength: TINT_STRENGTHS.soft });
+    const strong = buildNeutral({ hue: 258, strength: TINT_STRENGTHS.strong });
+    expect(strong[9].c).toBeGreaterThan(soft[9].c);
+  });
+
+  it("throws on a negative strength (programmer error guard)", () => {
+    expect(() => buildNeutral({ hue: 258, strength: -0.01 })).toThrow();
+  });
+});
+
+describe("neutralCandidates", () => {
+  it("offers exactly 3 candidates: achromatic, snapped soft, snapped strong", () => {
+    const list = neutralCandidates(259);
+    expect(list).toHaveLength(3);
+    expect(list[0].color.c).toBe(0);
+    expect(list[1].color.h).toBeCloseTo(258, 6);
+    expect(list[2].color.h).toBeCloseTo(258, 6);
+    expect(list[2].color.c).toBeGreaterThan(list[1].color.c);
+  });
+
+  it("labels and notes are educational", () => {
+    for (const c of neutralCandidates(40)) {
+      expect(c.label.length).toBeGreaterThan(0);
+      expect(c.note.length).toBeGreaterThan(10);
+    }
+  });
+
+  it("names the snapped attractor in the note so the user sees the reasoning", () => {
+    const warm = neutralCandidates(40);
+    expect(warm[1].note).toContain("웜");
+    const cool = neutralCandidates(259);
+    expect(cool[1].note).toContain("쿨");
   });
 });

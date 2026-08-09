@@ -7,7 +7,8 @@
 // 상수 출처: scripts/analysis/neutral-curve-stats.ts (tailwind v4.3.3, 2026-08-09).
 // 레퍼런스 갱신 시 다시 돌려 비교할 것.
 
-import { SCALE_SIZE } from "./builder.js";
+import { SCALE_SIZE, clampToGamut, type Candidate } from "./builder.js";
+import type { Oklch } from "../../schema/types.js";
 
 /** stop 50..950의 평균 L. tailwind 뉴트럴 5종(slate·gray·zinc·neutral·stone)
  *  의 sd가 0.001~0.008 — 다섯 램프가 같은 사다리를 쓴다. 즉 취향 축이 아니다. */
@@ -104,6 +105,58 @@ export function snapTint(accentHue: number): TintAttractor {
     if (hueDistance(h, a.hue) < hueDistance(h, best.hue)) best = a;
   }
   return best;
+}
+
+export interface NeutralTint {
+  /** null = 무채색. */
+  readonly hue: number | null;
+  /** 스케일 최대 채도 (실측 범위 0.010–0.046). */
+  readonly strength: number;
+}
+
+/** 후보로 쓰는 두 강도. 실측 범위 안에서 "은은/뚜렷"을 대표한다. */
+export const TINT_STRENGTHS = { soft: 0.017, strong: 0.04 } as const;
+
+/** 확정된 틴트 → 11-stop 뉴트럴. L은 상수 곡선, C는 강도×모양, hue는 고정. */
+export function buildNeutral(tint: NeutralTint): Oklch[] {
+  if (!(tint.strength >= 0)) {
+    throw new Error(`buildNeutral: strength must be >= 0, got ${tint.strength}`);
+  }
+  if (tint.hue === null || tint.strength === 0) {
+    return NEUTRAL_CURVE.map((s) => ({ l: s.l, c: 0, h: 0 }));
+  }
+  const h = ((tint.hue % 360) + 360) % 360;
+  return NEUTRAL_CURVE.map((s, i) =>
+    clampToGamut({ l: s.l, c: tint.strength * cShape(i, tint.strength), h }),
+  );
+}
+
+/** 대표색(스케일의 500 자리)으로 칩을 그린다 — 액센트 후보와 같은 형태. */
+function representative(tint: NeutralTint): Oklch {
+  return buildNeutral(tint)[5];
+}
+
+/** 후보 3개: 무채색 / 자동 틴트(스냅, 은은) / 뚜렷한 틴트(같은 hue, 진하게).
+ *  스냅된 어트랙터 이름을 note에 노출해 "왜 이 hue인가"가 화면에서 읽히게 한다. */
+export function neutralCandidates(accentHue: number): Candidate[] {
+  const snapped = snapTint(accentHue);
+  return [
+    {
+      color: representative({ hue: null, strength: 0 }),
+      label: "무채색",
+      note: "브랜드 기운을 배경에 섞지 않는 선택 — tailwind neutral·radix gray의 자리. 콘텐츠가 주인공일 때.",
+    },
+    {
+      color: representative({ hue: snapped.hue, strength: TINT_STRENGTHS.soft }),
+      label: `${snapped.label} (은은)`,
+      note: `당신의 액센트에서 가장 가까운 "${snapped.label}" 자리로 붙였습니다 — ${snapped.note}`,
+    },
+    {
+      color: representative({ hue: snapped.hue, strength: TINT_STRENGTHS.strong }),
+      label: `${snapped.label} (뚜렷)`,
+      note: "같은 hue를 더 진하게. 어두운 쪽까지 색끼가 남아 배경 전체에 인격이 생긴다 — 그래도 액센트 채도의 1/5 수준.",
+    },
+  ];
 }
 
 // SCALE_SIZE 계약 확인 — 곡선 테이블이 스케일 길이와 어긋나면 즉시 터진다.
