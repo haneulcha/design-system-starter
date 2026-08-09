@@ -107,6 +107,19 @@ export function snapTint(accentHue: number): TintAttractor {
   return best;
 }
 
+/** 확정된 틴트가 어느 어트랙터에서 왔는지 — UI가 hue로 되짚지 않게 엔진이 알려준다.
+ *  neutralCandidates가 만든 tint만 들어온다는 계약 — hue는 항상 TINT_ATTRACTORS
+ *  중 하나와 정확히 일치한다 (snapTint가 그 값을 그대로 실어 보내므로). */
+export function tintAttractor(tint: NeutralTint): TintAttractor {
+  const found = TINT_ATTRACTORS.find((a) => a.hue === tint.hue);
+  if (!found) {
+    throw new Error(
+      `tintAttractor: no attractor matches hue ${tint.hue} (engine contract violation)`,
+    );
+  }
+  return found;
+}
+
 export interface NeutralTint {
   /** null = 무채색. */
   readonly hue: number | null;

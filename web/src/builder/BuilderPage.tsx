@@ -19,6 +19,7 @@ import {
 import {
   neutralCandidates,
   buildNeutral,
+  tintAttractor,
   type NeutralCandidate,
   type NeutralTint,
 } from "@core/lab/palette/neutral.js";
@@ -28,7 +29,12 @@ import {
   type ScaleRole,
   type ScaleSet,
 } from "@core/lab/palette/roles.js";
-import { SEMANTIC_ANCHORS, buildSemantic, type SemanticId } from "@core/lab/palette/semantic.js";
+import {
+  SEMANTIC_ANCHORS,
+  SEMANTIC_SECTION_NOTE,
+  buildSemantic,
+  type SemanticId,
+} from "@core/lab/palette/semantic.js";
 import { oklchToHex, parsePrimary } from "@core/generator/color.js";
 import type { Oklch } from "@core/schema/types.js";
 import { ColorScaleStrip } from "../components/ColorScaleStrip";
@@ -209,6 +215,27 @@ function DarkSection({ scales }: { scales: ScaleSet }) {
           </details>
         );
       })}
+    </div>
+  );
+}
+
+/** 완료 화면 상태색 섹션 — 왜 이건 고르지 않는 색인가. 카피는 semantic.ts의
+ *  SEMANTIC_SECTION_NOTE, 여긴 렌더만. */
+function SemanticSection({ scales }: { scales: ScaleSet }) {
+  return (
+    <div className="space-y-2 border-t border-neutral-200 pt-4">
+      <h2 className="text-sm font-medium">상태색 — 고르지 않는 색</h2>
+      <p className="text-[11px] leading-4 text-neutral-400">{SEMANTIC_SECTION_NOTE}</p>
+      {SEMANTIC_ANCHORS.map((a) => (
+        <div key={a.id} className="space-y-1">
+          <div className="text-[11px] text-neutral-500">{a.label}</div>
+          <ColorScaleStrip
+            stops={scales.semantic[a.id].map((hex, i) => ({
+              key: STOP_KEYS[i], hex, anchor: i === 5,
+            }))}
+          />
+        </div>
+      ))}
     </div>
   );
 }
@@ -453,26 +480,20 @@ export function BuilderPage() {
               </div>
             ))}
           </div>
-          {scaleSet && (
-            <div className="space-y-2 border-t border-neutral-200 pt-4">
-              <h2 className="text-sm font-medium">상태색 — 고르지 않는 색</h2>
+          {scaleSet && neutralTint && (
+            <div className="space-y-1 border-t border-neutral-200 pt-4">
+              <h2 className="text-sm font-medium">뉴트럴 — 배경 회색</h2>
               <p className="text-[11px] leading-4 text-neutral-400">
-                빨강=위험·초록=성공은 신호등에서 온 문화적 약속이라 브랜드를 따르지
-                않습니다. 코퍼스에서 파랑의 합의 폭은 8°뿐입니다. 대신 사다리 모양은
-                당신의 액센트와 같은 곡선을 씁니다.
+                {tintAttractor(neutralTint).label} — {tintAttractor(neutralTint).note}
               </p>
-              {SEMANTIC_ANCHORS.map((a) => (
-                <div key={a.id} className="space-y-1">
-                  <div className="text-[11px] text-neutral-500">{a.label}</div>
-                  <ColorScaleStrip
-                    stops={scaleSet.semantic[a.id].map((hex, i) => ({
-                      key: STOP_KEYS[i], hex, anchor: i === 5,
-                    }))}
-                  />
-                </div>
-              ))}
+              <ColorScaleStrip
+                stops={scaleSet.neutral.map((hex, i) => ({
+                  key: STOP_KEYS[i], hex, anchor: false,
+                }))}
+              />
             </div>
           )}
+          {scaleSet && <SemanticSection scales={scaleSet} />}
           {scaleSet && <DarkSection scales={scaleSet} />}
           <div className="text-[11px] leading-4 text-neutral-400">
             <span className="font-medium text-neutral-500">내가 고른 여정 — </span>

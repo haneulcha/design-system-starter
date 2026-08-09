@@ -55,6 +55,12 @@ export const SEMANTIC_ANCHORS: readonly SemanticAnchor[] = [
   },
 ];
 
+/** 상태색 섹션 도입부 — 왜 이건 고르지 않는 색인가. */
+export const SEMANTIC_SECTION_NOTE =
+  "빨강=위험·초록=성공은 신호등에서 온 문화적 약속이라 " +
+  "브랜드를 따르지 않습니다. 코퍼스에서 파랑의 합의 폭은 " +
+  "8°뿐입니다. 대신 사다리 모양은 당신의 액센트와 같은 곡선을 씁니다.";
+
 const ANCHOR_INDEX = 5;
 
 /** 앵커 + 실측 hue 램프 → 11-stop.
