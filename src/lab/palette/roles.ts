@@ -53,7 +53,7 @@ export const SCALE_ROLES: readonly ScaleRole[] = [
     label: "솔리드 (버튼 배경)",
     lightIndex: 5,
     darkIndex: 5,
-    note: "앵커 자리는 테마를 가로질러 값을 유지 — Radix도 다크에서 solid(step 9) 자리를 거의 그대로 둔다. 위에 얹는 흰 텍스트 대비도 그대로 성립한다.",
+    note: "솔리드 자리는 테마를 가로질러 값을 유지 — Radix도 다크에서 solid(step 9) 자리를 거의 그대로 둔다. 위에 얹는 텍스트 대비도 테마와 무관하게 동일하다.",
   },
   {
     id: "text",
@@ -73,14 +73,19 @@ export const SCALE_ROLES: readonly ScaleRole[] = [
 
 export type ScaleName = "accent" | "neutral" | SemanticId;
 
+/** scaleHasAnchor의 allowlist. */
+const ANCHORED_SCALES: readonly ScaleName[] = ["accent", "error", "success", "warning", "info"];
+
 /** 이 스케일 종류가 실제 앵커(사용자 pin 또는 고정 레퍼런스 값)를 갖는가.
  *  액센트는 사용자가 고른 anchor pin, 시맨틱은 SEMANTIC_ANCHORS의 고정값 —
  *  둘 다 index 5가 "정해진 자리"다. 뉴트럴만 앵커가 없다: buildNeutral의 500은
  *  틴트 강도·hue로부터 계산된 대표값일 뿐, pin으로 확정된 적이 없다.
  *  렌더 쪽(RoleChip 등)이 role id로 "이게 solid니까 앵커겠지"라고 되짚지 않고
- *  이 함수로 판별하게 한다 — 판단은 엔진에, web/은 렌더만 한다는 FP 원칙. */
+ *  이 함수로 판별하게 한다 — 판단은 엔진에, web/은 렌더만 한다는 FP 원칙.
+ *  allowlist로 쓴다(`!== "neutral"` 같은 부정형 대신) — 나중에 ScaleName이
+ *  늘어나면 그 새 스케일 종류는 기본값으로 "앵커 없음" 취급되어야 안전하다. */
 export function scaleHasAnchor(name: ScaleName): boolean {
-  return name !== "neutral";
+  return ANCHORED_SCALES.includes(name);
 }
 
 export interface ScaleSet {

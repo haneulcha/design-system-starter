@@ -80,7 +80,14 @@ const ANCHOR_INDEX = 5;
  *  oklchToHex의 채널별 naive clip을 타 hue가 틀어진다(amber 70.1°→65.4°) —
  *  나머지 10개 stop은 fillScale 내부에서 이미 clampToGamut을 거치므로 hue가
  *  보존된다. 여기서 먼저 클램프해 열한 stop 모두 같은 규칙을 따르게 한다.
- *  fillScale 자체는 건드리지 않는다 — R1은 그대로, 변경은 이 호출부에 국한된다. */
+ *  fillScale 자체는 건드리지 않는다 — R1은 그대로, 변경은 이 호출부에 국한된다.
+ *
+ *  부작용: 앵커의 채도를 낮추면 앵커 stop만이 아니라 11개 stop 전체가 낮아진다.
+ *  fillScale은 앵커와 인접 고정점 사이를 보간할 때 채도를 앵커 채도 대비 비율로
+ *  계산하므로(ra = a.color.c / OURS_CURVE[a.index].cMult), 앵커 채도가 줄면 그
+ *  비율을 공유하는 모든 중간 stop도 같이 줄어든다 — warning 실측: 앵커
+ *  0.188→0.1665(×0.886), 이 ×0.886에 가까운 배율이 나머지 10개 stop에도
+ *  걸린다. 앵커 하나만 바뀐다고 생각하고 이 파일을 고치지 말 것. */
 export function buildSemantic(anchor: SemanticAnchor): Oklch[] {
   const clampedAnchor = clampToGamut(anchor.anchor);
   return fillScale([{ index: ANCHOR_INDEX, color: clampedAnchor }], anchor.hueRamp);

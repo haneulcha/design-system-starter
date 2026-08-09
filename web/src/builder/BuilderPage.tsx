@@ -168,7 +168,7 @@ function DarkSection({ scales }: { scales: ScaleSet }) {
       </div>
       <p className="text-[11px] leading-4 text-neutral-400">
         다크에서 색(프리미티브)은 그대로, 역할(시맨틱)만 재배치 — 같은 사다리를
-        반대쪽에서 오른다. 규칙: 인덱스 미러(i → 10−i), 솔리드(앵커)만 자리 고정.
+        반대쪽에서 오른다. 규칙: 인덱스 미러(i → 10−i), 솔리드만 자리 고정.
       </p>
       <div className="flex gap-3">
         <MockPanel mode="light" hexes={scales.accent} neutral={scales.neutral} />
