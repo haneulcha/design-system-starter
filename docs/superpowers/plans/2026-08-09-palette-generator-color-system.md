@@ -47,18 +47,18 @@
 - Move: `src/lab/accent-scale/` → `src/lab/palette/` (13파일)
 - Modify: `tests/lab/*.test.ts` (7파일), `web/src/lab/LabPage.tsx`, `web/src/builder/BuilderPage.tsx`, `scripts/analysis/accent-scale-bench.ts`, `scripts/analysis/ours-curve-stats.ts`의 import 경로
 
-- [ ] **Step 1: 현재 테스트가 전부 통과하는지 확인 (기준선)**
+- [x] **Step 1: 현재 테스트가 전부 통과하는지 확인 (기준선)**
 
 Run: `pnpm test`
 Expected: PASS. 통과하지 않으면 멈추고 보고할 것 — 개명 전 기준선이 필요하다.
 
-- [ ] **Step 2: git mv로 디렉터리 이동**
+- [x] **Step 2: git mv로 디렉터리 이동**
 
 ```bash
 git mv src/lab/accent-scale src/lab/palette
 ```
 
-- [ ] **Step 3: import 경로 일괄 치환**
+- [x] **Step 3: import 경로 일괄 치환**
 
 ```bash
 grep -rl "lab/accent-scale" src tests web/src scripts \
@@ -67,17 +67,17 @@ grep -rl "lab/accent-scale" src tests web/src scripts \
 
 이건 import 경로와 파일 헤더 주석(`// src/lab/accent-scale/roles.ts`)을 함께 고친다 — 둘 다 원하는 결과다.
 
-- [ ] **Step 4: 치환 누락 확인**
+- [x] **Step 4: 치환 누락 확인**
 
 Run: `grep -rn "lab/accent-scale" src tests web/src scripts; echo "exit=$?"`
 Expected: 매치 0건 (grep exit=1). `scripts/analysis/accent-scale-{bench,refs}.ts`라는 **파일명 자체**는 남아야 정상이다 — 위 grep은 `lab/accent-scale` 경로만 찾으므로 걸리지 않는다.
 
-- [ ] **Step 5: 테스트 + web 타입체크**
+- [x] **Step 5: 테스트 + web 타입체크**
 
 Run: `pnpm test && (cd web && npx tsc -b --noEmit)`
 Expected: 둘 다 PASS
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 git add -A
@@ -108,7 +108,7 @@ Task 3–4가 쓸 상수의 **출처**를 코드로 남긴다. 이 스크립트�
 **Interfaces:**
 - Produces: 콘솔 출력 — `NEUTRAL_CURVE`의 `l` 배열, `C_SHAPE_SOFT`, `C_SHAPE_STRONG`, 램프별 `C_max`와 `hue@C_max`. Task 3이 이 값을 상수로 싣는다.
 
-- [ ] **Step 1: 스크립트 작성**
+- [x] **Step 1: 스크립트 작성**
 
 `scripts/analysis/neutral-curve-stats.ts`:
 
@@ -183,7 +183,7 @@ console.log(
 );
 ```
 
-- [ ] **Step 2: package.json에 스크립트 등록**
+- [x] **Step 2: package.json에 스크립트 등록**
 
 `package.json`의 `scripts`에 추가 (`accent-scale-bench` 다음 줄):
 
@@ -191,7 +191,7 @@ console.log(
     "neutral-curve-stats": "tsx scripts/analysis/neutral-curve-stats.ts"
 ```
 
-- [ ] **Step 3: 실행해서 값 확인**
+- [x] **Step 3: 실행해서 값 확인**
 
 Run: `pnpm neutral-curve-stats`
 
@@ -218,7 +218,7 @@ SOFT ref C_max mean = 0.0150 | STRONG ref C_max mean = 0.0400
 
 값이 다르면 tailwind 버전이 바뀐 것이다 — 멈추고 보고할 것. 계획의 상수는 tailwind v4.3.3 기준이다.
 
-- [ ] **Step 4: 커밋**
+- [x] **Step 4: 커밋**
 
 ```bash
 git add scripts/analysis/neutral-curve-stats.ts package.json
@@ -254,7 +254,7 @@ EOF
   - `snapTint(accentHue: number): TintAttractor` — 유채색 4개 중 원형 거리 최소
   - `cShape(index: number, strength: number): number`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `tests/lab/neutral.test.ts`:
 
@@ -392,12 +392,12 @@ describe("snapTint", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트가 실패하는지 확인**
+- [x] **Step 2: 테스트가 실패하는지 확인**
 
 Run: `pnpm vitest run tests/lab/neutral.test.ts`
 Expected: FAIL — `Failed to resolve import "../../src/lab/palette/neutral.js"`
 
-- [ ] **Step 3: `neutral.ts` 구현**
+- [x] **Step 3: `neutral.ts` 구현**
 
 `src/lab/palette/neutral.ts`:
 
@@ -516,12 +516,12 @@ if (NEUTRAL_CURVE.length !== SCALE_SIZE) {
 }
 ```
 
-- [ ] **Step 4: 테스트 통과 확인**
+- [x] **Step 4: 테스트 통과 확인**
 
 Run: `pnpm vitest run tests/lab/neutral.test.ts`
 Expected: PASS (전체 케이스)
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add src/lab/palette/neutral.ts tests/lab/neutral.test.ts
@@ -558,7 +558,7 @@ EOF
   - `TINT_STRENGTHS = { soft: 0.017, strong: 0.04 }`
   - `neutralCandidates(accentHue: number): Candidate[]` — 정확히 3개. `Candidate`는 `builder.ts`의 기존 타입(`{ color: Oklch; label: string; note: string }`)
 
-- [ ] **Step 1: 실패하는 테스트 추가**
+- [x] **Step 1: 실패하는 테스트 추가**
 
 `tests/lab/neutral.test.ts` 끝에 append:
 
@@ -629,12 +629,12 @@ describe("neutralCandidates", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실패 확인**
+- [x] **Step 2: 테스트 실패 확인**
 
 Run: `pnpm vitest run tests/lab/neutral.test.ts`
 Expected: FAIL — `buildNeutral`/`neutralCandidates`/`TINT_STRENGTHS` is not exported
 
-- [ ] **Step 3: 구현 추가**
+- [x] **Step 3: 구현 추가**
 
 `src/lab/palette/neutral.ts`의 import 줄을 다음으로 교체:
 
@@ -699,12 +699,12 @@ export function neutralCandidates(accentHue: number): Candidate[] {
 }
 ```
 
-- [ ] **Step 4: 테스트 통과 확인**
+- [x] **Step 4: 테스트 통과 확인**
 
 Run: `pnpm vitest run tests/lab/neutral.test.ts`
 Expected: PASS
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add src/lab/palette/neutral.ts tests/lab/neutral.test.ts
@@ -738,7 +738,7 @@ EOF
   - `SEMANTIC_ANCHORS: readonly SemanticAnchor[]` — 정확히 4개
   - `buildSemantic(anchor: SemanticAnchor): Oklch[]` — 길이 11
 
-- [ ] **Step 0: `fillScale`에 선택적 hue 램프 인자 추가**
+- [x] **Step 0: `fillScale`에 선택적 hue 램프 인자 추가**
 
 hue 램프를 **gamut 클램프 이전에** 적용해야 한다. 앵커 hue에서 클램프한 뒤 hue를
 돌리면 최종 hue에서 표현 가능한 채도를 미리 잘라버린다 — amber 실측으로 stop 200에서
@@ -768,12 +768,12 @@ export function fillScale(
 **핀 자리는 verbatim을 유지한다** — R1(앵커 보존). 시맨틱 앵커의 `hueRamp[5]`는 0이라
 어차피 동일하다.
 
-- [ ] **Step 0b: 기존 동작이 안 바뀌는지 확인**
+- [x] **Step 0b: 기존 동작이 안 바뀌는지 확인**
 
 Run: `pnpm vitest run tests/lab/builder.test.ts tests/lab/algorithms.test.ts`
 Expected: PASS — `hueRamp`를 넘기지 않으면 이전과 완전히 같아야 한다 (ours v0 동치 테스트가 이걸 지킨다).
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `tests/lab/semantic.test.ts`:
 
@@ -878,12 +878,12 @@ describe("buildSemantic", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실패 확인**
+- [x] **Step 2: 테스트 실패 확인**
 
 Run: `pnpm vitest run tests/lab/semantic.test.ts`
 Expected: FAIL — 모듈 해석 실패
 
-- [ ] **Step 3: `semantic.ts` 구현**
+- [x] **Step 3: `semantic.ts` 구현**
 
 `src/lab/palette/semantic.ts`:
 
@@ -968,14 +968,14 @@ for (const a of SEMANTIC_ANCHORS) {
 > red-50이 순백이 되는 실수를 하기 쉽다 — 액센트 워프는 양 끝을 곡선 자체 값
 > (0.9772 / 0.2777)에 고정하지 1/0에 고정하지 않는다.
 
-- [ ] **Step 4: 테스트 통과 확인**
+- [x] **Step 4: 테스트 통과 확인**
 
 Run: `pnpm vitest run tests/lab/semantic.test.ts`
 Expected: PASS
 
 "preserves the anchor verbatim"이 hue에서만 실패하면 `hueRamp[5]`가 0이 아닌 것이다 — 실측표를 다시 확인할 것.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add src/lab/palette/semantic.ts tests/lab/semantic.test.ts
@@ -1014,7 +1014,7 @@ EOF
   - `interface ScaleSet { accent; neutral; semantic: Record<SemanticId, readonly string[]> }`
   - `cssSnippet(scales: ScaleSet): string`
 
-- [ ] **Step 1: 실패하는 테스트로 교체**
+- [x] **Step 1: 실패하는 테스트로 교체**
 
 `tests/lab/roles.test.ts`에서 `ACCENT_ROLES` → `SCALE_ROLES`, `AccentRole` → `ScaleRole`로 치환하고, `cssSnippet` describe 블록 전체를 다음으로 교체:
 
@@ -1090,12 +1090,12 @@ describe("cssSnippet", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실패 확인**
+- [x] **Step 2: 테스트 실패 확인**
 
 Run: `pnpm vitest run tests/lab/roles.test.ts`
 Expected: FAIL — `SCALE_ROLES` is not exported
 
-- [ ] **Step 3: `roles.ts` 일반화**
+- [x] **Step 3: `roles.ts` 일반화**
 
 `src/lab/palette/roles.ts`에서:
 
@@ -1154,7 +1154,7 @@ export function cssSnippet(scales: ScaleSet): string {
 }
 ```
 
-- [ ] **Step 4: web의 import 이름 갱신**
+- [x] **Step 4: web의 import 이름 갱신**
 
 `web/src/builder/BuilderPage.tsx`에서 `ACCENT_ROLES` → `SCALE_ROLES`, `AccentRole` → `ScaleRole`로 치환하고 import를 추가한다:
 
@@ -1179,12 +1179,12 @@ import { SEMANTIC_ANCHORS, buildSemantic } from "@core/lab/palette/semantic.js";
 
 > 이 임시 코드는 Task 8에서 실제 스케일로 교체된다. Task 6만 단독으로 리뷰될 때 web이 컴파일되게 하려는 최소 조치다.
 
-- [ ] **Step 5: 테스트 + 타입체크**
+- [x] **Step 5: 테스트 + 타입체크**
 
 Run: `pnpm test && (cd web && npx tsc -b --noEmit)`
 Expected: 둘 다 PASS
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 git add src/lab/palette/roles.ts tests/lab/roles.test.ts web/src/builder/BuilderPage.tsx
@@ -1220,7 +1220,7 @@ EOF
   - `STEP_META`에 `"neutral"` 키 추가
   - `BUILDER_STEPS`는 **유지** (기존 테스트·`toStrip` 호환)
 
-- [ ] **Step 1: 실패하는 테스트 추가**
+- [x] **Step 1: 실패하는 테스트 추가**
 
 `tests/lab/builder.test.ts` 끝에 append:
 
@@ -1256,12 +1256,12 @@ describe("BUILDER_FLOW", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실패 확인**
+- [x] **Step 2: 테스트 실패 확인**
 
 Run: `pnpm vitest run tests/lab/builder.test.ts`
 Expected: FAIL — `BUILDER_FLOW` is not exported
 
-- [ ] **Step 3: `builder.ts`에 스텝 모델 추가**
+- [x] **Step 3: `builder.ts`에 스텝 모델 추가**
 
 `src/lab/palette/builder.ts`의 `BUILDER_STEPS` 선언 **다음에** 추가:
 
@@ -1293,12 +1293,12 @@ export const BUILDER_FLOW: readonly BuilderStep[] = [
   },
 ```
 
-- [ ] **Step 4: 테스트 통과 확인**
+- [x] **Step 4: 테스트 통과 확인**
 
 Run: `pnpm vitest run tests/lab/builder.test.ts`
 Expected: PASS
 
-- [ ] **Step 5: `BuilderPage`를 새 스텝 모델로 전환**
+- [x] **Step 5: `BuilderPage`를 새 스텝 모델로 전환**
 
 `web/src/builder/BuilderPage.tsx`:
 
@@ -1460,12 +1460,12 @@ const toNeutralStrip = (scale: readonly Oklch[]) =>
 
 10. `restart()`(`:218`)에도 `setNeutralTint(null)`을 추가한다.
 
-- [ ] **Step 6: 브라우저 수동 확인**
+- [x] **Step 6: 브라우저 수동 확인**
 
 Run: `cd web && npm run dev` 후 `#builder`에서 6단계 완주.
 Expected: 6번째 단계에 뉴트럴 후보 3개(무채색 / 스냅된 어트랙터 은은·뚜렷)가 뜨고, 콘솔 에러 0. 진행 표시가 6칸.
 
-- [ ] **Step 7: 커밋**
+- [x] **Step 7: 커밋**
 
 ```bash
 git add src/lab/palette/builder.ts tests/lab/builder.test.ts web/src/builder/BuilderPage.tsx
@@ -1492,7 +1492,7 @@ EOF
 **Interfaces:**
 - Consumes: Task 4의 `buildNeutral`, Task 5의 `SEMANTIC_ANCHORS`·`buildSemantic`, Task 6의 `cssSnippet(ScaleSet)`
 
-- [ ] **Step 1: 완료 화면에서 세 종류 스케일을 파생**
+- [x] **Step 1: 완료 화면에서 세 종류 스케일을 파생**
 
 `BuilderPage` 본문의 `finalStops` 근처에 추가:
 
@@ -1509,7 +1509,7 @@ EOF
   }, [done, neutralTint, pins]);
 ```
 
-- [ ] **Step 2: `DarkSection`이 `ScaleSet`을 받도록 확장**
+- [x] **Step 2: `DarkSection`이 `ScaleSet`을 받도록 확장**
 
 `MockPanel`이 뉴트럴 배경을 받도록 prop을 하나 늘린다:
 
@@ -1598,7 +1598,7 @@ function MockPanel({
 > note 열은 여섯 표에서 같은 문장을 반복한다. 그게 의도다 — 미러 규칙이 스케일
 > 종류와 무관하게 하나라는 게 이 화면의 논지다.
 
-- [ ] **Step 3: 시맨틱 섹션 추가**
+- [x] **Step 3: 시맨틱 섹션 추가**
 
 `DarkSection` 위, hex 목록 아래에 시맨틱 4종 스트립과 note 한 줄:
 
@@ -1623,16 +1623,16 @@ function MockPanel({
       </div>
 ```
 
-- [ ] **Step 4: 호출부 교체**
+- [x] **Step 4: 호출부 교체**
 
 `<DarkSection hexes={finalStops.map((s) => s.hex)} />` → `{scaleSet && <DarkSection scales={scaleSet} />}`
 
-- [ ] **Step 5: 타입체크**
+- [x] **Step 5: 타입체크**
 
 Run: `cd web && npx tsc -b --noEmit`
 Expected: PASS
 
-- [ ] **Step 6: Playwright 수동 검증**
+- [x] **Step 6: Playwright 수동 검증**
 
 `cd web && npm run dev` 후 `#builder`에서:
 
@@ -1642,7 +1642,7 @@ Expected: PASS
 4. 웜 앵커로 재실행(액센트 `#f97316`) → 뉴트럴 후보가 "웜 그레이"로 뜨고, 그 회색이 **갈색으로 보이지 않는가** (V2의 핵심 주장 눈 검증).
 5. 콘솔 에러 0.
 
-- [ ] **Step 7: 커밋**
+- [x] **Step 7: 커밋**
 
 ```bash
 git add web/src/builder/BuilderPage.tsx
@@ -1665,19 +1665,54 @@ EOF
 
 ## 최종 검증
 
-- [ ] **전체 테스트**
+- [x] **전체 테스트**
 
 Run: `pnpm test && (cd web && npx tsc -b --noEmit)`
 Expected: 둘 다 PASS
 
-- [ ] **계획 문서 갱신**
+- [x] **계획 문서 갱신**
 
 이 파일의 체크박스를 완료 표시하고, Task 8 Step 6의 수동 검증 결과(특히 4번 — 웜 앵커의 갈색 회피)를 문서 하단에 기록한 뒤 커밋한다.
 
-- [ ] **스펙의 이월 항목 갱신**
+- [x] **스펙의 이월 항목 갱신**
 
 `docs/superpowers/specs/2026-07-28-dark-accent-roles-design.md`의 "v0 범위 밖" 목록에서 **"뉴트럴 연동 목업 배경"**은 Task 8에서 해소됐다. 해소 표시와 해소 커밋을 적는다.
 
-- [ ] **연구 트랙 문서에 결과 기록**
+- [x] **연구 트랙 문서에 결과 기록**
 
 `docs/research/accent-scale-derivation-track.md`에 "뉴트럴·시맨틱 확장 (2026-08-09)" 절을 추가하고 V1–V4의 판정(뉴트럴 곡선 분리, 어트랙터 스냅, 강도 종속, 시맨틱 곡선 재사용)과 산출 스크립트 경로를 남긴다. IDENTITY의 "연구의 완결 조건은 디폴트 반영 + 근거의 가시화"를 만족시키는 단계다.
+
+---
+
+## 최종 검증 결과 (2026-08-09)
+
+### 전체 테스트
+
+`pnpm test`: 46 test files, 924 tests, 전부 PASS. `cd web && npx tsc -b --noEmit`: 에러 0. 계획 시작 시점 기준선(Task 1 Step 1) 대비 드리프트 없음.
+
+### Task 7 수동 검증 (브라우저) — `.superpowers/sdd/2026-08-09-palette-generator-color-system/task-7-browser-verification.md`
+
+- 6단계 플로우가 쿨 액센트(`#3b82f6`)·웜 액센트(`#f97316`) 둘 다에서 크래시 없이 완주됐다. 진행 표시는 정확히 6개, 전부 비인터랙티브 `<span>`.
+- 뉴트럴 후보 스트립이 액센트가 아니라 실제 뉴트럴 스케일을 렌더한다 (앵커 픽 없음, `anchor: false`).
+- **V2 눈 검증 (웜 앵커 `#f97316`)**: `snapTint`가 액센트 자신의 hue가 아니라 "웜 그레이" 어트랙터를 골랐다.
+  - **웜 그레이 (은은)**: 결과 유지 — 전 스톱에서 웜 그레이로 읽히고 어두운 끝(`#0a0906`)도 중립적으로 어둡다. 갈색으로 보이지 않는다.
+  - **웜 그레이 (뚜렷)**: **경계선 판정, 사용자 판단 영역.** 400–600 구간은 카키/토프로 읽히고, 800–950(`#302611`, `#201702`)은 어두운 올리브-브라운으로 읽힌다. "배경 전체에 인격을 주는" 옵션으로는 방어 가능하지만 V2 주장의 가장자리다. 같은 화면의 액센트 스케일(주황→명백한 갈색)과 대조하면 뉴트럴 쪽이 훨씬 완만하다는 게 상대적으로는 확인된다.
+  - 즉 **V2의 핵심 주장(순수 웜 그레이가 갈색으로 붕괴하는 걸 어트랙터 스냅이 막는다)은 "은은" 강도에서는 깨끗이 성립하고, "뚜렷" 강도에서는 완전히 갈색은 아니되 경계에 있다** — 강도가 셀수록 어트랙터의 방어선이 얇아진다는 뜻으로 받아들인다.
+- 콘솔: 0 에러 / 0 경고 (favicon 404는 서버 기동 초기에만 한 번, 재현 불가한 사전 존재 잡음).
+- 새로 발견된 것(계획 밖): 헤더 부제가 5-pick·구 스텝 순서를 기술한 채 낡아 있었다. Task 8로 접어 처리하기로 함 — 아래 참조.
+
+### Task 8 수동 검증 (브라우저) — `.superpowers/sdd/2026-08-09-palette-generator-color-system/task-8-browser-verification.md`
+
+- 헤더 부제가 6단계·3종 스케일을 정확히 설명하는 문장으로 교체됐고 앱의 기존 문체와 맞는다.
+- 목업 패널 배경이 고정값(`#ffffff`/`#171717`)에서 사용자의 뉴트럴 50/950으로 교체됐다 — 웜 앵커 실행에서 라이트 `#fafaf9`, 다크 `#0a0906`이 실제로 렌더된 DOM에 나타났고 `#171717`은 어디에도 남아있지 않았다.
+- copy CSS: 4258바이트, 스케일 6종(액센트·뉴트럴·error·warning·success·info), 프리미티브 66개, `:root` 역할 36개, `.dark` 재선언 30개 — 스펙이 정한 숫자와 정확히 일치. `--*-solid`는 `.dark`에 부재, dangling `var()` 참조 0건.
+- 시맨틱 4종 스트립이 엔진 라벨(오류/경고/성공/정보)로 렌더되고 500 자리에 앵커 링이 있다.
+- 역할표: 액센트·뉴트럴은 펼침, 시맨틱 4종은 `<details>`로 접힘.
+- 콘솔: 0 에러 / 0 경고.
+- 1차 발견 → 수정: 뉴트럴 11-stop 스트립이 어디에도 렌더되지 않는 스펙 갭(계획 Task 8 Step 6 검증 항목 1 위반)이 발견되어 수정 라운드로 들어갔다. 커밋 `d8538f3`로 해소 — 순서 "완성된 스케일 → 뉴트럴 → 상태색 → 다크 테마"로 삽입, 무채색 케이스(앵커 없음, 링 없음)와 웜 케이스(어트랙터 자체 note 노출) 둘 다 재검증 통과.
+
+### 두 수정 라운드가 계획 원안을 바꾼 지점
+
+- **Task 4**: 계획 원안의 테스트 일부가 공허하게 통과하는 문제(RED 단계에서 실패 이유를 확인하지 않은 assertion)와 웜 hue 주장이 숫자로 고정되지 않은 문제가 리뷰에서 나와, 메시지 매칭 + NaN 케이스로 좁히고 웜-hue 주장을 수치 assertion으로 강화했다. API 변경 없음.
+- **Task 7**: 계획 원안은 `tintOf()`가 후보 배열 인덱스(`candidates.indexOf(cd)`)로 틴트를 역산하는 방식이었다. 사람 판단으로 이걸 뒤집었다 — 엔진이 각 후보에 틴트를 직접 실어 보내도록 `neutralCandidates`의 반환 타입을 `NeutralCandidate extends Candidate { tint }`로 바꿨다. FP 분리 원칙(계산은 엔진, UI는 라벨 기반 취약한 역산을 하지 않는다) 근거의 사람 룰링.
+- **Task 8**: 계획에 없던 두 가지가 추가됐다. (1) 뉴트럴 11-stop 스트립 — 계획의 Task 8 Step 6 검증 항목 1이 요구했지만 브리프가 실제 구현 지시에서 빠뜨렸던 것을, 컨트롤러 브라우저 검증이 스펙 갭으로 잡아내 추가했다. (2) `SEMANTIC_SECTION_NOTE`를 UI 하드코딩 문자열("코퍼스에서 파랑의 합의 폭은 8°뿐입니다" 등)에서 `semantic.ts` 엔진 쪽 상수로 옮기는 사람 룰링 — FP 분리 원칙(문구는 엔진에, `web/`은 렌더만) 위반을 바로잡았다. 둘 다 커밋 `ac5db5b..d8538f3` 구간.

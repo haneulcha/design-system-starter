@@ -88,3 +88,59 @@
     아핀 리매핑은 단조성이 구조적으로 보장됨).
   - rejected: hue family별 곡선 분기 — v0 범위 초과, 데이터(17종)로는 family당
     표본이 얇음. 극단 앵커 문제와 함께 빌더의 후보 다양화로 넘김.
+
+## 뉴트럴·시맨틱 확장 (2026-08-09)
+
+가이드드 빌더 v1("빌더 구현" 절) 다음 사이클 — 생성기를 액센트 한 종류에서
+뉴트럴 + 시맨틱 4종까지 만드는 색 시스템 생성기로 확장했다. 검증 데이터
+V1–V4 전체 표와 확정 결정은
+`docs/superpowers/specs/2026-08-09-palette-generator-color-system-design.md`에
+있다 — 여기는 판정과 코드 위치만 남긴다. 구현 태스크 원장은
+`docs/superpowers/plans/2026-08-09-palette-generator-color-system.md`.
+
+### 검증 판정
+
+- **V1 — 뉴트럴은 액센트 곡선을 공유하지 못한다.** stop 500에서 ΔL 0.131,
+  900에서 0.185 — 공유 불가능한 정도로 갈린다. 그런데 tailwind 뉴트럴 5종
+  사이 stop별 sd가 0.001~0.008이라, 갈라진 그 곡선 자체는 취향 축이 아니라
+  상수다. → `NEUTRAL_CURVE` (`src/lab/palette/neutral.ts`).
+- **V2 — 뉴트럴 hue는 이산 어트랙터로 스냅하며, 액센트를 그대로 따라가지
+  않는다.** 웜 액센트가 자기 hue를 그대로 그레이에 물려주면 갈색이 된다 —
+  레퍼런스는 60°+ 밀어 올리브 쪽으로 보낸다(tailwind stone 58°, radix
+  sand 107°). → `TINT_ATTRACTORS` + `snapTint`.
+- **V3 — 어두운 쪽 채도 모양은 틴트 강도의 종속 변수이지, 독립 축이
+  아니다.** 별도 knob을 여는 대신 두 기준 모양 테이블(soft/strong)을
+  강도로 보간한다. → `C_SHAPE_SOFT`/`C_SHAPE_STRONG` + `cShape`.
+- **V4 — 시맨틱 4종은 새 곡선이 필요 없다.** tailwind red/green/blue가
+  `OURS_CURVE`에서 벗어나는 정도는 mean|ΔL| 0.018~0.029뿐. →
+  `buildSemantic`이 `fillScale`에 위임.
+
+산출 스크립트: `scripts/analysis/neutral-curve-stats.ts`
+(`pnpm neutral-curve-stats`). 실행 결과가 계획에 실린 상수와 소수점까지
+일치했다 — 설치된 tailwind v4.3.3 기준.
+
+### 알려진 한계
+
+디자인 스펙에 이미 적힌 한계를 그대로 옮긴다 — 여기서 더 확신에 찬 문장으로
+바꾸지 않는다.
+
+- V4는 부분적으로 순환 논증이다. `OURS_CURVE` 자체가 red/amber/green/blue를
+  포함한 tailwind 17개 팔레트의 평균이라, 이 넷이 그 평균에서 덜 벗어나는
+  건 어느 정도 자기충족적이다. radix red/green 등 독립 검증이 더해지면
+  주장이 강해진다.
+- V1의 sd는 단일 벤더(tailwind)뿐이다 — 내부 일관성을 보여줄 뿐 업계 상수라는
+  증거는 아니다.
+- tailwind v4 팔레트는 Display P3라 sRGB로 클램프하면 앵커부터 채도가
+  깎인다(amber-500 의도값 0.188 → 0.1665). 생성 결과가 tailwind 원본보다
+  차분하게 읽히는 건 이 때문이고, 버그가 아니라 예상된 결과다.
+- V3의 강도-종속은 그룹당 n=2(zinc·stone vs slate·gray)다.
+
+### 구현 중 발견 — hue 램프는 gamut 클램프 이전에 적용해야 한다
+
+설계 단계의 예측이 아니라 구현 중 실측으로 확인된 순서 계약. 앵커 hue에서
+먼저 클램프한 뒤 hue를 돌리면, 최종 hue에서 표현 가능한 채도를 미리
+잘라버린다 — amber 실측: stop 200에서 의도 채도 0.0799가 잘못된 순서에서
+0.0550으로 떨어진다(31% 손실, 순서를 고치면 +45% 회복), stop 700은
+0.1639 → 0.1231. 이 때문에 `fillScale`에 선택적 `hueRamp` 인자를 추가해
+워프 내부, 클램프 직전에 적용시켰다 — 호출부가 결과를 후처리로 다시
+돌리는 방식은 채택하지 않았다.
