@@ -1,10 +1,15 @@
 // scripts/analysis/neutral-curve-stats.ts
 //
-// 뉴트럴 곡선 상수(src/lab/palette/neutral.ts)의 산출 스크립트.
+// 뉴트럴 곡선 상수(src/lab/palette/neutral.ts) **와** 시맨틱 앵커/hue 램프
+// 상수(src/lab/palette/semantic.ts)의 산출 스크립트 — 이름은 뉴트럴만 가리키지만
+// 둘 다 여기서 나온다 (tailwind theme.css를 이미 파싱하고 있어 자연스러운 자리).
 // tailwind 뉴트럴 5종을 읽어 stop별 평균 L과, C_max로 정규화한 채도 모양을
 // 약(zinc·stone) / 강(slate·gray) 두 그룹으로 나눠 평균한다.
 // 두 그룹으로 나누는 이유: 어두운 쪽(800~950)에서 C 모양이 C_max와 상관해
 // 갈리므로(sd 0.25~0.29) 평균 하나로 뭉개면 그 종속성이 사라진다.
+// 시맨틱 파트는 red/amber/green/blue의 stop-500을 앵커로, 나머지 10개 stop의
+// hue를 500 기준 Δh로 찍는다 — semantic.ts의 SEMANTIC_ANCHORS 테이블과
+// 자리·자릿수까지 맞춰 눈으로 대조할 수 있게 포맷한다.
 // 스펙: docs/superpowers/specs/2026-08-09-palette-generator-color-system-design.md
 //
 // 실행: pnpm neutral-curve-stats
@@ -66,3 +71,19 @@ console.log(
   `\nSOFT ref C_max mean = ${mean(SOFT.map((n) => cMax(ramp(n)))).toFixed(4)}` +
   ` | STRONG ref C_max mean = ${mean(STRONG.map((n) => cMax(ramp(n)))).toFixed(4)}`,
 );
+
+// ─── 시맨틱 앵커 (semantic.ts의 SEMANTIC_ANCHORS 산출) ───────────────────────
+// stop-500을 앵커로 싣고, 나머지 10개 stop의 hue를 500 기준 Δh(원형 최단거리)
+// 로 찍는다 — semantic.ts에 그대로 옮겨 적는 값이라 자릿수를 맞춘다
+// (앵커: l/c 소수 3자리, h 소수 1자리 / Δh: 소수 1자리).
+const SEMANTIC = ["red", "amber", "green", "blue"] as const;
+console.log("\n시맨틱 앵커 (stop-500) + hue 램프 (Δh, 500 기준 원형 최단거리):");
+for (const name of SEMANTIC) {
+  const r = ramp(name);
+  const anchor = r[5];
+  const deltas = r.map((o) => ((o.h - anchor.h + 540) % 360) - 180);
+  console.log(
+    `  ${name.padEnd(8)} anchor { l: ${anchor.l.toFixed(3)}, c: ${anchor.c.toFixed(3)}, h: ${anchor.h.toFixed(1)} }`,
+  );
+  console.log(`    hueRamp: [${deltas.map((d) => d.toFixed(1)).join(", ")}]`);
+}
