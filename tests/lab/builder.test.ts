@@ -6,6 +6,7 @@ import {
   STOP_KEYS,
   type Pin,
   BUILDER_STEPS,
+  BUILDER_FLOW,
   STEP_META,
   candidatesFor,
 } from "../../src/lab/palette/builder.js";
@@ -286,6 +287,34 @@ describe("candidatesFor", () => {
           expect(out[i].l, `${hex} stop ${i}`).toBeLessThan(out[i - 1].l);
         }
       }
+    }
+  });
+});
+
+describe("BUILDER_FLOW", () => {
+  it("has 6 steps: anchor, 4 accent stops, then the neutral tint", () => {
+    expect(BUILDER_FLOW).toHaveLength(6);
+    expect(BUILDER_FLOW[0]).toEqual({ kind: "accent-anchor" });
+    expect(BUILDER_FLOW.slice(1, 5).map((s) => s.kind)).toEqual(
+      ["accent-stop", "accent-stop", "accent-stop", "accent-stop"],
+    );
+    expect(BUILDER_FLOW[5]).toEqual({ kind: "neutral-tint" });
+  });
+
+  it("keeps the RUI accent order 500 → 50 → 950 → 300 → 700", () => {
+    const stops = BUILDER_FLOW.flatMap((s) =>
+      s.kind === "accent-stop" ? [s.stopIndex] : s.kind === "accent-anchor" ? [5] : [],
+    );
+    expect(stops).toEqual([5, 0, 10, 3, 7]);
+  });
+
+  it("has copy for every step including the neutral one", () => {
+    for (const s of BUILDER_FLOW) {
+      const key = s.kind === "neutral-tint" ? "neutral" : s.kind === "accent-anchor" ? 5 : s.stopIndex;
+      const meta = STEP_META[key];
+      expect(meta, String(key)).toBeDefined();
+      expect(meta.title.length).toBeGreaterThan(0);
+      expect(meta.description.length).toBeGreaterThan(10);
     }
   });
 });

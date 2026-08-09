@@ -152,8 +152,24 @@ export interface Candidate {
 /** RUI 선택 순서: 500 → 50 → 950 → 300 → 700 */
 export const BUILDER_STEPS = [5, 0, 10, 3, 7] as const;
 
+/** 빌더 단계. stop 인덱스 배열로는 뉴트럴 단계를 표현할 수 없어 판별 유니온을 쓴다. */
+export type BuilderStep =
+  | { readonly kind: "accent-anchor" }
+  | { readonly kind: "accent-stop"; readonly stopIndex: number }
+  | { readonly kind: "neutral-tint" };
+
+/** RUI 순서(500 → 50 → 950 → 300 → 700) 뒤에 뉴트럴 틴트 한 단계. */
+export const BUILDER_FLOW: readonly BuilderStep[] = [
+  { kind: "accent-anchor" },
+  { kind: "accent-stop", stopIndex: 0 },
+  { kind: "accent-stop", stopIndex: 10 },
+  { kind: "accent-stop", stopIndex: 3 },
+  { kind: "accent-stop", stopIndex: 7 },
+  { kind: "neutral-tint" },
+];
+
 /** 단계별 안내 카피 (교보재) — 렌더는 web/BuilderPage가 담당 */
-export const STEP_META: Record<number, { title: string; description: string }> = {
+export const STEP_META: Record<number | "neutral", { title: string; description: string }> = {
   5: {
     title: "액센트 (500)",
     description:
@@ -178,6 +194,11 @@ export const STEP_META: Record<number, { title: string; description: string }> =
     title: "중간 어두움 (700)",
     description:
       "본문 위 텍스트·진한 버튼이 사는 구간. 채도가 높으면 화려하지만 오래 보면 피로하다.",
+  },
+  neutral: {
+    title: "배경 회색 (뉴트럴)",
+    description:
+      "화면 면적의 대부분을 차지하는 회색. 액센트 hue를 그대로 쓰지 않고 그레이가 자연스러운 몇 자리 중 가장 가까운 곳으로 붙인다 — 주황을 그대로 쓰면 갈색이 되기 때문이다.",
   },
 };
 

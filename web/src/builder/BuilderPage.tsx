@@ -7,14 +7,22 @@
 import { useMemo, useState } from "react";
 import type { CSSProperties } from "react";
 import {
-  BUILDER_STEPS,
+  BUILDER_FLOW,
   candidatesFor,
   fillScale,
   STEP_META,
   STOP_KEYS,
+  type BuilderStep,
   type Candidate,
   type Pin,
 } from "@core/lab/palette/builder.js";
+import {
+  neutralCandidates,
+  buildNeutral,
+  snapTint,
+  TINT_STRENGTHS,
+  type NeutralTint,
+} from "@core/lab/palette/neutral.js";
 import {
   SCALE_ROLES,
   cssSnippet,
@@ -23,11 +31,12 @@ import {
 } from "@core/lab/palette/roles.js";
 import { SEMANTIC_ANCHORS, buildSemantic } from "@core/lab/palette/semantic.js";
 import { oklchToHex, parsePrimary } from "@core/generator/color.js";
+import type { Oklch } from "@core/schema/types.js";
 import { ColorScaleStrip } from "../components/ColorScaleStrip";
 import { OklchPicker } from "../components/OklchPicker";
 
 interface Choice {
-  stopIndex: number;
+  metaKey: number | "neutral"; // STEP_META 조회용
   label: string; // 액센트 단계는 hex, 후보 단계는 후보 라벨 (여정 요약용)
 }
 
@@ -39,6 +48,10 @@ function toStrip(pins: readonly Pin[], scale = fillScale(pins)) {
     anchor: pinSet.has(i),
   }));
 }
+
+/** 뉴트럴 스케일 변환 — pin 강조가 없는 단순 변환 (뉴트럴엔 앵커가 없다) */
+const toNeutralStrip = (scale: readonly Oklch[]) =>
+  scale.map((c, i) => ({ key: STOP_KEYS[i], hex: oklchToHex(c), anchor: false }));
 
 /** 역할표의 색 칩 + stop 번호. ring = 솔리드(앵커 고정) 강조. */
 function RoleChip({ hex, stop, ring }: { hex: string; stop: string; ring: boolean }) {
@@ -180,35 +193,69 @@ function DarkSection({ hexes }: { hexes: readonly string[] }) {
 export function BuilderPage() {
   const [pins, setPins] = useState<Pin[]>([]);
   const [choices, setChoices] = useState<Choice[]>([]);
-  const [stepIdx, setStepIdx] = useState(0); // BUILDER_STEPS 위치, length면 완료
+  const [stepIdx, setStepIdx] = useState(0); // BUILDER_FLOW 위치, length면 완료
   const [accentHex, setAccentHex] = useState("#3b82f6");
   const [picked, setPicked] = useState<Candidate | null>(null); // 현재 단계 임시 선택
+  const [neutralTint, setNeutralTint] = useState<NeutralTint | null>(null);
 
-  const done = stepIdx >= BUILDER_STEPS.length;
-  const stopIndex = done ? -1 : BUILDER_STEPS[stepIdx];
-  const isAccentStep = stopIndex === 5;
+  const done = stepIdx >= BUILDER_FLOW.length;
+  const step: BuilderStep | null = done ? null : BUILDER_FLOW[stepIdx];
+  const isAccentStep = step?.kind === "accent-anchor";
+  const isNeutralStep = step?.kind === "neutral-tint";
+  const stopIndex = step?.kind === "accent-stop" ? step.stopIndex : -1;
 
-  const candidates = useMemo(
-    () => (done || isAccentStep ? [] : candidatesFor(stopIndex, pins)),
-    [done, isAccentStep, stopIndex, pins],
+  const meta = step && STEP_META[
+    step.kind === "neutral-tint" ? "neutral" : step.kind === "accent-anchor" ? 5 : step.stopIndex
+  ];
+
+  const accentHue = useMemo(
+    () => (pins.find((p) => p.index === 5)?.color.h ?? parsePrimary(accentHex).h),
+    [pins, accentHex],
   );
+
+  const candidates = useMemo(() => {
+    if (!step) return [];
+    if (step.kind === "accent-anchor") return [];
+    if (step.kind === "neutral-tint") return neutralCandidates(accentHue);
+    return candidatesFor(step.stopIndex, pins);
+  }, [step, pins, accentHue]);
+
+  /** 후보 → 틴트 복원 (후보 0=무채색, 1=은은, 2=뚜렷) */
+  const tintOf = (cd: Candidate): NeutralTint => {
+    const idx = candidates.indexOf(cd);
+    if (idx === 0) return { hue: null, strength: 0 };
+    const snapped = snapTint(accentHue);
+    return { hue: snapped.hue, strength: idx === 1 ? TINT_STRENGTHS.soft : TINT_STRENGTHS.strong };
+  };
+
+  /** 후보 미리보기 스트립 — 뉴트럴 단계는 뉴트럴 스케일을, 액센트 stop 단계는
+   *  pin에 후보를 끼운 액센트 스케일을 보여준다. */
+  const previewStrip = (cd: Candidate) =>
+    isNeutralStep
+      ? toNeutralStrip(buildNeutral(tintOf(cd)))
+      : toStrip([...pins, { index: stopIndex, color: cd.color }]);
 
   // 하단 상시 미리보기: 확정 pin + 임시 선택 반영
   const previewPins = useMemo<Pin[]>(() => {
-    if (isAccentStep && !done) {
-      return [{ index: 5, color: parsePrimary(accentHex) }];
-    }
+    if (isAccentStep && !done) return [{ index: 5, color: parsePrimary(accentHex) }];
+    if (isNeutralStep) return pins; // 액센트는 이미 확정 — 그대로 보여준다
     return picked ? [...pins, { index: stopIndex, color: picked.color }] : pins;
-  }, [isAccentStep, done, accentHex, picked, pins, stopIndex]);
+  }, [isAccentStep, isNeutralStep, done, accentHex, picked, pins, stopIndex]);
+
+  const neutralPreview =
+    isNeutralStep && picked ? toNeutralStrip(buildNeutral(tintOf(picked))) : null;
 
   const confirm = () => {
     if (isAccentStep) {
       const color = parsePrimary(accentHex);
       setPins([{ index: 5, color }]);
-      setChoices([{ stopIndex: 5, label: accentHex }]);
+      setChoices([{ metaKey: 5, label: accentHex }]);
+    } else if (isNeutralStep && picked) {
+      setNeutralTint(tintOf(picked));
+      setChoices([...choices, { metaKey: "neutral", label: picked.label }]);
     } else if (picked) {
       setPins([...pins, { index: stopIndex, color: picked.color }]);
-      setChoices([...choices, { stopIndex, label: picked.label }]);
+      setChoices([...choices, { metaKey: stopIndex, label: picked.label }]);
     } else {
       return;
     }
@@ -218,9 +265,12 @@ export function BuilderPage() {
 
   /** 완료 단계로 복귀 — 이후 단계 선택은 무효화 (스펙 결정) */
   const redo = (targetStep: number) => {
-    const keptStops = BUILDER_STEPS.slice(0, targetStep);
-    setPins(pins.filter((p) => keptStops.includes(p.index as typeof BUILDER_STEPS[number])));
-    setChoices(choices.filter((c) => keptStops.includes(c.stopIndex as typeof BUILDER_STEPS[number])));
+    const keptStops = BUILDER_FLOW.slice(0, targetStep).flatMap((s) =>
+      s.kind === "accent-anchor" ? [5] : s.kind === "accent-stop" ? [s.stopIndex] : [],
+    );
+    setPins(pins.filter((p) => keptStops.includes(p.index)));
+    setChoices(choices.slice(0, targetStep));
+    if (targetStep < 5) setNeutralTint(null); // 뉴트럴 단계(인덱스 5) 이전으로 가면 무효
     setPicked(null);
     setStepIdx(targetStep);
   };
@@ -229,6 +279,7 @@ export function BuilderPage() {
     setPins([]);
     setChoices([]);
     setPicked(null);
+    setNeutralTint(null);
     setStepIdx(0);
   };
 
@@ -245,9 +296,9 @@ export function BuilderPage() {
           Refactoring UI 순서로 액센트 스케일 만들기 — 500 → 50 → 950 → 300 → 700
         </p>
         <div className="flex gap-1.5 mt-2">
-          {BUILDER_STEPS.map((s, i) => (
+          {BUILDER_FLOW.map((_, i) => (
             <span
-              key={s}
+              key={i}
               className={`w-2 h-2 rounded-full ${
                 i < stepIdx ? "bg-neutral-800" : i === stepIdx ? "bg-neutral-400" : "bg-neutral-200"
               }`}
@@ -259,11 +310,11 @@ export function BuilderPage() {
       {/* 완료 단계 요약 */}
       {choices.map((c, i) => (
         <div
-          key={c.stopIndex}
+          key={i}
           className="flex items-center justify-between border border-neutral-200 rounded px-3 py-2 text-xs"
         >
           <span className="text-neutral-600">
-            ✓ {i + 1}. {STEP_META[c.stopIndex].title} — {c.label}
+            ✓ {i + 1}. {STEP_META[c.metaKey].title} — {c.label}
           </span>
           <button
             type="button"
@@ -276,15 +327,13 @@ export function BuilderPage() {
       ))}
 
       {/* 현재 단계 */}
-      {!done && (
+      {!done && step && meta && (
         <section className="border border-neutral-300 rounded p-4 space-y-3">
           <div>
             <h2 className="text-sm font-medium">
-              {stepIdx + 1}. {STEP_META[stopIndex].title}
+              {stepIdx + 1}. {meta.title}
             </h2>
-            <p className="text-[11px] leading-4 text-neutral-400 mt-1">
-              {STEP_META[stopIndex].description}
-            </p>
+            <p className="text-[11px] leading-4 text-neutral-400 mt-1">{meta.description}</p>
           </div>
 
           {isAccentStep ? (
@@ -323,9 +372,7 @@ export function BuilderPage() {
                       <span className="text-xs font-medium">{cd.label}</span>
                     </div>
                     <p className="text-[11px] leading-4 text-neutral-400 mb-1.5">{cd.note}</p>
-                    <ColorScaleStrip
-                      stops={toStrip([...pins, { index: stopIndex, color: cd.color }])}
-                    />
+                    <ColorScaleStrip stops={previewStrip(cd)} />
                   </label>
                 );
               })}
@@ -367,7 +414,7 @@ export function BuilderPage() {
           <DarkSection hexes={finalStops.map((s) => s.hex)} />
           <div className="text-[11px] leading-4 text-neutral-400">
             <span className="font-medium text-neutral-500">내가 고른 여정 — </span>
-            {choices.map((c) => `${STEP_META[c.stopIndex].title}: ${c.label}`).join(" → ")}
+            {choices.map((c) => `${STEP_META[c.metaKey].title}: ${c.label}`).join(" → ")}
           </div>
           <button
             type="button"
@@ -386,6 +433,7 @@ export function BuilderPage() {
             미리보기 — 지금 상태의 스케일 (링 = 내가 확정/선택한 stop)
           </h3>
           <ColorScaleStrip stops={toStrip(previewPins)} />
+          {neutralPreview && <ColorScaleStrip stops={neutralPreview} />}
         </section>
       )}
     </div>
