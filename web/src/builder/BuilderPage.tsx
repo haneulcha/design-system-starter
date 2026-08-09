@@ -28,7 +28,7 @@ import {
   type ScaleRole,
   type ScaleSet,
 } from "@core/lab/palette/roles.js";
-import { SEMANTIC_ANCHORS, buildSemantic } from "@core/lab/palette/semantic.js";
+import { SEMANTIC_ANCHORS, buildSemantic, type SemanticId } from "@core/lab/palette/semantic.js";
 import { oklchToHex, parsePrimary } from "@core/generator/color.js";
 import type { Oklch } from "@core/schema/types.js";
 import { ColorScaleStrip } from "../components/ColorScaleStrip";
@@ -70,7 +70,15 @@ function RoleChip({ hex, stop, ring }: { hex: string; stop: string; ring: boolea
 /** 6역할이 전부 등장하는 미니 목업 — 라이트/다크 같은 마크업, CSS 변수만 교체.
  *  컨테이너가 --accent-* 시맨틱 변수를 주입하고 내용물은 var()만 참조 —
  *  copy CSS로 가져가는 스니펫이 곧 이 목업을 그린 CSS다. */
-function MockPanel({ mode, hexes }: { mode: "light" | "dark"; hexes: readonly string[] }) {
+function MockPanel({
+  mode,
+  hexes,
+  neutral,
+}: {
+  mode: "light" | "dark";
+  hexes: readonly string[];
+  neutral: readonly string[];
+}) {
   const role = (id: ScaleRole["id"]) => SCALE_ROLES.find((r) => r.id === id)!;
   const tip = (id: ScaleRole["id"]) => {
     const r = role(id);
@@ -85,7 +93,10 @@ function MockPanel({ mode, hexes }: { mode: "light" | "dark"; hexes: readonly st
   return (
     <div
       className="flex-1 rounded border border-neutral-200 p-4 space-y-3"
-      style={{ ...vars, background: mode === "light" ? "#ffffff" : "#171717" } as CSSProperties}
+      style={{
+        ...vars,
+        background: mode === "light" ? neutral[0] : neutral[10],
+      } as CSSProperties}
     >
       <div
         title={`${tip("subtle-bg")} · ${tip("border")}`}
@@ -126,16 +137,13 @@ function MockPanel({ mode, hexes }: { mode: "light" | "dark"; hexes: readonly st
 }
 
 /** 완료 화면 다크 섹션 — 역할 재배치 교보재. 계산은 roles.ts, 여긴 렌더만. */
-function DarkSection({ hexes }: { hexes: readonly string[] }) {
-  // TODO(task 8): 지금은 neutral·semantic 슬롯에 accent hex를 임시로 채워
-  // web이 컴파일되게만 한다 — 실제 뉴트럴/시맨틱 스케일로 교체될 자리.
-  const copyCss = () => navigator.clipboard.writeText(cssSnippet({
-    accent: hexes,
-    neutral: hexes,
-    semantic: Object.fromEntries(
-      SEMANTIC_ANCHORS.map((a) => [a.id, hexes]),
-    ) as ScaleSet["semantic"],
-  }));
+function DarkSection({ scales }: { scales: ScaleSet }) {
+  const copyCss = () => navigator.clipboard.writeText(cssSnippet(scales));
+  const named: [string, readonly string[]][] = [
+    ["액센트", scales.accent],
+    ["뉴트럴", scales.neutral],
+    ...SEMANTIC_ANCHORS.map((a) => [a.label, scales.semantic[a.id]] as [string, readonly string[]]),
+  ];
   return (
     <div className="space-y-3 border-t border-neutral-200 pt-4">
       <div className="flex items-baseline justify-between">
@@ -153,38 +161,54 @@ function DarkSection({ hexes }: { hexes: readonly string[] }) {
         반대쪽에서 오른다. 규칙: 인덱스 미러(i → 10−i), 솔리드(앵커)만 자리 고정.
       </p>
       <div className="flex gap-3">
-        <MockPanel mode="light" hexes={hexes} />
-        <MockPanel mode="dark" hexes={hexes} />
+        <MockPanel mode="light" hexes={scales.accent} neutral={scales.neutral} />
+        <MockPanel mode="dark" hexes={scales.accent} neutral={scales.neutral} />
       </div>
       <p className="text-[11px] leading-4 text-neutral-400">
-        패널 배경은 고정값(#ffffff / #171717) — 실제 앱에선 뉴트럴 스케일이 이 자리.
+        패널 배경이 이제 당신의 뉴트럴 50/950입니다 — 액센트와 뉴트럴이 같은
+        화면에서 어떻게 만나는지 보세요.
       </p>
-      <table className="w-full text-[11px]">
-        <thead>
-          <tr className="text-left text-neutral-500">
-            <th className="font-medium py-1 pr-2">역할</th>
-            <th className="font-medium py-1 pr-2">라이트</th>
-            <th className="font-medium py-1 pr-2">다크</th>
-            <th className="font-medium py-1">왜?</th>
-          </tr>
-        </thead>
-        <tbody>
-          {SCALE_ROLES.map((r) => (
-            <tr key={r.id} className="border-t border-neutral-100 align-top">
-              <td className={`py-1.5 pr-2 ${r.id === "solid" ? "font-medium text-neutral-800" : "text-neutral-600"}`}>
-                {r.label}
-              </td>
-              <td className="py-1.5 pr-2">
-                <RoleChip hex={hexes[r.lightIndex]} stop={STOP_KEYS[r.lightIndex]} ring={r.id === "solid"} />
-              </td>
-              <td className="py-1.5 pr-2">
-                <RoleChip hex={hexes[r.darkIndex]} stop={STOP_KEYS[r.darkIndex]} ring={r.id === "solid"} />
-              </td>
-              <td className="py-1.5 leading-4 text-neutral-400">{r.note}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {named.map(([label, hexes], i) => {
+        const table = (
+          <table className="w-full text-[11px]">
+            <thead>
+              <tr className="text-left text-neutral-500">
+                <th className="font-medium py-1 pr-2">역할</th>
+                <th className="font-medium py-1 pr-2">라이트</th>
+                <th className="font-medium py-1 pr-2">다크</th>
+                <th className="font-medium py-1">왜?</th>
+              </tr>
+            </thead>
+            <tbody>
+              {SCALE_ROLES.map((r) => (
+                <tr key={r.id} className="border-t border-neutral-100 align-top">
+                  <td className={`py-1.5 pr-2 ${r.id === "solid" ? "font-medium text-neutral-800" : "text-neutral-600"}`}>
+                    {r.label}
+                  </td>
+                  <td className="py-1.5 pr-2">
+                    <RoleChip hex={hexes[r.lightIndex]} stop={STOP_KEYS[r.lightIndex]} ring={r.id === "solid"} />
+                  </td>
+                  <td className="py-1.5 pr-2">
+                    <RoleChip hex={hexes[r.darkIndex]} stop={STOP_KEYS[r.darkIndex]} ring={r.id === "solid"} />
+                  </td>
+                  <td className="py-1.5 leading-4 text-neutral-400">{r.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        );
+        return i < 2 ? (
+          <div key={label} className="space-y-1">
+            <div className="text-[11px] font-medium text-neutral-600">{label}</div>
+            {table}
+          </div>
+        ) : (
+          <details key={label}>
+            <summary className="text-[11px] text-neutral-500 cursor-pointer py-1">{label}</summary>
+            {table}
+          </details>
+        );
+      })}
     </div>
   );
 }
@@ -292,12 +316,26 @@ export function BuilderPage() {
     finalStops &&
     navigator.clipboard.writeText(finalStops.map((s) => s.hex).join(", "));
 
+  const scaleSet = useMemo<ScaleSet | null>(() => {
+    if (!done || !neutralTint) return null;
+    return {
+      accent: fillScale(pins).map(oklchToHex),
+      neutral: buildNeutral(neutralTint).map(oklchToHex),
+      semantic: Object.fromEntries(
+        SEMANTIC_ANCHORS.map(
+          (a): [SemanticId, readonly string[]] => [a.id, buildSemantic(a).map(oklchToHex)],
+        ),
+      ) as ScaleSet["semantic"],
+    };
+  }, [done, neutralTint, pins]);
+
   return (
     <div className="max-w-2xl mx-auto p-8 space-y-6">
       <header>
         <h1 className="text-lg font-semibold">Guided Palette Builder</h1>
         <p className="text-xs text-neutral-500">
-          Refactoring UI 순서로 액센트 스케일 만들기 — 500 → 50 → 950 → 300 → 700
+          Refactoring UI 순서로 액센트를 고르면, 뉴트럴은 거기서 스냅되고 상태색은
+          고정값으로 따라와 완전한 색 시스템이 됩니다.
         </p>
         <div className="flex gap-1.5 mt-2">
           {BUILDER_FLOW.map((_, i) => (
@@ -415,7 +453,27 @@ export function BuilderPage() {
               </div>
             ))}
           </div>
-          <DarkSection hexes={finalStops.map((s) => s.hex)} />
+          {scaleSet && (
+            <div className="space-y-2 border-t border-neutral-200 pt-4">
+              <h2 className="text-sm font-medium">상태색 — 고르지 않는 색</h2>
+              <p className="text-[11px] leading-4 text-neutral-400">
+                빨강=위험·초록=성공은 신호등에서 온 문화적 약속이라 브랜드를 따르지
+                않습니다. 코퍼스에서 파랑의 합의 폭은 8°뿐입니다. 대신 사다리 모양은
+                당신의 액센트와 같은 곡선을 씁니다.
+              </p>
+              {SEMANTIC_ANCHORS.map((a) => (
+                <div key={a.id} className="space-y-1">
+                  <div className="text-[11px] text-neutral-500">{a.label}</div>
+                  <ColorScaleStrip
+                    stops={scaleSet.semantic[a.id].map((hex, i) => ({
+                      key: STOP_KEYS[i], hex, anchor: i === 5,
+                    }))}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+          {scaleSet && <DarkSection scales={scaleSet} />}
           <div className="text-[11px] leading-4 text-neutral-400">
             <span className="font-medium text-neutral-500">내가 고른 여정 — </span>
             {choices.map((c) => `${STEP_META[c.metaKey].title}: ${c.label}`).join(" → ")}
