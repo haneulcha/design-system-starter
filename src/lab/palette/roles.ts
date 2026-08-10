@@ -6,7 +6,6 @@
 // 제품 뉴트럴의 DARK_NEUTRAL_INVERSION과 같은 미러 원리.
 // 스펙: docs/superpowers/specs/2026-08-09-palette-generator-color-system-design.md
 
-import { SCALE_SIZE, STOP_KEYS } from "./builder.js";
 import { SEMANTIC_ANCHORS, type SemanticId } from "./semantic.js";
 
 export interface ScaleRole {
@@ -107,43 +106,4 @@ export interface ScaleSet {
   readonly accent: readonly string[];
   readonly neutral: readonly string[];
   readonly semantic: Readonly<Record<SemanticId, readonly string[]>>;
-}
-
-/** 스케일 3종 → 2-레이어 CSS 커스텀 프로퍼티 스니펫.
- *  .dark에는 매핑이 실제로 바뀌는 역할만 — 재선언하지 않은 것 = 안 바뀐 것.
- *  세 종류가 같은 역할표·같은 미러 규칙을 쓴다: 다크 규칙이 시스템에 하나뿐이다. */
-export function cssSnippet(scales: ScaleSet): string {
-  const named: [ScaleName, readonly string[]][] = [
-    ["accent", scales.accent],
-    ["neutral", scales.neutral],
-    ...(Object.entries(scales.semantic) as [SemanticId, readonly string[]][]),
-  ];
-  for (const [name, hexes] of named) {
-    if (hexes.length !== SCALE_SIZE) {
-      throw new Error(
-        `cssSnippet: ${name} expected ${SCALE_SIZE} hexes, got ${hexes.length}`,
-      );
-    }
-  }
-
-  const lines: string[] = [":root {"];
-  for (const [name, hexes] of named) {
-    STOP_KEYS.forEach((key, i) => lines.push(`  --${name}-${key}: ${hexes[i]};`));
-  }
-  lines.push("");
-  for (const [name] of named) {
-    for (const role of SCALE_ROLES) {
-      lines.push(`  --${name}-${role.id}: var(--${name}-${STOP_KEYS[role.lightIndex]});`);
-    }
-  }
-  lines.push("}", "", ".dark {");
-  for (const [name] of named) {
-    for (const role of SCALE_ROLES) {
-      if (role.darkIndex !== role.lightIndex) {
-        lines.push(`  --${name}-${role.id}: var(--${name}-${STOP_KEYS[role.darkIndex]});`);
-      }
-    }
-  }
-  lines.push("}");
-  return lines.join("\n") + "\n";
 }

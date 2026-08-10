@@ -24,8 +24,8 @@ import {
   type NeutralTint,
 } from "@core/lab/palette/neutral.js";
 import {
+  SCALE_ORDER,
   SCALE_ROLES,
-  cssSnippet,
   scaleHasAnchor,
   type ScaleName,
   type ScaleRole,
@@ -39,6 +39,8 @@ import {
 } from "@core/lab/palette/semantic.js";
 import { oklchToHex, parsePrimary } from "@core/generator/color.js";
 import type { Oklch } from "@core/schema/types.js";
+import { generateColorCss } from "@core/export/color/css.js";
+import { toColorSystem } from "@core/export/color/adapter.js";
 import { ColorScaleStrip } from "../components/ColorScaleStrip";
 import { OklchPicker } from "../components/OklchPicker";
 
@@ -146,14 +148,18 @@ function MockPanel({
 
 /** 완료 화면 다크 섹션 — 역할 재배치 교보재. 계산은 roles.ts, 여긴 렌더만. */
 function DarkSection({ scales }: { scales: ScaleSet }) {
-  const copyCss = () => navigator.clipboard.writeText(cssSnippet(scales));
-  const named: [ScaleName, string, readonly string[]][] = [
-    ["accent", "액센트", scales.accent],
-    ["neutral", "뉴트럴", scales.neutral],
-    ...SEMANTIC_ANCHORS.map(
-      (a) => [a.id, a.label, scales.semantic[a.id]] as [ScaleName, string, readonly string[]],
-    ),
-  ];
+  const copyCss = () =>
+    navigator.clipboard.writeText(
+      generateColorCss(toColorSystem(scales, SCALE_ORDER, SCALE_ROLES, STOP_KEYS)),
+    );
+  const byName: Record<string, readonly string[]> = {
+    accent: scales.accent,
+    neutral: scales.neutral,
+    ...scales.semantic,
+  };
+  const named: [ScaleName, string, readonly string[]][] = SCALE_ORDER.map(
+    (d) => [d.name, d.label, byName[d.name]] as [ScaleName, string, readonly string[]],
+  );
   return (
     <div className="space-y-3 border-t border-neutral-200 pt-4">
       <div className="flex items-baseline justify-between">
