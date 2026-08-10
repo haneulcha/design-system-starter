@@ -39,9 +39,9 @@ import {
 } from "@core/lab/palette/semantic.js";
 import { oklchToHex, parsePrimary } from "@core/generator/color.js";
 import type { Oklch } from "@core/schema/types.js";
-import { generateColorCss, toColorSystem } from "@core/export/color/index.js";
 import { ColorScaleStrip } from "../components/ColorScaleStrip";
 import { OklchPicker } from "../components/OklchPicker";
+import { ExportPanel } from "./ExportPanel";
 
 interface Choice {
   metaKey: number | "neutral"; // STEP_META 조회용
@@ -147,10 +147,6 @@ function MockPanel({
 
 /** 완료 화면 다크 섹션 — 역할 재배치 교보재. 계산은 roles.ts, 여긴 렌더만. */
 function DarkSection({ scales }: { scales: ScaleSet }) {
-  const copyCss = () =>
-    navigator.clipboard.writeText(
-      generateColorCss(toColorSystem(scales, SCALE_ORDER, SCALE_ROLES, STOP_KEYS)),
-    );
   const byName: Record<string, readonly string[]> = {
     accent: scales.accent,
     neutral: scales.neutral,
@@ -163,13 +159,6 @@ function DarkSection({ scales }: { scales: ScaleSet }) {
     <div className="space-y-3 border-t border-neutral-200 pt-4">
       <div className="flex items-baseline justify-between">
         <h2 className="text-sm font-medium">다크 테마 — 역할 재배치</h2>
-        <button
-          type="button"
-          onClick={copyCss}
-          className="text-[10px] text-neutral-400 hover:text-neutral-700"
-        >
-          copy CSS
-        </button>
       </div>
       <p className="text-[11px] leading-4 text-neutral-400">
         다크에서 색(프리미티브)은 그대로, 역할(시맨틱)만 재배치 — 같은 사다리를
@@ -508,6 +497,7 @@ export function BuilderPage() {
           )}
           {scaleSet && <SemanticSection scales={scaleSet} />}
           {scaleSet && <DarkSection scales={scaleSet} />}
+          {scaleSet && <ExportPanel scales={scaleSet} />}
           <div className="text-[11px] leading-4 text-neutral-400">
             <span className="font-medium text-neutral-500">내가 고른 여정 — </span>
             {choices.map((c) => `${STEP_META[c.metaKey].title}: ${c.label}`).join(" → ")}
