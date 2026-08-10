@@ -103,3 +103,27 @@ describe("cssSnippet", () => {
     ).toThrow();
   });
 });
+
+import { SCALE_ORDER } from "../../src/lab/palette/roles.js";
+
+describe("SCALE_ORDER", () => {
+  it("is accent → neutral → the four semantic roles, in SEMANTIC_ANCHORS order", () => {
+    expect(SCALE_ORDER.map((d) => d.name)).toEqual([
+      "accent",
+      "neutral",
+      ...SEMANTIC_ANCHORS.map((a) => a.id),
+    ]);
+  });
+
+  it("carries a non-empty Korean label for every scale", () => {
+    for (const d of SCALE_ORDER) {
+      expect(d.label.length, d.name).toBeGreaterThan(0);
+    }
+  });
+
+  it("reuses the semantic anchors' own labels rather than restating them", () => {
+    for (const a of SEMANTIC_ANCHORS) {
+      expect(SCALE_ORDER.find((d) => d.name === a.id)!.label).toBe(a.label);
+    }
+  });
+});

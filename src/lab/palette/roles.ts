@@ -7,7 +7,7 @@
 // 스펙: docs/superpowers/specs/2026-08-09-palette-generator-color-system-design.md
 
 import { SCALE_SIZE, STOP_KEYS } from "./builder.js";
-import type { SemanticId } from "./semantic.js";
+import { SEMANTIC_ANCHORS, type SemanticId } from "./semantic.js";
 
 export interface ScaleRole {
   readonly id:
@@ -72,6 +72,21 @@ export const SCALE_ROLES: readonly ScaleRole[] = [
 ];
 
 export type ScaleName = "accent" | "neutral" | SemanticId;
+
+export interface ScaleDescriptor {
+  readonly name: ScaleName;
+  /** 산출물과 화면에서 사람에게 보이는 이름. UI 문구는 엔진에 둔다. */
+  readonly label: string;
+}
+
+/** 산출물에서의 스케일 순서와 표시 이름.
+ *  ScaleSet.semantic은 Record라 키 순서에 기대면 출력이 불안정하다 —
+ *  순서를 데이터로 고정한다. 시맨틱 라벨은 SEMANTIC_ANCHORS의 것을 그대로 쓴다. */
+export const SCALE_ORDER: readonly ScaleDescriptor[] = [
+  { name: "accent", label: "액센트" },
+  { name: "neutral", label: "뉴트럴" },
+  ...SEMANTIC_ANCHORS.map((a) => ({ name: a.id, label: a.label })),
+];
 
 /** scaleHasAnchor의 allowlist. */
 const ANCHORED_SCALES: readonly ScaleName[] = ["accent", "error", "success", "warning", "info"];
