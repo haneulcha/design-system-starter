@@ -39,8 +39,7 @@ import {
 } from "@core/lab/palette/semantic.js";
 import { oklchToHex, parsePrimary } from "@core/generator/color.js";
 import type { Oklch } from "@core/schema/types.js";
-import { generateColorCss } from "@core/export/color/css.js";
-import { toColorSystem } from "@core/export/color/adapter.js";
+import { generateColorCss, toColorSystem } from "@core/export/color/index.js";
 import { ColorScaleStrip } from "../components/ColorScaleStrip";
 import { OklchPicker } from "../components/OklchPicker";
 
