@@ -1,4 +1,4 @@
-// src/lab/accent-scale/builder.ts
+// src/lab/palette/builder.ts
 //
 // 가이드드 팔레트 빌더 엔진 (순수 함수만, 렌더 없음).
 // 스펙: docs/superpowers/specs/2026-07-27-guided-palette-builder-design.md
@@ -65,10 +65,16 @@ function hueLerp(a: number, b: number, t: number): number {
  *  - v0 동치: pins=[{index: 5, color: anchor}] 일 때, 앵커 L ∈ [0.32, 0.93]이면
  *    oursAlgorithm.derive(hex, nativeSpec) + clampToGamut[]와 동일. 범위 밖에서는
  *    fillScale이 true anchor L을 사용해 단조성 보존 (v0의 clamp는 문서화된 한계). */
-export function fillScale(pins: readonly Pin[]): Oklch[] {
+export function fillScale(
+  pins: readonly Pin[],
+  /** stop별 Δh (11개). 클램프 직전에 적용된다 — 시맨틱 스케일용. */
+  hueRamp?: readonly number[],
+): Oklch[] {
   if (!pins.some((p) => p.index === 5)) {
     throw new Error("fillScale: anchor pin (index 5) is required");
   }
+  const ramped = (c: Oklch, i: number): Oklch =>
+    hueRamp ? { ...c, h: (((c.h + hueRamp[i]) % 360) + 360) % 360 } : c;
   const sorted = [...pins].sort((a, b) => a.index - b.index);
   const eff: { index: number; color: Oklch; virtual: boolean }[] = sorted.map(
     (p) => ({ ...p, virtual: false }),
@@ -111,7 +117,7 @@ export function fillScale(pins: readonly Pin[]): Oklch[] {
 
   const out: Oklch[] = new Array(SCALE_SIZE);
   for (const p of eff) {
-    out[p.index] = p.virtual ? clampToGamut(p.color) : { ...p.color };
+    out[p.index] = p.virtual ? clampToGamut(ramped(p.color, p.index)) : { ...p.color };
   }
   for (let s = 0; s < eff.length - 1; s++) {
     const a = eff[s];
@@ -122,11 +128,16 @@ export function fillScale(pins: readonly Pin[]): Oklch[] {
     const rb = b.color.c / OURS_CURVE[b.index].cMult;
     for (let k = a.index + 1; k < b.index; k++) {
       const t = (li - OURS_CURVE[k].l) / (li - lj);
-      out[k] = clampToGamut({
-        l: a.color.l - t * (a.color.l - b.color.l),
-        c: OURS_CURVE[k].cMult * (ra + (rb - ra) * t),
-        h: hueLerp(a.color.h, b.color.h, t),
-      });
+      out[k] = clampToGamut(
+        ramped(
+          {
+            l: a.color.l - t * (a.color.l - b.color.l),
+            c: OURS_CURVE[k].cMult * (ra + (rb - ra) * t),
+            h: hueLerp(a.color.h, b.color.h, t),
+          },
+          k,
+        ),
+      );
     }
   }
   return out;
@@ -141,8 +152,24 @@ export interface Candidate {
 /** RUI 선택 순서: 500 → 50 → 950 → 300 → 700 */
 export const BUILDER_STEPS = [5, 0, 10, 3, 7] as const;
 
+/** 빌더 단계. stop 인덱스 배열로는 뉴트럴 단계를 표현할 수 없어 판별 유니온을 쓴다. */
+export type BuilderStep =
+  | { readonly kind: "accent-anchor" }
+  | { readonly kind: "accent-stop"; readonly stopIndex: number }
+  | { readonly kind: "neutral-tint" };
+
+/** RUI 순서(500 → 50 → 950 → 300 → 700) 뒤에 뉴트럴 틴트 한 단계. */
+export const BUILDER_FLOW: readonly BuilderStep[] = [
+  { kind: "accent-anchor" },
+  { kind: "accent-stop", stopIndex: 0 },
+  { kind: "accent-stop", stopIndex: 10 },
+  { kind: "accent-stop", stopIndex: 3 },
+  { kind: "accent-stop", stopIndex: 7 },
+  { kind: "neutral-tint" },
+];
+
 /** 단계별 안내 카피 (교보재) — 렌더는 web/BuilderPage가 담당 */
-export const STEP_META: Record<number, { title: string; description: string }> = {
+export const STEP_META: Record<number | "neutral", { title: string; description: string }> = {
   5: {
     title: "액센트 (500)",
     description:
@@ -167,6 +194,11 @@ export const STEP_META: Record<number, { title: string; description: string }> =
     title: "중간 어두움 (700)",
     description:
       "본문 위 텍스트·진한 버튼이 사는 구간. 채도가 높으면 화려하지만 오래 보면 피로하다.",
+  },
+  neutral: {
+    title: "배경 회색 (뉴트럴)",
+    description:
+      "화면 면적의 대부분을 차지하는 회색. 액센트 hue를 그대로 쓰지 않고 그레이가 자연스러운 몇 자리 중 가장 가까운 곳으로 붙인다 — 주황을 그대로 쓰면 갈색이 되기 때문이다.",
   },
 };
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { deltaEOk, hueFamily } from "../../src/lab/accent-scale/metric.js";
+import { deltaEOk, hueFamily } from "../../src/lab/palette/metric.js";
 
 describe("deltaEOk", () => {
   it("is 0 for identical colors", () => {

@@ -7,8 +7,8 @@ import {
   benchAll,
   renderReport,
   type ReferenceSet,
-} from "../../src/lab/accent-scale/bench.js";
-import { ALGORITHMS } from "../../src/lab/accent-scale/index.js";
+} from "../../src/lab/palette/bench.js";
+import { ALGORITHMS } from "../../src/lab/palette/index.js";
 
 const refSets: ReferenceSet[] = [
   JSON.parse(readFileSync("data/references/tailwind-v4.json", "utf8")),

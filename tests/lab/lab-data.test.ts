@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { nativeScale, nearestReferences } from "../../src/lab/accent-scale/lab-data.js";
-import { naiveAlgorithm } from "../../src/lab/accent-scale/naive.js";
-import type { ReferenceSet } from "../../src/lab/accent-scale/bench.js";
+import { nativeScale, nearestReferences } from "../../src/lab/palette/lab-data.js";
+import { naiveAlgorithm } from "../../src/lab/palette/naive.js";
+import type { ReferenceSet } from "../../src/lab/palette/bench.js";
 
 const REFS: ReferenceSet[] = [
   {
@@ -26,7 +26,7 @@ describe("nativeScale", () => {
     expect(stops.filter((s) => s.anchor)).toHaveLength(1);
   });
   it("marks no anchor when a fixed-ladder algorithm drops the input (v1)", async () => {
-    const { v1Algorithm } = await import("../../src/lab/accent-scale/v1.js");
+    const { v1Algorithm } = await import("../../src/lab/palette/v1.js");
     const stops = nativeScale(v1Algorithm, "#3b82f6");
     expect(stops.some((s) => s.anchor)).toBe(false);
   });
@@ -51,13 +51,13 @@ describe("nearestReferences", () => {
 
 describe("study notes (교보재 카피)", () => {
   it("every registered algorithm carries a nonempty description", async () => {
-    const { ALGORITHMS } = await import("../../src/lab/accent-scale/index.js");
+    const { ALGORITHMS } = await import("../../src/lab/palette/index.js");
     for (const algo of ALGORITHMS) {
       expect(algo.description.length, `${algo.id} description`).toBeGreaterThan(10);
     }
   });
   it("REF_NOTES covers every reference source used by the lab", async () => {
-    const { REF_NOTES } = await import("../../src/lab/accent-scale/lab-data.js");
+    const { REF_NOTES } = await import("../../src/lab/palette/lab-data.js");
     for (const source of ["tailwind", "radix"]) {
       expect(REF_NOTES[source], `REF_NOTES.${source}`).toBeTruthy();
     }
@@ -66,7 +66,7 @@ describe("study notes (교보재 카피)", () => {
 
 describe("EVAL_PRESETS", () => {
   it("has unique valid hexes with labels (eye-eval doc과 1:1 계약)", async () => {
-    const { EVAL_PRESETS } = await import("../../src/lab/accent-scale/lab-data.js");
+    const { EVAL_PRESETS } = await import("../../src/lab/palette/lab-data.js");
     expect(EVAL_PRESETS.length).toBeGreaterThanOrEqual(8);
     expect(new Set(EVAL_PRESETS.map((p) => p.hex)).size).toBe(EVAL_PRESETS.length);
     for (const p of EVAL_PRESETS) {
@@ -79,7 +79,7 @@ describe("EVAL_PRESETS", () => {
 
 describe("GLOSSARY", () => {
   it("has unique terms with nonempty definitions", async () => {
-    const { GLOSSARY } = await import("../../src/lab/accent-scale/lab-data.js");
+    const { GLOSSARY } = await import("../../src/lab/palette/lab-data.js");
     expect(GLOSSARY.length).toBeGreaterThanOrEqual(8);
     expect(new Set(GLOSSARY.map(([t]) => t)).size).toBe(GLOSSARY.length);
     for (const [term, def] of GLOSSARY) expect(def.length, term).toBeGreaterThan(5);

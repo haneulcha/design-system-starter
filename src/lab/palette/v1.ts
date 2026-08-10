@@ -1,4 +1,4 @@
-// src/lab/accent-scale/v1.ts
+// src/lab/palette/v1.ts
 //
 // v1 현행 유도의 어댑터. 곡선 테이블은 src/generator/color.ts CHROMATIC_STEPS
 // 의 복제본 — 연구 격리를 위해 제품 파일을 export 변경 없이 그대로 둔다.

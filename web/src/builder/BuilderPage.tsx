@@ -1,31 +1,49 @@
 // web/src/builder/BuilderPage.tsx
 //
 // #builder — 가이드드 팔레트 빌더 (RUI 5-pick 플로우). 렌더 전용:
-// 스케일 계산·후보 생성은 전부 @core/lab/accent-scale/builder (순수).
+// 스케일 계산·후보 생성은 전부 @core/lab/palette/builder (순수).
 // 스펙: docs/superpowers/specs/2026-07-27-guided-palette-builder-design.md
 
 import { useMemo, useState } from "react";
 import type { CSSProperties } from "react";
 import {
-  BUILDER_STEPS,
+  BUILDER_FLOW,
   candidatesFor,
   fillScale,
   STEP_META,
   STOP_KEYS,
+  type BuilderStep,
   type Candidate,
   type Pin,
-} from "@core/lab/accent-scale/builder.js";
+} from "@core/lab/palette/builder.js";
 import {
-  ACCENT_ROLES,
+  neutralCandidates,
+  buildNeutral,
+  tintAttractor,
+  type NeutralCandidate,
+  type NeutralTint,
+} from "@core/lab/palette/neutral.js";
+import {
+  SCALE_ROLES,
   cssSnippet,
-  type AccentRole,
-} from "@core/lab/accent-scale/roles.js";
+  scaleHasAnchor,
+  type ScaleName,
+  type ScaleRole,
+  type ScaleSet,
+} from "@core/lab/palette/roles.js";
+import {
+  SEMANTIC_ANCHORS,
+  SEMANTIC_SECTION_NOTE,
+  buildSemantic,
+  type SemanticId,
+} from "@core/lab/palette/semantic.js";
 import { oklchToHex, parsePrimary } from "@core/generator/color.js";
+import type { Oklch } from "@core/schema/types.js";
 import { ColorScaleStrip } from "../components/ColorScaleStrip";
 import { OklchPicker } from "../components/OklchPicker";
 
 interface Choice {
-  stopIndex: number;
+  metaKey: number | "neutral"; // STEP_META 조회용
   label: string; // 액센트 단계는 hex, 후보 단계는 후보 라벨 (여정 요약용)
 }
 
@@ -37,6 +55,10 @@ function toStrip(pins: readonly Pin[], scale = fillScale(pins)) {
     anchor: pinSet.has(i),
   }));
 }
+
+/** 뉴트럴 스케일 변환 — pin 강조가 없는 단순 변환 (뉴트럴엔 앵커가 없다) */
+const toNeutralStrip = (scale: readonly Oklch[]) =>
+  scale.map((c, i) => ({ key: STOP_KEYS[i], hex: oklchToHex(c), anchor: false }));
 
 /** 역할표의 색 칩 + stop 번호. ring = 솔리드(앵커 고정) 강조. */
 function RoleChip({ hex, stop, ring }: { hex: string; stop: string; ring: boolean }) {
@@ -56,14 +78,22 @@ function RoleChip({ hex, stop, ring }: { hex: string; stop: string; ring: boolea
 /** 6역할이 전부 등장하는 미니 목업 — 라이트/다크 같은 마크업, CSS 변수만 교체.
  *  컨테이너가 --accent-* 시맨틱 변수를 주입하고 내용물은 var()만 참조 —
  *  copy CSS로 가져가는 스니펫이 곧 이 목업을 그린 CSS다. */
-function MockPanel({ mode, hexes }: { mode: "light" | "dark"; hexes: readonly string[] }) {
-  const role = (id: AccentRole["id"]) => ACCENT_ROLES.find((r) => r.id === id)!;
-  const tip = (id: AccentRole["id"]) => {
+function MockPanel({
+  mode,
+  hexes,
+  neutral,
+}: {
+  mode: "light" | "dark";
+  hexes: readonly string[];
+  neutral: readonly string[];
+}) {
+  const role = (id: ScaleRole["id"]) => SCALE_ROLES.find((r) => r.id === id)!;
+  const tip = (id: ScaleRole["id"]) => {
     const r = role(id);
     return `${r.id} — 라이트 ${STOP_KEYS[r.lightIndex]} / 다크 ${STOP_KEYS[r.darkIndex]}`;
   };
   const vars = Object.fromEntries(
-    ACCENT_ROLES.map((r) => [
+    SCALE_ROLES.map((r) => [
       `--accent-${r.id}`,
       hexes[mode === "light" ? r.lightIndex : r.darkIndex],
     ]),
@@ -71,7 +101,10 @@ function MockPanel({ mode, hexes }: { mode: "light" | "dark"; hexes: readonly st
   return (
     <div
       className="flex-1 rounded border border-neutral-200 p-4 space-y-3"
-      style={{ ...vars, background: mode === "light" ? "#ffffff" : "#171717" } as CSSProperties}
+      style={{
+        ...vars,
+        background: mode === "light" ? neutral[0] : neutral[10],
+      } as CSSProperties}
     >
       <div
         title={`${tip("subtle-bg")} · ${tip("border")}`}
@@ -112,8 +145,15 @@ function MockPanel({ mode, hexes }: { mode: "light" | "dark"; hexes: readonly st
 }
 
 /** 완료 화면 다크 섹션 — 역할 재배치 교보재. 계산은 roles.ts, 여긴 렌더만. */
-function DarkSection({ hexes }: { hexes: readonly string[] }) {
-  const copyCss = () => navigator.clipboard.writeText(cssSnippet(hexes));
+function DarkSection({ scales }: { scales: ScaleSet }) {
+  const copyCss = () => navigator.clipboard.writeText(cssSnippet(scales));
+  const named: [ScaleName, string, readonly string[]][] = [
+    ["accent", "액센트", scales.accent],
+    ["neutral", "뉴트럴", scales.neutral],
+    ...SEMANTIC_ANCHORS.map(
+      (a) => [a.id, a.label, scales.semantic[a.id]] as [ScaleName, string, readonly string[]],
+    ),
+  ];
   return (
     <div className="space-y-3 border-t border-neutral-200 pt-4">
       <div className="flex items-baseline justify-between">
@@ -128,41 +168,82 @@ function DarkSection({ hexes }: { hexes: readonly string[] }) {
       </div>
       <p className="text-[11px] leading-4 text-neutral-400">
         다크에서 색(프리미티브)은 그대로, 역할(시맨틱)만 재배치 — 같은 사다리를
-        반대쪽에서 오른다. 규칙: 인덱스 미러(i → 10−i), 솔리드(앵커)만 자리 고정.
+        반대쪽에서 오른다. 규칙: 인덱스 미러(i → 10−i), 솔리드만 자리 고정.
       </p>
       <div className="flex gap-3">
-        <MockPanel mode="light" hexes={hexes} />
-        <MockPanel mode="dark" hexes={hexes} />
+        <MockPanel mode="light" hexes={scales.accent} neutral={scales.neutral} />
+        <MockPanel mode="dark" hexes={scales.accent} neutral={scales.neutral} />
       </div>
       <p className="text-[11px] leading-4 text-neutral-400">
-        패널 배경은 고정값(#ffffff / #171717) — 실제 앱에선 뉴트럴 스케일이 이 자리.
+        패널 배경이 이제 당신의 뉴트럴 50/950입니다 — 액센트와 뉴트럴이 같은
+        화면에서 어떻게 만나는지 보세요.
       </p>
-      <table className="w-full text-[11px]">
-        <thead>
-          <tr className="text-left text-neutral-500">
-            <th className="font-medium py-1 pr-2">역할</th>
-            <th className="font-medium py-1 pr-2">라이트</th>
-            <th className="font-medium py-1 pr-2">다크</th>
-            <th className="font-medium py-1">왜?</th>
-          </tr>
-        </thead>
-        <tbody>
-          {ACCENT_ROLES.map((r) => (
-            <tr key={r.id} className="border-t border-neutral-100 align-top">
-              <td className={`py-1.5 pr-2 ${r.id === "solid" ? "font-medium text-neutral-800" : "text-neutral-600"}`}>
-                {r.label}
-              </td>
-              <td className="py-1.5 pr-2">
-                <RoleChip hex={hexes[r.lightIndex]} stop={STOP_KEYS[r.lightIndex]} ring={r.id === "solid"} />
-              </td>
-              <td className="py-1.5 pr-2">
-                <RoleChip hex={hexes[r.darkIndex]} stop={STOP_KEYS[r.darkIndex]} ring={r.id === "solid"} />
-              </td>
-              <td className="py-1.5 leading-4 text-neutral-400">{r.note}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {named.map(([name, label, hexes], i) => {
+        // 링(ring)은 role id가 아니라 "이 스케일이 실제 앵커를 갖는가"로 정한다 —
+        // 뉴트럴엔 앵커가 없다(위 뉴트럴 스트립도 anchor: false로 그린다), 엔진의
+        // scaleHasAnchor가 그 사실을 들고 있다.
+        const anchored = scaleHasAnchor(name);
+        const table = (
+          <table className="w-full text-[11px]">
+            <thead>
+              <tr className="text-left text-neutral-500">
+                <th className="font-medium py-1 pr-2">역할</th>
+                <th className="font-medium py-1 pr-2">라이트</th>
+                <th className="font-medium py-1 pr-2">다크</th>
+                <th className="font-medium py-1">왜?</th>
+              </tr>
+            </thead>
+            <tbody>
+              {SCALE_ROLES.map((r) => (
+                <tr key={r.id} className="border-t border-neutral-100 align-top">
+                  <td className={`py-1.5 pr-2 ${r.id === "solid" ? "font-medium text-neutral-800" : "text-neutral-600"}`}>
+                    {r.label}
+                  </td>
+                  <td className="py-1.5 pr-2">
+                    <RoleChip hex={hexes[r.lightIndex]} stop={STOP_KEYS[r.lightIndex]} ring={anchored && r.id === "solid"} />
+                  </td>
+                  <td className="py-1.5 pr-2">
+                    <RoleChip hex={hexes[r.darkIndex]} stop={STOP_KEYS[r.darkIndex]} ring={anchored && r.id === "solid"} />
+                  </td>
+                  <td className="py-1.5 leading-4 text-neutral-400">{r.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        );
+        return i < 2 ? (
+          <div key={label} className="space-y-1">
+            <div className="text-[11px] font-medium text-neutral-600">{label}</div>
+            {table}
+          </div>
+        ) : (
+          <details key={label}>
+            <summary className="text-[11px] text-neutral-500 cursor-pointer py-1">{label}</summary>
+            {table}
+          </details>
+        );
+      })}
+    </div>
+  );
+}
+
+/** 완료 화면 상태색 섹션 — 왜 이건 고르지 않는 색인가. 카피는 semantic.ts의
+ *  SEMANTIC_SECTION_NOTE, 여긴 렌더만. */
+function SemanticSection({ scales }: { scales: ScaleSet }) {
+  return (
+    <div className="space-y-2 border-t border-neutral-200 pt-4">
+      <h2 className="text-sm font-medium">상태색 — 고르지 않는 색</h2>
+      <p className="text-[11px] leading-4 text-neutral-400">{SEMANTIC_SECTION_NOTE}</p>
+      {SEMANTIC_ANCHORS.map((a) => (
+        <div key={a.id} className="space-y-1">
+          <div className="text-[11px] text-neutral-500">{a.label}</div>
+          <ColorScaleStrip
+            stops={scales.semantic[a.id].map((hex, i) => ({
+              key: STOP_KEYS[i], hex, anchor: i === 5,
+            }))}
+          />
+        </div>
+      ))}
     </div>
   );
 }
@@ -170,35 +251,74 @@ function DarkSection({ hexes }: { hexes: readonly string[] }) {
 export function BuilderPage() {
   const [pins, setPins] = useState<Pin[]>([]);
   const [choices, setChoices] = useState<Choice[]>([]);
-  const [stepIdx, setStepIdx] = useState(0); // BUILDER_STEPS 위치, length면 완료
+  const [stepIdx, setStepIdx] = useState(0); // BUILDER_FLOW 위치, length면 완료
   const [accentHex, setAccentHex] = useState("#3b82f6");
   const [picked, setPicked] = useState<Candidate | null>(null); // 현재 단계 임시 선택
+  const [neutralTint, setNeutralTint] = useState<NeutralTint | null>(null);
 
-  const done = stepIdx >= BUILDER_STEPS.length;
-  const stopIndex = done ? -1 : BUILDER_STEPS[stepIdx];
-  const isAccentStep = stopIndex === 5;
+  const done = stepIdx >= BUILDER_FLOW.length;
+  const step: BuilderStep | null = done ? null : BUILDER_FLOW[stepIdx];
+  const isAccentStep = step?.kind === "accent-anchor";
+  const isNeutralStep = step?.kind === "neutral-tint";
+  const stopIndex = step?.kind === "accent-stop" ? step.stopIndex : -1;
 
-  const candidates = useMemo(
-    () => (done || isAccentStep ? [] : candidatesFor(stopIndex, pins)),
-    [done, isAccentStep, stopIndex, pins],
+  const meta = step && STEP_META[
+    step.kind === "neutral-tint" ? "neutral" : step.kind === "accent-anchor" ? 5 : step.stopIndex
+  ];
+
+  const accentHue = useMemo(
+    () => (pins.find((p) => p.index === 5)?.color.h ?? parsePrimary(accentHex).h),
+    [pins, accentHex],
   );
+
+  const candidates = useMemo(() => {
+    if (!step) return [];
+    if (step.kind === "accent-anchor") return [];
+    if (step.kind === "neutral-tint") return neutralCandidates(accentHue);
+    return candidatesFor(step.stopIndex, pins);
+  }, [step, pins, accentHue]);
+
+  /** 뉴트럴 후보는 엔진이 자신을 만든 tint를 실어 보낸다 — UI가 순서·라벨로
+   *  되짚지 않는다. 뉴트럴 단계인데 tint가 없으면 엔진 계약 위반이므로
+   *  기본값으로 조용히 덮지 않고 그대로 터뜨린다. */
+  const isNeutralCandidate = (c: Candidate): c is NeutralCandidate => "tint" in c;
+  const tintOrThrow = (cd: Candidate, where: string): NeutralTint => {
+    if (!isNeutralCandidate(cd)) {
+      throw new Error(`${where}: neutral step candidate is missing its tint (engine contract violation)`);
+    }
+    return cd.tint;
+  };
+
+  /** 후보 미리보기 스트립 — 뉴트럴 단계는 뉴트럴 스케일을, 액센트 stop 단계는
+   *  pin에 후보를 끼운 액센트 스케일을 보여준다. */
+  const previewStrip = (cd: Candidate) =>
+    isNeutralStep
+      ? toNeutralStrip(buildNeutral(tintOrThrow(cd, "previewStrip")))
+      : toStrip([...pins, { index: stopIndex, color: cd.color }]);
 
   // 하단 상시 미리보기: 확정 pin + 임시 선택 반영
   const previewPins = useMemo<Pin[]>(() => {
-    if (isAccentStep && !done) {
-      return [{ index: 5, color: parsePrimary(accentHex) }];
-    }
+    if (isAccentStep && !done) return [{ index: 5, color: parsePrimary(accentHex) }];
+    if (isNeutralStep) return pins; // 액센트는 이미 확정 — 그대로 보여준다
     return picked ? [...pins, { index: stopIndex, color: picked.color }] : pins;
-  }, [isAccentStep, done, accentHex, picked, pins, stopIndex]);
+  }, [isAccentStep, isNeutralStep, done, accentHex, picked, pins, stopIndex]);
+
+  const neutralPreview =
+    isNeutralStep && picked
+      ? toNeutralStrip(buildNeutral(tintOrThrow(picked, "neutralPreview")))
+      : null;
 
   const confirm = () => {
     if (isAccentStep) {
       const color = parsePrimary(accentHex);
       setPins([{ index: 5, color }]);
-      setChoices([{ stopIndex: 5, label: accentHex }]);
+      setChoices([{ metaKey: 5, label: accentHex }]);
+    } else if (isNeutralStep && picked) {
+      setNeutralTint(tintOrThrow(picked, "confirm"));
+      setChoices([...choices, { metaKey: "neutral", label: picked.label }]);
     } else if (picked) {
       setPins([...pins, { index: stopIndex, color: picked.color }]);
-      setChoices([...choices, { stopIndex, label: picked.label }]);
+      setChoices([...choices, { metaKey: stopIndex, label: picked.label }]);
     } else {
       return;
     }
@@ -208,9 +328,12 @@ export function BuilderPage() {
 
   /** 완료 단계로 복귀 — 이후 단계 선택은 무효화 (스펙 결정) */
   const redo = (targetStep: number) => {
-    const keptStops = BUILDER_STEPS.slice(0, targetStep);
-    setPins(pins.filter((p) => keptStops.includes(p.index as typeof BUILDER_STEPS[number])));
-    setChoices(choices.filter((c) => keptStops.includes(c.stopIndex as typeof BUILDER_STEPS[number])));
+    const keptStops = BUILDER_FLOW.slice(0, targetStep).flatMap((s) =>
+      s.kind === "accent-anchor" ? [5] : s.kind === "accent-stop" ? [s.stopIndex] : [],
+    );
+    setPins(pins.filter((p) => keptStops.includes(p.index)));
+    setChoices(choices.slice(0, targetStep));
+    if (targetStep < 5) setNeutralTint(null); // 뉴트럴 단계(인덱스 5) 이전으로 가면 무효
     setPicked(null);
     setStepIdx(targetStep);
   };
@@ -219,6 +342,7 @@ export function BuilderPage() {
     setPins([]);
     setChoices([]);
     setPicked(null);
+    setNeutralTint(null);
     setStepIdx(0);
   };
 
@@ -227,17 +351,31 @@ export function BuilderPage() {
     finalStops &&
     navigator.clipboard.writeText(finalStops.map((s) => s.hex).join(", "));
 
+  const scaleSet = useMemo<ScaleSet | null>(() => {
+    if (!done || !neutralTint) return null;
+    return {
+      accent: fillScale(pins).map(oklchToHex),
+      neutral: buildNeutral(neutralTint).map(oklchToHex),
+      semantic: Object.fromEntries(
+        SEMANTIC_ANCHORS.map(
+          (a): [SemanticId, readonly string[]] => [a.id, buildSemantic(a).map(oklchToHex)],
+        ),
+      ) as ScaleSet["semantic"],
+    };
+  }, [done, neutralTint, pins]);
+
   return (
     <div className="max-w-2xl mx-auto p-8 space-y-6">
       <header>
         <h1 className="text-lg font-semibold">Guided Palette Builder</h1>
         <p className="text-xs text-neutral-500">
-          Refactoring UI 순서로 액센트 스케일 만들기 — 500 → 50 → 950 → 300 → 700
+          Refactoring UI 순서로 액센트를 고르면, 뉴트럴은 거기서 스냅되고 상태색은
+          고정값으로 따라와 완전한 색 시스템이 됩니다.
         </p>
         <div className="flex gap-1.5 mt-2">
-          {BUILDER_STEPS.map((s, i) => (
+          {BUILDER_FLOW.map((_, i) => (
             <span
-              key={s}
+              key={i}
               className={`w-2 h-2 rounded-full ${
                 i < stepIdx ? "bg-neutral-800" : i === stepIdx ? "bg-neutral-400" : "bg-neutral-200"
               }`}
@@ -249,11 +387,11 @@ export function BuilderPage() {
       {/* 완료 단계 요약 */}
       {choices.map((c, i) => (
         <div
-          key={c.stopIndex}
+          key={i}
           className="flex items-center justify-between border border-neutral-200 rounded px-3 py-2 text-xs"
         >
           <span className="text-neutral-600">
-            ✓ {i + 1}. {STEP_META[c.stopIndex].title} — {c.label}
+            ✓ {i + 1}. {STEP_META[c.metaKey].title} — {c.label}
           </span>
           <button
             type="button"
@@ -266,15 +404,13 @@ export function BuilderPage() {
       ))}
 
       {/* 현재 단계 */}
-      {!done && (
+      {!done && step && meta && (
         <section className="border border-neutral-300 rounded p-4 space-y-3">
           <div>
             <h2 className="text-sm font-medium">
-              {stepIdx + 1}. {STEP_META[stopIndex].title}
+              {stepIdx + 1}. {meta.title}
             </h2>
-            <p className="text-[11px] leading-4 text-neutral-400 mt-1">
-              {STEP_META[stopIndex].description}
-            </p>
+            <p className="text-[11px] leading-4 text-neutral-400 mt-1">{meta.description}</p>
           </div>
 
           {isAccentStep ? (
@@ -313,9 +449,7 @@ export function BuilderPage() {
                       <span className="text-xs font-medium">{cd.label}</span>
                     </div>
                     <p className="text-[11px] leading-4 text-neutral-400 mb-1.5">{cd.note}</p>
-                    <ColorScaleStrip
-                      stops={toStrip([...pins, { index: stopIndex, color: cd.color }])}
-                    />
+                    <ColorScaleStrip stops={previewStrip(cd)} />
                   </label>
                 );
               })}
@@ -354,10 +488,24 @@ export function BuilderPage() {
               </div>
             ))}
           </div>
-          <DarkSection hexes={finalStops.map((s) => s.hex)} />
+          {scaleSet && neutralTint && (
+            <div className="space-y-1 border-t border-neutral-200 pt-4">
+              <h2 className="text-sm font-medium">뉴트럴 — 배경 회색</h2>
+              <p className="text-[11px] leading-4 text-neutral-400">
+                {tintAttractor(neutralTint).label} — {tintAttractor(neutralTint).note}
+              </p>
+              <ColorScaleStrip
+                stops={scaleSet.neutral.map((hex, i) => ({
+                  key: STOP_KEYS[i], hex, anchor: false,
+                }))}
+              />
+            </div>
+          )}
+          {scaleSet && <SemanticSection scales={scaleSet} />}
+          {scaleSet && <DarkSection scales={scaleSet} />}
           <div className="text-[11px] leading-4 text-neutral-400">
             <span className="font-medium text-neutral-500">내가 고른 여정 — </span>
-            {choices.map((c) => `${STEP_META[c.stopIndex].title}: ${c.label}`).join(" → ")}
+            {choices.map((c) => `${STEP_META[c.metaKey].title}: ${c.label}`).join(" → ")}
           </div>
           <button
             type="button"
@@ -376,6 +524,7 @@ export function BuilderPage() {
             미리보기 — 지금 상태의 스케일 (링 = 내가 확정/선택한 stop)
           </h3>
           <ColorScaleStrip stops={toStrip(previewPins)} />
+          {neutralPreview && <ColorScaleStrip stops={neutralPreview} />}
         </section>
       )}
     </div>

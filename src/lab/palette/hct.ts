@@ -1,4 +1,4 @@
-// src/lab/accent-scale/hct.ts
+// src/lab/palette/hct.ts
 //
 // Material HCT: 앵커의 HCT hue/chroma를 고정하고 tone(≈L*)만 사다리로 배치.
 // tone 사다리는 98→8 균등 분할 — Material 표준 톤셋 대신 임의 count 대응.
@@ -24,7 +24,7 @@
 //   절대경로는 여기서 금지.
 //
 // 패치 도달 경로 (Task 9에서 검증, 2026-07-21):
-// 이 파일(`src/lab/accent-scale/hct.ts`)의 서브패스 import는 Node/Vite의
+// 이 파일(`src/lab/palette/hct.ts`)의 서브패스 import는 Node/Vite의
 // 디렉터리 walk-up 리졸루션으로 이 파일 기준 조상 경로를 타고 올라가
 // **repo 루트의 node_modules**(pnpm patch 적용됨, patches/ + pnpm-workspace.yaml)에서
 // 해석된다. `web/node_modules`에도 같은 패키지가 존재하지만(`web/package.json`에

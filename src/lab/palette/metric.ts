@@ -1,4 +1,4 @@
-// src/lab/accent-scale/metric.ts
+// src/lab/palette/metric.ts
 //
 // 벤치마크 메트릭. ΔE(OK) = Oklab 유클리드 거리 (0 = 동일, ~1 = 흰↔검).
 // hue family 경계는 docs/research/accent-baseline.md 와 동일.

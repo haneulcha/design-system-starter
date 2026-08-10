@@ -1,4 +1,4 @@
-// src/lab/accent-scale/bench.ts
+// src/lab/palette/bench.ts
 //
 // 벤치마크 계산 (순수). 프로토콜은 스펙 §벤치마크 프로토콜:
 // 레퍼런스의 앵커 stop을 알고리즘에 입력 → 같은 stop 수/앵커 위치로 유도 →

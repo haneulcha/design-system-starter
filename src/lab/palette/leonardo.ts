@@ -1,4 +1,4 @@
-// src/lab/accent-scale/leonardo.ts
+// src/lab/palette/leonardo.ts
 //
 // Adobe Leonardo: 흰 배경 대비 콘트라스트 비율 사다리로 스케일 생성.
 // 비율 사다리는 1.06→19 기하 급수 — WCAG 비율은 지각적으로 기하 분포이므로.

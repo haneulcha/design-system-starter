@@ -1,4 +1,4 @@
-// src/lab/accent-scale/ours.ts
+// src/lab/palette/ours.ts
 //
 // "우리 곡선" v0 — 눈 평가(docs/research/accent-eye-eval.md) 종합의 첫 시제품.
 //

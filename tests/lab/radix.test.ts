@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { radixAlgorithm } from "../../src/lab/accent-scale/radix.js";
+import { radixAlgorithm } from "../../src/lab/palette/radix.js";
 import { oklchToHex } from "../../src/generator/color.js";
-import { deltaEOk } from "../../src/lab/accent-scale/metric.js";
-import type { ReferenceSet } from "../../src/lab/accent-scale/bench.js";
+import { deltaEOk } from "../../src/lab/palette/metric.js";
+import type { ReferenceSet } from "../../src/lab/palette/bench.js";
 
 const radixRef: ReferenceSet = JSON.parse(
   readFileSync("data/references/radix-light.json", "utf8"),

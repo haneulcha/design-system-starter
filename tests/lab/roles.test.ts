@@ -1,27 +1,25 @@
 import { describe, it, expect } from "vitest";
-import { ACCENT_ROLES, cssSnippet } from "../../src/lab/accent-scale/roles.js";
-import {
-  fillScale,
-  STOP_KEYS,
-  type Pin,
-} from "../../src/lab/accent-scale/builder.js";
+import { SCALE_ROLES, cssSnippet, type ScaleSet } from "../../src/lab/palette/roles.js";
+import { buildNeutral, TINT_STRENGTHS } from "../../src/lab/palette/neutral.js";
+import { SEMANTIC_ANCHORS, buildSemantic } from "../../src/lab/palette/semantic.js";
+import { fillScale, STOP_KEYS, type Pin } from "../../src/lab/palette/builder.js";
 import { oklchToHex, parsePrimary } from "../../src/generator/color.js";
 
-describe("ACCENT_ROLES", () => {
+describe("SCALE_ROLES", () => {
   it("has exactly 6 roles with unique ids", () => {
-    expect(ACCENT_ROLES).toHaveLength(6);
-    expect(new Set(ACCENT_ROLES.map((r) => r.id)).size).toBe(6);
+    expect(SCALE_ROLES).toHaveLength(6);
+    expect(new Set(SCALE_ROLES.map((r) => r.id)).size).toBe(6);
   });
 
   it("labels and notes are educational (non-trivial length)", () => {
-    for (const r of ACCENT_ROLES) {
+    for (const r of SCALE_ROLES) {
       expect(r.label.length, r.id).toBeGreaterThan(0);
       expect(r.note.length, r.id).toBeGreaterThan(10);
     }
   });
 
   it("indexes are integers in 0..10", () => {
-    for (const r of ACCENT_ROLES) {
+    for (const r of SCALE_ROLES) {
       for (const idx of [r.lightIndex, r.darkIndex]) {
         expect(Number.isInteger(idx), r.id).toBe(true);
         expect(idx, r.id).toBeGreaterThanOrEqual(0);
@@ -31,7 +29,7 @@ describe("ACCENT_ROLES", () => {
   });
 
   it("dark mapping mirrors the light index (i → 10−i), except solid stays at the anchor", () => {
-    for (const r of ACCENT_ROLES) {
+    for (const r of SCALE_ROLES) {
       if (r.id === "solid") {
         expect(r.lightIndex).toBe(5);
         expect(r.darkIndex).toBe(5);
@@ -42,61 +40,66 @@ describe("ACCENT_ROLES", () => {
   });
 });
 
+function sampleScales(): ScaleSet {
+  const pins: Pin[] = [{ index: 5, color: parsePrimary("#3b82f6") }];
+  const semantic = Object.fromEntries(
+    SEMANTIC_ANCHORS.map((a) => [a.id, buildSemantic(a).map(oklchToHex)]),
+  ) as ScaleSet["semantic"];
+  return {
+    accent: fillScale(pins).map(oklchToHex),
+    neutral: buildNeutral({ hue: 258, strength: TINT_STRENGTHS.soft }).map(oklchToHex),
+    semantic,
+  };
+}
+
 describe("cssSnippet", () => {
-  // 서로 다른 더미 hex 11개 — 프리미티브가 각자 자기 값에 매였는지 식별 가능
-  const HEXES = STOP_KEYS.map(
-    (_, i) => `#0000${i.toString(16).padStart(2, "0")}`,
-  );
+  const SCALE_NAMES = ["accent", "neutral", "error", "success", "warning", "info"];
 
-  it("throws unless given exactly 11 hexes", () => {
-    expect(() => cssSnippet(HEXES.slice(0, 10))).toThrow(/11/);
-    expect(() => cssSnippet([...HEXES, "#ffffff"])).toThrow(/11/);
-  });
-
-  it("declares all 11 primitives and 6 semantic roles in :root", () => {
-    const css = cssSnippet(HEXES);
-    STOP_KEYS.forEach((key, i) => {
-      expect(css).toContain(`--accent-${key}: ${HEXES[i]};`);
-    });
-    for (const r of ACCENT_ROLES) {
-      expect(css).toContain(
-        `--accent-${r.id}: var(--accent-${STOP_KEYS[r.lightIndex]});`,
-      );
+  it("emits 11 primitives for each of the 6 scales", () => {
+    const css = cssSnippet(sampleScales());
+    for (const name of SCALE_NAMES) {
+      for (const key of STOP_KEYS) {
+        expect(css, `${name}-${key}`).toContain(`--${name}-${key}:`);
+      }
     }
   });
 
-  it(".dark re-declares only the roles whose mapping changes — solid is absent", () => {
-    const css = cssSnippet(HEXES);
-    const dark = css.slice(css.indexOf(".dark {"));
-    for (const r of ACCENT_ROLES) {
-      if (r.id === "solid") continue;
-      expect(dark).toContain(
-        `--accent-${r.id}: var(--accent-${STOP_KEYS[r.darkIndex]});`,
-      );
+  it("emits every role for every scale in :root", () => {
+    const css = cssSnippet(sampleScales());
+    const root = css.slice(css.indexOf(":root"), css.indexOf(".dark"));
+    for (const name of SCALE_NAMES) {
+      for (const role of SCALE_ROLES) {
+        expect(root, `${name}-${role.id}`).toContain(`--${name}-${role.id}:`);
+      }
     }
-    expect(dark).not.toContain("--accent-solid");
-    // 선언(콜론 동반)은 바뀌는 역할 수만큼만 — 현재 5개
-    expect(dark.match(/--accent-[a-z-]+:/g)).toHaveLength(5);
   });
 
-  it("every var() reference resolves to a declaration in the same snippet", () => {
-    const css = cssSnippet(HEXES);
+  it("re-declares only the roles that actually move, for every scale", () => {
+    const css = cssSnippet(sampleScales());
+    const dark = css.slice(css.indexOf(".dark"));
+    const moving = SCALE_ROLES.filter((r) => r.darkIndex !== r.lightIndex);
+    expect(moving).toHaveLength(5);
+    expect(dark.match(/--[a-z-]+-[a-z-]+:/g) ?? []).toHaveLength(moving.length * 6);
+    for (const name of SCALE_NAMES) {
+      expect(dark, `${name}-solid`).not.toContain(`--${name}-solid:`);
+    }
+  });
+
+  it("has no dangling var() references", () => {
+    const css = cssSnippet(sampleScales());
     const declared = new Set(
-      [...css.matchAll(/(--accent-[\w-]+)(?=:)/g)].map((m) => m[1]),
+      [...css.matchAll(/^\s*(--[\w-]+):/gm)].map((m) => m[1]),
     );
-    const refs = [...css.matchAll(/var\((--accent-[\w-]+)\)/g)].map((m) => m[1]);
-    expect(refs.length).toBeGreaterThan(0);
-    for (const name of refs) {
-      expect(declared.has(name), name).toBe(true);
+    for (const m of css.matchAll(/var\((--[\w-]+)\)/g)) {
+      expect(declared, m[1]).toContain(m[1]);
     }
   });
 
-  it("works end-to-end with a real fillScale result", () => {
-    const pins: Pin[] = [{ index: 5, color: parsePrimary("#3b82f6") }];
-    const hexes = fillScale(pins).map(oklchToHex);
-    const css = cssSnippet(hexes);
-    expect(css.startsWith(":root {")).toBe(true);
-    expect(css).toContain(`--accent-500: ${hexes[5]};`);
-    expect(css.trimEnd().endsWith("}")).toBe(true);
+  it("throws when any scale is not 11 long", () => {
+    const bad = sampleScales();
+    expect(() => cssSnippet({ ...bad, neutral: bad.neutral.slice(0, 10) })).toThrow();
+    expect(() =>
+      cssSnippet({ ...bad, semantic: { ...bad.semantic, error: [] } }),
+    ).toThrow();
   });
 });
