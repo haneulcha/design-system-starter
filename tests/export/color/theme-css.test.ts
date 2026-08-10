@@ -45,10 +45,14 @@ describe("Tailwind v4가 실제로 이 파일을 어떻게 컴파일하는가", 
     expect(out).toContain("background-color: var(--color-accent-solid)");
   });
 
-  it("keeps the .dark re-declaration in the compiled output", async () => {
+  it("keeps an overriding role's utility pointing at the role variable, not the light stop", async () => {
+    // subtle-bg는 lightIndex 0 / darkIndex 10 — 실제로 자리가 바뀌는 역할이다.
+    // solid(5/5)로는 이걸 검증할 수 없다: 라이트와 다크가 같은 stop이라
+    // @theme inline이어도 차이가 안 난다.
     const out = await build(generateColorThemeCss(fixtureSystem()), ["bg-accent-subtle-bg"]);
-    // 여기선 헤더 주석이 이미 사라졌지만(Tailwind가 /*! 배너 말고는 다 턴다)
-    // css.test.ts와 같은 앵커를 쓴다.
+    // (a) 유틸리티가 역할 변수를 거친다 — inline이면 var(--color-accent-50)로 박힌다.
+    expect(out).toContain("background-color: var(--color-accent-subtle-bg)");
+    // (b) 그래서 .dark 재선언이 살아 있는 선언이 된다.
     const dark = out.slice(out.indexOf(".dark {"));
     expect(dark).toContain("--color-accent-subtle-bg: var(--color-accent-950);");
   });
