@@ -24,8 +24,8 @@ import {
   type NeutralTint,
 } from "@core/lab/palette/neutral.js";
 import {
+  SCALE_ORDER,
   SCALE_ROLES,
-  cssSnippet,
   scaleHasAnchor,
   type ScaleName,
   type ScaleRole,
@@ -41,6 +41,7 @@ import { oklchToHex, parsePrimary } from "@core/generator/color.js";
 import type { Oklch } from "@core/schema/types.js";
 import { ColorScaleStrip } from "../components/ColorScaleStrip";
 import { OklchPicker } from "../components/OklchPicker";
+import { ExportPanel } from "./ExportPanel";
 
 interface Choice {
   metaKey: number | "neutral"; // STEP_META 조회용
@@ -146,25 +147,18 @@ function MockPanel({
 
 /** 완료 화면 다크 섹션 — 역할 재배치 교보재. 계산은 roles.ts, 여긴 렌더만. */
 function DarkSection({ scales }: { scales: ScaleSet }) {
-  const copyCss = () => navigator.clipboard.writeText(cssSnippet(scales));
-  const named: [ScaleName, string, readonly string[]][] = [
-    ["accent", "액센트", scales.accent],
-    ["neutral", "뉴트럴", scales.neutral],
-    ...SEMANTIC_ANCHORS.map(
-      (a) => [a.id, a.label, scales.semantic[a.id]] as [ScaleName, string, readonly string[]],
-    ),
-  ];
+  const byName: Record<ScaleName, readonly string[]> = {
+    accent: scales.accent,
+    neutral: scales.neutral,
+    ...scales.semantic,
+  };
+  const named: [ScaleName, string, readonly string[]][] = SCALE_ORDER.map(
+    (d) => [d.name, d.label, byName[d.name]] as [ScaleName, string, readonly string[]],
+  );
   return (
     <div className="space-y-3 border-t border-neutral-200 pt-4">
       <div className="flex items-baseline justify-between">
         <h2 className="text-sm font-medium">다크 테마 — 역할 재배치</h2>
-        <button
-          type="button"
-          onClick={copyCss}
-          className="text-[10px] text-neutral-400 hover:text-neutral-700"
-        >
-          copy CSS
-        </button>
       </div>
       <p className="text-[11px] leading-4 text-neutral-400">
         다크에서 색(프리미티브)은 그대로, 역할(시맨틱)만 재배치 — 같은 사다리를
@@ -178,7 +172,7 @@ function DarkSection({ scales }: { scales: ScaleSet }) {
         패널 배경이 이제 당신의 뉴트럴 50/950입니다 — 액센트와 뉴트럴이 같은
         화면에서 어떻게 만나는지 보세요.
       </p>
-      {named.map(([name, label, hexes], i) => {
+      {named.map(([name, label, hexes]) => {
         // 링(ring)은 role id가 아니라 "이 스케일이 실제 앵커를 갖는가"로 정한다 —
         // 뉴트럴엔 앵커가 없다(위 뉴트럴 스트립도 anchor: false로 그린다), 엔진의
         // scaleHasAnchor가 그 사실을 들고 있다.
@@ -211,7 +205,7 @@ function DarkSection({ scales }: { scales: ScaleSet }) {
             </tbody>
           </table>
         );
-        return i < 2 ? (
+        return name === "accent" || name === "neutral" ? (
           <div key={label} className="space-y-1">
             <div className="text-[11px] font-medium text-neutral-600">{label}</div>
             {table}
@@ -503,6 +497,7 @@ export function BuilderPage() {
           )}
           {scaleSet && <SemanticSection scales={scaleSet} />}
           {scaleSet && <DarkSection scales={scaleSet} />}
+          {scaleSet && <ExportPanel scales={scaleSet} />}
           <div className="text-[11px] leading-4 text-neutral-400">
             <span className="font-medium text-neutral-500">내가 고른 여정 — </span>
             {choices.map((c) => `${STEP_META[c.metaKey].title}: ${c.label}`).join(" → ")}
