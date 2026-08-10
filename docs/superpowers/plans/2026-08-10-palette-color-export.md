@@ -1026,11 +1026,16 @@ describe("toColorFigma", () => {
     const system = fixtureSystem();
     const [, colors] = toColorFigma(system).variableCollections;
     const accent = system.scales[0];
-    const solid = system.roles.find((r) => r.id === "solid")!;
-    const v = colors.variables.find((x) => x.name === "accent-solid")!;
     const [light, dark] = colors.modes.map((m) => m.modeId);
-    expect(v.valuesByMode[light]).toBe(accent.hexes[solid.lightIndex]);
-    expect(v.valuesByMode[dark]).toBe(accent.hexes[solid.darkIndex]);
+
+    // 비대칭 역할로 검증한다 — solid(5/6 동일 인덱스)로는 light/dark를 맞바꿔도
+    // 두 값이 같아서 스왑이 드러나지 않는다.
+    const subtle = system.roles.find((r) => r.id === "subtle-bg")!;
+    expect(subtle.lightIndex).not.toBe(subtle.darkIndex);
+    const v = colors.variables.find((x) => x.name === "accent-subtle-bg")!;
+    expect(v.valuesByMode[light]).toBe(accent.hexes[subtle.lightIndex]);
+    expect(v.valuesByMode[dark]).toBe(accent.hexes[subtle.darkIndex]);
+    expect(v.valuesByMode[light]).not.toBe(v.valuesByMode[dark]);
   });
 
   it("names variables {scale}-{key} without slashes — slashes create Figma folders", () => {
