@@ -15,9 +15,9 @@
 **성공 기준**
 
 1. 6단계를 완주한 사용자가 4개 파일을 받아 자기 프로젝트에 붙일 수 있다.
-2. 산출된 `palette.theme.css`가 `web/`의 **격리된 미리보기 영역**에서 동작한다 —
-   `.dark` 토글에 따라 역할 색이 바뀌는 것을 눈으로 확인할 수 있다.
-   앱 전역에 넣지 않는다 (아래 D7 참조).
+2. 산출된 `palette.theme.css`가 실제 Tailwind v4로 컴파일돼 유틸리티를 만들고,
+   `.dark` 재선언이 살아남는 것을 **자동 테스트가 증명한다** (D5).
+   앱 전역에는 넣지 않는다 (D7).
 3. 산출 코드가 `src/lab/`을 import하지 않는다 — 랩 격리 규칙이 안 깨진다.
 4. 역할표가 시스템에 하나만 존재한다 — 산출 코드가 자기 사본을 갖지 않는다.
 
@@ -60,7 +60,10 @@ export interface ExportRole {
 }
 
 export interface ExportScale {
+  /** CSS·Figma에서 쓰는 식별자. 예: "accent", "error". */
   readonly name: string;
+  /** 사람이 읽는 이름. 예: "액센트", "오류 (빨강)". DESIGN.md 제목에 쓴다. */
+  readonly label: string;
   readonly hexes: readonly string[];
 }
 
@@ -90,14 +93,39 @@ export interface ColorSystem {
 export function toColorSystem(
   scales: { accent: readonly string[]; neutral: readonly string[];
             semantic: Readonly<Record<string, readonly string[]>> },
+  order: readonly { name: string; label: string }[],
   roles: readonly ExportRole[],
   stopKeys: readonly string[],
 ): ColorSystem
 ```
 
-`web/`은 `toColorSystem(scaleSet, SCALE_ROLES, STOP_KEYS)` 한 줄만 부른다 — 값을
-넘기는 것뿐이고 계산이 없다. 어댑터는 `tests/export/color/adapter.test.ts`가 덮는다:
-스케일 순서가 액센트 → 뉴트럴 → 시맨틱 4종인가, 역할의 인덱스가 그대로 전달되는가.
+`order`가 **출력 순서와 표시 이름을 함께 정한다.** `ScaleSet.semantic`은 Record라
+키 순서에 기대면 안 되므로, 순서를 데이터로 받아 결정론적으로 만든다. 엔진이
+그 목록을 내놓는다 — `src/lab/palette/roles.ts`에 추가:
+
+```ts
+export interface ScaleDescriptor {
+  readonly name: ScaleName;
+  readonly label: string;
+}
+
+/** 산출물에서의 스케일 순서와 표시 이름. 액센트 → 뉴트럴 → 시맨틱 4종. */
+export const SCALE_ORDER: readonly ScaleDescriptor[] = [
+  { name: "accent", label: "액센트" },
+  { name: "neutral", label: "뉴트럴" },
+  ...SEMANTIC_ANCHORS.map((a) => ({ name: a.id, label: a.label })),
+];
+```
+
+표시 이름이 엔진에 있는 것도 FP 제약("UI 문구는 엔진에")이 요구하는 바다. 지금
+`BuilderPage`의 `DarkSection`이 `"액센트"`·`"뉴트럴"`을 하드코딩하고 있는데,
+`SCALE_ORDER`가 생기면 그것도 여기서 읽게 된다.
+
+`web/`은 `toColorSystem(scaleSet, SCALE_ORDER, SCALE_ROLES, STOP_KEYS)` 한 줄만
+부른다 — 엔진 상수 셋을 넘기는 것뿐이고 계산이 없다. 어댑터는
+`tests/export/color/adapter.test.ts`가 덮는다: 스케일 순서가 `order`를 그대로
+따르는가, `semantic` Record의 키 순서를 뒤집어도 출력이 안 바뀌는가, 역할 인덱스가
+그대로 전달되는가.
 
 ### D3. CSS 변수 이름은 `--color-{scale}-{stop|role}`
 
@@ -146,9 +174,22 @@ Tailwind v4에서 `@theme inline`은 테마 변수의 **값을 유틸리티에 �
 같은 실험이 D3도 확인했다: 역할 이름을 가진 `--color-*` 변수도 유틸리티를 생성하고,
 `@theme` 안의 전방 참조가 문제되지 않는다.
 
-> 남은 불확실: 검증은 루트의 4.3.3에서 했고 `web/`은 `@tailwindcss/vite`로 4.2.2를
-> 번들한다. 둘 다 v4이고 `@theme`/`inline` 의미는 4.x에서 안정적이지만, D7의 미리보기
-> 영역에서 `.dark` 토글을 눈으로 한 번 확인할 것.
+**이 검증을 테스트로 고정한다.** 설치된 `tailwindcss`의 `compile()`은 테스트에서
+그대로 쓸 수 있다 (루트 devDependencies에 이미 있다):
+
+```ts
+import { compile } from "tailwindcss";
+const compiler = await compile(themeCss + "\n@tailwind utilities;\n", { base: "/" });
+const out = compiler.build(["bg-accent-solid", "bg-accent-subtle-bg"]);
+```
+
+`tests/export/color/theme-css.test.ts`가 생성된 파일을 실제로 컴파일해
+(a) 변수가 `:root`로 나가는가, (b) `bg-accent-solid`가 `var(--color-accent-solid)`로
+컴파일되는가(값이 인라인되지 않는가), (c) `.dark` 재선언이 출력에 살아남는가를 확인한다.
+
+> 남은 불확실: 검증은 루트의 4.3.3에서 한다. `web/`은 `@tailwindcss/vite`로 4.2.2를
+> 번들하므로 앱 안에서의 동작은 이 테스트가 직접 증명하지 않는다. 둘 다 v4이고
+> `@theme`/`inline` 의미는 4.x에서 안정적이다.
 
 ### D6. Figma는 컬렉션 2개, Primitives는 단일 모드
 
@@ -172,9 +213,21 @@ Tailwind 기본 테마가 `--color-neutral-50`~`950`을 정의하고(`web/node_m
 `palette.theme.css`를 앱 전역에 import하면 **사용자의 틴트된 회색이 툴 자신의 크롬을
 덮어쓴다.** 웜 팔레트를 만들면 앱 전체가 베이지가 된다.
 
-그래서 성공 기준 2의 도그푸드는 완료 화면 안의 미리보기 블록 하나로 한정한다:
-생성된 `@theme` 텍스트를 `<style>`로 주입하고 그 블록 안에서만 유틸리티를 쓴다.
-`.dark` 토글 버튼을 붙여 역할 재배치가 실제로 도는 것을 보인다.
+그래서 도그푸드는 완료 화면 안의 미리보기 블록 하나로 한정한다.
+
+**미리보기는 `palette.css`(평범한 변수)를 쓴다, `@theme`이 아니라.**
+`@theme`은 빌드 타임 지시문이다 — Tailwind가 빌드할 때 그 안의 `--color-*`를 보고
+유틸리티를 생성한다. 런타임에 `<style>`로 `@theme`을 주입하면 **유틸리티가 생성되지
+않는다.** 존재하지 않는 클래스를 붙이는 꼴이 된다.
+
+대신 생성된 `palette.css`를 `.palette-preview` 스코프로 감싸 `<style>`에 주입하고,
+미리보기 조각들은 `style={{ background: "var(--color-accent-solid)" }}` 처럼
+변수를 직접 참조한다. `.dark` 클래스를 그 래퍼에 토글해 역할 재배치가 실제로 도는
+것을 보인다 — 그게 사용자가 눈으로 확인해야 하는 것이고, Tailwind 유틸리티 생성은
+D5의 컴파일 테스트가 따로 증명한다.
+
+이 방식은 전역 오염이 구조적으로 불가능하다: 주입된 변수가 `.palette-preview`
+안에서만 유효하므로 `--color-neutral-*`이 앱의 다른 곳에 닿지 않는다.
 
 **기각한 대안:** 전역 import. 툴이 자기 결과물을 입는 그림은 매력적이지만, 사용 중인
 도구의 UI가 고를 때마다 바뀌면 읽기가 어려워지고 회귀와 구분되지 않는다.
@@ -340,12 +393,12 @@ Tailwind v4가 `bg-accent-500`·`text-accent-text`·`border-neutral-border`를 �
 `DownloadPanel.tsx`의 버튼 클래스와 `downloadFile()` 헬퍼를 그대로 참고한다.
 공용 컴포넌트로 추출하지는 않는다 — 두 화면이 각자 진화할 여지를 남긴다.
 
-그 아래에 **격리된 미리보기 블록**(D7)이 들어간다: 생성된 `@theme` 텍스트를
-`<style>`로 주입하고, 그 블록 안에서만 `bg-accent-solid`·`text-accent-text` 같은
-유틸리티로 몇 개의 UI 조각을 그린다. `.dark` 토글 버튼이 붙는다.
+그 아래에 **격리된 미리보기 블록**(D7)이 들어간다: 생성된 `palette.css`를
+`.palette-preview` 스코프로 감싸 `<style>`에 주입하고, 그 안의 UI 조각들이
+`var(--color-accent-solid)` 같은 변수를 직접 참조한다. `.dark` 토글 버튼이 붙는다.
 
-이 블록이 두 가지를 동시에 한다 — 사용자에게 "받아 가면 이렇게 쓴다"를 보이고,
-D5의 Tailwind v4 동작을 실제 앱에서 눈으로 확인하는 자리가 된다.
+사용자에게 "받아 가면 이렇게 쓴다"를 보이고, 다크가 색을 새로 만들지 않는다는 주장이
+실제로 도는 것을 보이는 자리다.
 
 ## 테스트
 
@@ -358,6 +411,9 @@ D5의 Tailwind v4 동작을 실제 앱에서 눈으로 확인하는 자리가 �
   `.dark`에 `solid` 없음. 두 CSS 파일의 변수 선언 목록이 **동일**한가
   (D4의 "갈라질 수 없어야 한다"를 테스트로 고정).
 - **theme CSS**: `.dark` 블록이 `@theme` 밖에 있는가. `@theme inline`이 아닌가.
+  그리고 **실제로 Tailwind v4로 컴파일해** 변수가 `:root`로 나가는가,
+  `bg-accent-solid`가 `var(--color-accent-solid)`로 컴파일되는가(값 인라인이
+  아닌가), `.dark` 재선언이 출력에 남는가 (D5).
 - **Figma**: 컬렉션 2개. `Color Primitives`는 모드 1개 66변수,
   `Colors`는 모드 2개 36변수. Light/Dark 값이 각각 lightIndex/darkIndex의
   프리미티브 hex와 일치하는가. `textStyles`·`effectStyles`가 빈 배열인가.
