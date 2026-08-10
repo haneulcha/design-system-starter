@@ -165,8 +165,11 @@ Tailwind v4에서 `@theme inline`은 테마 변수의 **값을 유틸리티에 �
 이 스펙과 같은 모양(`@theme`에 `--color-accent-solid: var(--color-accent-500)`,
 `.dark` 재선언은 블록 밖)을 넣어 실제로 컴파일했다:
 
-- 평범한 `@theme` — 변수가 `:root, :host`로 나가고 `bg-accent-solid`가
-  `background-color: var(--color-accent-solid)`로 컴파일된다. `.dark` 재선언이 먹는다.
+- 평범한 `@theme` — `bg-accent-solid`가 `background-color: var(--color-accent-solid)`로
+  컴파일되고 그 변수가 `:root, :host`로 나간다. `.dark` 재선언이 먹는다.
+  단 **Tailwind 4는 쓰이지 않는 `@theme` 변수를 출력에서 털어낸다** — 유틸리티가
+  참조하지 않는 변수는 `:root`에 안 나온다. 테스트를 쓸 때 candidates를 비워두면
+  안 되는 이유다.
 - `@theme inline` — `--color-accent-solid`가 `:root`로 **안 나가고**
   `bg-accent-solid`가 `background-color: var(--color-accent-500)`로 컴파일된다.
   `.dark`에서 `--color-accent-solid`를 덮어도 죽은 선언이다.
@@ -434,7 +437,7 @@ Tailwind v4가 `bg-accent-500`·`text-accent-text`·`border-neutral-border`를 �
 
 ## 에러 처리
 
-`ColorSystem` 계약 가드 3개. 전부 프로그래머 오류용이고 사용자 입력에서 도달할 수
+`ColorSystem` 계약 가드 4개. 전부 프로그래머 오류용이고 사용자 입력에서 도달할 수
 없다 (UI가 `scaleSet === null`이면 패널을 렌더하지 않는다).
 
 1. 모든 스케일의 `hexes.length === stopKeys.length`. 아니면 어느 스케일인지 이름을

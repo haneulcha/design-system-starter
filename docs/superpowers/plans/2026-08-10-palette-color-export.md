@@ -593,9 +593,11 @@ describe("변수 목록", () => {
 
 describe("generateColorCss", () => {
   it("emits 66 primitives + 36 roles in :root and 30 in .dark for the real shape", () => {
+    // 블록 오프너(".dark {")로 자른다 — 헤더 주석에 ".dark에"라는 산문이 있어서
+    // ".dark"로 자르면 헤더가 먼저 잡히고 두 슬라이스가 통째로 어긋난다.
     const css = generateColorCss(fixtureSystem());
-    const root = css.slice(css.indexOf(":root"), css.indexOf(".dark"));
-    const dark = css.slice(css.indexOf(".dark"));
+    const root = css.slice(css.indexOf(":root {"), css.indexOf(".dark {"));
+    const dark = css.slice(css.indexOf(".dark {"));
     expect(decls(root)).toHaveLength(66 + 36);
     expect(decls(dark)).toHaveLength(30);
   });
@@ -610,7 +612,7 @@ describe("generateColorCss", () => {
 
   it("never re-declares solid in .dark — the anchor is preserved across themes", () => {
     const css = generateColorCss(fixtureSystem());
-    const dark = css.slice(css.indexOf(".dark"));
+    const dark = css.slice(css.indexOf(".dark {"));
     for (const scale of fixtureSystem().scales) {
       expect(dark).not.toContain(`--color-${scale.name}-solid:`);
     }
@@ -875,8 +877,10 @@ describe("Tailwind v4가 실제로 이 파일을 어떻게 컴파일하는가", 
     return compiler.build(candidates);
   }
 
-  it("emits the theme variables into :root", async () => {
-    const out = await build(generateColorThemeCss(fixtureSystem()), []);
+  it("emits the used theme variables into :root", async () => {
+    // Tailwind 4는 쓰이지 않는 @theme 변수를 털어낸다 — candidates가 비면
+    // --color-accent-solid는 출력에 없다. 유틸리티를 하나 요구해야 나온다.
+    const out = await build(generateColorThemeCss(fixtureSystem()), ["bg-accent-solid"]);
     expect(out).toContain("--color-accent-solid: var(--color-accent-500);");
   });
 
@@ -889,7 +893,9 @@ describe("Tailwind v4가 실제로 이 파일을 어떻게 컴파일하는가", 
 
   it("keeps the .dark re-declaration in the compiled output", async () => {
     const out = await build(generateColorThemeCss(fixtureSystem()), ["bg-accent-subtle-bg"]);
-    const dark = out.slice(out.indexOf(".dark"));
+    // 여기선 헤더 주석이 이미 사라졌지만(Tailwind가 /*! 배너 말고는 다 턴다)
+    // css.test.ts와 같은 앵커를 쓴다.
+    const dark = out.slice(out.indexOf(".dark {"));
     expect(dark).toContain("--color-accent-subtle-bg: var(--color-accent-950);");
   });
 
@@ -912,8 +918,9 @@ Expected: FAIL — `theme-css.js` 해석 실패
 ```ts
 // src/export/color/theme-css.ts
 //
-// Tailwind v4 테마. @theme(inline 아님)이라 변수가 :root로 나가고 유틸리티는
-// var(--color-…)를 참조한다 — 그래서 .dark 재선언이 먹는다.
+// Tailwind v4 테마. @theme(inline 아님)이라 유틸리티가 var(--color-…)를 참조하고
+// 실제로 쓰인 변수가 :root로 나간다 — 그래서 .dark 재선언이 먹는다.
+// (Tailwind 4는 쓰이지 않는 @theme 변수를 출력에서 털어낸다.)
 // inline을 쓰면 값이 유틸리티에 치환돼 다크 역할 재배치가 통째로 죽는다 (스펙 D5).
 // palette.css와 같은 변수 목록 함수를 쓰므로 두 파일이 갈라질 수 없다.
 
@@ -1707,19 +1714,19 @@ describe("BuilderPage 6단계 완주", () => {
 - [ ] **Step 5: 테스트 실패 확인**
 
 Run: `cd web && npm test`
-Expected: FAIL — 설정·의존성이 없으면 실행 자체가 안 되고, 갖춰진 뒤엔 아직 없는 요소를 못 찾는다.
+Expected: **PASS 3/3**, 출력에 경고·오류 없음.
 
-> Step 1~3을 먼저 했다면 이 단계에서 실패는 "요소를 못 찾음"이어야 한다. 만약
-> 렌더 단계에서 예외가 난다면 jsdom 환경 문제이므로 **멈추고 보고할 것** —
-> 테스트를 약화시켜 통과시키지 말 것.
+> 이 태스크에는 RED 단계가 없다 — Task 7이 이미 구현을 만들었고, 이 테스트는
+> 그걸 **검증하러** 온다. 통과하지 않으면 Task 7의 구현에 실제 결함이 있는 것이고,
+> 그게 이 테스트를 쓰는 이유다. 실패하면 **테스트를 약화시키지 말고** 무엇이
+> 렌더되지 않았는지 보고할 것. 렌더 단계에서 예외가 난다면 jsdom 환경 문제이므로
+> 역시 멈추고 보고할 것.
 
-- [ ] **Step 6: 통과 확인**
+- [ ] **Step 6: 출력이 깨끗한지 확인**
 
-Run: `cd web && npm test`
-Expected: PASS 3/3, 출력에 경고·오류 없음
-
-Task 7까지 끝났다면 구현은 이미 존재하므로 이 테스트는 바로 통과해야 한다.
-통과하지 않으면 Task 7의 구현에 실제 결함이 있는 것이다 — 그게 이 테스트의 목적이다.
+Run: `cd web && npm test 2>&1 | tail -20`
+Expected: 실패 0, `Not implemented` 같은 jsdom 경고 0. 경고가 보이면 `vitest.setup.ts`의
+스텁이 안 걸린 것이다 — `setupFiles` 경로를 확인할 것.
 
 - [ ] **Step 7: 커밋**
 
@@ -1781,7 +1788,21 @@ Expected: 셋 다 PASS
 
 - [ ] **Step 4: 사이클 1 스펙의 이월 항목 갱신**
 
-`docs/superpowers/specs/2026-08-09-palette-generator-color-system-design.md`의 "v0 범위 밖"에서 **산출물 파이프라인**이 이 사이클로 해소됐다. 해소 표시와 해소 스펙 경로를 적는다. 그 문서가 쓰는 관례(취소선 + 날짜 주석)를 따를 것.
+`docs/superpowers/specs/2026-08-09-palette-generator-color-system-design.md:391`의 항목:
+
+```
+- 4개 산출물 파이프라인 · 위자드 레거시화 · 비색 카테고리 출처 — **사이클 2**.
+```
+
+셋 중 **산출물 파이프라인만** 이 사이클로 해소됐다. 줄을 통째로 긋지 말고 둘로 쪼갠다:
+
+```
+- ~~4개 산출물 파이프라인~~ — 해소: `2026-08-10-palette-color-export-design.md` (2026-08-10).
+- 위자드 레거시화 · 비색 카테고리 출처 — 이월.
+```
+
+(그 문서에는 아직 취소선 용례가 없다. 형제 문서 `2026-07-28-dark-accent-roles-design.md`가
+쓰는 방식이므로 그걸 따른다.)
 
 - [ ] **Step 5: 커밋**
 
