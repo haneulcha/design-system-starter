@@ -39,8 +39,18 @@ describe("BuilderPage 6단계 완주", () => {
     const styles = [...document.querySelectorAll("style")].map((s) => s.textContent ?? "");
     const injected = styles.find((s) => s.includes("--color-accent-500"));
     expect(injected, "미리보기 CSS가 주입되지 않았다").toBeTruthy();
-    expect(injected!).toContain(".palette-preview");
-    expect(injected!).not.toContain(":root");
+
+    // 주입된 CSS의 모든 셀렉터가 .palette-preview로 시작해야 한다.
+    // ".palette-preview를 포함한다"만으로는 부족하다 — 라이트 블록 하나로 충족되어
+    // 다크 블록이 문서 전체로 새도 통과한다.
+    // [^{] 대신 [^\n{]를 쓴다 — 줄바꿈을 허용하면 헤더 주석 3줄(둘 다 "{"가 없다)이
+    // 첫 셀렉터 매치에 통째로 빨려 들어가고, 닫는 "}"가 다음 셀렉터 매치에 섞여
+    // ".palette-preview.dark"가 아니라 "}\n\n.palette-preview.dark"가 잡힌다.
+    const selectors = [...injected!.matchAll(/^(\S[^\n{]*)\{/gm)].map((m) => m[1].trim());
+    expect(selectors.length).toBeGreaterThan(0);
+    for (const sel of selectors) {
+      expect(sel.startsWith(".palette-preview"), sel).toBe(true);
+    }
   });
 
   it("toggles the preview between light and dark", () => {

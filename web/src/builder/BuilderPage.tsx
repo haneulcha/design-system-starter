@@ -147,7 +147,7 @@ function MockPanel({
 
 /** 완료 화면 다크 섹션 — 역할 재배치 교보재. 계산은 roles.ts, 여긴 렌더만. */
 function DarkSection({ scales }: { scales: ScaleSet }) {
-  const byName: Record<string, readonly string[]> = {
+  const byName: Record<ScaleName, readonly string[]> = {
     accent: scales.accent,
     neutral: scales.neutral,
     ...scales.semantic,
@@ -172,7 +172,7 @@ function DarkSection({ scales }: { scales: ScaleSet }) {
         패널 배경이 이제 당신의 뉴트럴 50/950입니다 — 액센트와 뉴트럴이 같은
         화면에서 어떻게 만나는지 보세요.
       </p>
-      {named.map(([name, label, hexes], i) => {
+      {named.map(([name, label, hexes]) => {
         // 링(ring)은 role id가 아니라 "이 스케일이 실제 앵커를 갖는가"로 정한다 —
         // 뉴트럴엔 앵커가 없다(위 뉴트럴 스트립도 anchor: false로 그린다), 엔진의
         // scaleHasAnchor가 그 사실을 들고 있다.
@@ -205,7 +205,7 @@ function DarkSection({ scales }: { scales: ScaleSet }) {
             </tbody>
           </table>
         );
-        return i < 2 ? (
+        return name === "accent" || name === "neutral" ? (
           <div key={label} className="space-y-1">
             <div className="text-[11px] font-medium text-neutral-600">{label}</div>
             {table}

@@ -10,6 +10,13 @@
 
 import type { ColorSystem } from "./types.js";
 import { assertColorSystem } from "./types.js";
+import { varName } from "./vars.js";
+
+/** 역할표는 스케일 하나당 한 번씩 다시 그려지지 않고 통째로 한 번만 렌더된다 —
+ *  그래서 실제 스케일 이름 대신 자리표시자를 쓴다. varName을 통해 만들므로
+ *  "--color-" 접두사가 여기 문자열로 다시 등장하지 않는다. */
+const SCALE_PLACEHOLDER = "{스케일}";
+const ROLE_PLACEHOLDER = "{역할 id}";
 
 const USAGE_RULES: readonly string[] = [
   "상태색은 브랜드 색이 아니다 — 브랜드에 맞춰 바꾸지 말 것.",
@@ -24,17 +31,23 @@ export function renderColorDesignMd(system: ColorSystem): string {
 
   lines.push("## 스케일", "");
   for (const scale of system.scales) {
-    lines.push(`### ${scale.label}`, "", "| stop | hex |", "| --- | --- |");
+    lines.push(`### ${scale.label} (${scale.name})`, "", "| stop | hex |", "| --- | --- |");
     system.stopKeys.forEach((key, i) => {
       lines.push(`| ${key} | ${scale.hexes[i]} |`);
     });
     lines.push("");
   }
 
-  lines.push("## 역할", "", "| 역할 | 라이트 | 다크 |", "| --- | --- | --- |");
+  lines.push(
+    "## 역할",
+    "",
+    "| 역할 | 변수 | 라이트 | 다크 |",
+    "| --- | --- | --- | --- |",
+  );
   for (const role of system.roles) {
+    const varname = varName(SCALE_PLACEHOLDER, role.id);
     lines.push(
-      `| ${role.label} | ${system.stopKeys[role.lightIndex]} | ${system.stopKeys[role.darkIndex]} |`,
+      `| ${role.label} | ${varname} | ${system.stopKeys[role.lightIndex]} | ${system.stopKeys[role.darkIndex]} |`,
     );
   }
   lines.push(
@@ -45,6 +58,12 @@ export function renderColorDesignMd(system: ColorSystem): string {
 
   lines.push("## 쓰는 법", "");
   for (const rule of USAGE_RULES) lines.push(`- ${rule}`);
+  lines.push(
+    `- 변수 이름 규칙: 원본 stop은 \`${varName(SCALE_PLACEHOLDER, "stop")}\`, ` +
+      `역할은 \`${varName(SCALE_PLACEHOLDER, ROLE_PLACEHOLDER)}\`. ` +
+      `예: 액센트 스케일의 500 stop은 \`${varName("accent", "500")}\`, ` +
+      `그 스케일의 은은한 배경 역할은 \`${varName("accent", "subtle-bg")}\`.`,
+  );
   lines.push("");
 
   return lines.join("\n");
