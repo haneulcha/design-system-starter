@@ -61,7 +61,7 @@
   - `function assertColorSystem(system: ColorSystem): void`
   - 픽스처: `fixtureSystem(): ColorSystem` (스케일 6 × stop 11 × 역할 6), `tinySystem(): ColorSystem` (스케일 2 × stop 3 × 역할 2)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `tests/export/color/fixture.ts`:
 
@@ -178,12 +178,12 @@ describe("assertColorSystem", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트가 실패하는지 확인**
+- [x] **Step 2: 테스트가 실패하는지 확인**
 
 Run: `pnpm vitest run tests/export/color/types.test.ts`
 Expected: FAIL — `Failed to resolve import "../../../src/export/color/types.js"`
 
-- [ ] **Step 3: `types.ts` 구현**
+- [x] **Step 3: `types.ts` 구현**
 
 `src/export/color/types.ts`:
 
@@ -271,12 +271,12 @@ export function assertColorSystem(system: ColorSystem): void {
 }
 ```
 
-- [ ] **Step 4: 테스트 통과 확인**
+- [x] **Step 4: 테스트 통과 확인**
 
 Run: `pnpm vitest run tests/export/color/types.test.ts`
 Expected: PASS (7 케이스)
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add src/export/color/types.ts tests/export/color/
@@ -312,7 +312,7 @@ EOF
   - `function toColorSystem(scales, order, roles, stopKeys): ColorSystem`
   - `src/lab/palette/roles.ts`: `interface ScaleDescriptor { name: ScaleName; label: string }`, `SCALE_ORDER: readonly ScaleDescriptor[]` (6개)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `tests/export/color/adapter.test.ts`:
 
@@ -422,12 +422,12 @@ describe("SCALE_ORDER", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실패 확인**
+- [x] **Step 2: 테스트 실패 확인**
 
 Run: `pnpm vitest run tests/export/color/adapter.test.ts tests/lab/roles.test.ts`
 Expected: FAIL — `adapter.js` 해석 실패, `SCALE_ORDER` is not exported
 
-- [ ] **Step 3: `SCALE_ORDER`를 `roles.ts`에 추가**
+- [x] **Step 3: `SCALE_ORDER`를 `roles.ts`에 추가**
 
 `src/lab/palette/roles.ts`의 import 줄을 값 import로 바꾼다:
 
@@ -456,7 +456,7 @@ export const SCALE_ORDER: readonly ScaleDescriptor[] = [
 ];
 ```
 
-- [ ] **Step 4: `adapter.ts` 구현**
+- [x] **Step 4: `adapter.ts` 구현**
 
 `src/export/color/adapter.ts`:
 
@@ -509,12 +509,12 @@ export function toColorSystem(
 }
 ```
 
-- [ ] **Step 5: 테스트 통과 + 전체 스위트**
+- [x] **Step 5: 테스트 통과 + 전체 스위트**
 
 Run: `pnpm test`
 Expected: PASS 전체
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 git add src/export/color/adapter.ts src/lab/palette/roles.ts tests/
@@ -554,7 +554,7 @@ EOF
   - `interface CssSelectors { light: string; dark: string }`
   - `generateColorCss(system, selectors?): string` — 기본 `{ light: ":root", dark: ".dark" }`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `tests/export/color/css.test.ts`:
 
@@ -640,12 +640,12 @@ describe("generateColorCss", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실패 확인**
+- [x] **Step 2: 테스트 실패 확인**
 
 Run: `pnpm vitest run tests/export/color/css.test.ts`
 Expected: FAIL — 모듈 해석 실패
 
-- [ ] **Step 3: `vars.ts` 구현**
+- [x] **Step 3: `vars.ts` 구현**
 
 `src/export/color/vars.ts`:
 
@@ -710,7 +710,7 @@ export function renderBlock(selector: string, decls: readonly VarDecl[]): string
 }
 ```
 
-- [ ] **Step 4: `css.ts` 구현**
+- [x] **Step 4: `css.ts` 구현**
 
 `src/export/color/css.ts`:
 
@@ -754,7 +754,7 @@ export function generateColorCss(
 }
 ```
 
-- [ ] **Step 5: `cssSnippet` 제거와 호출부 이전**
+- [x] **Step 5: `cssSnippet` 제거와 호출부 이전**
 
 1. `src/lab/palette/roles.ts`에서 `cssSnippet` 함수 전체를 삭제한다. **`import { SCALE_SIZE, STOP_KEYS } from "./builder.js";` 줄도 통째로 삭제한다** — 확인해보면 이 둘은 `cssSnippet` 안에서만 쓰인다(`roles.ts:107`·`109`·`116`·`121`·`128`). `SCALE_ROLES`·`scaleHasAnchor`·`SCALE_ORDER`와 타입 `ScaleRole`·`ScaleName`·`ScaleSet`·`ScaleDescriptor`는 **남긴다** — `web/src/builder/BuilderPage.tsx`가 타입을 import한다.
 
@@ -796,12 +796,12 @@ const named: [ScaleName, string, readonly string[]][] = SCALE_ORDER.map(
 );
 ```
 
-- [ ] **Step 6: 테스트 + 타입체크**
+- [x] **Step 6: 테스트 + 타입체크**
 
 Run: `pnpm test && (cd web && npx tsc -b --noEmit)`
 Expected: 둘 다 PASS
 
-- [ ] **Step 7: 커밋**
+- [x] **Step 7: 커밋**
 
 ```bash
 git add src/export/color/ src/lab/palette/roles.ts tests/ web/src/builder/BuilderPage.tsx
@@ -839,7 +839,7 @@ EOF
 - Consumes: Task 3의 `primitiveVars`·`roleVars`·`darkRoleVars`·`renderBlock`
 - Produces: `generateColorThemeCss(system: ColorSystem): string`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `tests/export/color/theme-css.test.ts`:
 
@@ -910,12 +910,12 @@ describe("Tailwind v4가 실제로 이 파일을 어떻게 컴파일하는가", 
 });
 ```
 
-- [ ] **Step 2: 테스트 실패 확인**
+- [x] **Step 2: 테스트 실패 확인**
 
 Run: `pnpm vitest run tests/export/color/theme-css.test.ts`
 Expected: FAIL — `theme-css.js` 해석 실패
 
-- [ ] **Step 3: `theme-css.ts` 구현**
+- [x] **Step 3: `theme-css.ts` 구현**
 
 `src/export/color/theme-css.ts`:
 
@@ -953,14 +953,14 @@ export function generateColorThemeCss(system: ColorSystem): string {
 }
 ```
 
-- [ ] **Step 4: 테스트 통과 확인**
+- [x] **Step 4: 테스트 통과 확인**
 
 Run: `pnpm vitest run tests/export/color/theme-css.test.ts`
 Expected: PASS
 
 컴파일 테스트가 실패하면 **멈추고 보고할 것** — 스펙 D5의 전제가 틀린 것이고, `palette.theme.css` 설계 자체를 다시 열어야 한다.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add src/export/color/theme-css.ts tests/export/color/theme-css.test.ts
@@ -992,7 +992,7 @@ EOF
 - Consumes: Task 1의 `ColorSystem`; `src/figma/types.ts`의 `FigmaDesignSystem`·`FigmaVariable`·`FigmaVariableCollection` (타입만)
 - Produces: `toColorFigma(system: ColorSystem): FigmaDesignSystem`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `tests/export/color/figma.test.ts`:
 
@@ -1065,12 +1065,12 @@ describe("toColorFigma", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실패 확인**
+- [x] **Step 2: 테스트 실패 확인**
 
 Run: `pnpm vitest run tests/export/color/figma.test.ts`
 Expected: FAIL — 모듈 해석 실패
 
-- [ ] **Step 3: `figma.ts` 구현**
+- [x] **Step 3: `figma.ts` 구현**
 
 `src/export/color/figma.ts`:
 
@@ -1144,12 +1144,12 @@ export function toColorFigma(system: ColorSystem): FigmaDesignSystem {
 }
 ```
 
-- [ ] **Step 4: 테스트 통과 확인**
+- [x] **Step 4: 테스트 통과 확인**
 
 Run: `pnpm vitest run tests/export/color/figma.test.ts`
 Expected: PASS
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add src/export/color/figma.ts tests/export/color/figma.test.ts
@@ -1183,7 +1183,7 @@ EOF
   - `renderColorDesignMd(system: ColorSystem): string`
   - `src/export/color/index.ts`가 `toColorSystem`·`generateColorCss`·`generateColorThemeCss`·`toColorFigma`·`renderColorDesignMd`와 모든 타입을 재수출
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `tests/export/color/design-md.test.ts`:
 
@@ -1249,12 +1249,12 @@ describe("renderColorDesignMd", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실패 확인**
+- [x] **Step 2: 테스트 실패 확인**
 
 Run: `pnpm vitest run tests/export/color/design-md.test.ts`
 Expected: FAIL — 모듈 해석 실패
 
-- [ ] **Step 3: `design-md.ts` 구현**
+- [x] **Step 3: `design-md.ts` 구현**
 
 `src/export/color/design-md.ts`:
 
@@ -1312,7 +1312,7 @@ export function renderColorDesignMd(system: ColorSystem): string {
 }
 ```
 
-- [ ] **Step 4: `index.ts` 작성**
+- [x] **Step 4: `index.ts` 작성**
 
 `src/export/color/index.ts`:
 
@@ -1332,7 +1332,7 @@ export { toColorFigma } from "./figma.js";
 export { renderColorDesignMd } from "./design-md.js";
 ```
 
-- [ ] **Step 5: `BuilderPage`의 import를 `index.js`로 합치기**
+- [x] **Step 5: `BuilderPage`의 import를 `index.js`로 합치기**
 
 Task 3에서 두 줄로 나눠 넣었던 import를 한 줄로 바꾼다:
 
@@ -1340,12 +1340,12 @@ Task 3에서 두 줄로 나눠 넣었던 import를 한 줄로 바꾼다:
 import { generateColorCss, toColorSystem } from "@core/export/color/index.js";
 ```
 
-- [ ] **Step 6: 테스트 + 타입체크**
+- [x] **Step 6: 테스트 + 타입체크**
 
 Run: `pnpm test && (cd web && npx tsc -b --noEmit)`
 Expected: 둘 다 PASS
 
-- [ ] **Step 7: 커밋**
+- [x] **Step 7: 커밋**
 
 ```bash
 git add src/export/color/ tests/export/color/design-md.test.ts web/src/builder/BuilderPage.tsx
@@ -1376,7 +1376,7 @@ EOF
 - Consumes: Task 6의 `@core/export/color/index.js` 전체; `@core/lab/palette/roles.js`의 `SCALE_ORDER`·`SCALE_ROLES`·`ScaleSet`; `@core/lab/palette/builder.js`의 `STOP_KEYS`
 - Produces: `ExportPanel({ scales }: { scales: ScaleSet })`
 
-- [ ] **Step 1: `ExportPanel.tsx` 작성**
+- [x] **Step 1: `ExportPanel.tsx` 작성**
 
 ```tsx
 // web/src/builder/ExportPanel.tsx
@@ -1552,7 +1552,7 @@ export function ExportPanel({ scales }: { scales: ScaleSet }) {
 }
 ```
 
-- [ ] **Step 2: `BuilderPage`에 배선**
+- [x] **Step 2: `BuilderPage`에 배선**
 
 1. import 추가: `import { ExportPanel } from "./ExportPanel";`
 2. `DarkSection`에서 `copyCss` 함수와 `copy CSS` 버튼을 **제거**한다 (이제 `ExportPanel`에 있다). Task 3·6에서 넣었던 `generateColorCss`·`toColorSystem` import도 `DarkSection`이 더 이상 쓰지 않으면 제거한다. 헤더의 `<h2>`는 남긴다.
@@ -1563,12 +1563,12 @@ export function ExportPanel({ scales }: { scales: ScaleSet }) {
 {scaleSet && <ExportPanel scales={scaleSet} />}
 ```
 
-- [ ] **Step 3: 타입체크**
+- [x] **Step 3: 타입체크**
 
 Run: `cd web && npx tsc -b --noEmit`
 Expected: PASS
 
-- [ ] **Step 4: 커밋**
+- [x] **Step 4: 커밋**
 
 ```bash
 git add web/src/builder/ExportPanel.tsx web/src/builder/BuilderPage.tsx
@@ -1601,13 +1601,13 @@ EOF
 **Interfaces:**
 - Produces: `cd web && npm test`
 
-- [ ] **Step 1: 의존성 설치**
+- [x] **Step 1: 의존성 설치**
 
 ```bash
 cd web && npm install -D vitest jsdom @testing-library/react
 ```
 
-- [ ] **Step 2: `web/package.json`에 스크립트 추가**
+- [x] **Step 2: `web/package.json`에 스크립트 추가**
 
 `"scripts"`에 `"preview"` 다음 줄로:
 
@@ -1615,7 +1615,7 @@ cd web && npm install -D vitest jsdom @testing-library/react
     "test": "vitest run"
 ```
 
-- [ ] **Step 3: vitest 설정**
+- [x] **Step 3: vitest 설정**
 
 `web/vitest.config.ts`:
 
@@ -1659,7 +1659,7 @@ HTMLCanvasElement.prototype.getContext =
   (() => null) as unknown as HTMLCanvasElement["getContext"];
 ```
 
-- [ ] **Step 4: 실패하는 스모크 테스트 작성**
+- [x] **Step 4: 실패하는 스모크 테스트 작성**
 
 `web/src/builder/BuilderPage.test.tsx`:
 
@@ -1720,7 +1720,7 @@ describe("BuilderPage 6단계 완주", () => {
 });
 ```
 
-- [ ] **Step 5: 테스트 실패 확인**
+- [x] **Step 5: 테스트 실패 확인**
 
 Run: `cd web && npm test`
 Expected: **PASS 3/3**, 출력에 경고·오류 없음.
@@ -1731,13 +1731,13 @@ Expected: **PASS 3/3**, 출력에 경고·오류 없음.
 > 렌더되지 않았는지 보고할 것. 렌더 단계에서 예외가 난다면 jsdom 환경 문제이므로
 > 역시 멈추고 보고할 것.
 
-- [ ] **Step 6: 출력이 깨끗한지 확인**
+- [x] **Step 6: 출력이 깨끗한지 확인**
 
 Run: `cd web && npm test 2>&1 | tail -20`
 Expected: 실패 0, `Not implemented` 같은 jsdom 경고 0. 경고가 보이면 `vitest.setup.ts`의
 스텁이 안 걸린 것이다 — `setupFiles` 경로를 확인할 것.
 
-- [ ] **Step 7: 커밋**
+- [x] **Step 7: 커밋**
 
 ```bash
 git add web/vitest.config.ts web/vitest.setup.ts web/src/builder/BuilderPage.test.tsx web/package.json web/package-lock.json
@@ -1769,7 +1769,7 @@ EOF
 - Modify: `docs/superpowers/specs/2026-08-09-palette-generator-color-system-design.md` (이월 항목 해소 표시)
 - Modify: `README.md` 또는 `docs/` 색 산출물 언급 (아래 Step 3 참조)
 
-- [ ] **Step 1: 전체 검증**
+- [x] **Step 1: 전체 검증**
 
 ```bash
 pnpm test && (cd web && npx tsc -b --noEmit) && (cd web && npm test)
@@ -1777,7 +1777,7 @@ pnpm test && (cd web && npx tsc -b --noEmit) && (cd web && npm test)
 
 Expected: 셋 다 PASS
 
-- [ ] **Step 2: 실제 산출물 눈 검증**
+- [x] **Step 2: 실제 산출물 눈 검증**
 
 `cd web && npm run dev` 후 `#builder`에서 6단계를 완주하고:
 
@@ -1791,11 +1791,11 @@ Expected: 셋 다 PASS
 
 결과를 이 파일 하단에 기록한다.
 
-- [ ] **Step 3: 산출물을 문서에 올리기**
+- [x] **Step 3: 산출물을 문서에 올리기**
 
 `README.md`의 기존 **`## Using the outputs`** 절에 색 산출물 4종을 한 문단으로 덧붙인다 — 무엇이 나오고, `palette.css`와 `palette.theme.css`가 어떻게 다르고, 비색 토큰은 여기 없다는 것. 그 절의 기존 문장 형식(레거시 위자드 산출물 설명)을 따를 것.
 
-- [ ] **Step 4: 사이클 1 스펙의 이월 항목 갱신**
+- [x] **Step 4: 사이클 1 스펙의 이월 항목 갱신**
 
 `docs/superpowers/specs/2026-08-09-palette-generator-color-system-design.md:391`의 항목:
 
@@ -1813,7 +1813,7 @@ Expected: 셋 다 PASS
 (그 문서에는 아직 취소선 용례가 없다. 형제 문서 `2026-07-28-dark-accent-roles-design.md`가
 쓰는 방식이므로 그걸 따른다.)
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add -A docs README.md
@@ -1839,3 +1839,82 @@ EOF
 3. `ScaleSet.semantic`이 Record라 키 순서에 기대면 출력이 불안정하다 → 엔진의 `SCALE_ORDER`.
 
 구현 중 새로 발견하는 것이 있으면 같은 방식으로 스펙을 고치고 계획을 따라 갱신할 것.
+
+**실행 중 리뷰 루프가 발견해 고친 것들** (계획 작성 시점엔 없던 것 — 실행자가 남김):
+
+4. Task 4(Tailwind 실컴파일 테스트)와 Task 5(Figma 역할 해석 테스트) 둘 다 `solid` 역할로
+   예시를 짰다. `solid`는 `lightIndex === darkIndex === 5`라서 라이트/다크가 같은 stop을
+   가리킨다 — 즉 light/dark를 통째로 바꿔치기해도, `@theme inline`으로 잘못 구현해도
+   테스트가 똑같이 통과한다. 아무것도 판별하지 못하는 예시였다.
+   `subtle-bg`(0/10, 실제로 자리가 바뀌는 역할)로 바꿔 쓰고, 두 커밋(`520c4e7` Task 4·
+   `d77b56a` Task 5) 모두 구현을 일부러 깨뜨린 뒤(theme-css.ts를 `@theme inline`으로,
+   Figma 어댑터를 light/dark 스왑으로) 새 테스트가 실제로 실패하는 걸 확인하고 나서야
+   받아들였다.
+   교훈: 예시를 고를 때 가장 대표적으로 보이는 원소가 판별력이 가장 좋은 원소는 아니다.
+   `solid`는 역할표에서 가장 먼저 떠오르는, 가장 "정상적인" 역할이라 예시로 자연스러워
+   보였지만, 바로 그 대칭성(라이트=다크) 때문에 테스트로서는 최악의 선택이었다.
+
+---
+
+## 최종 검증 결과 (Task 9, 2026-08-11)
+
+### Step 1 — 전체 검증
+
+세 명령을 각각 실행했다 (합쳐 실행하지 않고 개별 실행 — 실패 지점을 구분하기 위해):
+
+```
+pnpm test
+→ Test Files  52 passed (52)
+→ Tests  969 passed (969)
+→ Duration 2.95s
+```
+
+```
+cd web && npx tsc -b --noEmit
+→ 출력 없음 (성공)
+```
+
+```
+cd web && npm test
+→ Test Files  1 passed (1)
+→ Tests  3 passed (3)
+→ Duration 1.33s
+```
+
+셋 다 PASS.
+
+### Step 2 — 실제 산출물 눈 검증 (컨트롤러 실행, 2026-08-10)
+
+vite 6.4.1 dev 서버(:5174)에 Playwright로 접속. 액센트 `#f97316`(웜)으로 6단계를
+완주한 뒤 다운로드 4개를 실제로 클릭하고 Blob 내용을 가로채 검사했다. 전체 기록:
+`.superpowers/sdd/2026-08-10-palette-color-export/task-9-browser-verification.md`.
+
+계획의 7개 항목 — **전부 통과**:
+
+1. **다운로드 4개가 실제로 파일을 만든다.** 네 버튼 모두 Blob이 생성됐고 내용이 비어
+   있지 않다: `palette.css` 5,567자 · `palette.theme.css` 5,618자 ·
+   `palette.figma.json` 17,994자 · `DESIGN.md` 1,855자.
+2. **`palette.css`** — `:root` 102선언(프리미티브 66 + 역할 36), `.dark` 30선언.
+   `--*-solid`가 `.dark`에 **없음**. dangling `var()` **0개**.
+3. **`palette.theme.css`** — `@theme {`로 열리고 `@theme inline`이 **아님**.
+4. **`palette.figma.json`** — `Color Primitives(modes=1, vars=66)` ·
+   `Colors(modes=2, vars=36)`. `textStyles`·`effectStyles` 모두 빈 배열.
+5. **`DESIGN.md`** — `### ` 스케일 섹션 6개, 역할표 6행, 쓰는 법 4줄.
+   금지 어휘(어트랙터·코퍼스·여정·갈색) **0건**.
+6. **미리보기 다크 토글이 실제로 돈다 + 격리된다.** 계산된 색으로 측정:
+
+   | | 라이트 | 다크 |
+   | --- | --- | --- |
+   | 미리보기 배경 | `rgb(250,250,249)` | `rgb(10,9,6)` |
+   | 알림 카드(`--color-accent-subtle-bg`) | `rgb(255,245,241)` | `rgb(48,16,0)` |
+   | **바깥 UI(h1 색)** | `rgb(0,0,0)` | `rgb(0,0,0)` ← **안 바뀜** |
+
+   래퍼에 `dark` 클래스가 붙고 토글 라벨이 `라이트로`로 바뀐다. D7의 격리 주장이
+   실측으로 확인됐다 — 주변 화면은 전혀 영향받지 않는다.
+7. **콘솔 에러 0, 경고 0.**
+
+스크린샷(다크 상태 미리보기): `scratchpad/export-panel.png` (컨트롤러 세션).
+
+### 결론
+
+세 검증 명령과 눈 검증 7항목 모두 통과. Task 9를 마지막으로 계획을 닫는다.
