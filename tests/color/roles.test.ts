@@ -10,6 +10,10 @@ describe("SCALE_ROLES", () => {
     expect(SCALE_ROLES).toHaveLength(7);
   });
 
+  it("has unique ids", () => {
+    expect(new Set(SCALE_ROLES.map((r) => r.id)).size).toBe(7);
+  });
+
   it("pins on-solid to the solid role", () => {
     const onSolid = SCALE_ROLES.find((r) => r.id === "on-solid")!;
     expect(onSolid.kind).toBe("contrast");

@@ -8,9 +8,9 @@
 // "쓰는 법"의 항목들은 근거가 아니라 사용 규칙이다 — 안 적으면 소비자가
 // 상태색을 브랜드에 맞춰 바꾸거나 다크용 색을 새로 만든다.
 
-import type { ColorSystem, ContrastResolver } from "./types.js";
+import type { ColorSystem } from "./types.js";
 import { assertColorSystem } from "./types.js";
-import { defaultResolver, varName } from "./vars.js";
+import { varName } from "./vars.js";
 
 /** 역할표는 스케일 하나당 한 번씩 다시 그려지지 않고 통째로 한 번만 렌더된다 —
  *  그래서 실제 스케일 이름 대신 자리표시자를 쓴다. varName을 통해 만들므로
@@ -30,7 +30,6 @@ export function renderColorDesignMd(
   /** 라이트/다크에서 AA에 미달하는 조합의 설명. 호출자(화면)가 checkContrast 결과로 만든다.
    *  산출 코드가 직접 재지 않는 이유: 여기서 재면 화면 뱃지와 갈라질 수 있다. */
   contrastWarnings: readonly string[] = [],
-  resolveContrast: ContrastResolver = defaultResolver,
 ): string {
   assertColorSystem(system);
   const lines: string[] = ["# 색 시스템", ""];

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { renderColorDesignMd } from "../../../src/export/color/design-md.js";
-import { fixtureSystem } from "./fixture.js";
+import { fixtureSystem, systemWithOnSolid } from "./fixture.js";
 
 describe("renderColorDesignMd", () => {
   it("has a section per scale titled with the display label AND the identifier", () => {
@@ -74,5 +74,24 @@ describe("renderColorDesignMd", () => {
   it("runs the contract guards", () => {
     const s = fixtureSystem();
     expect(() => renderColorDesignMd({ ...s, stopKeys: [] })).toThrow();
+  });
+});
+
+describe("on-solid", () => {
+  it("has a role-table row for the contrast role, with as many columns as the header", () => {
+    const md = renderColorDesignMd(systemWithOnSolid());
+    const headerCols = "| 역할 | 변수 | 라이트 | 다크 |".split("|").length;
+    const row = "| 솔리드 위 글자 | --color-{스케일}-on-solid | 스케일마다 흑/백 자동 | 좌동 |";
+    expect(md).toContain(row);
+    expect(row.split("|").length).toBe(headerCols);
+  });
+
+  it("appends contrastWarnings to 쓰는 법 when given, and omits them when not", () => {
+    const warning = "`--color-warning-text`는 라이트 테마에서 AA에 미달한다.";
+    const withWarning = renderColorDesignMd(fixtureSystem(), [warning]);
+    expect(withWarning).toContain(`- ${warning}`);
+
+    const withoutWarning = renderColorDesignMd(fixtureSystem());
+    expect(withoutWarning).not.toContain(warning);
   });
 });

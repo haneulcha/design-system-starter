@@ -3,7 +3,7 @@
 // 변수 선언 목록. palette.css와 palette.theme.css가 이 함수들을 공유하므로
 // 두 파일의 선언이 갈라질 수 없다 (스펙 D4).
 
-import type { ColorSystem, ContrastResolver, StopRole } from "./types.js";
+import type { ColorSystem, StopRole } from "./types.js";
 
 export interface VarDecl {
   readonly name: string;
@@ -25,13 +25,17 @@ export function primitiveVars(system: ColorSystem): VarDecl[] {
   return out;
 }
 
-/** 기본 resolver — 호출자가 주입하지 않으면 이걸 쓴다. 산출 파일 넷이 전부 이 하나를
- *  공유하므로(vars.ts가 이미 CSS 두 장의 변수 목록을 공유시키는 자리다) 산출물 사이에서
- *  값이 갈라질 수 없다. 엔진의 onSolidColor와 갈라지지 않는지는 두 구현을 맞대는
- *  테스트가 고정한다 — 산출 코드는 엔진을 import할 수 없으므로 사본 자체는 못 없앤다.
+/** 산출 코드의 유일한 대비 계산 구현. roleVars(→ palette.css·palette.theme.css)와
+ *  toColorFigma(→ palette.figma.json)가 이 하나만 직접 호출하므로 산출물 사이에서
+ *  값이 갈라질 수 없다 — 주입 지점을 두지 않는 이유가 이것이다: resolver를 파라미터로
+ *  열어두면 호출자마다 다른 함수를 넘길 수 있게 되어 "갈라질 수 없다"는 이 문단의
+ *  약속이 깨진다. (DESIGN.md는 리터럴 색을 계산하지 않고 "스케일마다 흑/백 자동"이라는
+ *  고정 문구만 내므로 이 함수를 부르지 않는다 — 값 계산에서는 빠지지만 관례는 셋과
+ *  어긋나지 않는다.) 엔진의 onSolidColor와 갈라지지 않는지는 두 구현을 맞대는 테스트가
+ *  고정한다 — 산출 코드는 엔진을 import할 수 없으므로 사본 자체는 못 없앤다.
  *
  *  규칙은 엔진과 같다: 흰색이 3.0 이상이면 흰색, 아니면 흑백 중 나은 쪽 (스펙 D5). */
-export const defaultResolver: ContrastResolver = (hex) => {
+export const defaultResolver = (hex: string): string => {
   const c = (v: number) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
   const n = Number.parseInt(hex.slice(1), 16);
   const lum =
@@ -44,7 +48,7 @@ export const defaultResolver: ContrastResolver = (hex) => {
   return black > white ? "#000000" : "#ffffff";
 };
 
-function stopRole(system: ColorSystem, id: string): StopRole {
+export function stopRole(system: ColorSystem, id: string): StopRole {
   const found = system.roles.find((r) => r.kind === "stop" && r.id === id);
   if (!found || found.kind !== "stop") {
     throw new Error(`vars: no stop role "${id}" (assertColorSystem should have caught this)`);
@@ -52,10 +56,7 @@ function stopRole(system: ColorSystem, id: string): StopRole {
   return found;
 }
 
-export function roleVars(
-  system: ColorSystem,
-  resolve: ContrastResolver = defaultResolver,
-): VarDecl[] {
+export function roleVars(system: ColorSystem): VarDecl[] {
   const out: VarDecl[] = [];
   for (const scale of system.scales) {
     for (const role of system.roles) {
@@ -63,7 +64,7 @@ export function roleVars(
         const target = stopRole(system, role.against);
         out.push({
           name: varName(scale.name, role.id),
-          value: resolve(scale.hexes[target.lightIndex]),
+          value: defaultResolver(scale.hexes[target.lightIndex]),
         });
         continue;
       }

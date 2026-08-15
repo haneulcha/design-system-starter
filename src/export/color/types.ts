@@ -26,11 +26,6 @@ export interface ContrastRole {
 
 export type ExportRole = StopRole | ContrastRole;
 
-/** 대비 역할의 값을 정하는 함수. 산출 코드가 대비 계산을 자기 안에 두지 않고
- *  주입받는 이유: src/export/가 src/color/를 import하면 사이클 2가 세운
- *  "산출 코드는 엔진을 모른다"가 깨진다. */
-export type ContrastResolver = (againstHex: string) => string;
-
 export interface ExportScale {
   /** CSS·Figma에서 쓰는 식별자. 예: "accent", "error". */
   readonly name: string;

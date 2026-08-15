@@ -14,17 +14,13 @@ import type {
 } from "../../figma/types.js";
 import type { ColorSystem } from "./types.js";
 import { assertColorSystem } from "./types.js";
-import { defaultResolver } from "./vars.js";
-import type { ContrastResolver, StopRole } from "./types.js";
+import { defaultResolver, stopRole } from "./vars.js";
 
 const DEFAULT_MODE = "mode-default";
 const LIGHT_MODE = "mode-light";
 const DARK_MODE = "mode-dark";
 
-export function toColorFigma(
-  system: ColorSystem,
-  resolveContrast: ContrastResolver = defaultResolver,
-): FigmaDesignSystem {
+export function toColorFigma(system: ColorSystem): FigmaDesignSystem {
   assertColorSystem(system);
 
   const primitives: FigmaVariable[] = [];
@@ -44,10 +40,8 @@ export function toColorFigma(
       const [light, dark] =
         role.kind === "contrast"
           ? (() => {
-              const t = system.roles.find(
-                (r): r is StopRole => r.kind === "stop" && r.id === role.against,
-              )!;
-              const v = resolveContrast(scale.hexes[t.lightIndex]);
+              const t = stopRole(system, role.against);
+              const v = defaultResolver(scale.hexes[t.lightIndex]);
               return [v, v];
             })()
           : [scale.hexes[role.lightIndex], scale.hexes[role.darkIndex]];

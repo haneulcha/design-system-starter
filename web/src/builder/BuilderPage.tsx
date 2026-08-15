@@ -119,7 +119,7 @@ function MockPanel({
           type="button"
           title={tip("solid")}
           className="text-xs rounded px-3 py-1.5"
-          style={{ background: "var(--accent-solid)", color: onSolidColor(hexes[5]) }}
+          style={{ background: "var(--accent-solid)", color: onSolidColor(hexes[role("solid").lightIndex]) }}
         >
           솔리드 버튼
         </button>

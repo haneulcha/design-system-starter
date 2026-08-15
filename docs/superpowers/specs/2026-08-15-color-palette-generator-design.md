@@ -263,18 +263,16 @@ D4가 상태색에 대해 이미 고른 방식과 대칭을 맞춘다 — **값�
 검정인 상태가 가능해진다. 반대로 `src/export/`가 `src/color/`를 import하면 사이클 2의
 격리가 반대 방향으로 깨진다.
 
-**그래서 계산 함수를 데이터로 주입한다.** `toColorSystem`과 산출 함수들이 선택적
-`ContrastResolver`를 받고, 웹은 엔진의 `onSolidColor`를 넘긴다.
-
-```ts
-/** 대비 역할의 값을 정하는 함수. 주입하지 않으면 산출 코드의 기본 구현을 쓴다. */
-export type ContrastResolver = (againstHex: string) => string;
-```
-
-기본 구현은 `src/export/color/vars.ts`에 두고 나머지 산출 파일이 전부 그것을 공유한다
-(`vars.ts`가 이미 CSS 두 장의 변수 목록을 공유시키는 자리다 — D4/사이클 2). 엔진의
-`onSolidColor`와 값이 어긋나지 않는지는 두 구현을 맞대는 테스트가 고정한다. 사본을 없앨 수
-없다면(산출 코드는 엔진을 몰라야 하므로) 갈라지는 것만은 테스트가 막는다.
+**계산 함수는 주입받지 않는다.** `src/export/color/vars.ts`에 `defaultResolver` 구현
+하나만 두고, `roleVars`(→ `palette.css`·`palette.theme.css`)와 `toColorFigma`(→
+`palette.figma.json`)가 이 하나만 직접 호출한다. (`renderColorDesignMd`는 리터럴 색을
+계산하지 않고 "스케일마다 흑/백 자동"이라는 고정 문구만 내므로 이 함수를 부르지
+않는다 — 값 계산에서는 빠지지만 표현은 나머지 셋과 어긋나지 않는다.) 파라미터로
+열어두면 호출자마다 다른 함수를 넘길 수 있게 되어 "산출물 사이에서 값이 갈라질 수
+없다"는 약속이 구조적으로 깨진다(`vars.ts`가 이미 CSS 두 장의 변수 목록을 공유시키는
+자리다 — D4/사이클 2). 엔진의 `onSolidColor`와 값이 어긋나지 않는지는 두 구현을 맞대는
+테스트가 고정한다. 사본을 없앨 수 없다면(산출 코드는 엔진을 몰라야 하므로) 갈라지는
+것만은 테스트가 막는다.
 
 ```ts
 // src/export/color/types.ts
