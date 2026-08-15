@@ -3,8 +3,8 @@ import {
   SEMANTIC_ANCHORS,
   buildSemantic,
   type SemanticId,
-} from "../../src/lab/palette/semantic.js";
-import { SCALE_SIZE, clampToGamut } from "../../src/lab/palette/builder.js";
+} from "../../src/color/semantic.js";
+import { SCALE_SIZE, clampToGamut } from "../../src/color/scale.js";
 import { oklchToHex, parsePrimary } from "../../src/generator/color.js";
 
 /** status-hue-principles.md의 코퍼스 관측 밴드 — tailwind 앵커가 여기 들어야 한다. */

@@ -1,4 +1,4 @@
-// src/lab/palette/roles.ts
+// src/color/roles.ts
 //
 // 역할 레이어 — 세 종류 스케일(액센트·뉴트럴·시맨틱) 공통.
 // 다크 색을 새로 만들지 않고, 완성된 11-stop 안에서 역할만 재배치한다.

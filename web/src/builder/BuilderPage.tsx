@@ -1,42 +1,26 @@
 // web/src/builder/BuilderPage.tsx
 //
 // #builder — 가이드드 팔레트 빌더 (RUI 5-pick 플로우). 렌더 전용:
-// 스케일 계산·후보 생성은 전부 @core/lab/palette/builder (순수).
+// 스케일 계산·후보 생성은 @core/color(제품 엔진), 5-pick 순서·안내 카피는
+// @core/lab/palette/guided(학습 플로우).
 // 스펙: docs/superpowers/specs/2026-07-27-guided-palette-builder-design.md
 
 import { useMemo, useState } from "react";
 import type { CSSProperties } from "react";
+import { candidatesFor, type Candidate } from "@core/color/candidates.js";
+import { fillScale, STOP_KEYS, type Pin } from "@core/color/scale.js";
+import { BUILDER_FLOW, STEP_META, type BuilderStep } from "@core/lab/palette/guided.js";
 import {
-  BUILDER_FLOW,
-  candidatesFor,
-  fillScale,
-  STEP_META,
-  STOP_KEYS,
-  type BuilderStep,
-  type Candidate,
-  type Pin,
-} from "@core/lab/palette/builder.js";
+  neutralCandidates, buildNeutral, tintAttractor,
+  type NeutralCandidate, type NeutralTint,
+} from "@core/color/neutral.js";
 import {
-  neutralCandidates,
-  buildNeutral,
-  tintAttractor,
-  type NeutralCandidate,
-  type NeutralTint,
-} from "@core/lab/palette/neutral.js";
+  SCALE_ORDER, SCALE_ROLES, scaleHasAnchor,
+  type ScaleName, type ScaleRole, type ScaleSet,
+} from "@core/color/roles.js";
 import {
-  SCALE_ORDER,
-  SCALE_ROLES,
-  scaleHasAnchor,
-  type ScaleName,
-  type ScaleRole,
-  type ScaleSet,
-} from "@core/lab/palette/roles.js";
-import {
-  SEMANTIC_ANCHORS,
-  SEMANTIC_SECTION_NOTE,
-  buildSemantic,
-  type SemanticId,
-} from "@core/lab/palette/semantic.js";
+  SEMANTIC_ANCHORS, SEMANTIC_SECTION_NOTE, buildSemantic, type SemanticId,
+} from "@core/color/semantic.js";
 import { oklchToHex, parsePrimary } from "@core/generator/color.js";
 import type { Oklch } from "@core/schema/types.js";
 import { ColorScaleStrip } from "../components/ColorScaleStrip";

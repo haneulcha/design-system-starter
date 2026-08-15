@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { SCALE_ROLES } from "../../src/lab/palette/roles.js";
-import { SEMANTIC_ANCHORS } from "../../src/lab/palette/semantic.js";
+import { SCALE_ROLES, SCALE_ORDER } from "../../src/color/roles.js";
+import { SEMANTIC_ANCHORS } from "../../src/color/semantic.js";
 
 describe("SCALE_ROLES", () => {
   it("has exactly 6 roles with unique ids", () => {
@@ -36,8 +36,6 @@ describe("SCALE_ROLES", () => {
     }
   });
 });
-
-import { SCALE_ORDER } from "../../src/lab/palette/roles.js";
 
 describe("SCALE_ORDER", () => {
   it("is accent → neutral → the four semantic roles, in SEMANTIC_ANCHORS order", () => {

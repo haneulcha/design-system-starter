@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { toColorSystem } from "../../../src/export/color/adapter.js";
-import { SCALE_ORDER, SCALE_ROLES } from "../../../src/lab/palette/roles.js";
-import { STOP_KEYS, fillScale, type Pin } from "../../../src/lab/palette/builder.js";
-import { buildNeutral, TINT_STRENGTHS } from "../../../src/lab/palette/neutral.js";
-import { SEMANTIC_ANCHORS, buildSemantic } from "../../../src/lab/palette/semantic.js";
+import { SCALE_ORDER, SCALE_ROLES } from "../../../src/color/roles.js";
+import { STOP_KEYS, fillScale, type Pin } from "../../../src/color/scale.js";
+import { buildNeutral, TINT_STRENGTHS } from "../../../src/color/neutral.js";
+import { SEMANTIC_ANCHORS, buildSemantic } from "../../../src/color/semantic.js";
 import { oklchToHex, parsePrimary } from "../../../src/generator/color.js";
 
 /** 실제 엔진 산출물. 어댑터 테스트만 엔진에 붙는다 — 나머지 산출 테스트는 픽스처를 쓴다. */

@@ -13,8 +13,8 @@ import {
   toColorFigma,
   toColorSystem,
 } from "@core/export/color/index.js";
-import { SCALE_ORDER, SCALE_ROLES, type ScaleSet } from "@core/lab/palette/roles.js";
-import { STOP_KEYS } from "@core/lab/palette/builder.js";
+import { SCALE_ORDER, SCALE_ROLES, type ScaleSet } from "@core/color/roles.js";
+import { STOP_KEYS } from "@core/color/scale.js";
 
 function downloadFile(filename: string, content: string, mime: string) {
   const blob = new Blob([content], { type: mime });
