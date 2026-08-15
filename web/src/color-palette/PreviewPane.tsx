@@ -1,0 +1,68 @@
+// web/src/color-palette/PreviewPane.tsx
+//
+// 라이트·다크를 토글이 아니라 동시에 보여준다 — 대비 실패는 다크에서만 나는
+// 경우가 흔한데 토글이면 그것을 못 보고 지나간다 (스펙 D8).
+
+import type { CSSProperties } from "react";
+import { onSolidColor } from "@core/color/contrast.js";
+import type { ScaleRole, ScaleSet } from "@core/color/roles.js";
+
+function stopIdx(roles: readonly ScaleRole[], id: string, theme: "light" | "dark"): number {
+  const r = roles.find((x) => x.id === id);
+  if (!r || r.kind !== "stop") throw new Error(`PreviewPane: no stop role "${id}"`);
+  return theme === "light" ? r.lightIndex : r.darkIndex;
+}
+
+function Mock({
+  theme, scales, roles,
+}: { theme: "light" | "dark"; scales: ScaleSet; roles: readonly ScaleRole[] }) {
+  const at = (hexes: readonly string[], id: string) => hexes[stopIdx(roles, id, theme)];
+  const a = scales.accent;
+  const err = scales.semantic.error;
+  const vars = {
+    background: theme === "light" ? scales.neutral[0] : scales.neutral[10],
+  } as CSSProperties;
+  return (
+    <div data-testid={`mock-${theme}`} className="rounded-lg p-4 space-y-3" style={vars}>
+      <div
+        className="rounded-md p-3 space-y-1 border"
+        style={{ background: at(a, "subtle-bg"), borderColor: at(a, "border") }}
+      >
+        <div className="text-[11px] font-semibold" style={{ color: at(a, "text-strong") }}>
+          알림 카드 제목
+        </div>
+        <div className="text-[11px]" style={{ color: at(a, "text") }}>
+          링크 텍스트가 이 색으로 보입니다
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <span
+          className="rounded px-2.5 py-1 text-[11px] font-medium"
+          style={{
+            background: at(a, "solid"),
+            color: onSolidColor(at(a, "solid")),
+          }}
+        >
+          솔리드 버튼
+        </span>
+        <span
+          className="rounded px-2.5 py-1 text-[11px] font-medium"
+          style={{ background: at(err, "subtle-bg"), color: at(err, "text-strong") }}
+        >
+          오류 배지
+        </span>
+      </div>
+    </div>
+  );
+}
+
+export function PreviewPane({
+  scales, roles,
+}: { readonly scales: ScaleSet; readonly roles: readonly ScaleRole[] }) {
+  return (
+    <div className="space-y-3">
+      <Mock theme="light" scales={scales} roles={roles} />
+      <Mock theme="dark" scales={scales} roles={roles} />
+    </div>
+  );
+}

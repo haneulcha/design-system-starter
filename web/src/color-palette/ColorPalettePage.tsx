@@ -1,3 +1,59 @@
+import { useEffect, useMemo, useState } from "react";
+import { SEMANTIC_ANCHORS } from "@core/color/semantic.js";
+import {
+  ADJUSTABLE_STOPS, deriveRoles, deriveScales, withAccent, type PaletteState,
+} from "./paletteState";
+import { parse, serialize } from "./paletteUrl";
+import { AccentInput } from "./AccentInput";
+import { AdjustableScale } from "./AdjustableScale";
+import { PreviewPane } from "./PreviewPane";
+
 export function ColorPalettePage() {
-  return <h1>컬러 팔레트</h1>;
+  const [state, setState] = useState<PaletteState>(() => parse(window.location.search));
+
+  // replaceState다 — 클릭마다 히스토리가 쌓이면 뒤로가기가 조정 하나하나를 되짚는다.
+  useEffect(() => {
+    window.history.replaceState({}, "", `${window.location.pathname}${serialize(state)}`);
+  }, [state]);
+
+  const scales = useMemo(() => deriveScales(state), [state]);
+  const roles = useMemo(() => deriveRoles(state), [state]);
+  const pinned = ADJUSTABLE_STOPS.filter((i) => state.pins[i] !== undefined);
+
+  return (
+    <div className="max-w-5xl mx-auto p-8 grid grid-cols-[1fr_320px] gap-8 items-start">
+      <div className="space-y-6">
+        <h1 className="text-lg font-semibold">컬러 팔레트</h1>
+        <AccentInput
+          hex={state.accentHex}
+          onChange={(accentHex) => setState((s) => withAccent(s, accentHex))}
+        />
+        <section className="space-y-1">
+          <h2 className="text-xs font-medium text-neutral-500">액센트</h2>
+          <AdjustableScale
+            hexes={scales.accent}
+            adjustable={[...ADJUSTABLE_STOPS]}
+            pinned={pinned}
+            onPick={() => {}}
+          />
+        </section>
+        <section className="space-y-1">
+          <h2 className="text-xs font-medium text-neutral-500">뉴트럴</h2>
+          <AdjustableScale hexes={scales.neutral} adjustable={[]} pinned={[]} />
+        </section>
+        <section className="space-y-2">
+          <h2 className="text-xs font-medium text-neutral-500">상태색</h2>
+          {SEMANTIC_ANCHORS.map((a) => (
+            <div key={a.id}>
+              <div className="text-[10px] text-neutral-400">{a.label}</div>
+              <AdjustableScale hexes={scales.semantic[a.id]} adjustable={[]} pinned={[]} />
+            </div>
+          ))}
+        </section>
+      </div>
+      <div className="sticky top-8">
+        <PreviewPane scales={scales} roles={roles} />
+      </div>
+    </div>
+  );
 }
