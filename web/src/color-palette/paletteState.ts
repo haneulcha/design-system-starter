@@ -57,11 +57,13 @@ function pinsOf(state: PaletteState): Pin[] {
 
 /** 확정된 틴트. 사용자가 안 골랐으면 액센트 hue에서 스냅하고 강도는 은은. */
 export function resolveTint(state: PaletteState): NeutralTint {
-  if (!state.tint) {
-    return { hue: snapTint(parsePrimary(state.accentHex).h).hue, strength: TINT_STRENGTHS.soft };
-  }
-  const attractor = TINT_ATTRACTORS.find((a) => a.id === state.tint!.attractorId);
-  if (!attractor) {
+  const attractor = state.tint
+    ? TINT_ATTRACTORS.find((a) => a.id === state.tint!.attractorId)
+    : undefined;
+  // 사용자가 틴트를 안 골랐거나(state.tint === null) URL이 모르는 attractorId를
+  // 실어 왔으면 — 둘 다 "확정된 선택이 없다"는 같은 의미이므로 액센트 hue에서
+  // 자동 스냅한다. 폴백 표현식을 한 곳에만 둔다.
+  if (!state.tint || !attractor) {
     return { hue: snapTint(parsePrimary(state.accentHex).h).hue, strength: TINT_STRENGTHS.soft };
   }
   if (attractor.hue === null) return { hue: null, strength: 0 };
