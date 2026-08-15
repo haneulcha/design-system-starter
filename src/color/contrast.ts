@@ -11,10 +11,11 @@ const channel = (v: number): number =>
   v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
 
 function relativeLuminance(hex: string): number {
-  const n = Number.parseInt(hex.slice(1), 16);
-  if (!Number.isFinite(n)) {
+  // 잘못된 hex 형식은 반드시 throw해야 한다. 조용한 오답이 최악이다.
+  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) {
     throw new Error(`relativeLuminance: not a #rrggbb colour: ${hex}`);
   }
+  const n = Number.parseInt(hex.slice(1), 16);
   const r = channel(((n >> 16) & 0xff) / 255);
   const g = channel(((n >> 8) & 0xff) / 255);
   const b = channel((n & 0xff) / 255);

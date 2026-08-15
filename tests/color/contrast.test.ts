@@ -25,6 +25,15 @@ describe("contrastRatio", () => {
     expect(r).toBeGreaterThanOrEqual(AA_BODY);
     expect(r).toBeLessThan(4.6);
   });
+
+  // 잘못된 hex 형식은 반드시 throw해야 한다. 조용한 오답이 최악이다.
+  it("throws on hex without #", () => {
+    expect(() => contrastRatio("000000", "#ffffff")).toThrow("not a #rrggbb colour");
+  });
+
+  it("throws on 3-digit hex shorthand", () => {
+    expect(() => contrastRatio("#fff", "#000")).toThrow("not a #rrggbb colour");
+  });
 });
 
 describe("onSolidColor", () => {
