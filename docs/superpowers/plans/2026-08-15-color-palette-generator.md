@@ -53,7 +53,7 @@
 | --- | --- |
 | `types.ts` | `ExportRole`을 판별 유니온으로. `assertColorSystem`이 `kind`별로 분기 |
 | `vars.ts` | `kind: "contrast"` 역할을 스케일별로 계산 |
-| `design-md.ts` | 역할표에 `contrast` 행 렌더 + 상태색 대비 경고 |
+| `design-md.ts` | 역할표에 `contrast` 행 렌더 + 대비 경고를 **데이터로 받아** 렌더 |
 | `figma.ts` | `contrast` 역할을 두 모드 같은 값으로 |
 | `adapter.ts` | `!hexes?.length` 가드 |
 
@@ -81,7 +81,7 @@
 
 ## Task 1: 엔진을 `src/color/`로 졸업시킨다
 
-로직을 바꾸지 않는 이동이다. **기존 테스트가 import 경로 외에 한 글자도 바뀌지 않은 채 통과해야 한다.** 바뀌면 이동 중 무언가 잘못된 것이다.
+로직을 바꾸지 않는 이동이다. **기존 테스트가 import 문 외에 한 글자도 바뀌지 않은 채 통과해야 한다** — `builder.ts`가 `scale.ts` + `candidates.ts` + `guided.ts`로 쪼개지므로 import 경로뿐 아니라 import 대상도 갈라진다(Step 7). 그 외의 assertion을 하나라도 고쳐야 했다면 이동 중 무언가 잘못된 것이니 되돌리고 다시 한다.
 
 **Files:**
 - Create: `src/color/curve.ts` `src/color/scale.ts` `src/color/candidates.ts` `src/color/neutral.ts` `src/color/semantic.ts` `src/color/roles.ts` `src/lab/palette/guided.ts`
@@ -136,8 +136,20 @@ import { OURS_CURVE } from "../../color/curve.js";
 
 `src/lab/palette/builder.ts`의 내용을 두 파일로 나눈다. **로직은 한 줄도 바꾸지 않는다.**
 
-- `src/color/scale.ts` ← 파일 상단 주석, `Pin`, `SCALE_SIZE`, `STOP_KEYS`, `toRgb`, `displayable`, `clampToGamut`, `hueLerp`, `fillScale`. import는 `import { OURS_CURVE } from "./curve.js";`와 `import type { Oklch } from "../schema/types.js";`
-- `src/color/candidates.ts` ← `Candidate`, `WARM_HUE_MIN`, `WARM_HUE_MAX`, `MID_LABELS`, `colorKey`, `candidatesFor`. import는 `import { fillScale, type Pin } from "./scale.js";`와 `import type { Oklch } from "../schema/types.js";`
+- `src/color/scale.ts` ← 파일 상단 주석, `Pin`, `SCALE_SIZE`, `STOP_KEYS`, `toRgb`, `displayable`, `clampToGamut`, `hueLerp`, `fillScale`. import 세 줄:
+
+  ```ts
+  import { converter } from "culori";           // toRgb가 쓴다 — 빠뜨리기 쉽다
+  import { OURS_CURVE } from "./curve.js";
+  import type { Oklch } from "../schema/types.js";
+  ```
+
+- `src/color/candidates.ts` ← `Candidate`, `WARM_HUE_MIN`, `WARM_HUE_MAX`, `MID_LABELS`, `colorKey`, `candidatesFor`. import 두 줄 — `candidatesFor`가 마지막에 `clampToGamut`을 부른다:
+
+  ```ts
+  import { clampToGamut, fillScale, type Pin } from "./scale.js";
+  import type { Oklch } from "../schema/types.js";
+  ```
 
 `scale.ts` 상단 주석에서 **"실험 코드 — 제품 파이프라인에서 import 금지" 문장을 지우고** 다음으로 교체한다:
 
@@ -221,7 +233,15 @@ git mv tests/lab/semantic.test.ts tests/color/semantic.test.ts
 git mv tests/lab/roles.test.ts tests/color/roles.test.ts
 ```
 
-각 파일에서 `../../src/lab/palette/builder.js` → `../../src/color/scale.js` 식으로 경로만 고친다. `candidatesFor`를 쓰는 케이스가 `tests/color/scale.test.ts`에 있으면 `../../src/color/candidates.js`에서 가져온다.
+각 파일에서 `../../src/lab/palette/builder.js` → `../../src/color/scale.js` 식으로 경로를 고친다. `builder.ts`가 셋으로 쪼개졌으므로 **import 대상도 갈라진다** — `tests/color/scale.test.ts` 하나에서만 세 갈래가 나온다:
+
+```ts
+import { fillScale, clampToGamut, SCALE_SIZE, STOP_KEYS, type Pin } from "../../src/color/scale.js";
+import { candidatesFor } from "../../src/color/candidates.js";
+import { BUILDER_STEPS, BUILDER_FLOW, STEP_META } from "../../src/lab/palette/guided.js";
+```
+
+`BUILDER_STEPS`·`BUILDER_FLOW`·`STEP_META`를 검증하는 describe 블록이 그대로 남아 있어야 한다 — 학습 플로우가 `src/lab/`으로 갔을 뿐 검증이 사라지는 게 아니다.
 
 `tests/export/color/adapter.test.ts`의 import도 같은 방식으로 고친다.
 
@@ -235,7 +255,7 @@ npx tsc --noEmit
 cd web && npx tsc -b && npx vitest run
 ```
 
-Expected: 루트 971 테스트 전부 PASS, web 3 테스트 PASS. **테스트 수가 줄거나 assertion을 고쳐야 했다면 이동이 잘못된 것이다 — 되돌리고 다시 한다.**
+Expected: 루트 971 테스트 전부 PASS, web 3 테스트 PASS. **테스트 수가 줄거나 assertion을 고쳐야 했다면 이동이 잘못된 것이다 — 되돌리고 다시 한다.** (import 문 변경은 예외다.)
 
 - [ ] **Step 9: 커밋**
 
@@ -265,14 +285,16 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes: 없음 (순수 함수, hex 문자열만 다룬다)
-- Produces: `contrastRatio(a: string, b: string): number` · `onSolidColor(solidHex: string): "#000000" | "#ffffff"` · `AA_BODY: 4.5`
+- Produces: `contrastRatio(a: string, b: string): number` · `onSolidColor(solidHex: string): "#000000" | "#ffffff"` · `AA_BODY: 4.5` · `ON_SOLID_FLOOR: 3.0`
 
 - [ ] **Step 1: 실패하는 테스트를 쓴다**
 
 ```ts
 // tests/color/contrast.test.ts
 import { describe, it, expect } from "vitest";
-import { contrastRatio, onSolidColor, AA_BODY } from "../../src/color/contrast.js";
+import {
+  contrastRatio, onSolidColor, AA_BODY, ON_SOLID_FLOOR,
+} from "../../src/color/contrast.js";
 
 describe("contrastRatio", () => {
   it("returns 21 for black on white", () => {
@@ -299,18 +321,31 @@ describe("contrastRatio", () => {
 });
 
 describe("onSolidColor", () => {
-  it("picks black on a light solid", () => {
-    expect(onSolidColor("#eab308")).toBe("#000000");
-  });
-
   it("picks white on a dark solid", () => {
     expect(onSolidColor("#1d59b9")).toBe("#ffffff");
   });
 
-  // 파랑 500은 흰 글자가 3.68:1로 미달이고 검정이 5.71:1이다 — 직관과 다르므로 고정한다.
-  it("picks black on tailwind blue-500 (white would fail AA)", () => {
-    expect(onSolidColor("#3b82f6")).toBe("#000000");
-    expect(contrastRatio("#000000", "#3b82f6")).toBeGreaterThanOrEqual(AA_BODY);
+  // 관례 유지: 파랑은 흰 글자가 3.68로 AA 미달이지만 3.0은 넘으므로 흰색을 지킨다.
+  // Tailwind·Radix·Bootstrap이 모두 이 자리에 흰 글자를 쓴다 (스펙 D5).
+  it("keeps white on tailwind blue-500 even though it misses AA", () => {
+    expect(onSolidColor("#3b82f6")).toBe("#ffffff");
+    expect(contrastRatio("#ffffff", "#3b82f6")).toBeLessThan(AA_BODY);
+    expect(contrastRatio("#ffffff", "#3b82f6")).toBeGreaterThanOrEqual(ON_SOLID_FLOOR);
+  });
+
+  it("keeps white on a red solid", () => {
+    expect(onSolidColor("#fb2c36")).toBe("#ffffff");
+  });
+
+  // 바닥(3.0) 아래에서는 관례보다 가독이 앞선다.
+  it("flips to black on yellow, where white is unreadable at any size", () => {
+    expect(contrastRatio("#ffffff", "#eab308")).toBeLessThan(ON_SOLID_FLOOR);
+    expect(onSolidColor("#eab308")).toBe("#000000");
+  });
+
+  it("flips to black on the fixed warning and success anchors", () => {
+    expect(onSolidColor("#f69e00")).toBe("#000000");
+    expect(onSolidColor("#00c65a")).toBe("#000000");
   });
 });
 ```
@@ -353,19 +388,30 @@ export function contrastRatio(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
+/** 흰 글자를 포기하는 바닥. WCAG가 큰 글씨·UI 경계에 요구하는 최저선이고,
+ *  이 아래로는 글자를 아무리 키워도 읽히지 않는다. */
+export const ON_SOLID_FLOOR = 3.0;
+
 /** 솔리드 위에 올릴 글자색. 스케일 자신의 50/950으로는 양쪽 다 미달인 경우가
- *  흔해(파랑 3.45/4.02, 보라 3.95/3.57) 흑백 리터럴에서 고른다 — 스펙 D5. */
+ *  흔해(파랑 3.45/4.02, 보라 3.95/3.57) 흑백 리터럴에서 고른다.
+ *
+ *  "대비가 높은 쪽"을 무조건 고르지 않는 이유: 그러면 파랑·빨강 솔리드 버튼의 글자가
+ *  전부 검정이 되는데, Tailwind·Radix·Bootstrap이 모두 그 자리에 흰 글자를 쓴다.
+ *  흰색-on-파랑이 AA를 아슬하게 못 넘는 것은 WCAG 2.x의 알려진 성질이라(APCA는 같은
+ *  조합에서 흰색을 낸다) 여기서 산술을 엄격히 따르면 사용자가 버그로 읽는다.
+ *  값은 관례대로 두고 미달은 뱃지로 드러낸다 — 상태색에 대해 D4가 고른 방식과 같다.
+ *  스펙 D5. */
 export function onSolidColor(solidHex: string): "#000000" | "#ffffff" {
-  return contrastRatio("#000000", solidHex) >= contrastRatio("#ffffff", solidHex)
-    ? "#000000"
-    : "#ffffff";
+  const white = contrastRatio("#ffffff", solidHex);
+  if (white >= ON_SOLID_FLOOR) return "#ffffff";
+  return contrastRatio("#000000", solidHex) > white ? "#000000" : "#ffffff";
 }
 ```
 
 - [ ] **Step 4: 통과를 확인한다**
 
 Run: `npx vitest run tests/color/contrast.test.ts`
-Expected: PASS (7 tests)
+Expected: PASS (9 tests)
 
 - [ ] **Step 5: 커밋**
 
@@ -374,7 +420,9 @@ git add src/color/contrast.ts tests/color/contrast.test.ts
 git commit -m "feat(color): WCAG 대비 계산과 on-solid 색 선택
 
 솔리드 위 글자는 스케일 자신의 50/950으로 풀리지 않는다 — 파랑 앵커에서
-50이 3.45, 950이 4.02로 양쪽 다 미달이다. 흑백 리터럴에서 고른다.
+50이 3.45, 950이 4.02로 양쪽 다 미달이다. 흑백 리터럴에서 고르되,
+흰색이 3.0을 넘으면 관례대로 흰색을 지키고 미달은 뱃지가 드러낸다.
+그러지 않으면 파랑·빨강 버튼 글자가 전부 검정이 되어 버그로 읽힌다.
 
 Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 ```
@@ -384,18 +432,22 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 ## Task 3: `ExportRole`을 판별 유니온으로 넓히고 `on-solid` 역할을 추가한다
 
 **Files:**
-- Modify: `src/export/color/types.ts` · `src/export/color/vars.ts` · `src/export/color/figma.ts` · `src/export/color/design-md.ts` · `src/export/color/adapter.ts` · `src/color/roles.ts` · `tests/export/color/fixture.ts` · `web/src/builder/BuilderPage.tsx`
-- Test: `tests/export/color/types.test.ts` · `tests/export/color/css.test.ts` · `tests/export/color/figma.test.ts` · `tests/export/color/design-md.test.ts`
+- Modify: `src/export/color/types.ts` · `src/export/color/vars.ts` · `src/export/color/figma.ts` · `src/export/color/design-md.ts` · `src/export/color/adapter.ts` · `src/color/roles.ts` · `tests/export/color/fixture.ts` · `web/src/builder/BuilderPage.tsx` · `web/src/builder/ExportPanel.tsx`
+- Test: `tests/export/color/types.test.ts` · `tests/export/color/css.test.ts` · `tests/export/color/figma.test.ts` · `tests/export/color/design-md.test.ts` · **`tests/color/roles.test.ts`** (Step 7a에서 반드시 함께 갱신)
+
+> **경고 — Task 1의 규범이 여기서는 적용되지 않는다.** Task 1은 "테스트를 고쳐야 했다면 네가 잘못한 것"이라고 했지만, 이 태스크는 `SCALE_ROLES`에 일곱 번째 역할을 **의도적으로** 더한다. `tests/color/roles.test.ts`의 개수·인덱스 단언이 깨지는 것은 정상이며 Step 7a가 그 갱신을 지시한다. **on-solid 추가를 되돌리지 말 것.**
 
 **Interfaces:**
-- Consumes: Task 2의 `onSolidColor(solidHex: string): "#000000" | "#ffffff"` — 단, **`src/export/`는 `src/color/`를 import하지 않는다.** 대신 `vars.ts`가 자체적으로 같은 계산을 하지 않도록, 흑백 선택 로직을 `types.ts`에 값으로 실어 보내지 않고 `vars.ts`가 `contrastRatio`를 다시 구현하지도 않는다 — **`ExportRole`의 `kind: "contrast"`를 만나면 `resolveContrast` 콜백에 위임한다**(아래 Step 3).
-- Produces: `type ExportRole = { kind: "stop"; … } | { kind: "contrast"; … }` · `ContrastResolver = (againstHex: string) => string`
+- Consumes: Task 2의 `onSolidColor` — **다만 산출 코드는 그것을 import하지 않는다.** `src/export/`가 `src/color/`를 import하면 사이클 2의 격리가 반대 방향으로 깨진다. 대신 `vars.ts`에 같은 규칙의 기본 resolver를 두고 산출 파일 넷이 그 하나를 공유하며, 엔진 구현과 값이 갈라지지 않는지는 두 구현을 맞대는 테스트가 고정한다 (Step 1의 마지막 describe).
+- Produces: `type ExportRole = StopRole | ContrastRole` (둘 다 `kind` 판별자) · `ContrastResolver = (againstHex: string) => string` · `export const defaultResolver: ContrastResolver` (`vars.ts`) · `renderColorDesignMd(system, contrastWarnings?, resolveContrast?)` · `toColorFigma(system, resolveContrast?)`
 
 - [ ] **Step 1: 실패하는 테스트를 쓴다**
 
 ```ts
 // tests/export/color/types.test.ts 에 추가
 import { assertColorSystem } from "../../../src/export/color/types.js";
+import { defaultResolver } from "../../../src/export/color/vars.js";
+import { onSolidColor } from "../../../src/color/contrast.js";
 import { fixtureSystem } from "./fixture.js";
 
 describe("assertColorSystem — contrast 역할", () => {
@@ -427,6 +479,42 @@ describe("assertColorSystem — contrast 역할", () => {
     const system = fixtureSystem();
     const broken = { ...system, roles: [...system.roles, system.roles[0]] };
     expect(() => assertColorSystem(broken)).toThrow(/duplicate role/);
+  });
+
+  // darkRoleVars가 대비 역할을 건너뛰는 것이 이 전제 위에 서 있다.
+  it("rejects a contrast role against a theme-varying stop role", () => {
+    const system = fixtureSystem();
+    const broken = {
+      ...system,
+      roles: [
+        ...system.roles,
+        { kind: "contrast" as const, id: "on-text", label: "X", against: "text" },
+      ],
+    };
+    expect(() => assertColorSystem(broken)).toThrow(/theme-fixed/);
+  });
+
+  it("rejects a role with no valid kind", () => {
+    const system = fixtureSystem();
+    const broken = {
+      ...system,
+      roles: [...system.roles, { id: "legacy", label: "옛것", lightIndex: 0, darkIndex: 0 }],
+    } as unknown as Parameters<typeof assertColorSystem>[0];
+    expect(() => assertColorSystem(broken)).toThrow(/kind/);
+  });
+});
+
+// 산출 코드는 엔진을 import할 수 없어 대비 계산의 사본이 생긴다. 없앨 수는 없으니
+// 갈라지지 않는 것만 고정한다 (스펙 D5).
+describe("defaultResolver ↔ onSolidColor", () => {
+  it("agrees with the engine across the whole lightness range", () => {
+    const samples = [
+      "#000000", "#1d59b9", "#3b82f6", "#8b5cf6", "#fb2c36", "#6d737c",
+      "#f69e00", "#00c65a", "#eab308", "#e4e6e9", "#ffffff",
+    ];
+    for (const hex of samples) {
+      expect(defaultResolver(hex), hex).toBe(onSolidColor(hex));
+    }
   });
 });
 ```
@@ -503,10 +591,15 @@ export type ExportRole = StopRole | ContrastRole;
 export type ContrastResolver = (againstHex: string) => string;
 ```
 
-`assertColorSystem`에 다음을 더한다 — **`stopKeys`는 여전히 `CSS_IDENT`로 검사하지 않는다**:
+`assertColorSystem`의 기존 `for (const role of system.roles)` 루프(`types.ts:65-80`)를 **다음으로 통째로 교체한다** — 더하는 게 아니다. 그냥 추가하면 옛 루프가 contrast 역할에서 `Number.isInteger(undefined)`로 먼저 던져 새 테스트의 `toThrow(/against/)`가 실패한다. **`stopKeys`는 여전히 `CSS_IDENT`로 검사하지 않는다**:
 
 ```ts
   const roleIds = new Set<string>();
+  const themeFixedStopIds = new Set(
+    system.roles
+      .filter((r): r is StopRole => r.kind === "stop" && r.lightIndex === r.darkIndex)
+      .map((r) => r.id),
+  );
   const stopRoleIds = new Set(
     system.roles.filter((r): r is StopRole => r.kind === "stop").map((r) => r.id),
   );
@@ -525,7 +618,22 @@ export type ContrastResolver = (againstHex: string) => string;
           `assertColorSystem: role "${role.id}" against "${role.against}" is not a stop role`,
         );
       }
+      // darkRoleVars가 대비 역할을 통째로 건너뛰는 것은 "참조 대상이 테마 간 고정"이라는
+      // 전제 위에 서 있다. against가 테마마다 자리를 옮기는 역할이면 다크에서 틀린 값이
+      // 소리 없이 나간다.
+      if (!themeFixedStopIds.has(role.against)) {
+        throw new Error(
+          `assertColorSystem: role "${role.id}" against "${role.against}" is not theme-fixed`,
+        );
+      }
       continue;
+    }
+
+    if (role.kind !== "stop") {
+      // 판별자 없는 판별 유니온은 조용히 잘못된 분기를 탄다. 암묵적 기본값을 두지 않는다.
+      throw new Error(
+        `assertColorSystem: role "${(role as { id?: string }).id}" has no valid kind`,
+      );
     }
 
     const fields: readonly [string, number][] = [
@@ -548,18 +656,23 @@ export type ContrastResolver = (againstHex: string) => string;
 // src/export/color/vars.ts
 import type { ColorSystem, ContrastResolver, StopRole } from "./types.js";
 
-/** 흑백 중 대비가 높은 쪽. 기본 resolver — 호출자가 주입하지 않으면 이걸 쓴다.
- *  WCAG 상대 휘도를 여기 한 번 더 쓰는 대신, 계산이 필요한 유일한 지점이라
- *  분기 없이 단순 비교로 끝낸다. */
-const defaultResolver: ContrastResolver = (hex) => {
+/** 기본 resolver — 호출자가 주입하지 않으면 이걸 쓴다. 산출 파일 넷이 전부 이 하나를
+ *  공유하므로(vars.ts가 이미 CSS 두 장의 변수 목록을 공유시키는 자리다) 산출물 사이에서
+ *  값이 갈라질 수 없다. 엔진의 onSolidColor와 갈라지지 않는지는 두 구현을 맞대는
+ *  테스트가 고정한다 — 산출 코드는 엔진을 import할 수 없으므로 사본 자체는 못 없앤다.
+ *
+ *  규칙은 엔진과 같다: 흰색이 3.0 이상이면 흰색, 아니면 흑백 중 나은 쪽 (스펙 D5). */
+export const defaultResolver: ContrastResolver = (hex) => {
   const c = (v: number) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
   const n = Number.parseInt(hex.slice(1), 16);
   const lum =
     0.2126 * c(((n >> 16) & 0xff) / 255) +
     0.7152 * c(((n >> 8) & 0xff) / 255) +
     0.0722 * c((n & 0xff) / 255);
-  // 검정 대비 = (lum+.05)/.05, 흰색 대비 = 1.05/(lum+.05) — 교차점이 √1.05−0.05
-  return lum + 0.05 >= Math.sqrt(1.05) ? "#000000" : "#ffffff";
+  const white = 1.05 / (lum + 0.05);
+  const black = (lum + 0.05) / 0.05;
+  if (white >= 3.0) return "#ffffff";
+  return black > white ? "#000000" : "#ffffff";
 };
 
 function stopRole(system: ColorSystem, id: string): StopRole {
@@ -618,7 +731,23 @@ export function darkRoleVars(system: ColorSystem): VarDecl[] {
 
 - [ ] **Step 5: `figma.ts`와 `design-md.ts`를 맞춘다**
 
-`figma.ts`의 역할 루프:
+`figma.ts`는 `vars.ts`의 기본 resolver를 그대로 쓴다 — 파일마다 다른 규칙을 갖지 않게. 상단에 두 줄을 더한다:
+
+```ts
+import { defaultResolver } from "./vars.js";
+import type { ContrastResolver, StopRole } from "./types.js";
+```
+
+시그니처도 넓힌다 (기본값이 있으므로 기존 호출부는 안 바뀐다):
+
+```ts
+export function toColorFigma(
+  system: ColorSystem,
+  resolveContrast: ContrastResolver = defaultResolver,
+): FigmaDesignSystem {
+```
+
+역할 루프:
 
 ```ts
   for (const scale of system.scales) {
@@ -655,6 +784,33 @@ export function darkRoleVars(system: ColorSystem): VarDecl[] {
   }
 ```
 
+그리고 대비 경고를 **데이터로 받는다** — 산출 코드는 대비를 계산하지 않는다(스펙 D5):
+
+```ts
+export function renderColorDesignMd(
+  system: ColorSystem,
+  /** 라이트/다크에서 AA에 미달하는 조합의 설명. 호출자(화면)가 checkContrast 결과로 만든다.
+   *  산출 코드가 직접 재지 않는 이유: 여기서 재면 화면 뱃지와 갈라질 수 있다. */
+  contrastWarnings: readonly string[] = [],
+  resolveContrast: ContrastResolver = defaultResolver,
+): string {
+```
+
+"쓰는 법" 절 끝에 경고를 붙인다:
+
+```ts
+  for (const w of contrastWarnings) lines.push(`- ${w}`);
+```
+
+경고 문자열을 만드는 쪽은 Task 12의 `DownloadRow`다. 형식:
+
+```
+`--color-warning-text`는 라이트 테마에서 AA에 미달한다 — 은은한 배경 위 2.96이라 본문(4.5:1)은
+물론 큰 글씨(3:1)로도 부족하다. 라이트에서 AA가 필요하면 `--color-warning-800`을 직접 쓸 것.
+```
+
+**"큰 글씨에만 쓰라"고 쓰지 말 것** — 2.96은 큰 글씨 기준 3:1도 미달이라 존재하지 않는 허용을 주게 된다.
+
 - [ ] **Step 6: `SCALE_ROLES`에 `kind`와 `on-solid`을 더한다**
 
 `src/color/roles.ts`의 `ScaleRole`도 같은 판별 유니온으로 넓힌다. `note`는 두 갈래 모두에 남는다 (`#builder`가 쓴다). 기존 6역할에 `kind: "stop"`을 붙이고, `solid` 바로 뒤에 넣는다:
@@ -671,11 +827,16 @@ export function darkRoleVars(system: ColorSystem): VarDecl[] {
 
 - [ ] **Step 7: `#builder`가 깨지지 않게 한다**
 
-`BuilderPage.tsx`의 `DarkSection` 역할표와 `MockPanel`의 `vars`가 `lightIndex`/`darkIndex`를 직접 읽는다. `kind === "stop"`인 것만 쓰도록 좁힌다:
+`BuilderPage.tsx`에서 `lightIndex`/`darkIndex`를 직접 읽는 자리가 **네 곳**이다 — `MockPanel`의 `role()`(`:91`), `tip()`(`:92-95`), `vars`(`:96-100`), `DarkSection`의 역할표(`:191-204`). 넷 다 좁혀야 `npx tsc -b`가 통과한다(`web/tsconfig.json`이 `"../src"`를 include하므로 엔진 타입 변경이 여기서 잡힌다).
 
 ```ts
-const STOP_ROLES = SCALE_ROLES.filter((r) => r.kind === "stop");
+/** 판별 유니온이 된 뒤로 인덱스를 가진 역할만 따로 잡는다. on-solid은 인덱스가 없다. */
+const STOP_ROLES = SCALE_ROLES.filter((r): r is Extract<ScaleRole, { kind: "stop" }> =>
+  r.kind === "stop",
+);
 ```
+
+`MockPanel`·`DarkSection`의 `SCALE_ROLES` 참조를 전부 `STOP_ROLES`로 바꾼다. 상단에 `import { onSolidColor } from "@core/color/contrast.js";`를 더한다.
 
 `MockPanel`의 솔리드 버튼 `className`에서 `text-white`를 지우고 `style`에 다음을 더한다:
 
@@ -684,6 +845,32 @@ style={{ background: "var(--accent-solid)", color: onSolidColor(hexes[5]) }}
 ```
 
 `ExportPanel.tsx`의 미리보기 솔리드 버튼도 같게 고친다 (`text-white` 제거, `color: "var(--color-accent-on-solid)"`).
+
+- [ ] **Step 7a: `tests/color/roles.test.ts`를 갱신한다 (이걸 빠뜨리면 3건이 깨진다)**
+
+`SCALE_ROLES`가 6개에서 7개가 되고 `on-solid`엔 인덱스가 없으므로 세 곳이 실패한다:
+`toHaveLength(6)`, `Number.isInteger(r.lightIndex)` 루프, 미러 규칙 `darkIndex === 10 - lightIndex`.
+**이건 예상된 실패다.** 인덱스를 다루는 단언은 stop 역할만 대상으로 좁히고, contrast 역할은
+별도 케이스로 고정한다:
+
+```ts
+const STOP_ROLES = SCALE_ROLES.filter((r) => r.kind === "stop");
+
+it("has six stop roles and one contrast role", () => {
+  expect(STOP_ROLES).toHaveLength(6);
+  expect(SCALE_ROLES).toHaveLength(7);
+});
+
+it("pins on-solid to the solid role", () => {
+  const onSolid = SCALE_ROLES.find((r) => r.id === "on-solid")!;
+  expect(onSolid.kind).toBe("contrast");
+  if (onSolid.kind !== "contrast") throw new Error("unreachable");
+  expect(onSolid.against).toBe("solid");
+});
+```
+
+기존 인덱스 검사·미러 규칙 루프의 순회 대상을 `SCALE_ROLES` → `STOP_ROLES`로 바꾼다.
+**단언의 내용은 그대로 둔다** — 미러 규칙(i → 10−i, 솔리드만 고정)은 여전히 참이다.
 
 - [ ] **Step 8: `fixture.ts`를 갱신하고 `adapter.ts` 부채를 갚는다**
 
@@ -915,8 +1102,9 @@ export function checkContrast(
           });
         }
       }
-      // on-solid은 정의상 항상 통과한다(흑백 중 나은 쪽을 고르므로). 그래도 값을
-      // 보고한다 — 노랑처럼 그 "나은 쪽"조차 아슬한 경우를 화면이 보여줘야 한다.
+      // on-solid은 통과가 보장되지 않는다. 흰색이 3.0 이상이면 관례대로 흰색을 지키므로
+      // 파랑(3.68)·빨강(3.81)은 AA 미달인 채로 나간다 — 그걸 뱃지로 드러내는 것이 이
+      // 검사의 존재 이유다 (스펙 D5).
       if (theme === "light") {
         const solid = hexes[stopIndex(roles, "solid", "light")];
         const ratio = contrastRatio(onSolidColor(solid), solid);
@@ -989,7 +1177,16 @@ export function applyRoleShifts(
 }
 ```
 
-`start` 변수는 쓰이지 않으면 지운다 — `tsc --noEmit`이 잡는다.
+`checkContrast`에 다음 케이스를 테스트에 더한다 — 파랑에서 on-solid이 **미달로 보고되는지**:
+
+```ts
+it("reports the accent on-solid miss for a blue accent", () => {
+  const c = checkContrast(systemFor("#3b82f6"), SCALE_ROLES)
+    .find((x) => x.scaleName === "accent" && x.roleId === "on-solid")!;
+  expect(c.passes).toBe(false);
+  expect(c.ratio).toBeCloseTo(3.68, 1);
+});
+```
 
 - [ ] **Step 4: 통과를 확인한다**
 
@@ -1154,6 +1351,7 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
   - `interface PaletteState { accentHex: string; pins: Record<0|3|7|10, string | undefined>; tint: { attractorId: string; strength: "soft" | "strong" } | null; shifts: readonly RoleOverride[] }`
   - `ADJUSTABLE_STOPS: readonly [0, 3, 7, 10]`
   - `defaultState(accentHex?: string): PaletteState`
+  - `withAccent(state: PaletteState, accentHex: string): PaletteState` — pin을 폐기하고 액센트만 교체
   - `deriveScales(state: PaletteState): ScaleSet`
   - `deriveRoles(state: PaletteState): ScaleRole[]`
   - `serialize(state: PaletteState): string` (선행 `?` 포함)
@@ -1258,6 +1456,22 @@ export function defaultState(accentHex = DEFAULT_ACCENT): PaletteState {
   return { accentHex, pins: { 0: undefined, 3: undefined, 7: undefined, 10: undefined }, tint: null, shifts: [] };
 }
 
+/** 액센트 교체. **조정한 pin을 전부 버린다** — fillScale이 고정점 사이를 hue까지
+ *  보간하므로 파랑에서 고른 pin이 남으면 중간 구간이 파랑과 새 색이 섞인 색이 되고,
+ *  그 pin은 어떤 후보와도 일치하지 않아 화면에서 "선택 없음"으로 보이면서 값은 계속
+ *  적용된다. #builder의 redo()가 세운 원칙(앞 단계를 바꾸면 뒤 선택은 무효)을 계승한다.
+ *
+ *  틴트와 역할 이동은 유지한다: 틴트는 사용자가 명시적으로 고른 축이고(안 골랐으면
+ *  애초에 null이라 새 액센트에서 다시 스냅된다), 역할 이동은 특정 색이 아니라
+ *  "이 시스템은 텍스트를 몇 번째 자리에 둔다"는 시스템 전체의 진술이다. */
+export function withAccent(state: PaletteState, accentHex: string): PaletteState {
+  return {
+    ...state,
+    accentHex,
+    pins: { 0: undefined, 3: undefined, 7: undefined, 10: undefined },
+  };
+}
+
 function pinsOf(state: PaletteState): Pin[] {
   const anchor: Pin = { index: 5, color: parsePrimary(state.accentHex) };
   const rest = ADJUSTABLE_STOPS.flatMap((i) => {
@@ -1354,6 +1568,10 @@ function parseShifts(p: URLSearchParams): RoleOverride[] {
     const [l, d] = raw.split("-");
     const light = idx(l ?? null);
     const dark = idx(d ?? null);
+    // 반쪽이라도 깨졌으면 이 파라미터 전체를 버린다. `t=99-4`에서 다크만 살리면
+    // 사용자가 준 적 없는 조합이 만들어진다 — "항목별 기본값 폴백"의 항목은
+    // 파라미터 하나다.
+    if ((l !== "" && light === null) || (d !== "" && d !== undefined && dark === null)) continue;
     if (light !== null) out.push({ roleId, theme: "light", to: light });
     if (dark !== null) out.push({ roleId, theme: "dark", to: dark });
   }
@@ -1399,7 +1617,7 @@ export function parse(search: string): PaletteState {
 - [ ] **Step 5: 통과를 확인한다**
 
 Run: `cd web && npx vitest run src/color-palette/ && npx tsc -b`
-Expected: PASS (10 tests)
+Expected: PASS (8 tests)
 
 - [ ] **Step 6: 커밋**
 
@@ -1773,7 +1991,7 @@ import { useEffect, useMemo, useState } from "react";
 import { STOP_KEYS } from "@core/color/scale.js";
 import { SEMANTIC_ANCHORS } from "@core/color/semantic.js";
 import {
-  ADJUSTABLE_STOPS, defaultState, deriveRoles, deriveScales, type PaletteState,
+  ADJUSTABLE_STOPS, deriveRoles, deriveScales, withAccent, type PaletteState,
 } from "./paletteState";
 import { parse, serialize } from "./paletteUrl";
 import { AccentInput } from "./AccentInput";
@@ -1798,7 +2016,7 @@ export function ColorPalettePage() {
         <h1 className="text-lg font-semibold">컬러 팔레트</h1>
         <AccentInput
           hex={state.accentHex}
-          onChange={(accentHex) => setState((s) => ({ ...s, accentHex }))}
+          onChange={(accentHex) => setState((s) => withAccent(s, accentHex))}
         />
         <section className="space-y-1">
           <h2 className="text-xs font-medium text-neutral-500">액센트</h2>
@@ -1893,6 +2111,16 @@ it("reverts to the curve default", () => {
   fireEvent.click(screen.getAllByRole("radio")[2]);
   fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[0]);
   fireEvent.click(screen.getByRole("button", { name: "기본으로" }));
+  expect(window.location.search).not.toContain("s0=");
+});
+
+// 파랑에서 고른 pin이 빨강 액센트에 남으면 중간 구간이 두 색이 섞인 색이 된다.
+it("discards stop pins when the accent changes", () => {
+  render(<ColorPalettePage />);
+  fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[0]);
+  fireEvent.click(screen.getAllByRole("radio")[2]);
+  expect(window.location.search).toContain("s0=");
+  fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#ef4444" } });
   expect(window.location.search).not.toContain("s0=");
 });
 ```
@@ -2204,9 +2432,18 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 - [ ] **Step 1: 실패하는 테스트를 더한다**
 
 ```tsx
+// 뱃지 한 줄이 단일 텍스트 노드라는 전제 — PreviewPane에서 span으로 쪼개면 실패한다.
 it("shows the known warning failure as a badge", () => {
   render(<ColorPalettePage />);
-  expect(screen.getByText(/경고.*2\.9/)).toBeTruthy();
+  const badges = screen.getAllByTestId("contrast-badge").map((el) => el.textContent ?? "");
+  expect(badges.some((t) => t.includes("경고") && t.includes("2.96"))).toBe(true);
+});
+
+// 파랑 액센트는 흰 글자를 지키므로 on-solid이 3.68로 미달 표시된다 (스펙 D5).
+it("shows the on-solid miss for the default blue accent", () => {
+  render(<ColorPalettePage />);
+  const badges = screen.getAllByTestId("contrast-badge").map((el) => el.textContent ?? "");
+  expect(badges.some((t) => t.includes("on-solid") && t.includes("3.6"))).toBe(true);
 });
 
 it("offers no fix for a blue accent", () => {
@@ -2244,10 +2481,17 @@ Expected: FAIL
       {failing.length > 0 && (
         <div className="space-y-1 rounded-md border border-neutral-200 p-2">
           {failing.map((c) => (
-            <div key={`${c.scaleName}-${c.roleId}-${c.theme}-${c.against}`} className="text-[10px] text-neutral-500">
-              <span className="text-amber-600">⚠</span>{" "}
-              {LABELS[c.scaleName] ?? c.scaleName} {c.roleId} ({c.theme === "light" ? "라이트" : "다크"}){" "}
-              <span className="font-mono">{c.ratio.toFixed(2)}</span> / {c.required}
+            // 텍스트를 span으로 쪼개지 말 것 — getByText는 요소의 직접 텍스트 노드만
+            // 이어붙여 매칭하므로, 수치를 자식 span에 넣으면 "경고 … 2.96" 형태의
+            // 질의가 영원히 실패한다.
+            <div
+              key={`${c.scaleName}-${c.roleId}-${c.theme}-${c.against}`}
+              data-testid="contrast-badge"
+              className="text-[10px] text-neutral-500"
+            >
+              {`⚠ ${LABELS[c.scaleName] ?? c.scaleName} ${c.roleId} (${
+                c.theme === "light" ? "라이트" : "다크"
+              }) ${c.ratio.toFixed(2)} / ${c.required}`}
             </div>
           ))}
           {shifts.length > 0 && (
@@ -2335,16 +2579,18 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 ```tsx
 it("puts the real palette into the downloaded file", () => {
   const blobs: string[] = [];
-  const orig = URL.createObjectURL;
   URL.createObjectURL = ((blob: Blob) => {
     // jsdom의 Blob은 text()가 Promise라 동기로 못 읽는다 — 생성 인자를 가로챈다.
     blobs.push((blob as unknown as { __text?: string }).__text ?? "");
     return "blob:x";
   }) as typeof URL.createObjectURL;
+  // jsdom 29는 revokeObjectURL도 구현하지 않는다. downloadFile이 다음 틱에 부르므로
+  // 스텁을 걸어두지 않으면 테스트가 끝난 뒤 unhandled TypeError로 파일이 실패한다.
+  // 원복하지 않는다 — 원복하면 예약된 타이머가 undefined를 부른다.
+  URL.revokeObjectURL = (() => {}) as typeof URL.revokeObjectURL;
 
   render(<ColorPalettePage />);
   fireEvent.click(screen.getByRole("button", { name: "palette.css" }));
-  URL.createObjectURL = orig;
 
   expect(blobs[0]).toContain("--color-accent-500");
   expect(blobs[0]).toContain("--color-accent-on-solid");
@@ -2381,6 +2627,7 @@ import {
 } from "@core/export/color/index.js";
 import { SCALE_ORDER, type ScaleRole, type ScaleSet } from "@core/color/roles.js";
 import { STOP_KEYS } from "@core/color/scale.js";
+import { checkContrast } from "@core/color/contrast.js";
 import { canCopy, copyText, downloadFile } from "../lib/download";
 
 const btn =
@@ -2392,11 +2639,22 @@ export function DownloadRow({
 }: { readonly scales: ScaleSet; readonly roles: readonly ScaleRole[] }) {
   const files = useMemo(() => {
     const system = toColorSystem(scales, SCALE_ORDER, roles, STOP_KEYS);
+    // 경고 문구는 엔진 계산으로 만들어 산출 코드에 데이터로 넘긴다 — 산출 코드가 대비를
+    // 직접 재면 화면 뱃지와 갈라질 수 있다 (스펙 D5).
+    // "큰 글씨에만 쓰라"고 쓰지 않는다: 2.96은 큰 글씨 기준 3:1도 미달이다.
+    const warnings = checkContrast(scales, roles)
+      .filter((c) => !c.passes && c.theme === "light" && c.against === "subtle-bg")
+      .map(
+        (c) =>
+          `\`--color-${c.scaleName}-${c.roleId}\`는 라이트 테마에서 AA에 미달한다 — ` +
+          `은은한 배경 위 ${c.ratio.toFixed(2)}이라 본문(${c.required}:1)은 물론 ` +
+          `큰 글씨(3:1)로도 부족하다. AA가 필요하면 \`--color-${c.scaleName}-800\`을 직접 쓸 것.`,
+      );
     return {
       css: generateColorCss(system),
       themeCss: generateColorThemeCss(system),
       figma: JSON.stringify(toColorFigma(system), null, 2),
-      designMd: renderColorDesignMd(system),
+      designMd: renderColorDesignMd(system, warnings),
     };
   }, [scales, roles]);
 
