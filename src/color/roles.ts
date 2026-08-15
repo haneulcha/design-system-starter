@@ -8,7 +8,8 @@
 
 import { SEMANTIC_ANCHORS, type SemanticId } from "./semantic.js";
 
-export interface ScaleRole {
+export interface StopScaleRole {
+  readonly kind: "stop";
   readonly id:
     | "subtle-bg"
     | "hover-bg"
@@ -25,8 +26,23 @@ export interface ScaleRole {
   readonly note: string;
 }
 
+/** 값이 stop 인덱스로 표현되지 않는 역할. on-solid이 그렇다: 같은 스케일 안에서도
+ *  뉴트럴은 흰 글자, 액센트는 검은 글자가 갈릴 수 있다 — 산출 시점에 계산한다. */
+export interface ContrastScaleRole {
+  readonly kind: "contrast";
+  readonly id: "on-solid";
+  readonly label: string;
+  /** 대비를 재는 대상 stop 역할 id. */
+  readonly against: string;
+  /** 왜 이렇게 매핑되는가 — 교보재 설명. */
+  readonly note: string;
+}
+
+export type ScaleRole = StopScaleRole | ContrastScaleRole;
+
 export const SCALE_ROLES: readonly ScaleRole[] = [
   {
+    kind: "stop",
     id: "subtle-bg",
     label: "은은한 배경",
     lightIndex: 0,
@@ -34,6 +50,7 @@ export const SCALE_ROLES: readonly ScaleRole[] = [
     note: "배지·알림의 바탕. 밝은 tint ↔ 어두운 tint 극성 반전 — Tailwind dark:bg-*-950 관례.",
   },
   {
+    kind: "stop",
     id: "hover-bg",
     label: "호버 배경",
     lightIndex: 1,
@@ -41,6 +58,7 @@ export const SCALE_ROLES: readonly ScaleRole[] = [
     note: "배경보다 \"한 단계 더\" — 진해지는 방향이 다크에선 밝아지는 방향으로 뒤집힌다.",
   },
   {
+    kind: "stop",
     id: "border",
     label: "테두리",
     lightIndex: 2,
@@ -48,6 +66,7 @@ export const SCALE_ROLES: readonly ScaleRole[] = [
     note: "핵심은 배경과의 거리 유지 — 절대 밝기가 아니라.",
   },
   {
+    kind: "stop",
     id: "solid",
     label: "솔리드 (버튼 배경)",
     lightIndex: 5,
@@ -55,6 +74,14 @@ export const SCALE_ROLES: readonly ScaleRole[] = [
     note: "솔리드 자리는 테마를 가로질러 값을 유지 — Radix도 다크에서 solid(step 9) 자리를 거의 그대로 둔다. 위에 얹는 텍스트 대비도 테마와 무관하게 동일하다.",
   },
   {
+    kind: "contrast",
+    id: "on-solid",
+    label: "솔리드 위 글자",
+    against: "solid",
+    note: "솔리드 버튼 위에 얹는 글자. 스케일 자신의 50/950으로는 양쪽 다 미달인 경우가 흔해 흑/백에서 고른다 — 같은 팔레트에서도 뉴트럴은 흰 글자, 액센트는 검은 글자가 된다.",
+  },
+  {
+    kind: "stop",
     id: "text",
     label: "텍스트 (링크)",
     lightIndex: 6,
@@ -62,6 +89,7 @@ export const SCALE_ROLES: readonly ScaleRole[] = [
     note: "Tailwind의 text-*-600 ↔ dark:text-*-400 패턴과 같은 원리 — 어두운 배경에선 밝은 쪽이 읽힌다.",
   },
   {
+    kind: "stop",
     id: "text-strong",
     label: "진한 텍스트",
     lightIndex: 7,

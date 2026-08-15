@@ -145,8 +145,11 @@ export function ExportPanel({ scales }: { scales: ScaleSet }) {
           </div>
           <div className="flex gap-2">
             <span
-              className="rounded px-2 py-1 text-[11px] font-medium text-white"
-              style={{ background: "var(--color-accent-solid)" }}
+              className="rounded px-2 py-1 text-[11px] font-medium"
+              style={{
+                background: "var(--color-accent-solid)",
+                color: "var(--color-accent-on-solid)",
+              }}
             >
               솔리드 버튼
             </span>

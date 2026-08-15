@@ -34,7 +34,7 @@ export function toColorSystem(
         : d.name === "neutral"
           ? scales.neutral
           : scales.semantic[d.name];
-    if (!hexes) {
+    if (!hexes?.length) {
       throw new Error(`toColorSystem: no hexes for scale "${d.name}"`);
     }
     return { name: d.name, label: d.label, hexes };

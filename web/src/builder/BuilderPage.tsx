@@ -21,11 +21,17 @@ import {
 import {
   SEMANTIC_ANCHORS, SEMANTIC_SECTION_NOTE, buildSemantic, type SemanticId,
 } from "@core/color/semantic.js";
+import { onSolidColor } from "@core/color/contrast.js";
 import { oklchToHex, parsePrimary } from "@core/generator/color.js";
 import type { Oklch } from "@core/schema/types.js";
 import { ColorScaleStrip } from "../components/ColorScaleStrip";
 import { OklchPicker } from "../components/OklchPicker";
 import { ExportPanel } from "./ExportPanel";
+
+/** 판별 유니온이 된 뒤로 인덱스를 가진 역할만 따로 잡는다. on-solid은 인덱스가 없다. */
+const STOP_ROLES = SCALE_ROLES.filter((r): r is Extract<ScaleRole, { kind: "stop" }> =>
+  r.kind === "stop",
+);
 
 interface Choice {
   metaKey: number | "neutral"; // STEP_META 조회용
@@ -72,13 +78,14 @@ function MockPanel({
   hexes: readonly string[];
   neutral: readonly string[];
 }) {
-  const role = (id: ScaleRole["id"]) => SCALE_ROLES.find((r) => r.id === id)!;
-  const tip = (id: ScaleRole["id"]) => {
+  const role = (id: Extract<ScaleRole, { kind: "stop" }>["id"]) =>
+    STOP_ROLES.find((r) => r.id === id)!;
+  const tip = (id: Extract<ScaleRole, { kind: "stop" }>["id"]) => {
     const r = role(id);
     return `${r.id} — 라이트 ${STOP_KEYS[r.lightIndex]} / 다크 ${STOP_KEYS[r.darkIndex]}`;
   };
   const vars = Object.fromEntries(
-    SCALE_ROLES.map((r) => [
+    STOP_ROLES.map((r) => [
       `--accent-${r.id}`,
       hexes[mode === "light" ? r.lightIndex : r.darkIndex],
     ]),
@@ -111,8 +118,8 @@ function MockPanel({
         <button
           type="button"
           title={tip("solid")}
-          className="text-xs rounded px-3 py-1.5 text-white"
-          style={{ background: "var(--accent-solid)" }}
+          className="text-xs rounded px-3 py-1.5"
+          style={{ background: "var(--accent-solid)", color: onSolidColor(hexes[5]) }}
         >
           솔리드 버튼
         </button>
@@ -172,7 +179,7 @@ function DarkSection({ scales }: { scales: ScaleSet }) {
               </tr>
             </thead>
             <tbody>
-              {SCALE_ROLES.map((r) => (
+              {STOP_ROLES.map((r) => (
                 <tr key={r.id} className="border-t border-neutral-100 align-top">
                   <td className={`py-1.5 pr-2 ${r.id === "solid" ? "font-medium text-neutral-800" : "text-neutral-600"}`}>
                     {r.label}

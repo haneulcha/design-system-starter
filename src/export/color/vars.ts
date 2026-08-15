@@ -3,7 +3,7 @@
 // 변수 선언 목록. palette.css와 palette.theme.css가 이 함수들을 공유하므로
 // 두 파일의 선언이 갈라질 수 없다 (스펙 D4).
 
-import type { ColorSystem } from "./types.js";
+import type { ColorSystem, ContrastResolver, StopRole } from "./types.js";
 
 export interface VarDecl {
   readonly name: string;
@@ -25,10 +25,48 @@ export function primitiveVars(system: ColorSystem): VarDecl[] {
   return out;
 }
 
-export function roleVars(system: ColorSystem): VarDecl[] {
+/** 기본 resolver — 호출자가 주입하지 않으면 이걸 쓴다. 산출 파일 넷이 전부 이 하나를
+ *  공유하므로(vars.ts가 이미 CSS 두 장의 변수 목록을 공유시키는 자리다) 산출물 사이에서
+ *  값이 갈라질 수 없다. 엔진의 onSolidColor와 갈라지지 않는지는 두 구현을 맞대는
+ *  테스트가 고정한다 — 산출 코드는 엔진을 import할 수 없으므로 사본 자체는 못 없앤다.
+ *
+ *  규칙은 엔진과 같다: 흰색이 3.0 이상이면 흰색, 아니면 흑백 중 나은 쪽 (스펙 D5). */
+export const defaultResolver: ContrastResolver = (hex) => {
+  const c = (v: number) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+  const n = Number.parseInt(hex.slice(1), 16);
+  const lum =
+    0.2126 * c(((n >> 16) & 0xff) / 255) +
+    0.7152 * c(((n >> 8) & 0xff) / 255) +
+    0.0722 * c((n & 0xff) / 255);
+  const white = 1.05 / (lum + 0.05);
+  const black = (lum + 0.05) / 0.05;
+  if (white >= 3.0) return "#ffffff";
+  return black > white ? "#000000" : "#ffffff";
+};
+
+function stopRole(system: ColorSystem, id: string): StopRole {
+  const found = system.roles.find((r) => r.kind === "stop" && r.id === id);
+  if (!found || found.kind !== "stop") {
+    throw new Error(`vars: no stop role "${id}" (assertColorSystem should have caught this)`);
+  }
+  return found;
+}
+
+export function roleVars(
+  system: ColorSystem,
+  resolve: ContrastResolver = defaultResolver,
+): VarDecl[] {
   const out: VarDecl[] = [];
   for (const scale of system.scales) {
     for (const role of system.roles) {
+      if (role.kind === "contrast") {
+        const target = stopRole(system, role.against);
+        out.push({
+          name: varName(scale.name, role.id),
+          value: resolve(scale.hexes[target.lightIndex]),
+        });
+        continue;
+      }
       out.push({
         name: varName(scale.name, role.id),
         value: `var(${varName(scale.name, system.stopKeys[role.lightIndex])})`,
@@ -43,6 +81,9 @@ export function darkRoleVars(system: ColorSystem): VarDecl[] {
   const out: VarDecl[] = [];
   for (const scale of system.scales) {
     for (const role of system.roles) {
+      // 대비 역할은 자기가 참조하는 stop 역할이 테마 간 고정일 때만 존재한다
+      // (지금은 on-solid × solid 하나뿐). 다크에 다시 쓸 것이 없다.
+      if (role.kind === "contrast") continue;
       if (role.darkIndex === role.lightIndex) continue;
       out.push({
         name: varName(scale.name, role.id),

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { generateColorCss } from "../../../src/export/color/css.js";
 import { primitiveVars, roleVars, darkRoleVars } from "../../../src/export/color/vars.js";
-import { fixtureSystem, tinySystem } from "./fixture.js";
+import { fixtureSystem, tinySystem, systemWithOnSolid } from "./fixture.js";
 
 const decls = (css: string) => [...css.matchAll(/^\s*(--[\w-]+):\s*(.+);$/gm)].map((m) => [m[1], m[2]]);
 
@@ -75,5 +75,36 @@ describe("generateColorCss", () => {
   it("runs the contract guards", () => {
     const s = tinySystem();
     expect(() => generateColorCss({ ...s, scales: [{ ...s.scales[0], hexes: [] }] })).toThrow();
+  });
+});
+
+describe("on-solid", () => {
+  it("emits a literal colour per scale, not a var() reference", () => {
+    const css = generateColorCss(systemWithOnSolid());
+    expect(css).toMatch(/--color-accent-on-solid: #(000000|ffffff);/);
+  });
+
+  it("does not redeclare on-solid in the dark block", () => {
+    const css = generateColorCss(systemWithOnSolid());
+    const dark = css.slice(css.indexOf(".dark {"));
+    expect(dark).not.toContain("on-solid");
+  });
+
+  it("can pick different literals for different scales", () => {
+    // 흰 solid(밝음)와 검은 solid(어두움)를 가진 두 스케일
+    const system = {
+      stopKeys: ["a", "b", "c"],
+      scales: [
+        { name: "light", label: "밝음", hexes: ["#ffffff", "#eeeeee", "#dddddd"] },
+        { name: "dark", label: "어두움", hexes: ["#000000", "#111111", "#222222"] },
+      ],
+      roles: [
+        { kind: "stop" as const, id: "solid", label: "솔리드", lightIndex: 0, darkIndex: 0 },
+        { kind: "contrast" as const, id: "on-solid", label: "솔리드 위 글자", against: "solid" },
+      ],
+    };
+    const css = generateColorCss(system);
+    expect(css).toContain("--color-light-on-solid: #000000;");
+    expect(css).toContain("--color-dark-on-solid: #ffffff;");
   });
 });

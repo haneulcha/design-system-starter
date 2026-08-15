@@ -5,16 +5,31 @@
 // 산출 코드 안에 존재할 수 없다.
 // 스펙: docs/superpowers/specs/2026-08-10-palette-color-export-design.md
 
-export interface ExportRole {
-  /** CSS 변수·Figma 변수에 쓰는 식별자. 예: "solid", "subtle-bg". */
+export interface StopRole {
+  readonly kind: "stop";
   readonly id: string;
-  /** 사람이 읽는 이름. DESIGN.md 역할표에 쓴다. */
   readonly label: string;
-  /** 라이트 테마에서 이 역할이 가리키는 stop 인덱스. */
   readonly lightIndex: number;
-  /** 다크 테마 인덱스. lightIndex와 같으면 테마 간에 안 바뀌는 역할이다. */
   readonly darkIndex: number;
 }
+
+/** 값이 stop 인덱스로 표현되지 않는 역할. 산출 시점에 스케일별로 계산된다.
+ *  on-solid이 그렇다: 같은 팔레트 안에서도 뉴트럴은 흰 글자, 액센트는 검은 글자다
+ *  (스펙 D5). 이 역할이 있어도 roles 배열은 평평하게 남는다. */
+export interface ContrastRole {
+  readonly kind: "contrast";
+  readonly id: string;
+  readonly label: string;
+  /** 같은 스케일의 `kind: "stop"` 역할 id. 그 색과 대비되는 색을 고른다. */
+  readonly against: string;
+}
+
+export type ExportRole = StopRole | ContrastRole;
+
+/** 대비 역할의 값을 정하는 함수. 산출 코드가 대비 계산을 자기 안에 두지 않고
+ *  주입받는 이유: src/export/가 src/color/를 import하면 사이클 2가 세운
+ *  "산출 코드는 엔진을 모른다"가 깨진다. */
+export type ContrastResolver = (againstHex: string) => string;
 
 export interface ExportScale {
   /** CSS·Figma에서 쓰는 식별자. 예: "accent", "error". */
@@ -62,10 +77,48 @@ export function assertColorSystem(system: ColorSystem): void {
     }
   }
 
+  const roleIds = new Set<string>();
+  const themeFixedStopIds = new Set(
+    system.roles
+      .filter((r): r is StopRole => r.kind === "stop" && r.lightIndex === r.darkIndex)
+      .map((r) => r.id),
+  );
+  const stopRoleIds = new Set(
+    system.roles.filter((r): r is StopRole => r.kind === "stop").map((r) => r.id),
+  );
   for (const role of system.roles) {
     if (!CSS_IDENT.test(role.id)) {
       throw new Error(`assertColorSystem: role id "${role.id}" is not a CSS identifier`);
     }
+    if (roleIds.has(role.id)) {
+      throw new Error(`assertColorSystem: duplicate role id "${role.id}"`);
+    }
+    roleIds.add(role.id);
+
+    if (role.kind === "contrast") {
+      if (!stopRoleIds.has(role.against)) {
+        throw new Error(
+          `assertColorSystem: role "${role.id}" against "${role.against}" is not a stop role`,
+        );
+      }
+      // darkRoleVars가 대비 역할을 통째로 건너뛰는 것은 "참조 대상이 테마 간 고정"이라는
+      // 전제 위에 서 있다. against가 테마마다 자리를 옮기는 역할이면 다크에서 틀린 값이
+      // 소리 없이 나간다.
+      if (!themeFixedStopIds.has(role.against)) {
+        throw new Error(
+          `assertColorSystem: role "${role.id}" against "${role.against}" is not theme-fixed`,
+        );
+      }
+      continue;
+    }
+
+    if (role.kind !== "stop") {
+      // 판별자 없는 판별 유니온은 조용히 잘못된 분기를 탄다. 암묵적 기본값을 두지 않는다.
+      throw new Error(
+        `assertColorSystem: role "${(role as { id?: string }).id}" has no valid kind`,
+      );
+    }
+
     const fields: readonly [string, number][] = [
       ["lightIndex", role.lightIndex],
       ["darkIndex", role.darkIndex],
