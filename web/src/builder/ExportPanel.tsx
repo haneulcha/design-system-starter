@@ -15,16 +15,7 @@ import {
 } from "@core/export/color/index.js";
 import { SCALE_ORDER, SCALE_ROLES, type ScaleSet } from "@core/color/roles.js";
 import { STOP_KEYS } from "@core/color/scale.js";
-
-function downloadFile(filename: string, content: string, mime: string) {
-  const blob = new Blob([content], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
+import { downloadFile, copyText, canCopy } from "../lib/download";
 
 const buttonClass =
   "px-3 py-1.5 rounded-md border border-neutral-200 bg-white text-[11px] font-medium " +
@@ -94,8 +85,9 @@ export function ExportPanel({ scales }: { scales: ScaleSet }) {
         </button>
         <button
           type="button"
-          className="px-3 py-1.5 text-[11px] text-neutral-400 hover:text-neutral-700"
-          onClick={() => navigator.clipboard.writeText(files.css)}
+          disabled={!canCopy()}
+          className="px-3 py-1.5 text-[11px] text-neutral-400 hover:text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          onClick={() => copyText(files.css)}
         >
           copy CSS
         </button>

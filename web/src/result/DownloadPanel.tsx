@@ -1,14 +1,5 @@
 import type { FullResult } from "../hooks/useGenerator";
-
-function downloadFile(filename: string, content: string, mime = "text/plain") {
-  const blob = new Blob([content], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
+import { downloadFile } from "../lib/download";
 
 const buttonClass =
   "w-full flex items-center gap-2.5 px-4 py-2.5 rounded-lg border border-neutral-200 bg-white text-sm font-medium text-neutral-700 hover:bg-neutral-50 hover:border-neutral-300 transition-colors text-left";
