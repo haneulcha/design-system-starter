@@ -88,6 +88,11 @@
   (on-solid 관례 3건 + 상태색 고정 앵커 6건 + info의 on-solid 1건) — 양이 아니라
   합쳐진 첫인상이 문제인지는 실제 화면을 보고 판단하기로 이월됐다(Task 11 리뷰어
   실측).
+- **조정 가능한 스와치의 정적 구분이 육안으로는 미세하다** (`AdjustableScale.tsx`
+  — pinned 아닌 조정 가능 자리는 `border-neutral-300`, 조정 불가 자리는
+  `border-neutral-200`). hover ring(`hover:ring-2`)이 상호작용해야만 뚜렷해져,
+  스펙 D3 "누르기 전에 구분"을 문자로는 만족하지만 약하다. 실제 화면을 보고
+  색 대비를 더 벌릴지 판단하기로 이월(Task 8 minor).
 - **역할 이동이 전역이다.** 액센트 때문에 이동하면 상태색도 같이 이동한다(더
   진해질 뿐이라 해롭지 않지만 의도한 것보다 넓게 적용된다). 사용자가 채도 높은
   50을 pin하면 어느 인덱스도 통과하지 못할 수 있는데, 그때 `suggestRoleShifts`는
@@ -148,6 +153,10 @@ v1 범위 밖
   함께 보면 중복이다. `/color-palette`는 처음부터 하나(라이트·다크 목업 한 쌍,
   D8)로 설계돼 이 문제를 반복하지 않는다 — 그러나 `#builder` 쪽 코드 자체는
   손대지 않았다.
+- **`on-solid` 역할의 `note`가 화면 어디에도 안 나온다.** `DarkSection`(`#builder`)의
+  역할표는 `STOP_ROLES`(`kind: "stop"`만)를 순회하는데 `on-solid`은 `kind:
+  "contrast"`라 걸러진다. 공들여 쓴 교보재 문장("스케일 자신의 50/950으로는 양쪽
+  다 미달인 경우가 흔해 흑/백에서 고른다…")이 지금은 죽은 콘텐츠다.
 - `DarkSection` 헤더의 `justify-between`이 복사 버튼이 빠지면서 자식 하나만 남아
   무의미해졌다.
 - `BuilderPage.tsx`의 `redo()`가 뉴트럴 단계 인덱스 5를 하드코딩한다. `BUILDER_FLOW`에서
@@ -171,6 +180,14 @@ v1 범위 밖
 - `AccentInput`이 hex를 소문자화하는데 주석은 "기존 빌더와 같은 동작"이라 과장
   (빌더는 원본 케이스를 유지한다).
 
+### 라우팅
+- `App.tsx`의 `useLocation`이 `useState(read)`로 초기값을 읽고 `useEffect`에서
+  `popstate`/`hashchange` 리스너를 등록한다 — 그 사이의 짧은 창에서 일어난
+  내비게이션은 놓칠 수 있다. 기존 패턴을 계승한 구조라 실질 위험은 낮다.
+- `/color-palette` 라우팅이 `path === "/color-palette"` 정확 비교라 **끝 슬래시
+  (`/color-palette/`)는 매치되지 않는다.** 지금은 링크가 전부 슬래시 없이 쓰여
+  안 드러나지만, 나중에 어느 링크가 슬래시를 붙이면 조용히 위자드로 떨어진다.
+
 ### 타입·구조
 - `src/export/color/index.ts`를 루트 테스트가 전혀 건드리지 않는다 — 재수출 하나가
   빠져도 `pnpm test`는 초록이다(`web/`의 `tsc -b`가 잡긴 한다).
@@ -188,6 +205,9 @@ v1 범위 밖
   JSDoc 둘은 이미 갱신됐다. 한 단어 수정.
 - `src/color/scale.ts` 헤더에 스펙 경로 줄이 없다 — `neutral`·`semantic`·`roles`와
   문서 밀도가 어긋난다.
+- `suggestRoleShifts`(`src/color/contrast.ts:150-171`)의 `text-strong` 탐색이 명도
+  곡선의 단조성(인덱스가 커질수록 대비가 단조 증가)을 전제한다 — 첫 통과 지점에서
+  루프를 멈춘다. 이 전제가 주석에 없다.
 - `web/src/color-palette/contrastWarnings.ts`의 `bgLabel`에 `against === "solid"`
   분기가 죽은 코드다 — `on-solid` 검사는 항상 `onSolidWarning`으로 라우팅돼 이
   분기에 닿지 않는다.
@@ -208,6 +228,10 @@ v1 범위 밖
   미해제)만 검증한다 — 실제 지연 해제까지는 안 잡는다.
 - `tests/color/contrast.test.ts`의 "never throws" 파싱 테스트가 브리프의 7개 형식
   케이스뿐 — 퍼징이 아니다.
+- `tests/color/contrast.test.ts`의 "suggests the minimum shift" 테스트가 배경으로
+  accent `subtle-bg`(`scales.accent[0]`) 하나만 쓴다 — neutral·page 배경 조건은
+  커버되지 않는다(Task 4 리뷰의 독립 검증에서는 둘 다 to-1에서 실패하는 것까지
+  확인했다).
 - `/color-palette`의 접힘(dedup) 테스트가 남은 후보 개수만 단언하고 hex/label은
   고정하지 않는다 — dedup이 과하게 작동해도 개수가 맞으면 통과할 여지가 있다.
 
@@ -224,9 +248,9 @@ v1 범위 밖
 | 3.1 `src/lab/`이 제품 경로다 — 엔진을 `src/color/`로 졸업 | 2026-08-16, `3355dbd` | `2026-08-10-palette-color-export-design.md` D1 |
 | 3.2 `web/` 커버리지가 얇다 — 다운로드 경로 테스트 | 2026-08-16, `4bcaf40`/`72a0b4d` | 사이클 2 최종 리뷰 판정 |
 | 저장·공유 — URL 직렬화(`replaceState`, pin은 hex) | 2026-08-16, `c3cd953` | `2026-07-27-guided-palette-builder-design.md` (localStorage는 이월) |
-| `downloadFile` Firefox 취소 문제 + 사본 통합 | 2026-08-16, `c9ba80d` | 사이클 2 리뷰 부채 |
-| `navigator.clipboard` 무방비 | 2026-08-16, `c9ba80d` | 사이클 2 리뷰 부채 |
-| `adapter.ts`의 `if (!hexes)`가 빈 배열을 안 잡음 | 2026-08-16, `ce9c293` | 사이클 2 리뷰 부채 |
-| `assertColorSystem`에 `role.id` 중복 가드 없음 | 2026-08-16, `ce9c293` | 사이클 2 리뷰 부채 |
-| `tests/lab/roles.test.ts`의 파일 중간 import | 2026-08-16, `3355dbd` (파일 이동 중 정리) | 사이클 2 리뷰 부채 |
+| `downloadFile` Firefox 취소 문제 + 사본 통합 | 2026-08-16, `c9ba80d` | 사이클 2 최종 리뷰 판정 |
+| `navigator.clipboard` 무방비 | 2026-08-16, `c9ba80d` | 사이클 2 최종 리뷰 판정 |
+| `adapter.ts`의 `if (!hexes)`가 빈 배열을 안 잡음 | 2026-08-16, `ce9c293` | 사이클 2 최종 리뷰 판정 |
+| `assertColorSystem`에 `role.id` 중복 가드 없음 | 2026-08-16, `ce9c293` | 사이클 2 최종 리뷰 판정 |
+| `tests/lab/roles.test.ts`의 파일 중간 import | 2026-08-16, `3355dbd` (파일 이동 중 정리) | 사이클 2 최종 리뷰 판정 |
 | 뉴트럴 어트랙터 직접 선택 | 2026-08-16, `5cafae6`/`5af5189` | `2026-08-09-palette-generator-color-system-design.md` |
