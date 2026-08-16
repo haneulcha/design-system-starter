@@ -36,12 +36,22 @@ export function AdjustableScale({
                 aria-label={label}
                 data-testid="swatch"
                 onClick={() => onPick(i)}
+                // 그림자는 Tailwind 기본 shadow-sm/lg가 아니라 커스텀 값이다 —
+                // 36px 칩에서 기본 스케일은 배율 1에서 거의 안 보였다(사용자 확인).
+                // 광원은 북쪽 고정: 가로 오프셋 0. 대각선을 주면 "종이 조각"처럼
+                // 읽히고, 세로만 주면 "눌리는 버튼"으로 읽힌다.
+                // 블러는 0 — 블러가 있으면 이 칩 크기에서 대비가 흩어져 신호가
+                // 죽는다(이번 변경의 핵심). press 시 이동 거리(3px)는 기본
+                // 깊이(3px)와 같게 맞춘다 — 눌렀을 때 칩이 그림자가 있던 자리에
+                // 정확히 내려앉도록, 물리적 대응이 깨지지 않게.
                 className={`block w-full h-9 rounded-sm border cursor-pointer
-                  shadow-sm hover:shadow-lg active:shadow-none active:translate-y-px
+                  shadow-[0_3px_0_0_var(--color-neutral-500)]
+                  hover:shadow-[0_5px_0_0_var(--color-neutral-500)]
+                  active:shadow-none active:translate-y-[3px]
                   transition-[box-shadow,transform]
                   focus-visible:outline-none focus-visible:ring-2
                   focus-visible:ring-neutral-900 focus-visible:ring-offset-1 ${
-                  pinned.includes(i) ? "border-neutral-900" : "border-neutral-300"
+                  pinned.includes(i) ? "border-neutral-700" : "border-neutral-300"
                 }`}
                 style={{ background: hex }}
               />
