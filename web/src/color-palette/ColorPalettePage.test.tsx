@@ -34,20 +34,37 @@ describe("ColorPalettePage", () => {
     expect((screen.getByLabelText("액센트 hex") as HTMLInputElement).value).toBe("#eab308");
   });
 
-  it("opens three candidates when an adjustable stop is clicked", () => {
+  // stop 7(700)은 기본 파랑 액센트에서 세 후보가 서로 다른 색으로 갈린다 —
+  // gamut 클램프 충돌이 없는 자리라 "겹치지 않으면 여전히 3개"의 기준으로 쓴다.
+  it("opens three candidates at a stop where none collapse", () => {
     render(<ColorPalettePage />);
-    fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[2]); // stop 7
     expect(screen.getAllByRole("radio").length).toBe(3);
+  });
+
+  // stop 0(50)은 기본 파랑 액센트에서 "균형"과 "색이 드러나는" 후보가 같은 gamut
+  // 경계로 클램프돼 겹친다 — 겹치는 후보는 접어서 하나만 보여준다(사람 판정).
+  it("collapses duplicate candidates at stop 0 into two", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[0]); // stop 0
+    const radios = screen.getAllByRole("radio");
+    expect(radios.length).toBe(2);
+  });
+
+  // stop 3(300)은 세 후보 전부가 같은 경계로 클램프돼 커브 기본값과도 같다 —
+  // 선택지가 하나뿐이라는 사실 자체가 "여기는 고를 게 없다"는 정보다(D9).
+  it("collapses all three candidates at stop 3 into one", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[1]); // stop 3
+    expect(screen.getAllByRole("radio").length).toBe(1);
   });
 
   it("changes the palette in place when a candidate is chosen", () => {
     render(<ColorPalettePage />);
     const before = screen.getAllByTestId("swatch")[0].getAttribute("style");
     fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[0]);
-    // radio[2]("색이 드러나는")는 기본 액센트(#3b82f6)에서 gamut 클램프로 radio[1]과
-    // 커브 기본값 모두에 수렴해 버려 "바뀌었다"를 증명하지 못한다 — candidatesFor의
-    // 문서화된 클램프 충돌(candidates.ts 주석 참고)이지 이 화면의 배선 문제가 아니다.
-    // radio[0]("중립적")은 이 경계 아래라 항상 실제로 다른 색을 낸다.
+    // radio[0]("중립적")은 stop 0의 두 유일 후보 중 하나이고 gamut 경계 아래라
+    // 항상 실제로 다른 색을 낸다 (dedup 후에도 첫 순서라 인덱스가 그대로다).
     fireEvent.click(screen.getAllByRole("radio")[0]);
     expect(screen.getAllByTestId("swatch")[0].getAttribute("style")).not.toBe(before);
   });
@@ -55,14 +72,15 @@ describe("ColorPalettePage", () => {
   it("records the chosen stop in the URL", () => {
     render(<ColorPalettePage />);
     fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[0]);
-    fireEvent.click(screen.getAllByRole("radio")[2]);
+    // dedup 후 stop 0은 라디오가 2개뿐이라 radio[1]을 쓴다.
+    fireEvent.click(screen.getAllByRole("radio")[1]);
     expect(window.location.search).toContain("s0=");
   });
 
   it("reverts to the curve default", () => {
     render(<ColorPalettePage />);
     fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[0]);
-    fireEvent.click(screen.getAllByRole("radio")[2]);
+    fireEvent.click(screen.getAllByRole("radio")[1]);
     fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[0]);
     fireEvent.click(screen.getByRole("button", { name: "기본으로" }));
     expect(window.location.search).not.toContain("s0=");
@@ -72,9 +90,27 @@ describe("ColorPalettePage", () => {
   it("discards stop pins when the accent changes", () => {
     render(<ColorPalettePage />);
     fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[0]);
-    fireEvent.click(screen.getAllByRole("radio")[2]);
+    fireEvent.click(screen.getAllByRole("radio")[1]);
     expect(window.location.search).toContain("s0=");
     fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#ef4444" } });
     expect(window.location.search).not.toContain("s0=");
+  });
+
+  // hover는 확정이 아니다 — 팔레트/목업은 다시 그려지지만 상태(URL)는 안 바뀐다.
+  it("does not commit a stop pin when merely hovering a candidate", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[2]); // stop 7 — 안 겹침
+    fireEvent.mouseEnter(screen.getAllByRole("radio")[0]);
+    expect(window.location.search).not.toContain("s7=");
+  });
+
+  // hover는 프리뷰는 진짜로 그린다 — 확정만 안 될 뿐이다.
+  it("previews the hovered candidate on the palette without committing", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[2]); // stop 7 — 안 겹침
+    const before = screen.getAllByTestId("swatch")[7].getAttribute("style");
+    fireEvent.mouseEnter(screen.getAllByRole("radio")[0]);
+    expect(screen.getAllByTestId("swatch")[7].getAttribute("style")).not.toBe(before);
+    expect(window.location.search).not.toContain("s7=");
   });
 });

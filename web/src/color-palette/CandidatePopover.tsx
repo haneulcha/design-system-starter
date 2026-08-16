@@ -4,7 +4,7 @@
 // 클릭해야 확정된다 — 고르기 전에 결과를 본다 (스펙 D3).
 // 후보의 note(교보재 카피)는 이 화면에서 읽지 않는다 (스펙 D9).
 
-import { candidatesFor } from "@core/color/candidates.js";
+import { candidatesFor, type Candidate } from "@core/color/candidates.js";
 import { fillScale, type Pin } from "@core/color/scale.js";
 import { oklchToHex, parsePrimary } from "@core/generator/color.js";
 import { ADJUSTABLE_STOPS, type PaletteState } from "./paletteState";
@@ -27,9 +27,28 @@ function contextPins(state: PaletteState, stopIndex: number): Pin[] {
   return [anchor, ...rest];
 }
 
+/** 밝은 stop(0)이나 좁은 hue에서는 sRGB gamut이 좁아, 채도 배율이 서로 다른 후보들도
+ *  같은 상한으로 클램프돼 같은 hex가 된다 — hex 기준으로 중복 제거하고 먼저 나온
+ *  것만 남긴다. candidatesFor의 순서(중립적→균형→색이 드러나는, 차분한→균형→쨍한)가
+ *  의미 있는 순서라 임의로 고르면 라벨이 자리마다 달라진다. 다 겹치면(예: 기본 파랑
+ *  액센트의 stop 3) 라디오 1개만 남는다 — "고를 게 없다"는 사실 자체가 정보라
+ *  별도 문구는 붙이지 않는다(D9).
+ */
+function dedupeByHex(candidates: readonly Candidate[]): { hex: string; label: string }[] {
+  const seen = new Set<string>();
+  const out: { hex: string; label: string }[] = [];
+  for (const cd of candidates) {
+    const hex = oklchToHex(cd.color);
+    if (seen.has(hex)) continue;
+    seen.add(hex);
+    out.push({ hex, label: cd.label });
+  }
+  return out;
+}
+
 export function CandidatePopover({ stopIndex, state, onHover, onChoose, onClose }: Props) {
   const pins = contextPins(state, stopIndex);
-  const candidates = candidatesFor(stopIndex, pins);
+  const candidates = dedupeByHex(candidatesFor(stopIndex, pins));
   const current = state.pins[stopIndex as 0 | 3 | 7 | 10];
 
   return (
@@ -38,7 +57,7 @@ export function CandidatePopover({ stopIndex, state, onHover, onChoose, onClose 
       onMouseLeave={() => onHover(null)}
     >
       {candidates.map((cd) => {
-        const hex = oklchToHex(cd.color);
+        const hex = cd.hex;
         return (
           <label
             key={cd.label}
