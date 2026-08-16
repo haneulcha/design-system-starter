@@ -9,7 +9,6 @@ import { render, screen } from "@testing-library/react";
 import { AdjustableScale } from "./AdjustableScale";
 
 const HEXES: readonly string[] = Array(11).fill("#808080") as string[];
-const ELEVEN_HEXES: readonly string[] = Array(11).fill("#808080") as string[];
 
 describe("AdjustableScale", () => {
   // 어포던스는 depth로 준다 — 크기·표식은 정적 표시라 "누를 수 있다"만 말하고
@@ -18,7 +17,7 @@ describe("AdjustableScale", () => {
   it("조정 가능한 stop만 그림자를 갖는다", () => {
     render(
       <AdjustableScale
-        hexes={ELEVEN_HEXES}
+        hexes={HEXES}
         adjustable={[0, 3, 7, 10]}
         pinned={[]}
         onPick={() => {}}
@@ -35,7 +34,7 @@ describe("AdjustableScale", () => {
   it("조정 가능한 stop이 포인터 커서와 포커스 링을 갖는다", () => {
     render(
       <AdjustableScale
-        hexes={ELEVEN_HEXES}
+        hexes={HEXES}
         adjustable={[0, 3, 7, 10]}
         pinned={[]}
         onPick={() => {}}
@@ -50,7 +49,7 @@ describe("AdjustableScale", () => {
   it("캡션은 더 이상 굵기로 가르지 않는다", () => {
     render(
       <AdjustableScale
-        hexes={ELEVEN_HEXES}
+        hexes={HEXES}
         adjustable={[0, 3, 7, 10]}
         pinned={[]}
         onPick={() => {}}

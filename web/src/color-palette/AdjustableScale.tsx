@@ -37,8 +37,8 @@ export function AdjustableScale({
                 data-testid="swatch"
                 onClick={() => onPick(i)}
                 className={`block w-full h-9 rounded-sm border cursor-pointer
-                  shadow-sm hover:shadow-md active:shadow-none active:translate-y-px
-                  transition-shadow
+                  shadow-sm hover:shadow-lg active:shadow-none active:translate-y-px
+                  transition-[box-shadow,transform]
                   focus-visible:outline-none focus-visible:ring-2
                   focus-visible:ring-neutral-900 focus-visible:ring-offset-1 ${
                   pinned.includes(i) ? "border-neutral-900" : "border-neutral-300"
