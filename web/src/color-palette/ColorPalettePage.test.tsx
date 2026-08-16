@@ -147,4 +147,39 @@ describe("ColorPalettePage", () => {
     fireEvent.click(screen.getByRole("button", { name: "자동으로" }));
     expect(window.location.search).not.toContain("n=");
   });
+
+  // 뱃지 한 줄이 단일 텍스트 노드라는 전제 — PreviewPane에서 span으로 쪼개면 실패한다.
+  it("shows the known warning failure as a badge", () => {
+    render(<ColorPalettePage />);
+    const badges = screen.getAllByTestId("contrast-badge").map((el) => el.textContent ?? "");
+    expect(badges.some((t) => t.includes("경고") && t.includes("2.96"))).toBe(true);
+  });
+
+  // 파랑 액센트는 흰 글자를 지키므로 on-solid이 3.68로 미달 표시된다 (스펙 D5).
+  it("shows the on-solid miss for the default blue accent", () => {
+    render(<ColorPalettePage />);
+    const badges = screen.getAllByTestId("contrast-badge").map((el) => el.textContent ?? "");
+    expect(badges.some((t) => t.includes("on-solid") && t.includes("3.6"))).toBe(true);
+  });
+
+  it("offers no fix for a blue accent", () => {
+    window.history.replaceState({}, "", "/color-palette?v=1&a=3b82f6");
+    render(<ColorPalettePage />);
+    expect(screen.queryByRole("button", { name: "한 번에 고치기" })).toBeNull();
+  });
+
+  it("offers and applies a fix for a yellow accent", () => {
+    window.history.replaceState({}, "", "/color-palette?v=1&a=eab308");
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getByRole("button", { name: "한 번에 고치기" }));
+    expect(window.location.search).toMatch(/t=8-/);
+  });
+
+  it("keeps the applied shift after the accent changes", () => {
+    window.history.replaceState({}, "", "/color-palette?v=1&a=eab308");
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getByRole("button", { name: "한 번에 고치기" }));
+    fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#3b82f6" } });
+    expect(window.location.search).toMatch(/t=8-/);
+  });
 });

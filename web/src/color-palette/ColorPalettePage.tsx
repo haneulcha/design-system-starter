@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { checkContrast, suggestRoleShifts } from "@core/color/contrast.js";
 import { SEMANTIC_ANCHORS } from "@core/color/semantic.js";
 import {
   ADJUSTABLE_STOPS, deriveRoles, deriveScales, withAccent, type PaletteState,
@@ -30,6 +31,16 @@ export function ColorPalettePage() {
         : scales,
     [scales, open, hover, state],
   );
+
+  const checks = useMemo(() => checkContrast(shownScales, roles), [shownScales, roles]);
+  const shifts = useMemo(() => suggestRoleShifts(shownScales, roles), [shownScales, roles]);
+  const hasApplied = state.shifts.length > 0;
+  const onApplyShifts = () =>
+    setState((s) => ({
+      ...s,
+      shifts: shifts.map(({ roleId, theme, to }) => ({ roleId, theme, to })),
+    }));
+  const onResetShifts = () => setState((s) => ({ ...s, shifts: [] }));
 
   return (
     <div className="max-w-5xl mx-auto p-8 grid grid-cols-[1fr_320px] gap-8 items-start">
@@ -79,7 +90,15 @@ export function ColorPalettePage() {
         </section>
       </div>
       <div className="sticky top-8">
-        <PreviewPane scales={shownScales} roles={roles} />
+        <PreviewPane
+          scales={shownScales}
+          roles={roles}
+          checks={checks}
+          shifts={shifts}
+          hasApplied={hasApplied}
+          onApplyShifts={onApplyShifts}
+          onResetShifts={onResetShifts}
+        />
       </div>
     </div>
   );

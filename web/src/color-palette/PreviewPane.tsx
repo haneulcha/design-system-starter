@@ -5,7 +5,13 @@
 
 import type { CSSProperties } from "react";
 import { onSolidColor } from "@core/color/contrast.js";
+import type { ContrastCheck, RoleShift } from "@core/color/contrast.js";
+import { SCALE_ORDER } from "@core/color/roles.js";
 import type { ScaleRole, ScaleSet } from "@core/color/roles.js";
+
+const LABELS: Record<string, string> = Object.fromEntries(
+  SCALE_ORDER.map((d) => [d.name, d.label]),
+);
 
 function stopIdx(roles: readonly ScaleRole[], id: string, theme: "light" | "dark"): number {
   const r = roles.find((x) => x.id === id);
@@ -57,12 +63,57 @@ function Mock({
 }
 
 export function PreviewPane({
-  scales, roles,
-}: { readonly scales: ScaleSet; readonly roles: readonly ScaleRole[] }) {
+  scales, roles, checks, shifts, hasApplied, onApplyShifts, onResetShifts,
+}: {
+  readonly scales: ScaleSet;
+  readonly roles: readonly ScaleRole[];
+  readonly checks: readonly ContrastCheck[];
+  readonly shifts: readonly RoleShift[];
+  readonly hasApplied: boolean;
+  readonly onApplyShifts: () => void;
+  readonly onResetShifts: () => void;
+}) {
+  const failing = checks.filter((c) => !c.passes);
   return (
     <div className="space-y-3">
       <Mock theme="light" scales={scales} roles={roles} />
       <Mock theme="dark" scales={scales} roles={roles} />
+      {failing.length > 0 && (
+        <div className="space-y-1 rounded-md border border-neutral-200 p-2">
+          {failing.map((c) => (
+            // 텍스트를 span으로 쪼개지 말 것 — getByText는 요소의 직접 텍스트 노드만
+            // 이어붙여 매칭하므로, 수치를 자식 span에 넣으면 "경고 … 2.96" 형태의
+            // 질의가 영원히 실패한다.
+            <div
+              key={`${c.scaleName}-${c.roleId}-${c.theme}-${c.against}`}
+              data-testid="contrast-badge"
+              className="text-[10px] text-neutral-500"
+            >
+              {`⚠ ${LABELS[c.scaleName] ?? c.scaleName} ${c.roleId} (${
+                c.theme === "light" ? "라이트" : "다크"
+              }) ${c.ratio.toFixed(2)} / ${c.required}`}
+            </div>
+          ))}
+          {shifts.length > 0 && (
+            <button
+              type="button"
+              onClick={onApplyShifts}
+              className="mt-1 w-full rounded border border-neutral-800 px-2 py-1 text-[11px]"
+            >
+              한 번에 고치기
+            </button>
+          )}
+          {shifts.length === 0 && hasApplied && (
+            <button
+              type="button"
+              onClick={onResetShifts}
+              className="mt-1 w-full rounded border border-neutral-300 px-2 py-1 text-[11px] text-neutral-500"
+            >
+              역할 기본값으로
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
