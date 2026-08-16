@@ -182,4 +182,31 @@ describe("ColorPalettePage", () => {
     fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#3b82f6" } });
     expect(window.location.search).toMatch(/t=8-/);
   });
+
+  // 초록 액센트 stop 10에서 "더 깊게" 후보로 hover하면 — shifts가 shownScales(hover
+  // 프리뷰 포함)로 계산될 때는 제안이 to=8/9에서 to=7/8로 바뀐다. 적용은 항상 확정
+  // 팔레트(scales) 기준이어야 한다 — hover는 미리보기일 뿐 확정이 아니다.
+  it("applies the fix from the confirmed palette, not the hover preview", () => {
+    window.history.replaceState({}, "", "/color-palette?v=1&a=22c55e");
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[3]); // stop 10
+    fireEvent.mouseEnter(screen.getAllByRole("radio")[1]); // "더 깊게"
+    fireEvent.click(screen.getByRole("button", { name: "한 번에 고치기" }));
+    expect(window.location.search).toMatch(/t=8-/);
+  });
+
+  it("offers a way back to role defaults after applying a fix", () => {
+    window.history.replaceState({}, "", "/color-palette?v=1&a=eab308");
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getByRole("button", { name: "한 번에 고치기" }));
+    expect(screen.getByRole("button", { name: "역할 기본값으로" })).toBeTruthy();
+  });
+
+  it("resets applied shifts and drops t= from the URL", () => {
+    window.history.replaceState({}, "", "/color-palette?v=1&a=eab308");
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getByRole("button", { name: "한 번에 고치기" }));
+    fireEvent.click(screen.getByRole("button", { name: "역할 기본값으로" }));
+    expect(window.location.search).not.toContain("t=");
+  });
 });

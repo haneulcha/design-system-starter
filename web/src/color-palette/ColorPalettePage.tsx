@@ -32,8 +32,12 @@ export function ColorPalettePage() {
     [scales, open, hover, state],
   );
 
+  // 뱃지는 hover 프리뷰까지 보여준다(shownScales) — 이동 제안은 확정 팔레트만
+  // 본다(scales). hover는 미리보기일 뿐 확정이 아니라는 이 화면의 계약이 여기도
+  // 적용된다: hover 중에 "한 번에 고치기"를 눌러도 확정 색 기준 이동이 적용돼야
+  // 한다(Task 12의 다운로드가 shownScales가 아니라 scales를 쓰는 것과 같은 원칙).
   const checks = useMemo(() => checkContrast(shownScales, roles), [shownScales, roles]);
-  const shifts = useMemo(() => suggestRoleShifts(shownScales, roles), [shownScales, roles]);
+  const shifts = useMemo(() => suggestRoleShifts(scales, roles), [scales, roles]);
   const hasApplied = state.shifts.length > 0;
   const onApplyShifts = () =>
     setState((s) => ({
