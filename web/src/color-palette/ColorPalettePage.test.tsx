@@ -113,4 +113,23 @@ describe("ColorPalettePage", () => {
     expect(screen.getAllByTestId("swatch")[7].getAttribute("style")).not.toBe(before);
     expect(window.location.search).not.toContain("s7=");
   });
+
+  it("offers all five tint attractors and marks the snapped one", () => {
+    render(<ColorPalettePage />);
+    expect(screen.getAllByRole("button", { name: /그레이|무채색/ }).length).toBe(5);
+    expect(screen.getByTestId("snapped-tint").textContent).toContain("쿨");
+  });
+
+  it("records a chosen tint in the URL", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getByRole("button", { name: /웜 그레이/ }));
+    expect(window.location.search).toContain("n=warm");
+  });
+
+  it("drops the strength for the achromatic tint", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getByRole("button", { name: /무채색/ }));
+    expect(window.location.search).toContain("n=achromatic");
+    expect(window.location.search).not.toContain("achromatic-");
+  });
 });

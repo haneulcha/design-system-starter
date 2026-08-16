@@ -7,6 +7,7 @@ import { parse, serialize } from "./paletteUrl";
 import { AccentInput } from "./AccentInput";
 import { AdjustableScale } from "./AdjustableScale";
 import { CandidatePopover, previewScale } from "./CandidatePopover";
+import { NeutralControl } from "./NeutralControl";
 import { PreviewPane } from "./PreviewPane";
 
 export function ColorPalettePage() {
@@ -59,9 +60,13 @@ export function ColorPalettePage() {
             />
           )}
         </section>
-        <section className="space-y-1">
+        <section className="space-y-2">
           <h2 className="text-xs font-medium text-neutral-500">뉴트럴</h2>
           <AdjustableScale hexes={scales.neutral} adjustable={[]} pinned={[]} />
+          <NeutralControl
+            state={state}
+            onChange={(tint) => setState((s) => ({ ...s, tint }))}
+          />
         </section>
         <section className="space-y-2">
           <h2 className="text-xs font-medium text-neutral-500">상태색</h2>
