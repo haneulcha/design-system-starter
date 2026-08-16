@@ -227,16 +227,6 @@ function directionHint(theme: ContrastCheck["theme"]): string {
   return theme === "light" ? "더 진한 stop" : "더 밝은 stop";
 }
 
-/** `...`는/은 조사를 변수명 마지막 글자의 받침 여부로 고른다. 이 파일이 다루는
- *  변수명은 전부 로마자(text, text-strong, on-solid)라 실질적으로는 항상 자음으로
- *  끝나 "은"이 나오지만, 문구가 늘어도 깨지지 않게 한글·로마자 양쪽을 일반화해 둔다. */
-function eun(word: string): "은" | "는" {
-  const last = word.trim().slice(-1);
-  const code = last.charCodeAt(0);
-  if (code >= 0xac00 && code <= 0xd7a3) return (code - 0xac00) % 28 === 0 ? "는" : "은";
-  return /[aeiouAEIOU]$/.test(last) ? "는" : "은";
-}
-
 /** 본문/큰 글씨 두 케이스가 서로 다른 문장 틀을 쓴다 — 같은 틀에 "넘는다"와
  *  "부족하다"를 끼워 넣으면 "A는 물론 B"가 자기모순이 된다. */
 function shortfall(ratio: number, required: number): string {
@@ -246,21 +236,26 @@ function shortfall(ratio: number, required: number): string {
 }
 
 /** on-solid은 stop을 옮겨 고칠 수 없다 — 흑/백 중 관례상 나은 쪽을 고른 결과라
- *  "직접 다른 stop을 쓰라"는 안내가 맞지 않는다(스펙 D5). 별도 문구를 준다. */
+ *  "직접 다른 stop을 쓰라"는 안내가 맞지 않는다(스펙 D5). 별도 문구를 준다.
+ *
+ *  변수명 뒤에 조사를 바로 붙이지 않는다 — "text"는 "텍스트"로 읽으면 받침이
+ *  없어 "는"이 맞고 "text-strong"은 "스트롱"으로 읽으면 받침이 있어 "은"이 맞는데,
+ *  영문 마지막 글자만 보고 고르면(구 eun()) 발음과 반대로 나온다. 임의의 스케일·
+ *  역할 이름이 앞으로 늘어도 영원히 맞으려면 조사 자체를 피하는 게 유일한 방법이다
+ *  — "— 문장"으로 변수명을 동격 삽입하듯 끊는다. */
 function onSolidWarning(c: ContrastCheck): string {
   return (
-    `\`--color-${c.scaleName}-on-solid\`${eun("on-solid")} AA에 미달한다 — solid 위 ` +
-    `${formatRatio(c.ratio)}이라 ${shortfall(c.ratio, c.required)}. 흰/검 중 대비가 나은 쪽을 ` +
-    `관례대로 고른 값이라 stop을 옮겨 고칠 수 없다 — 미달을 감수하고 쓰거나 solid 위에는 ` +
-    `별도 배경/경계를 더할 것.`
+    `\`--color-${c.scaleName}-on-solid\` — AA 미달: solid 위 ${formatRatio(c.ratio)}이라 ` +
+    `${shortfall(c.ratio, c.required)}. 흰/검 중 대비가 나은 쪽을 관례대로 고른 값이라 ` +
+    `stop을 옮겨 고칠 수 없다 — 미달을 감수하고 쓰거나 solid 위에는 별도 배경/경계를 더할 것.`
   );
 }
 
 function stopWarning(c: ContrastCheck): string {
   return (
-    `\`--color-${c.scaleName}-${c.roleId}\`${eun(c.roleId)} ${themeLabel(c.theme)} 테마에서 ` +
-    `AA에 미달한다 — ${bgLabel(c.against)} 위 ${formatRatio(c.ratio)}이라 ` +
-    `${shortfall(c.ratio, c.required)}. AA가 필요하면 ${directionHint(c.theme)}을 직접 쓸 것.`
+    `\`--color-${c.scaleName}-${c.roleId}\` — ${themeLabel(c.theme)} 테마에서 AA 미달: ` +
+    `${bgLabel(c.against)} 위 ${formatRatio(c.ratio)}이라 ${shortfall(c.ratio, c.required)}. ` +
+    `AA가 필요하면 ${directionHint(c.theme)}을 직접 쓸 것.`
   );
 }
 

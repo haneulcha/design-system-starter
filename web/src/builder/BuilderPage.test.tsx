@@ -93,7 +93,7 @@ describe("BuilderPage 6단계 완주", () => {
     completeSixSteps();
     fireEvent.click(screen.getByRole("button", { name: "DESIGN.md" }));
 
-    expect(blobs[0]).toContain("AA에 미달한다");
+    expect(blobs[0]).toContain("AA 미달:");
     expect(blobs[0]).toContain("on-solid");
   });
 });

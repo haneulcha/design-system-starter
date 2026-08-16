@@ -216,20 +216,33 @@ describe("buildContrastWarnings", () => {
 
   // 2.96은 큰 글씨 기준 3:1도 못 넘는다 — "본문은 물론 큰 글씨로도 부족하다" 틀을
   // 써야 한다. "큰 글씨는 넘지만"이 섞이면 존재하지 않는 허용을 준 것이 된다.
+  // 변수명 바로 뒤에 조사를 붙이지 않는 전체 문장 형태까지 고정한다 — "text"는
+  // 발음(텍스트)상 받침이 없어 "는"이 맞고 "text-strong"은 받침이 있어 "은"이 맞는데,
+  // 영문 마지막 글자만 보는 판정으로는 이 둘을 못 맞힌다(이전 시도의 실패). 조사
+  // 자체를 피하는 " — " 구조라야 스케일·역할 이름이 늘어도 항상 맞는다.
   it("uses the below-3:1 sentence frame for the known 2.96 failure", () => {
     const warnings = buildContrastWarnings(systemFor("#3b82f6"), SCALE_ROLES);
     const known = warnings.find((w) => w.includes("2.96"));
     expect(known).toBeDefined();
-    expect(known).toContain("본문(4.5:1)은 물론 큰 글씨(3:1)로도 부족하다");
+    expect(known).toContain(
+      "`--color-warning-text` — 라이트 테마에서 AA 미달: 은은한 배경 위 2.96이라 " +
+        "본문(4.5:1)은 물론 큰 글씨(3:1)로도 부족하다.",
+    );
     expect(known).not.toContain("큰 글씨(3:1)는 넘지만");
   });
 
   // on-solid의 3.67은 3:1은 넘지만 본문(4.5:1)에는 여전히 못 쓴다 — "넘지만 …
   // 못 쓴다" 틀을 써야 하고, 부족 틀("본문은 물론")과 섞이면 자기모순이 된다.
+  // 여기도 변수명 뒤에 조사를 안 붙이는 전체 형태를 고정한다("on-solid"는 발음
+  // (솔리드)상 받침이 없어 "는"이 맞지만, 영문 마지막 글자(d)만 보면 "은"이
+  // 나와 틀렸었다).
   it("uses the at-or-above-3:1 sentence frame for the on-solid 3.67 case", () => {
     const warnings = buildContrastWarnings(systemFor("#3b82f6"), SCALE_ROLES);
     const onSolid = warnings.find((w) => w.includes("on-solid"))!;
-    expect(onSolid).toContain("큰 글씨(3:1)는 넘지만 본문(4.5:1)에는 못 쓴다");
+    expect(onSolid).toContain(
+      "`--color-accent-on-solid` — AA 미달: solid 위 3.67이라 " +
+        "큰 글씨(3:1)는 넘지만 본문(4.5:1)에는 못 쓴다.",
+    );
     expect(onSolid).not.toContain("은 물론");
   });
 
