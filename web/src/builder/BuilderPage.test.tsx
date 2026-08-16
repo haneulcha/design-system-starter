@@ -15,6 +15,21 @@ function completeSixSteps() {
   }
 }
 
+describe("BuilderPage 액센트 hex 입력", () => {
+  // 제어 컴포넌트가 "유효할 때만 상태 갱신"이면 매 keystroke마다 React가 값을
+  // 되돌려 전체 선택 후 붙여넣기밖에 못 한다. ColorPalettePage의 AccentInput과
+  // 같은 버그가 여기 원본 코드에도 있었다 — 같이 고친다.
+  it("accepts a hex value typed one character at a time", () => {
+    render(<BuilderPage />);
+    const input = screen.getByLabelText("액센트 hex") as HTMLInputElement;
+    const partials = ["#", "#e", "#ea", "#eab", "#eab3", "#eab30", "#eab308"];
+    for (const v of partials) {
+      fireEvent.change(input, { target: { value: v } });
+      expect(input.value, `after typing "${v}"`).toBe(v);
+    }
+  });
+});
+
 describe("BuilderPage 6단계 완주", () => {
   it("renders all six scales and the four downloads on the completion screen", () => {
     render(<BuilderPage />);

@@ -30,6 +30,20 @@ describe("ColorPalettePage", () => {
     expect(window.location.search).toContain("a=eab308");
   });
 
+  // 제어 컴포넌트가 "유효할 때만 상태 갱신"이면 React가 매 keystroke마다 값을
+  // 되돌려 전체 선택 후 붙여넣기밖에 못 한다 — 이 도구의 유일한 필수 입력이라
+  // 심각하다. 한 글자씩 타이핑해 완성할 수 있어야 한다.
+  it("accepts a hex value typed one character at a time", () => {
+    render(<ColorPalettePage />);
+    const input = screen.getByLabelText("액센트 hex") as HTMLInputElement;
+    const partials = ["#", "#e", "#ea", "#eab", "#eab3", "#eab30", "#eab308"];
+    for (const v of partials) {
+      fireEvent.change(input, { target: { value: v } });
+      expect(input.value, `after typing "${v}"`).toBe(v);
+    }
+    expect(window.location.search).toContain("a=eab308");
+  });
+
   it("restores state from the URL on mount", () => {
     window.history.replaceState({}, "", "/color-palette?v=1&a=eab308");
     render(<ColorPalettePage />);

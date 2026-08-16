@@ -5,7 +5,7 @@
 // @core/lab/palette/guided(학습 플로우).
 // 스펙: docs/superpowers/specs/2026-07-27-guided-palette-builder-design.md
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
 import { candidatesFor, type Candidate } from "@core/color/candidates.js";
 import { fillScale, STOP_KEYS, type Pin } from "@core/color/scale.js";
@@ -238,8 +238,14 @@ export function BuilderPage() {
   const [choices, setChoices] = useState<Choice[]>([]);
   const [stepIdx, setStepIdx] = useState(0); // BUILDER_FLOW 위치, length면 완료
   const [accentHex, setAccentHex] = useState("#3b82f6");
+  // hex 입력창의 드래프트. accentHex(커밋된 값)와 분리해 둔다 — 안 그러면
+  // "#3" 같은 중간 입력마다 React가 값을 이전 유효값으로 되돌려 한 글자씩
+  // 타이핑을 못 하고 전체 선택 후 붙여넣기만 가능해진다.
+  const [accentDraft, setAccentDraft] = useState(accentHex);
   const [picked, setPicked] = useState<Candidate | null>(null); // 현재 단계 임시 선택
   const [neutralTint, setNeutralTint] = useState<NeutralTint | null>(null);
+
+  useEffect(() => setAccentDraft(accentHex), [accentHex]);
 
   const done = stepIdx >= BUILDER_FLOW.length;
   const step: BuilderStep | null = done ? null : BUILDER_FLOW[stepIdx];
@@ -408,9 +414,15 @@ export function BuilderPage() {
             <div className="flex items-start gap-6">
               <OklchPicker hex={accentHex} onChange={setAccentHex} />
               <input
-                value={accentHex}
+                aria-label="액센트 hex"
+                value={accentDraft}
                 onChange={(e) => {
-                  if (/^#[0-9a-fA-F]{6}$/.test(e.target.value)) setAccentHex(e.target.value);
+                  const v = e.target.value;
+                  setAccentDraft(v);
+                  if (/^#[0-9a-fA-F]{6}$/.test(v)) setAccentHex(v);
+                }}
+                onBlur={() => {
+                  if (!/^#[0-9a-fA-F]{6}$/.test(accentDraft)) setAccentDraft(accentHex);
                 }}
                 className="border border-neutral-300 rounded px-2 py-1 text-sm font-mono w-24"
               />
