@@ -44,14 +44,22 @@ export function AdjustableScale({
                 // 죽는다(이번 변경의 핵심). press 시 이동 거리(3px)는 기본
                 // 깊이(3px)와 같게 맞춘다 — 눌렀을 때 칩이 그림자가 있던 자리에
                 // 정확히 내려앉도록, 물리적 대응이 깨지지 않게.
+                // 그림자 색은 그 상태의 테두리 색과 같다 — 한 칩에 서로 다른
+                // 회색이 둘(테두리 하나, 그림자 하나) 있으면 어색해 보인다는
+                // 지적이 있었다. pin 여부에 따라 테두리·그림자가 함께
+                // neutral-300 ↔ neutral-700으로 움직여 위계도 더 분명해진다.
                 className={`block w-full h-9 rounded-sm border cursor-pointer
-                  shadow-[0_3px_0_0_var(--color-neutral-500)]
-                  hover:shadow-[0_5px_0_0_var(--color-neutral-500)]
                   active:shadow-none active:translate-y-[3px]
                   transition-[box-shadow,transform]
                   focus-visible:outline-none focus-visible:ring-2
                   focus-visible:ring-neutral-900 focus-visible:ring-offset-1 ${
-                  pinned.includes(i) ? "border-neutral-700" : "border-neutral-300"
+                  pinned.includes(i)
+                    ? `border-neutral-700
+                       shadow-[0_3px_0_0_var(--color-neutral-700)]
+                       hover:shadow-[0_5px_0_0_var(--color-neutral-700)]`
+                    : `border-neutral-300
+                       shadow-[0_3px_0_0_var(--color-neutral-300)]
+                       hover:shadow-[0_5px_0_0_var(--color-neutral-300)]`
                 }`}
                 style={{ background: hex }}
               />
