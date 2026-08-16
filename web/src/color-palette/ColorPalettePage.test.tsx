@@ -164,6 +164,45 @@ describe("ColorPalettePage", () => {
     expect(badges.some((t) => t.includes("on-solid") && t.includes("3.6"))).toBe(true);
   });
 
+  // 경고 스케일의 text/라이트 검사는 subtle-bg 대·page 대 두 번 뜬다 — against가
+  // 안 찍히면 숫자만 다른 채로 겹쳐 보여 사용자가 버그로 읽는다(Finding 2a).
+  it("labels which background each duplicate-looking badge was measured against", () => {
+    render(<ColorPalettePage />);
+    const badges = screen.getAllByTestId("contrast-badge").map((el) => el.textContent ?? "");
+    const warningTextLight = badges.filter(
+      (t) => t.includes("경고") && t.includes("text") && t.includes("라이트"),
+    );
+    expect(warningTextLight.length).toBeGreaterThanOrEqual(2);
+    expect(warningTextLight.every((t, _, all) => all.indexOf(t) === all.lastIndexOf(t)))
+      .toBe(true); // 두 줄의 전체 텍스트가 서로 겹치지 않는다
+    expect(warningTextLight.some((t) => t.includes("은은한 배경"))).toBe(true);
+    expect(warningTextLight.some((t) => t.includes("페이지 배경"))).toBe(true);
+  });
+
+  // 상태색(warning 등)은 adjustable=false — 사용자가 손댈 수 없다. 손댈 수 있는
+  // accent와 시각적으로 구분돼야 한다(Finding 2b). 설명 문장이 아니라 짧은 꼬리표.
+  it("tags non-adjustable badges as fixed and leaves adjustable ones untagged", () => {
+    render(<ColorPalettePage />);
+    const badges = screen.getAllByTestId("contrast-badge").map((el) => el.textContent ?? "");
+    const warningBadge = badges.find((t) => t.includes("경고"))!;
+    const accentOnSolid = badges.find((t) => t.includes("on-solid"))!;
+    expect(warningBadge).toContain("고정");
+    expect(accentOnSolid).not.toContain("고정");
+  });
+
+  // 기본 파랑에서 success/text-strong/라이트/page는 4.495681로 AA(4.5) 미달인데
+  // toFixed(2)로 반올림하면 4.50이 되어 기준을 충족한 것처럼 보인다(Finding 2c).
+  it("never rounds a failing ratio up to the passing threshold", () => {
+    render(<ColorPalettePage />);
+    const badges = screen.getAllByTestId("contrast-badge").map((el) => el.textContent ?? "");
+    const successStrong = badges.find(
+      (t) => t.includes("성공") && t.includes("text-strong") && t.includes("페이지 배경"),
+    );
+    expect(successStrong).toBeDefined();
+    expect(successStrong).toContain("4.49");
+    expect(badges.every((t) => !t.includes("4.50"))).toBe(true);
+  });
+
   it("offers no fix for a blue accent", () => {
     window.history.replaceState({}, "", "/color-palette?v=1&a=3b82f6");
     render(<ColorPalettePage />);

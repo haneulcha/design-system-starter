@@ -4,7 +4,7 @@
 // 경우가 흔한데 토글이면 그것을 못 보고 지나간다 (스펙 D8).
 
 import type { CSSProperties } from "react";
-import { onSolidColor } from "@core/color/contrast.js";
+import { bgLabel, formatRatio, onSolidColor } from "@core/color/contrast.js";
 import type { ContrastCheck, RoleShift } from "@core/color/contrast.js";
 import { SCALE_ORDER } from "@core/color/roles.js";
 import type { ScaleRole, ScaleSet } from "@core/color/roles.js";
@@ -83,15 +83,18 @@ export function PreviewPane({
           {failing.map((c) => (
             // 텍스트를 span으로 쪼개지 말 것 — getByText는 요소의 직접 텍스트 노드만
             // 이어붙여 매칭하므로, 수치를 자식 span에 넣으면 "경고 … 2.96" 형태의
-            // 질의가 영원히 실패한다.
+            // 질의가 영원히 실패한다. against·"고정" 꼬리표도 같은 이유로 문자열
+            // 결합으로만 넣는다 — 자식 요소를 두지 않는다.
             <div
               key={`${c.scaleName}-${c.roleId}-${c.theme}-${c.against}`}
               data-testid="contrast-badge"
-              className="text-[10px] text-neutral-500"
+              className={`text-[10px] ${c.adjustable ? "text-neutral-500" : "text-neutral-400"}`}
             >
               {`⚠ ${LABELS[c.scaleName] ?? c.scaleName} ${c.roleId} (${
                 c.theme === "light" ? "라이트" : "다크"
-              }) ${c.ratio.toFixed(2)} / ${c.required}`}
+              } · ${bgLabel(c.against)}) ${formatRatio(c.ratio)} / ${c.required}${
+                c.adjustable ? "" : " · 고정"
+              }`}
             </div>
           ))}
           {shifts.length > 0 && (
