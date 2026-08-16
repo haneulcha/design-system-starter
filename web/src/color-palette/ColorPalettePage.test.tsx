@@ -209,4 +209,23 @@ describe("ColorPalettePage", () => {
     fireEvent.click(screen.getByRole("button", { name: "역할 기본값으로" }));
     expect(window.location.search).not.toContain("t=");
   });
+
+  it("puts the real palette into the downloaded file", () => {
+    const blobs: string[] = [];
+    URL.createObjectURL = ((blob: Blob) => {
+      // jsdom의 Blob은 text()가 Promise라 동기로 못 읽는다 — 생성 인자를 가로챈다.
+      blobs.push((blob as unknown as { __text?: string }).__text ?? "");
+      return "blob:x";
+    }) as typeof URL.createObjectURL;
+    // jsdom 29는 revokeObjectURL도 구현하지 않는다. downloadFile이 다음 틱에 부르므로
+    // 스텁을 걸어두지 않으면 테스트가 끝난 뒤 unhandled TypeError로 파일이 실패한다.
+    // 원복하지 않는다 — 원복하면 예약된 타이머가 undefined를 부른다.
+    URL.revokeObjectURL = (() => {}) as typeof URL.revokeObjectURL;
+
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getByRole("button", { name: "palette.css" }));
+
+    expect(blobs[0]).toContain("--color-accent-500");
+    expect(blobs[0]).toContain("--color-accent-on-solid");
+  });
 });

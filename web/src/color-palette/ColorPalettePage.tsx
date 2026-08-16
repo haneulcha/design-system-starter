@@ -8,6 +8,7 @@ import { parse, serialize } from "./paletteUrl";
 import { AccentInput } from "./AccentInput";
 import { AdjustableScale } from "./AdjustableScale";
 import { CandidatePopover, previewScale } from "./CandidatePopover";
+import { DownloadRow } from "./DownloadRow";
 import { NeutralControl } from "./NeutralControl";
 import { PreviewPane } from "./PreviewPane";
 
@@ -92,6 +93,7 @@ export function ColorPalettePage() {
             </div>
           ))}
         </section>
+        <DownloadRow scales={scales} roles={roles} />
       </div>
       <div className="sticky top-8">
         <PreviewPane
