@@ -2,7 +2,7 @@
 //
 // 틴트 어트랙터 5개 + 강도 2단. 기본은 액센트 hue에서 스냅된 자리이고,
 // 사용자가 다른 칩으로 덮을 수 있다. 어느 칩이 자동으로 붙은 자리인지는
-// 표식으로 알린다 — 판단(스냅)은 엔진이 하고 여긴 렌더만 한다.
+// 칩 옆 점(•) 표식으로만 알린다 — 판단(스냅)은 엔진이 하고 여긴 렌더만 한다.
 
 import { TINT_ATTRACTORS, snapTint } from "@core/color/neutral.js";
 import { parsePrimary } from "@core/generator/color.js";
@@ -39,14 +39,9 @@ export function NeutralControl({ state, onChange }: Props) {
           </button>
         ))}
       </div>
-      <div className="flex items-center gap-2">
-        <span data-testid="snapped-tint" className="text-[10px] text-neutral-400">
-          • = 당신의 액센트에서 자동으로 붙은 자리 ({snapped.label})
-        </span>
-      </div>
-      {!achromatic && (
-        <div className="flex gap-1.5">
-          {(["soft", "strong"] as const).map((s) => (
+      <div className="flex items-center gap-1.5">
+        {!achromatic &&
+          (["soft", "strong"] as const).map((s) => (
             <button
               key={s}
               type="button"
@@ -58,8 +53,19 @@ export function NeutralControl({ state, onChange }: Props) {
               {s === "soft" ? "은은" : "뚜렷"}
             </button>
           ))}
-        </div>
-      )}
+        {/* 칩이든 강도든 한 번 누르면 어트랙터가 확정된다(state.tint !== null) —
+           액센트를 나중에 바꿔도 자동 스냅으로 돌아가지 못하는 함정이 되지
+           않도록, 확정된 상태에서만 되돌릴 길을 둔다. */}
+        {state.tint && (
+          <button
+            type="button"
+            onClick={() => onChange(null)}
+            className="text-[11px] text-neutral-400 hover:text-neutral-600 underline"
+          >
+            자동으로
+          </button>
+        )}
+      </div>
     </div>
   );
 }

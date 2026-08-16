@@ -117,7 +117,8 @@ describe("ColorPalettePage", () => {
   it("offers all five tint attractors and marks the snapped one", () => {
     render(<ColorPalettePage />);
     expect(screen.getAllByRole("button", { name: /그레이|무채색/ }).length).toBe(5);
-    expect(screen.getByTestId("snapped-tint").textContent).toContain("쿨");
+    // 기본 파랑 액센트는 "쿨"로 스냅된다 — 그 칩에만 표식(•)이 붙는다.
+    expect(screen.getByRole("button", { name: /쿨 그레이/ }).textContent).toContain("•");
   });
 
   it("records a chosen tint in the URL", () => {
@@ -131,5 +132,19 @@ describe("ColorPalettePage", () => {
     fireEvent.click(screen.getByRole("button", { name: /무채색/ }));
     expect(window.location.search).toContain("n=achromatic");
     expect(window.location.search).not.toContain("achromatic-");
+  });
+
+  // 강도만 눌러도 어트랙터 선택이 확정된다 — 되돌릴 길이 있어야 함정이 아니다.
+  it("offers a way back to auto-snap after touching strength alone", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getByRole("button", { name: "뚜렷" }));
+    expect(screen.getByRole("button", { name: "자동으로" })).toBeTruthy();
+  });
+
+  it("returns to auto-snap and drops n= from the URL", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getByRole("button", { name: "뚜렷" }));
+    fireEvent.click(screen.getByRole("button", { name: "자동으로" }));
+    expect(window.location.search).not.toContain("n=");
   });
 });
