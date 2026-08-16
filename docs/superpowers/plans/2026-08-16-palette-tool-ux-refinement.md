@@ -43,13 +43,14 @@
 
 **Interfaces:**
 - Consumes: `clampChromaToGamut`·`oklchToHex` (`web/src/lib/oklch`, 이미 import돼 있음), `CHROMA_MAX`(파일 안 상수, 현재 `0.4`)
-- Produces: `OklchPicker`의 공개 props(`hex`·`onChange`)는 **바뀌지 않는다** — 소비처(`AccentInput`, `BuilderPage`)를 안 건드린다
+- Produces: `OklchPicker`의 공개 props(`hex`·`onChange`)는 **바뀌지 않는다** — 소비처를 안 건드린다. **소비처는 넷이다:** `AccentInput`(`/color-palette`), `BuilderPage`(`#builder`), `LabPage`(`#lab`), `inspector/panels/ColorPanel`(위저드 인스펙터). 뒤의 둘은 테스트가 없으니 브라우저로 확인한다 — 특히 인스펙터 패널은 폭이 좁아 3칸 가로줄이 넘칠 수 있다
 
 - [ ] **Step 1: 실패하는 테스트를 쓴다**
 
 ```tsx
 // web/src/components/OklchPicker.test.tsx
-import { describe, it, expect, vi } from "vitest";
+import React from "react";
+import { describe, it, expect } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { OklchPicker } from "./OklchPicker";
 
@@ -95,13 +96,24 @@ describe("OklchPicker 숫자 칸", () => {
     expect(Number(c.value)).toBeGreaterThan(0);
   });
 
-  // 중간 상태("0.", "")가 통과 못 하면 한 글자씩 못 친다 — AccentInput에서
-  // 같은 버그를 이미 한 번 고쳤다.
-  it("중간 입력 상태를 되돌리지 않는다", () => {
+  // 타이핑 중 초안을 덮어쓰면 한 글자씩 못 친다 — AccentInput에서 같은 버그를
+  // 이미 한 번 고쳤다. 숫자 칸에서는 toFixed 정규화 때문에 같은 함정이 다시 생긴다.
+  //
+  // 주의: `"0."` 같은 중간 문자열로는 이걸 검증할 수 없다. <input type="number">는
+  // HTML 새니타이즈 규칙상 유효한 부동소수 문자열이 아니면 value를 ""로 만들고,
+  // jsdom도 그대로 따른다 — 컴포넌트에 도달하기 전에 값이 버려진다.
+  it("타이핑한 값을 정규화된 표기로 덮어쓰지 않는다", () => {
     render(<Harness />);
     const l = screen.getByLabelText("L") as HTMLInputElement;
-    fireEvent.change(l, { target: { value: "0." } });
-    expect(l.value).toBe("0.");
+    fireEvent.change(l, { target: { value: "0.7" } });
+    expect(l.value).toBe("0.7"); // "0.700"으로 바뀌면 안 된다
+  });
+
+  it("빈 입력은 커밋하지 않는다", () => {
+    render(<Harness />);
+    const before = screen.getByTestId("hex").textContent;
+    fireEvent.change(screen.getByLabelText("L"), { target: { value: "" } });
+    expect(screen.getByTestId("hex").textContent).toBe(before);
   });
 
   it("blur 시 무효 입력을 마지막 유효값으로 되돌린다", () => {
@@ -150,10 +162,18 @@ function NumberField({
   const [draft, setDraft] = useState(shown);
   const lastShown = useRef(shown);
   // 바깥(피커 드래그·hex 입력)에서 값이 바뀌면 초안을 따라가게 한다.
+  //
+  // 되돌림 판정은 문자열이 아니라 **수치**로 한다. 문자열로 하면 두 방향이 다 깨진다:
+  //  - "0.7"을 치면 커밋 → shown이 "0.700"이 되어 문자열이 달라지고, 초안이
+  //    "0.700"으로 덮어써져 한 글자씩 칠 수 없다 (AccentInput에서 이미 한 번 고친 버그).
+  //    hex는 친 문자열과 커밋된 문자열이 글자 그대로 같아 이 문제가 없었지만
+  //    숫자는 toFixed 정규화 때문에 같지 않다.
+  //  - 반대로 클램프 결과가 표시상 같으면(예: 0.024 → 0.024) 문자열이 안 바뀌어
+  //    잘린 값이 칸에 안 돌아온다.
   useEffect(() => {
     if (shown !== lastShown.current) {
       lastShown.current = shown;
-      setDraft(shown);
+      if (Number(draft) !== value) setDraft(shown);
     }
   }, [shown]);
 
@@ -222,7 +242,13 @@ Expected: 신규 6건 PASS, 기존 65건 PASS. **`#builder`도 숫자 칸을 얻
 
 - [ ] **Step 7: 브라우저에서 확인한다**
 
-`cd web && npm run dev`로 띄우고 `/color-palette`에서 L 칸에 포커스를 준 뒤 **위/아래 화살표 키**를 눌러 팔레트가 미세하게 움직이는지 본다. 스크린샷을 찍어 보고서에 경로를 남긴다.
+`cd web && npm run dev`로 띄우고 확인한다:
+
+- `/color-palette` — L 칸에 포커스를 주고 **위/아래 화살표 키**로 팔레트가 미세하게 움직이는가. **"0.7"을 한 글자씩 쳐서 잼이 안 나는가**(F3의 회귀 지점)
+- `#builder`·`#lab` — 숫자 칸이 붙어도 화면이 안 깨지는가
+- **위저드(`/`)의 인스펙터 색 패널** — 폭이 좁다. 3칸이 넘치면 세로로 쌓거나 칸 폭을 줄여라
+
+스크린샷 경로를 보고서에 남긴다.
 
 - [ ] **Step 8: 커밋**
 
@@ -260,19 +286,25 @@ it("목업에 액센트 stop이 다른 막대 5개가 있다", () => {
   render(<ColorPalettePage />);
   const bars = screen.getAllByTestId("mock-bar");
   expect(bars.length).toBe(10); // 라이트 5 + 다크 5
-  const light = bars.slice(0, 5).map((b) => b.getAttribute("style"));
-  expect(new Set(light).size).toBe(5); // 다섯이 서로 다른 색
+  // style 속성 전체를 비교하면 안 된다 — BAR_HEIGHTS가 전부 달라서 색이 다섯 개
+  // 다 같아도 통과한다. 배경만 꺼내 비교해야 색 회귀를 잡는다.
+  const light = bars.slice(0, 5).map((b) => (b as HTMLElement).style.background);
+  expect(new Set(light).size).toBe(5);
 });
 
 it("솔리드 버튼 글자색이 엔진의 onSolidColor와 같다", () => {
   render(<ColorPalettePage />);
   const scales = deriveScales(defaultState());
-  const btn = screen.getAllByTestId("mock-solid-btn")[0];
-  expect(btn.getAttribute("style")).toContain(onSolidColor(scales.accent[5]));
+  const onSolid = onSolidColor(scales.accent[5]);
+  const btn = screen.getAllByTestId("mock-solid-btn")[0] as HTMLElement;
+  // jsdom(cssstyle)은 style을 rgb()로 직렬화한다 — hex 문자열로는 절대 매치되지 않는다.
+  expect(btn.style.color).toBe(
+    onSolid === "#ffffff" ? "rgb(255, 255, 255)" : "rgb(0, 0, 0)",
+  );
 });
 ```
 
-import를 더한다: `deriveScales`·`defaultState`(`./paletteState`), `onSolidColor`(`@core/color/contrast.js`).
+**import는 더하지 않는다** — `onSolidColor`·`defaultState`·`deriveScales`가 이 파일에 이미 import돼 있다. 다시 넣으면 중복 식별자로 `tsc -b`가 깨진다.
 
 - [ ] **Step 2: 실패를 확인한다**
 
@@ -300,13 +332,16 @@ function Mock({
     <div
       data-testid={`mock-${theme}`}
       className="rounded-lg p-3"
-      // 페이지는 뉴트럴 hover-bg, 카드는 subtle-bg — 다크에서 카드가 페이지보다
-      // 어두워지는 것은 역할표의 미러 규칙이 그렇게 말하기 때문이다.
-      style={{ background: at(n, "hover-bg") }}
+      // 바깥(페이지)은 뉴트럴 50/950. src/color/contrast.ts의 checkContrast가
+      // "페이지 배경"을 정확히 이 값으로 정의하므로, 화면과 뱃지의 "페이지 배경"이
+      // 같은 것을 가리켜야 한다.
+      style={{ background: theme === "light" ? n[0] : n[10] }}
     >
       <div
+        // 카드는 hover-bg(라이트 1 / 다크 9) — 라이트에선 페이지보다 살짝 어둡고
+        // 다크에선 살짝 밝다. 뜬 표면일수록 밝다는 다크 관례와 맞는다.
         className="rounded-md border p-3 space-y-3"
-        style={{ background: at(n, "subtle-bg"), borderColor: at(n, "border") }}
+        style={{ background: at(n, "hover-bg"), borderColor: at(n, "border") }}
       >
         <div>
           <div className="text-[11px] font-semibold" style={{ color: at(n, "text-strong") }}>
@@ -404,7 +439,12 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 
 - [ ] **Step 1: 실패하는 테스트를 쓴다**
 
-`AdjustableScale.test.tsx`의 **캡션 단언을 지우고** 이것으로 교체한다:
+`AdjustableScale.test.tsx`에는 캡션 관련 테스트가 **둘** 있다. 구분을 정확히 하라:
+
+- **캡션 클래스가 갈리는지** 보는 것 → **지운다.** 이 태스크가 그 구분을 없앤다.
+- **캡션 텍스트가 stop 번호뿐인지** 보는 것(D9: 설명 문장 금지) → **그대로 둔다.** 이번 변경과 무관하고 여전히 유효하다.
+
+클래스 테스트를 지우고 아래를 더한다:
 
 ```tsx
 // 어포던스는 depth로 준다 — 크기·표식은 정적 표시라 "누를 수 있다"만 말하고
