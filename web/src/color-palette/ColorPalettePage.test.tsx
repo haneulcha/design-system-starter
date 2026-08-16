@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { onSolidColor } from "@core/color/contrast.js";
 import { ColorPalettePage } from "./ColorPalettePage";
+import { DEFAULT_ACCENT, defaultState, deriveScales } from "./paletteState";
 
 beforeEach(() => window.history.replaceState({}, "", "/color-palette"));
 
@@ -225,7 +227,14 @@ describe("ColorPalettePage", () => {
     render(<ColorPalettePage />);
     fireEvent.click(screen.getByRole("button", { name: "palette.css" }));
 
-    expect(blobs[0]).toContain("--color-accent-500");
-    expect(blobs[0]).toContain("--color-accent-on-solid");
+    // 변수 "이름"만 맞는 회귀는 안 잡힌다 — deriveScales로 독립 계산한 실제 hex와
+    // 대조해 화면이 그린 팔레트가 파일에 그대로 실렸는지를 본다.
+    const scales = deriveScales(defaultState());
+    expect(scales.accent[5]).toBe(DEFAULT_ACCENT); // 500 자리 = 기본 액센트 그대로
+    expect(blobs[0]).toContain(`--color-accent-500: ${scales.accent[5]};`);
+
+    const onSolid = onSolidColor(scales.accent[5]);
+    expect(["#000000", "#ffffff"]).toContain(onSolid);
+    expect(blobs[0]).toContain(`--color-accent-on-solid: ${onSolid};`);
   });
 });

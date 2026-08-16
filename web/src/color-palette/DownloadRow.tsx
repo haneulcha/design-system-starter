@@ -5,7 +5,7 @@ import {
 } from "@core/export/color/index.js";
 import { SCALE_ORDER, type ScaleRole, type ScaleSet } from "@core/color/roles.js";
 import { STOP_KEYS } from "@core/color/scale.js";
-import { checkContrast } from "@core/color/contrast.js";
+import { buildContrastWarnings } from "./contrastWarnings";
 import { canCopy, copyText, downloadFile } from "../lib/download";
 
 const btn =
@@ -18,16 +18,9 @@ export function DownloadRow({
   const files = useMemo(() => {
     const system = toColorSystem(scales, SCALE_ORDER, roles, STOP_KEYS);
     // 경고 문구는 엔진 계산으로 만들어 산출 코드에 데이터로 넘긴다 — 산출 코드가 대비를
-    // 직접 재면 화면 뱃지와 갈라질 수 있다 (스펙 D5).
-    // "큰 글씨에만 쓰라"고 쓰지 않는다: 2.96은 큰 글씨 기준 3:1도 미달이다.
-    const warnings = checkContrast(scales, roles)
-      .filter((c) => !c.passes && c.theme === "light" && c.against === "subtle-bg")
-      .map(
-        (c) =>
-          `\`--color-${c.scaleName}-${c.roleId}\`는 라이트 테마에서 AA에 미달한다 — ` +
-          `은은한 배경 위 ${c.ratio.toFixed(2)}이라 본문(${c.required}:1)은 물론 ` +
-          `큰 글씨(3:1)로도 부족하다. AA가 필요하면 \`--color-${c.scaleName}-800\`을 직접 쓸 것.`,
-      );
+    // 직접 재면 화면 뱃지와 갈라질 수 있다 (스펙 D5). 화면 뱃지(PreviewPane)와 같은
+    // 전체 실패 집합을 쓴다 — buildContrastWarnings가 부분집합화 없이 이를 보장한다.
+    const warnings = buildContrastWarnings(scales, roles);
     return {
       css: generateColorCss(system),
       themeCss: generateColorThemeCss(system),
