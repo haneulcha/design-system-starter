@@ -9,30 +9,57 @@ import { render, screen } from "@testing-library/react";
 import { AdjustableScale } from "./AdjustableScale";
 
 const HEXES: readonly string[] = Array(11).fill("#808080") as string[];
+const ELEVEN_HEXES: readonly string[] = Array(11).fill("#808080") as string[];
 
 describe("AdjustableScale", () => {
-  it("gives adjustable captions a different class than fixed ones", () => {
+  // 어포던스는 depth로 준다 — 크기·표식은 정적 표시라 "누를 수 있다"만 말하고
+  // 끝나는데, 그림자는 hover에서 뜨고 press에서 눌리면서 상호작용 전체를 한
+  // 언어로 잇는다 (스펙 D3).
+  it("조정 가능한 stop만 그림자를 갖는다", () => {
     render(
-      <AdjustableScale hexes={HEXES} adjustable={[0, 3, 7, 10]} pinned={[]} onPick={() => {}} />,
+      <AdjustableScale
+        hexes={ELEVEN_HEXES}
+        adjustable={[0, 3, 7, 10]}
+        pinned={[]}
+        onPick={() => {}}
+      />,
     );
-    const captions = screen.getAllByTestId("stop-caption");
-    expect(captions.length).toBe(11);
+    const swatches = screen.getAllByTestId("swatch");
+    const raised = swatches.filter((s) => s.className.includes("shadow"));
+    expect(raised.length).toBe(4);
+    for (const i of [0, 3, 7, 10]) {
+      expect(swatches[i].className).toContain("shadow");
+    }
+  });
 
-    const adjustableIdx = new Set([0, 3, 7, 10]);
-    captions.forEach((el, i) => {
-      if (adjustableIdx.has(i)) {
-        expect(el.className, `stop ${i}`).not.toBe(captions[1].className);
-      }
-    });
-
-    // 조정 가능한 4개는 서로 같은 클래스, 나머지 7개와는 다른 클래스.
-    const adjustableClasses = new Set([...adjustableIdx].map((i) => captions[i].className));
-    const fixedClasses = new Set(
-      captions.map((el, i) => (adjustableIdx.has(i) ? null : el.className)).filter(Boolean),
+  it("조정 가능한 stop이 포인터 커서와 포커스 링을 갖는다", () => {
+    render(
+      <AdjustableScale
+        hexes={ELEVEN_HEXES}
+        adjustable={[0, 3, 7, 10]}
+        pinned={[]}
+        onPick={() => {}}
+      />,
     );
-    expect(adjustableClasses.size).toBe(1);
-    expect(fixedClasses.size).toBe(1);
-    expect([...adjustableClasses][0]).not.toBe([...fixedClasses][0]);
+    const s = screen.getAllByTestId("swatch")[3];
+    expect(s.className).toContain("cursor-pointer");
+    expect(s.className).toContain("focus-visible:ring");
+  });
+
+  // 신호가 둘이면 캡션이 소음이 된다 — depth가 그 일을 한다.
+  it("캡션은 더 이상 굵기로 가르지 않는다", () => {
+    render(
+      <AdjustableScale
+        hexes={ELEVEN_HEXES}
+        adjustable={[0, 3, 7, 10]}
+        pinned={[]}
+        onPick={() => {}}
+      />,
+    );
+    const classes = new Set(
+      screen.getAllByTestId("stop-caption").map((c) => c.className),
+    );
+    expect(classes.size).toBe(1);
   });
 
   // D9: 설명 문장을 붙이지 않는다 — 캡션은 여전히 stop 번호(짧은 라벨)만이어야 한다.
