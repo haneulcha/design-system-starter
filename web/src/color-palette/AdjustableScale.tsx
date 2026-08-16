@@ -42,7 +42,15 @@ export function AdjustableScale({ hexes, adjustable, pinned, onPick, preview }: 
                 style={{ background: hex }}
               />
             )}
-            <div className="mt-1 text-center text-[9px] font-mono text-neutral-400">
+            {/* 조정 가능 여부는 칩(1px 테두리 차이)이 아니라 여기서 드러낸다 —
+                채워진 36px 스와치 위의 테두리 색은 hover 전까지 눈으로 구분되지
+                않는다(스펙 D3). 색이 아니라 캡션의 굵기·명도로 표시한다. */}
+            <div
+              data-testid="stop-caption"
+              className={`mt-1 text-center text-[9px] font-mono ${
+                canAdjust ? "text-neutral-900 font-medium" : "text-neutral-400"
+              }`}
+            >
               {STOP_KEYS[i]}
             </div>
           </div>
