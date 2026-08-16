@@ -45,6 +45,12 @@
 **결과로 남는 부채:** `src/lab/`이 제품 경로가 됐는데 이름이 그대로다. 이 문서가
 그 사실을 기록한다.
 
+**해소: 2026-08-16, `3355dbd` (`2026-08-15-color-palette-generator-design.md` Task 1).**
+엔진(`builder`·`neutral`·`semantic`·`roles`·`candidates`·`scale`)이 `src/color/`로
+졸업했다. `src/lab/palette/`에는 연구 코드(`hct`·`leonardo`·`radix`·`naive`·`v1`·
+`bench`·`metric`·`lab-data`)와 `#builder`의 학습 플로우(`guided.ts`, `BUILDER_FLOW`·
+`STEP_META`)만 남는다.
+
 ### D2. `ColorSystem`은 역할표까지 데이터로 받는다
 
 산출 코드가 `SCALE_ROLES`를 import하면 `src/export/`가 `src/lab/`에 의존하게 된다.

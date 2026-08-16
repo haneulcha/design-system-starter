@@ -7,7 +7,7 @@
 이 문서는 "무엇이 열려 있는가"만 답한다. 항목을 해소하면 **출처 스펙에 해소 표시를 하고**
 여기서 지운다 — 두 곳에 살아 있게 두지 않는다.
 
-최종 갱신: 2026-08-10 (사이클 2 / PR #18)
+최종 갱신: 2026-08-16 (사이클 3 / `feat/color-palette-generator`)
 
 ---
 
@@ -15,7 +15,7 @@
 
 | | 상태 |
 | --- | --- |
-| PR #18 `feat/palette-color-export` | 리뷰 완료, 병합 대기 |
+| `feat/color-palette-generator` (사이클 3) | 코드 12개 태스크 완료, 리뷰 클린. Task 13(BACKLOG 갱신) 진행 중, PR 대기 |
 
 ---
 
@@ -37,17 +37,13 @@
 
 ### 1.2 레거시 위자드를 어떻게 할 것인가
 
-현재 위치: 루트 `/`가 위자드, `#builder`가 생성기. 위자드는 "참고용"으로 선언됐지만
-제품 진입점은 여전히 위자드다. 제거·강등·유지 중 무엇인지 정해지지 않았다.
+화면이 넷이다 — 루트 `/`가 위자드(`ResultPage`), `#builder`가 사이클 1의 가이드
+빌더, `#lab`이 연구 비교 화면, `/color-palette`가 사이클 3의 새 도구. 위자드는
+"참고용"으로 선언됐지만 제품 진입점은 여전히 위자드다. `#builder`와 `/color-palette`도
+같은 문제(액센트+뉴트럴+시맨틱 산출)를 서로 다른 UX로 풀고 있어 셋 중 무엇을
+남길지도 같이 걸려 있다. 제거·강등·유지 중 무엇인지 정해지지 않았다.
 
 출처: `specs/2026-08-10-palette-color-export-design.md`
-
-### 1.3 저장·공유
-
-새로고침하면 6단계가 날아간다. URL/localStorage 직렬화, 공유 링크, 다시 불러와 수정.
-액센트 트랙부터 계속 이월돼 온 항목이다.
-
-출처: `specs/2026-07-27-guided-palette-builder-design.md`
 
 ---
 
@@ -58,8 +54,6 @@
   불만이 생기면 독립 축으로 승격.
 - **시맨틱 채도를 액센트에 맞추기** — 뮤트한 브랜드에 tailwind 채도 그대로의 시맨틱이
   튀는지. 현재는 앵커 고정.
-- **뉴트럴 어트랙터 직접 선택** — 지금은 액센트에서 자동 스냅. "브랜드는 파랑인데
-  그레이는 웜으로" 요구가 실제로 생기면 개방.
 - **hue 드리프트 knob (액센트)** — 액센트 트랙에서부터 이월 중.
 - **V4 독립 검증** — 시맨틱이 액센트 곡선을 재사용해도 된다는 근거가 부분적으로
   순환이다(`OURS_CURVE`가 red/amber/green/blue를 포함한 17종의 평균). 시맨틱이
@@ -68,45 +62,70 @@
 출처: `specs/2026-08-09-palette-generator-color-system-design.md`
 
 ### 빌더 UX
-- **미세조정 피커** — 5-pick 외 임의 stop 선택, 하이브리드 후보.
+- **미세조정 피커** — 5-pick 외 임의 stop 선택, 하이브리드 후보. `/color-palette`도
+  조정 가능 stop이 4개(50·300·700·950) 고정이라 같은 이월이 이어진다.
 - **컴포넌트 맥락 미리보기** — stop별 역할 매핑 이후.
 - **다크 매핑 후보 선택지** — 관찰이 쌓인 뒤.
 - **다크 전용 곡선 피팅** — radix-dark 레퍼런스 수집부터.
 
 출처: `specs/2026-07-27-guided-palette-builder-design.md`,
-`specs/2026-07-28-dark-accent-roles-design.md`
+`specs/2026-07-28-dark-accent-roles-design.md`,
+`specs/2026-08-15-color-palette-generator-design.md` 알려진 한계 4
+
+### 대비·역할 — `/color-palette` 신설로 새로 열림
+- **상태색 텍스트가 라이트 테마에서 AA 미달인 채 산출된다** (`text` — warning 2.96 /
+  success 3.03, `text-strong`도 근접 미달 — warning 4.47 / success 4.43). 값은 고정
+  앵커라 사용자가 바꿀 수 없고, D4가 "바꿀 수 없는 것 때문에 바꿀 수 있는 것을
+  망가뜨리지 않는다"는 원칙으로 값을 그대로 두고 뱃지·DESIGN.md로만 드러내기로
+  했다. 근본 해결은 스케일별 역할 이동(기각안 b)이거나 시맨틱 앵커 재검토.
+  **사용자 판단 대기** — 실제 화면을 보고 결정.
+- **파랑·빨강 계열 솔리드 버튼의 흰 글자가 AA 미달인 채 산출된다** (파랑 3.68 /
+  빨강 3.81). D5가 Tailwind·Radix·Bootstrap의 흰 글자 관례를 지키기로 하고 뱃지로
+  미달을 드러낸다. 근본 해결은 APCA이거나 solid 역할을 500이 아니라 더 어두운
+  stop으로 옮기는 것 — 후자는 사용자가 고른 브랜드 색을 버튼에서 밀어내므로
+  검토하지 않았다. **사용자 판단 대기.**
+- **기본 파랑(`#3b82f6`) 첫 화면에 대비 뱃지가 10건 뜬다.** 각각은 정당하다
+  (on-solid 관례 3건 + 상태색 고정 앵커 6건 + info의 on-solid 1건) — 양이 아니라
+  합쳐진 첫인상이 문제인지는 실제 화면을 보고 판단하기로 이월됐다(Task 11 리뷰어
+  실측).
+- **역할 이동이 전역이다.** 액센트 때문에 이동하면 상태색도 같이 이동한다(더
+  진해질 뿐이라 해롭지 않지만 의도한 것보다 넓게 적용된다). 사용자가 채도 높은
+  50을 pin하면 어느 인덱스도 통과하지 못할 수 있는데, 그때 `suggestRoleShifts`는
+  빈 배열을 반환해 "이동 불필요"와 API 수준에서 구분되지 않는다(화면은 미달
+  뱃지로 구분). 근본 해결(스케일별 역할 오버라이드)은 `ColorSystem.roles`가
+  스케일별로 쪼개져 `types.ts`·`vars.ts`·`design-md.ts`가 함께 바뀐다.
+- **APCA 대비 · 큰 글씨 기준(3:1) 분리 판정** — 위 세 항목의 근본 해결 후보로
+  반복 등장하지만 아직 초안 규격이라 이월.
+- **액센트를 바꾸면 조정한 pin이 사라지고 되돌릴 수 없다** (D6 — pin의 수명은
+  액센트에 종속). 되돌리기가 stop 단위라 실수로 액센트를 바꾸면 조정을 복구할
+  방법이 없다 — 전체 실행취소 스택은 없다.
+- **`/color-palette`가 정적 호스팅에서 rewrite를 요구한다.** 현재 배포 설정이
+  없어 문제가 드러나지 않는다.
+- **localStorage 지속** — 새로고침하면 URL에 없는 조정(방문 이력)은 날아간다.
+  URL만으로 충분한지 관찰 후 결정.
+
+출처: `specs/2026-08-15-color-palette-generator-design.md` 알려진 한계 1·2·3·5·7,
+v1 범위 밖
 
 ### 산출물
 - **Figma 별칭 지원** — 지금은 역할 변수가 해석된 hex를 들고 있어 역할↔프리미티브
-  관계가 사라진다. `FigmaVariable.valuesByMode`에 별칭 타입이 없어서고, 지원하려면
-  `src/figma/types.ts`를 확장해야 한다.
+  관계가 사라진다(`on-solid`도 마찬가지). `FigmaVariable.valuesByMode`에 별칭 타입이
+  없어서고, 지원하려면 `src/figma/types.ts`를 확장해야 한다.
 - **산출물 합치기** — 생성기 산출물과 레거시 위자드 산출물이 같은 변수 이름
   (`--color-accent-*`·`--color-neutral-*`)을 서로 다른 값으로 선언한다. 둘을 같이 쓰는
   방법이 정해진 바 없다. → 1.1과 묶여 있다.
 - **"내 팔레트로 이 앱 보기"** — 생성된 팔레트를 앱 전역에 입히는 기능. 사이클 2에서
   기각한 대안(툴 UI가 같이 바뀌어 회귀와 구분이 안 됨)이지만 별도 기능으로는 매력적.
 
-출처: `specs/2026-08-10-palette-color-export-design.md`
+출처: `specs/2026-08-10-palette-color-export-design.md`,
+`specs/2026-08-15-color-palette-generator-design.md` 알려진 한계 6
 
 ---
 
 ## 3. 구조 부채
 
-### 3.1 `src/lab/`이 제품 경로다
-팔레트 엔진(`builder`·`neutral`·`semantic`·`roles`·`ours`)은 제품 기능의 본체인데
-연구 코드와 같은 디렉터리에 있다. 같은 폴더의 `hct`·`leonardo`·`radix`·`naive`·`v1`·
-`bench`·`metric`은 진짜 연구 코드이고 `#lab` 비교 화면이 계속 쓴다.
-
-졸업시킬 때 `SCALE_ORDER`가 자연스러운 seam이다 — `web/`과 `src/export/`가 순서 때문에
-둘 다 의존하는 유일한 엔진 상수이고 이미 역할표 옆에 있다.
-
-출처: `specs/2026-08-10-palette-color-export-design.md` D1 (의도적으로 남긴 부채)
-
-### 3.2 `web/` 커버리지가 얇다
-테스트 파일 하나(3케이스)뿐이다. 하네스는 갖춰졌으니 다음 테스트는 싸다.
-가장 값어치 있는 다음 하나: **다운로드 경로**. `URL.createObjectURL`에 spy를 걸어
-Blob 내용에 `--color-accent-500`이 들어있는지 확인하면, 엔진 테스트와 사용자가 실제로
-받는 파일 사이의 고리가 닫힌다. 지금은 그 고리를 자동으로 잇는 것이 없다.
+`src/lab/`이 제품 경로였던 문제(3.1)와 `web/` 자동 커버리지 0이었던 문제(3.2)는
+사이클 3에서 해소됐다 — 아래 "5. 해소 기록" 참고.
 
 ---
 
@@ -123,39 +142,74 @@ Blob 내용에 `--color-accent-500`이 들어있는지 확인하면, 엔진 테�
   없다는 전제에 기대고 있다. 헤더에 `--color-{스케일}-역할` 같은 문장을 넣으면 그 줄이
   가짜 셀렉터로 잡혀 테스트가 헛되이 실패한다.
 
-### 브라우저 호환
-- **`downloadFile`이 object URL을 동기 해제하고 앵커를 문서에 붙이지 않는다.**
-  Firefox에서 다운로드가 취소될 수 있다. `web/src/builder/ExportPanel.tsx`와
-  `web/src/result/DownloadPanel.tsx`에 **같은 코드가 있다** — 하나만 고치면 더 나쁘다.
-- **`navigator.clipboard`가 무방비다.** 비보안 컨텍스트(LAN에서 `vite preview --host`)에서
-  undefined라 클릭이 잡히지 않는 TypeError를 던진다. `ExportPanel.tsx`.
-
-### 타입·구조
-- `src/export/color/adapter.ts`의 `if (!hexes)`가 빈 배열을 안 잡는다 —
-  `assertColorSystem`이 뒤에서 잡지만 같은 문제를 두 메시지로 보고한다. `!hexes?.length`.
-- `assertColorSystem`에 `role.id` 중복 가드가 없다(스케일 이름 중복 가드는 있다).
-- `src/export/color/index.ts`를 루트 테스트가 전혀 건드리지 않는다 — 재수출 하나가
-  빠져도 `pnpm test`는 초록이다(`web/`의 `tsc -b`가 잡긴 한다).
-- `web/vitest.config.ts`·`vitest.setup.ts`가 `tsconfig.json`의 `include` 밖이라
-  타입체크를 안 받는다. `vite.config.ts`도 마찬가지라 새 문제는 아니다.
+### 화면
+- **`#builder` 완료 화면에 다크 시연이 둘이다.** `DarkSection`의 라이트/다크 목업 +
+  역할표와 `ExportPanel`의 미리보기 토글이 같은 주장을 한다. 각각은 정당했지만
+  함께 보면 중복이다. `/color-palette`는 처음부터 하나(라이트·다크 목업 한 쌍,
+  D8)로 설계돼 이 문제를 반복하지 않는다 — 그러나 `#builder` 쪽 코드 자체는
+  손대지 않았다.
+- `DarkSection` 헤더의 `justify-between`이 복사 버튼이 빠지면서 자식 하나만 남아
+  무의미해졌다.
 - `BuilderPage.tsx`의 `redo()`가 뉴트럴 단계 인덱스 5를 하드코딩한다. `BUILDER_FLOW`에서
   유도하면 흐름을 재배열해도 안전하다.
 - `BuilderPage.tsx`에 `stopIndex = -1` 센티널이 판별 유니온과 나란히 살아 있다.
   현재는 모든 소비처가 `kind` 검사로 막혀 있지만, 안전이 값이 아니라 다른 곳의 검사에
   달려 있다.
+- **`ExportPanel`·`DownloadRow`가 `copyText`의 성공/실패 반환값을 버린다.** 비보안
+  컨텍스트에서 버튼은 비활성화되지만(BACKLOG 4 상환분), 활성 상태에서 복사가 실제로
+  실패해도 사용자 피드백이 없다.
+- `NeutralControl`의 "왜 무채색엔 강도가 없는가"가 로컬 주석에 없다(엔진 `neutral.ts`엔
+  있다) — 코드만 보면 조건 분기의 이유가 안 보인다.
+- `PreviewPane`이 배경색만 `scales.neutral[0]`/`[10]`으로 하드코딩 — 같은 값이
+  `SCALE_ROLES`의 `subtle-bg`에 있는데 거기만 역할표를 우회한다.
+- `PreviewPane`이 prop 7개(목업+뱃지+액션)를 받는 119줄 컴포넌트가 됐다 — 뱃지
+  로직이 더 늘면 분리 고려.
+- `CandidatePopover`의 `contextPins`와 `paletteState`의 `pinsOf`가 `i !== stopIndex`
+  한 줄만 다른 중복 — `pinsOf`가 비공개라 강제된 중복.
+- `CandidatePopover`의 `stopIndex`를 `number`로 받고 캐스트로 좁힌다 — Props를
+  `AdjustableStop`으로 좁히면 캐스트가 불필요하다.
+- `AccentInput`이 hex를 소문자화하는데 주석은 "기존 빌더와 같은 동작"이라 과장
+  (빌더는 원본 케이스를 유지한다).
 
-### 화면
-- **완료 화면에 다크 시연이 둘이다.** `DarkSection`의 라이트/다크 목업 + 역할표와
-  `ExportPanel`의 미리보기 토글이 같은 주장을 한다. 각각은 정당했지만 함께 보면 중복.
-- `DarkSection` 헤더의 `justify-between`이 복사 버튼이 빠지면서 자식 하나만 남아
-  무의미해졌다.
+### 타입·구조
+- `src/export/color/index.ts`를 루트 테스트가 전혀 건드리지 않는다 — 재수출 하나가
+  빠져도 `pnpm test`는 초록이다(`web/`의 `tsc -b`가 잡긴 한다).
+- `web/vitest.config.ts`·`vitest.setup.ts`가 `web/tsconfig.json`의 `include` 밖이라
+  타입체크를 안 받는다(`vite.config.ts`도 마찬가지라 새 문제는 아니다). **루트 `tests/`도
+  루트 `tsconfig.json`의 `exclude`에 있어 같은 문제다** — `tests/color/contrast.test.ts`의
+  `as ScaleSet["semantic"]` 같은 캐스트가 타입체크를 한 번도 안 받고 통과한다.
+- `assertColorSystem`의 `defaultResolver`(`vars.ts`)가 잘못된 hex에 조용히 색을
+  반환한다(엔진 `onSolidColor`는 throw). 현재 입력은 항상 `oklchToHex` 산출이라
+  도달 불가능하지만 비일관이다.
+- `onSolidColor` JSDoc의 "파랑 3.45/4.02, 보라 3.95/3.57" 수치가 파일 안에서
+  검증되지 않는 서술 수치(다른 앵커 데이터 참조).
+- `src/export/color/adapter.ts:3` 최상단 주석이 "`src/lab/`을 import하지 않는다"로
+  옛 경로를 가리킨다 — 엔진이 `src/color/`로 졸업한 지금은 어색하다. 같은 파일의
+  JSDoc 둘은 이미 갱신됐다. 한 단어 수정.
+- `src/color/scale.ts` 헤더에 스펙 경로 줄이 없다 — `neutral`·`semantic`·`roles`와
+  문서 밀도가 어긋난다.
+- `web/src/color-palette/contrastWarnings.ts`의 `bgLabel`에 `against === "solid"`
+  분기가 죽은 코드다 — `on-solid` 검사는 항상 `onSolidWarning`으로 라우팅돼 이
+  분기에 닿지 않는다.
+- 대비 비율 `4.495681`이 `toFixed(2)`로 "4.50"으로 표시돼 기준 4.5 미달인데 숫자만
+  보면 통과처럼 보인다 — 기존 엔진 표시 방식을 그대로 물려받았다.
 
 ### 테스트 다듬기
 - `tests/export/color/types.test.ts`의 index-range 테스트가 제목은 "role and the field"인데
   정규식은 필드만 검사한다.
 - `tests/export/color/design-md.test.ts`의 `toHaveLength(66)`이 픽스처 사실을 재진술한다.
-- `tests/export/color/theme-css.test.ts`가 같은 candidates로 `compile()` 왕복을 두 번 한다.
-- `tests/lab/roles.test.ts`의 import 하나가 파일 중간에 있다.
+- `tests/export/color/theme-css.test.ts`가 같은 candidates(`["bg-accent-solid"]`)로
+  `compile()` 왕복을 두 번 한다.
+- `web/`의 `download.test.ts`·`App.test.tsx` 실행 시 jsdom의 "Not implemented:
+  navigation to another Document" 경고가 반복된다 — 출력이 깨끗하지 않다. React
+  `act(...)` 경고도 섞여 나온다. 여러 태스크(다운로드, 뉴트럴 틴트)에서 각각
+  나왔지만 원인은 jsdom의 `<a>` 클릭 내비게이션 미구현 하나다.
+- `web/lib/download.test.ts`의 revoke 테스트가 "결국 실행된다"의 절반(동기
+  미해제)만 검증한다 — 실제 지연 해제까지는 안 잡는다.
+- `tests/color/contrast.test.ts`의 "never throws" 파싱 테스트가 브리프의 7개 형식
+  케이스뿐 — 퍼징이 아니다.
+- `/color-palette`의 접힘(dedup) 테스트가 남은 후보 개수만 단언하고 hex/label은
+  고정하지 않는다 — dedup이 과하게 작동해도 개수가 맞으면 통과할 여지가 있다.
 
 ---
 
@@ -167,3 +221,12 @@ Blob 내용에 `--color-accent-500`이 들어있는지 확인하면, 엔진 테�
 | 제품 편입 (뉴트럴·시맨틱) | 2026-08-09, PR #17 | `2026-07-21-accent-scale-derivation-design.md` |
 | 4개 산출물 파이프라인 | 2026-08-10, PR #18 | `2026-08-09-palette-generator-color-system-design.md` |
 | `web/` 자동 커버리지 0 | 2026-08-10, PR #18 | 사이클 1 최종 리뷰 판정 |
+| 3.1 `src/lab/`이 제품 경로다 — 엔진을 `src/color/`로 졸업 | 2026-08-16, `3355dbd` | `2026-08-10-palette-color-export-design.md` D1 |
+| 3.2 `web/` 커버리지가 얇다 — 다운로드 경로 테스트 | 2026-08-16, `4bcaf40`/`72a0b4d` | 사이클 2 최종 리뷰 판정 |
+| 저장·공유 — URL 직렬화(`replaceState`, pin은 hex) | 2026-08-16, `c3cd953` | `2026-07-27-guided-palette-builder-design.md` (localStorage는 이월) |
+| `downloadFile` Firefox 취소 문제 + 사본 통합 | 2026-08-16, `c9ba80d` | 사이클 2 리뷰 부채 |
+| `navigator.clipboard` 무방비 | 2026-08-16, `c9ba80d` | 사이클 2 리뷰 부채 |
+| `adapter.ts`의 `if (!hexes)`가 빈 배열을 안 잡음 | 2026-08-16, `ce9c293` | 사이클 2 리뷰 부채 |
+| `assertColorSystem`에 `role.id` 중복 가드 없음 | 2026-08-16, `ce9c293` | 사이클 2 리뷰 부채 |
+| `tests/lab/roles.test.ts`의 파일 중간 import | 2026-08-16, `3355dbd` (파일 이동 중 정리) | 사이클 2 리뷰 부채 |
+| 뉴트럴 어트랙터 직접 선택 | 2026-08-16, `5cafae6`/`5af5189` | `2026-08-09-palette-generator-color-system-design.md` |
