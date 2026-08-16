@@ -217,6 +217,34 @@ describe("ColorPalettePage", () => {
     expect(badges.every((t) => !t.includes("4.50"))).toBe(true);
   });
 
+  // 고정값 미달은 접혀서 개수만 보이고, 조정 가능한 것(accent on-solid)은 접히지
+  // 않은 채 위에 남는다 — 10건 중 9건이 고정, 1건이 on-solid(스펙 위 확인값).
+  it("collapses the fixed-failure badges behind a summary with the right count", () => {
+    render(<ColorPalettePage />);
+    const summary = screen.getByText("고정값 미달 9건");
+    expect(summary.tagName).toBe("SUMMARY");
+    expect(summary.closest("details")?.hasAttribute("open")).toBe(false);
+  });
+
+  it("lists all nine fixed badges inside the collapsed group", () => {
+    render(<ColorPalettePage />);
+    const summary = screen.getByText("고정값 미달 9건");
+    const details = summary.closest("details")!;
+    const badgesInside = Array.from(details.querySelectorAll('[data-testid="contrast-badge"]'));
+    expect(badgesInside.length).toBe(9);
+    expect(badgesInside.every((el) => (el.textContent ?? "").includes("고정"))).toBe(true);
+  });
+
+  it("keeps the adjustable badge outside the collapsed group", () => {
+    render(<ColorPalettePage />);
+    const summary = screen.getByText("고정값 미달 9건");
+    const details = summary.closest("details")!;
+    const allBadges = screen.getAllByTestId("contrast-badge");
+    const outside = allBadges.filter((el) => !details.contains(el));
+    expect(outside.length).toBe(1);
+    expect(outside[0].textContent).toContain("on-solid");
+  });
+
   it("offers no fix for a blue accent", () => {
     window.history.replaceState({}, "", "/color-palette?v=1&a=3b82f6");
     render(<ColorPalettePage />);

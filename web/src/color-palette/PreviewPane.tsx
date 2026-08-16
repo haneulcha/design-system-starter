@@ -62,6 +62,25 @@ function Mock({
   );
 }
 
+// 텍스트를 span으로 쪼개지 말 것 — getByText는 요소의 직접 텍스트 노드만
+// 이어붙여 매칭하므로, 수치를 자식 span에 넣으면 "경고 … 2.96" 형태의
+// 질의가 영원히 실패한다. against·"고정" 꼬리표도 같은 이유로 문자열
+// 결합으로만 넣는다 — 자식 요소를 두지 않는다.
+function ContrastBadge({ check: c }: { readonly check: ContrastCheck }) {
+  return (
+    <div
+      data-testid="contrast-badge"
+      className={`text-[10px] ${c.adjustable ? "text-neutral-500" : "text-neutral-400"}`}
+    >
+      {`⚠ ${LABELS[c.scaleName] ?? c.scaleName} ${c.roleId} (${
+        c.theme === "light" ? "라이트" : "다크"
+      } · ${bgLabel(c.against)}) ${formatRatio(c.ratio)} / ${c.required}${
+        c.adjustable ? "" : " · 고정"
+      }`}
+    </div>
+  );
+}
+
 export function PreviewPane({
   scales, roles, checks, shifts, hasApplied, onApplyShifts, onResetShifts,
 }: {
@@ -74,29 +93,35 @@ export function PreviewPane({
   readonly onResetShifts: () => void;
 }) {
   const failing = checks.filter((c) => !c.passes);
+  // adjustable=true(사용자가 손댈 수 있는 것)를 위에 그대로 두고, adjustable=false
+  // (고정값이라 못 고치는 것)는 접어서 위계를 가른다 — 훑어봤을 때 "경고 10개"가
+  // 아니라 실제로 손댈 수 있는 게 몇 건인지가 먼저 보여야 한다.
+  const adjustableFailing = failing.filter((c) => c.adjustable);
+  const fixedFailing = failing.filter((c) => !c.adjustable);
   return (
     <div className="space-y-3">
       <Mock theme="light" scales={scales} roles={roles} />
       <Mock theme="dark" scales={scales} roles={roles} />
       {failing.length > 0 && (
         <div className="space-y-1 rounded-md border border-neutral-200 p-2">
-          {failing.map((c) => (
-            // 텍스트를 span으로 쪼개지 말 것 — getByText는 요소의 직접 텍스트 노드만
-            // 이어붙여 매칭하므로, 수치를 자식 span에 넣으면 "경고 … 2.96" 형태의
-            // 질의가 영원히 실패한다. against·"고정" 꼬리표도 같은 이유로 문자열
-            // 결합으로만 넣는다 — 자식 요소를 두지 않는다.
-            <div
-              key={`${c.scaleName}-${c.roleId}-${c.theme}-${c.against}`}
-              data-testid="contrast-badge"
-              className={`text-[10px] ${c.adjustable ? "text-neutral-500" : "text-neutral-400"}`}
-            >
-              {`⚠ ${LABELS[c.scaleName] ?? c.scaleName} ${c.roleId} (${
-                c.theme === "light" ? "라이트" : "다크"
-              } · ${bgLabel(c.against)}) ${formatRatio(c.ratio)} / ${c.required}${
-                c.adjustable ? "" : " · 고정"
-              }`}
-            </div>
+          {adjustableFailing.map((c) => (
+            <ContrastBadge key={`${c.scaleName}-${c.roleId}-${c.theme}-${c.against}`} check={c} />
           ))}
+          {fixedFailing.length > 0 && (
+            <details>
+              <summary className="cursor-pointer text-[10px] text-neutral-400">
+                {`고정값 미달 ${fixedFailing.length}건`}
+              </summary>
+              <div className="mt-1 space-y-1">
+                {fixedFailing.map((c) => (
+                  <ContrastBadge
+                    key={`${c.scaleName}-${c.roleId}-${c.theme}-${c.against}`}
+                    check={c}
+                  />
+                ))}
+              </div>
+            </details>
+          )}
           {shifts.length > 0 && (
             <button
               type="button"
