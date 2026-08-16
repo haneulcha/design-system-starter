@@ -3,7 +3,6 @@
 // 라이트·다크를 토글이 아니라 동시에 보여준다 — 대비 실패는 다크에서만 나는
 // 경우가 흔한데 토글이면 그것을 못 보고 지나간다 (스펙 D8).
 
-import type { CSSProperties } from "react";
 import { bgLabel, formatRatio, onSolidColor } from "@core/color/contrast.js";
 import type { ContrastCheck, RoleShift } from "@core/color/contrast.js";
 import { SCALE_ORDER } from "@core/color/roles.js";
