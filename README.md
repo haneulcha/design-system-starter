@@ -84,6 +84,8 @@ cd web && npm install && npm run dev
 
 The `#builder` colour picker (a separate flow from the wizard above) exports its own four files, colour only: `palette.css`, `palette.theme.css`, `palette.figma.json`, and a colour-scoped `DESIGN.md`. `palette.css` is framework-free — plain CSS custom properties (`--color-accent-solid`, …) under `:root` and `.dark`, so it drops into any stack. `palette.theme.css` wraps the same variables in a Tailwind v4 `@theme` block instead, which also generates utility classes (`bg-accent-solid`, `text-accent-text`, …) at build time — use it if you're on Tailwind and want the utilities, use `palette.css` otherwise. Pick one, not both; they declare the same variables and would collide. Note what these four files do *not* cover: typography, spacing, radius, elevation, and component tokens still come only from the wizard's outputs above — the `#builder` export is colour-only by design.
 
+`/color-palette` is a third, standalone tool for the same colour-only export: pick an accent, adjust individual scale stops against real AA contrast checks, and download the same four files without going through the wizard or the guided 5-pick flow. Linked from the header of both the wizard and `#builder`.
+
 ## Programmatic API
 
 The core is pure functions with zero Node.js dependencies — the web wizard runs it directly in the browser.

@@ -27,7 +27,11 @@ export function App() {
   const [state, setState] = useState<WizardState>(DEFAULT_STATE);
   const result = useGenerateResult(state);
 
-  if (path === "/color-palette") return <ColorPalettePage />;
+  // 루트("/")까지 지우면 안 되니 길이 1보다 긴 경로에서만 끝 슬래시를 뗀다.
+  // 위저드·빌더 헤더에서 <a href="/color-palette">를 넣는 순간 실제 링크가
+  // /color-palette/로 도달할 위험이 생긴다(브라우저는 상대 경로를 정규화하지 않는다).
+  const normalizedPath = path.length > 1 ? path.replace(/\/$/, "") : path;
+  if (normalizedPath === "/color-palette") return <ColorPalettePage />;
   if (hash === "#lab") return <LabPage />;
   if (hash === "#builder") return <BuilderPage />;
 

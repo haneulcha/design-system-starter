@@ -357,6 +357,12 @@ export function BuilderPage() {
           Refactoring UI 순서로 액센트를 고르면, 뉴트럴은 거기서 스냅되고 상태색은
           고정값으로 따라와 완전한 색 시스템이 됩니다.
         </p>
+        <a
+          href="/color-palette"
+          className="inline-block mt-1 text-[11px] text-neutral-400 hover:text-neutral-700 underline underline-offset-2"
+        >
+          고르는 과정 없이 바로 조정하고 싶다면 컬러 팔레트 도구 →
+        </a>
         <div className="flex gap-1.5 mt-2">
           {BUILDER_FLOW.map((_, i) => (
             <span
