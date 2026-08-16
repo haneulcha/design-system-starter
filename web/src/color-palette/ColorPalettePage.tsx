@@ -84,16 +84,25 @@ export function ColorPalettePage() {
             onChange={(tint) => setState((s) => ({ ...s, tint }))}
           />
         </section>
-        <section className="space-y-2">
-          <h2 className="text-xs font-medium text-neutral-500">상태색</h2>
-          {SEMANTIC_ANCHORS.map((a) => (
-            <div key={a.id}>
-              <div className="text-[10px] text-neutral-400">{a.label}</div>
-              <AdjustableScale hexes={scales.semantic[a.id]} adjustable={[]} pinned={[]} />
-            </div>
-          ))}
-        </section>
         <DownloadRow scales={scales} roles={roles} />
+        <details className="space-y-2">
+          <summary className="cursor-pointer text-xs font-medium text-neutral-500">
+            상태색 4종
+          </summary>
+          <div className="space-y-2 pt-2">
+            {SEMANTIC_ANCHORS.map((a) => (
+              <div key={a.id}>
+                <div className="text-[10px] text-neutral-400">{a.label}</div>
+                <AdjustableScale
+                  hexes={scales.semantic[a.id]}
+                  adjustable={[]}
+                  pinned={[]}
+                  showCaptions={false}
+                />
+              </div>
+            ))}
+          </div>
+        </details>
       </div>
       <div className="sticky top-8">
         <PreviewPane
