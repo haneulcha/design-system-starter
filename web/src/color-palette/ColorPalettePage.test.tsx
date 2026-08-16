@@ -19,6 +19,29 @@ describe("ColorPalettePage", () => {
     expect(screen.getByTestId("mock-dark")).toBeTruthy();
   });
 
+  // 막대가 여러 stop을 나란히 놓는 것이 이 목업의 존재 이유다 — 카드+버튼+배지는
+  // 액센트를 500 하나와 극단값 몇 개로만 써서 사다리를 안 보여준다 (스펙 D2).
+  it("목업에 액센트 stop이 다른 막대 5개가 있다", () => {
+    render(<ColorPalettePage />);
+    const bars = screen.getAllByTestId("mock-bar");
+    expect(bars.length).toBe(10); // 라이트 5 + 다크 5
+    // style 속성 전체를 비교하면 안 된다 — BAR_HEIGHTS가 전부 달라서 색이 다섯 개
+    // 다 같아도 통과한다. 배경만 꺼내 비교해야 색 회귀를 잡는다.
+    const light = bars.slice(0, 5).map((b) => (b as HTMLElement).style.background);
+    expect(new Set(light).size).toBe(5);
+  });
+
+  it("솔리드 버튼 글자색이 엔진의 onSolidColor와 같다", () => {
+    render(<ColorPalettePage />);
+    const scales = deriveScales(defaultState());
+    const onSolid = onSolidColor(scales.accent[5]);
+    const btn = screen.getAllByTestId("mock-solid-btn")[0] as HTMLElement;
+    // jsdom(cssstyle)은 style을 rgb()로 직렬화한다 — hex 문자열로는 절대 매치되지 않는다.
+    expect(btn.style.color).toBe(
+      onSolid === "#ffffff" ? "rgb(255, 255, 255)" : "rgb(0, 0, 0)",
+    );
+  });
+
   it("marks exactly four accent stops as adjustable", () => {
     render(<ColorPalettePage />);
     expect(screen.getAllByRole("button", { name: /조정/ }).length).toBe(4);
