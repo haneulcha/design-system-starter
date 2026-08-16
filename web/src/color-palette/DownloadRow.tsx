@@ -3,9 +3,9 @@ import { useMemo } from "react";
 import {
   generateColorCss, generateColorThemeCss, renderColorDesignMd, toColorFigma, toColorSystem,
 } from "@core/export/color/index.js";
+import { buildContrastWarnings } from "@core/color/contrast.js";
 import { SCALE_ORDER, type ScaleRole, type ScaleSet } from "@core/color/roles.js";
 import { STOP_KEYS } from "@core/color/scale.js";
-import { buildContrastWarnings } from "./contrastWarnings";
 import { canCopy, copyText, downloadFile } from "../lib/download";
 
 const btn =

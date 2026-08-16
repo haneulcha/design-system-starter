@@ -61,4 +61,24 @@ describe("BuilderPage 6단계 완주", () => {
     expect(screen.getByRole("button", { name: "라이트로" })).toBeTruthy();
     expect(document.querySelector(".palette-preview.dark")).toBeTruthy();
   });
+
+  // #builder는 renderColorDesignMd를 경고 없이 불렀었다 — 같은 액센트인데
+  // /color-palette가 만든 DESIGN.md에는 경고 10줄, #builder가 만든 파일에는
+  // 0줄인 갈라짐이 있었다. 기본 확정 흐름(1단계는 기본 액센트 그대로 확정)이
+  // 정확히 그 기본 파랑 액센트를 쓰므로, 최소 하나(경고 앰버 텍스트)는 뜬다.
+  it("includes contrast warnings in DESIGN.md, matching /color-palette's default accent", () => {
+    const blobs: string[] = [];
+    URL.createObjectURL = ((blob: Blob) => {
+      blobs.push((blob as unknown as { __text?: string }).__text ?? "");
+      return "blob:x";
+    }) as typeof URL.createObjectURL;
+    URL.revokeObjectURL = (() => {}) as typeof URL.revokeObjectURL;
+
+    render(<BuilderPage />);
+    completeSixSteps();
+    fireEvent.click(screen.getByRole("button", { name: "DESIGN.md" }));
+
+    expect(blobs[0]).toContain("AA에 미달한다");
+    expect(blobs[0]).toContain("on-solid");
+  });
 });

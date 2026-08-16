@@ -13,6 +13,7 @@ import {
   toColorFigma,
   toColorSystem,
 } from "@core/export/color/index.js";
+import { buildContrastWarnings } from "@core/color/contrast.js";
 import { SCALE_ORDER, SCALE_ROLES, type ScaleSet } from "@core/color/roles.js";
 import { STOP_KEYS } from "@core/color/scale.js";
 import { downloadFile, copyText, canCopy } from "../lib/download";
@@ -33,15 +34,18 @@ export function ExportPanel({ scales }: { scales: ScaleSet }) {
     () => toColorSystem(scales, SCALE_ORDER, SCALE_ROLES, STOP_KEYS),
     [scales],
   );
-  const files = useMemo(
-    () => ({
+  const files = useMemo(() => {
+    // 경고 문구는 엔진 계산으로 만들어 산출 코드에 데이터로 넘긴다 — 화면 뱃지
+    // (PreviewPane, /color-palette)와 같은 전체 실패 집합을 쓴다(스펙 D5). 이 값을
+    // 안 넘기면 같은 액센트인데 #builder의 DESIGN.md에만 경고가 0줄이 된다.
+    const warnings = buildContrastWarnings(scales, SCALE_ROLES);
+    return {
       css: generateColorCss(system),
       themeCss: generateColorThemeCss(system),
       figma: JSON.stringify(toColorFigma(system), null, 2),
-      designMd: renderColorDesignMd(system),
-    }),
-    [system],
-  );
+      designMd: renderColorDesignMd(system, warnings),
+    };
+  }, [system, scales]);
   const previewCss = useMemo(
     () => generateColorCss(system, PREVIEW_SELECTORS),
     [system],

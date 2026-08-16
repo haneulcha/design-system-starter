@@ -188,3 +188,91 @@ export function applyRoleShifts(
     };
   });
 }
+
+// ── DESIGN.md 경고 문구 ─────────────────────────────────────────────────
+//
+// 화면 뱃지(PreviewPane)와 다운로드 파일(DownloadRow, ExportPanel)이 같은 문장을
+// 써야 한다 — 소비처가 둘이라 화면 폴더(web/)에 두면 나머지 하나가 구조적으로
+// 못 쓴다. 엔진(src/color/)이 이미 checkContrast를 갖고 있으니 문구도 여기서
+// 만들어 산출 코드(src/export/)에는 여전히 데이터로만 넘긴다 — 산출 코드는
+// 이 파일을 import하지 않는다(D5의 계층 규칙).
+
+/** 큰 글씨(WCAG 2.2)의 대비 하한. 본문 하한(AA_BODY=4.5)과 별개로 실측에만 쓴다 —
+ *  "여기부터는 큰 글씨로만 쓰라"는 허용을 주지 않기 위해 케이스마다 직접 판정한다. */
+const AA_LARGE = 3.0;
+
+/** 화면에 보여줄 비율은 내림한다 — 4.4957을 toFixed(2)로 반올림하면 4.50이 되어
+ *  기준(4.5)을 충족한 것처럼 보인다. 뱃지·DESIGN.md가 같은 함수를 써야 두 표현이
+ *  갈라지지 않는다. */
+export function formatRatio(ratio: number): string {
+  return (Math.floor(ratio * 100) / 100).toFixed(2);
+}
+
+function themeLabel(theme: ContrastCheck["theme"]): string {
+  return theme === "light" ? "라이트" : "다크";
+}
+
+/** 무엇을 배경으로 쟀는지 사람이 읽을 말로. 화면 뱃지도 이걸 써야 같은 role·theme의
+ *  두 검사(subtle-bg 대·page 대)가 같은 문장으로 겹쳐 보이지 않는다. */
+export function bgLabel(against: ContrastCheck["against"]): string {
+  if (against === "subtle-bg") return "은은한 배경";
+  if (against === "page") return "페이지 배경";
+  return "solid";
+}
+
+/** 라이트는 진해지는 방향, 다크는 밝아지는 방향으로 옮기면 대비가 오른다 —
+ *  suggestRoleShifts와 같은 방향(스펙 D5). 구체적 stop 번호는 곡선·팔레트마다
+ *  달라 여기서 단정하지 않는다 — 방향만 안내한다. */
+function directionHint(theme: ContrastCheck["theme"]): string {
+  return theme === "light" ? "더 진한 stop" : "더 밝은 stop";
+}
+
+/** `...`는/은 조사를 변수명 마지막 글자의 받침 여부로 고른다. 이 파일이 다루는
+ *  변수명은 전부 로마자(text, text-strong, on-solid)라 실질적으로는 항상 자음으로
+ *  끝나 "은"이 나오지만, 문구가 늘어도 깨지지 않게 한글·로마자 양쪽을 일반화해 둔다. */
+function eun(word: string): "은" | "는" {
+  const last = word.trim().slice(-1);
+  const code = last.charCodeAt(0);
+  if (code >= 0xac00 && code <= 0xd7a3) return (code - 0xac00) % 28 === 0 ? "는" : "은";
+  return /[aeiouAEIOU]$/.test(last) ? "는" : "은";
+}
+
+/** 본문/큰 글씨 두 케이스가 서로 다른 문장 틀을 쓴다 — 같은 틀에 "넘는다"와
+ *  "부족하다"를 끼워 넣으면 "A는 물론 B"가 자기모순이 된다. */
+function shortfall(ratio: number, required: number): string {
+  return ratio >= AA_LARGE
+    ? `큰 글씨(3:1)는 넘지만 본문(${required}:1)에는 못 쓴다`
+    : `본문(${required}:1)은 물론 큰 글씨(3:1)로도 부족하다`;
+}
+
+/** on-solid은 stop을 옮겨 고칠 수 없다 — 흑/백 중 관례상 나은 쪽을 고른 결과라
+ *  "직접 다른 stop을 쓰라"는 안내가 맞지 않는다(스펙 D5). 별도 문구를 준다. */
+function onSolidWarning(c: ContrastCheck): string {
+  return (
+    `\`--color-${c.scaleName}-on-solid\`${eun("on-solid")} AA에 미달한다 — solid 위 ` +
+    `${formatRatio(c.ratio)}이라 ${shortfall(c.ratio, c.required)}. 흰/검 중 대비가 나은 쪽을 ` +
+    `관례대로 고른 값이라 stop을 옮겨 고칠 수 없다 — 미달을 감수하고 쓰거나 solid 위에는 ` +
+    `별도 배경/경계를 더할 것.`
+  );
+}
+
+function stopWarning(c: ContrastCheck): string {
+  return (
+    `\`--color-${c.scaleName}-${c.roleId}\`${eun(c.roleId)} ${themeLabel(c.theme)} 테마에서 ` +
+    `AA에 미달한다 — ${bgLabel(c.against)} 위 ${formatRatio(c.ratio)}이라 ` +
+    `${shortfall(c.ratio, c.required)}. AA가 필요하면 ${directionHint(c.theme)}을 직접 쓸 것.`
+  );
+}
+
+/** 경고 문구는 엔진 계산(checkContrast)으로 만들어 산출 코드에 데이터로 넘긴다 —
+ *  산출 코드가 대비를 직접 재면 화면 뱃지와 갈라질 수 있다(스펙 D5). 화면 뱃지와
+ *  같은 전체 실패 집합(`checks.filter((c) => !c.passes)`, PreviewPane 참고)을 쓴다 —
+ *  theme·against로 걸러내는 부분집합화는 재계산과 같은 종류의 갈라짐을 만든다. */
+export function buildContrastWarnings(
+  scales: ScaleSet,
+  roles: readonly ScaleRole[],
+): string[] {
+  return checkContrast(scales, roles)
+    .filter((c) => !c.passes)
+    .map((c) => (c.roleId === "on-solid" ? onSolidWarning(c) : stopWarning(c)));
+}

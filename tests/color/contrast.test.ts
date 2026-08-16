@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
-  contrastRatio, onSolidColor, AA_BODY, ON_SOLID_FLOOR,
-  checkContrast, suggestRoleShifts, applyRoleShifts,
+  contrastRatio, onSolidColor, AA_BODY, ON_SOLID_FLOOR, formatRatio,
+  checkContrast, suggestRoleShifts, applyRoleShifts, buildContrastWarnings,
 } from "../../src/color/contrast.js";
 import { SCALE_ROLES, type ScaleSet } from "../../src/color/roles.js";
 import { fillScale } from "../../src/color/scale.js";
@@ -22,6 +22,18 @@ function systemFor(hex: string): ScaleSet {
     ) as ScaleSet["semantic"],
   };
 }
+
+// 모든 stop이 같은 회색이면 배경과 글자가 늘 같은 색이라(ratio 1.0) 라이트·다크
+// 양쪽에서, 모든 스케일·역할에서 실패한다 — 다크 케이스를 억지로 만들지 않고도
+// "라이트·다크가 둘 다 다뤄진다"를 결정론적으로 시험할 수 있다.
+const FLAT_GRAY: readonly string[] = Array(11).fill("#808080") as string[];
+const FLAT_SYSTEM: ScaleSet = {
+  accent: FLAT_GRAY,
+  neutral: FLAT_GRAY,
+  semantic: Object.fromEntries(
+    SEMANTIC_ANCHORS.map((a) => [a.id, FLAT_GRAY]),
+  ) as unknown as ScaleSet["semantic"],
+};
 
 describe("contrastRatio", () => {
   it("returns 21 for black on white", () => {
@@ -162,5 +174,88 @@ describe("applyRoleShifts", () => {
     const before = JSON.stringify(SCALE_ROLES);
     applyRoleShifts(SCALE_ROLES, suggestRoleShifts(systemFor("#eab308"), SCALE_ROLES));
     expect(JSON.stringify(SCALE_ROLES)).toBe(before);
+  });
+});
+
+describe("formatRatio", () => {
+  // 4.4957을 toFixed(2)로 반올림하면 4.50이 되어 AA(4.5) 기준을 충족한 것처럼
+  // 보인다 — 뱃지·DESIGN.md 둘 다 내림을 써야 한다.
+  it("floors instead of rounding, so a near-miss never reads as passing", () => {
+    expect(formatRatio(4.4957)).toBe("4.49");
+    expect(formatRatio(4.4957)).not.toBe("4.50");
+  });
+
+  it("keeps two decimal places", () => {
+    expect(formatRatio(3.6779011537825332)).toBe("3.67");
+  });
+});
+
+// buildContrastWarnings의 필터·문구를 단위로 고정한다 — 원래 web/src/color-palette/
+// contrastWarnings.test.ts에 있었다. src/color/contrast.ts로 승격되며 엔진 테스트로
+// 옮겼다 — export/ 쪽 산출 코드는 여전히 이 함수를 import하지 않는다(D5).
+describe("buildContrastWarnings", () => {
+  it("includes the on-solid warning for the default blue accent", () => {
+    const warnings = buildContrastWarnings(systemFor("#3b82f6"), SCALE_ROLES);
+    expect(warnings.some((w) => w.includes("on-solid"))).toBe(true);
+  });
+
+  // 브리프의 원래 필터(theme==="light" && against==="subtle-bg")는 on-solid을
+  // 통째로 뺐다 — 화면 뱃지에는 뜨는데 파일에는 없는 갈라짐이었다.
+  it("does not silently drop the on-solid failure the way the old subset filter did", () => {
+    const warnings = buildContrastWarnings(systemFor("#3b82f6"), SCALE_ROLES);
+    const onSolid = warnings.find((w) => w.includes("on-solid"));
+    expect(onSolid).toBeDefined();
+    expect(onSolid).toContain("3.67"); // 내림 — toFixed(2)라면 3.68로 반올림됐을 값
+  });
+
+  it("covers both light and dark theme failures", () => {
+    const warnings = buildContrastWarnings(FLAT_SYSTEM, SCALE_ROLES);
+    expect(warnings.some((w) => w.includes("라이트"))).toBe(true);
+    expect(warnings.some((w) => w.includes("다크"))).toBe(true);
+  });
+
+  // 2.96은 큰 글씨 기준 3:1도 못 넘는다 — "본문은 물론 큰 글씨로도 부족하다" 틀을
+  // 써야 한다. "큰 글씨는 넘지만"이 섞이면 존재하지 않는 허용을 준 것이 된다.
+  it("uses the below-3:1 sentence frame for the known 2.96 failure", () => {
+    const warnings = buildContrastWarnings(systemFor("#3b82f6"), SCALE_ROLES);
+    const known = warnings.find((w) => w.includes("2.96"));
+    expect(known).toBeDefined();
+    expect(known).toContain("본문(4.5:1)은 물론 큰 글씨(3:1)로도 부족하다");
+    expect(known).not.toContain("큰 글씨(3:1)는 넘지만");
+  });
+
+  // on-solid의 3.67은 3:1은 넘지만 본문(4.5:1)에는 여전히 못 쓴다 — "넘지만 …
+  // 못 쓴다" 틀을 써야 하고, 부족 틀("본문은 물론")과 섞이면 자기모순이 된다.
+  it("uses the at-or-above-3:1 sentence frame for the on-solid 3.67 case", () => {
+    const warnings = buildContrastWarnings(systemFor("#3b82f6"), SCALE_ROLES);
+    const onSolid = warnings.find((w) => w.includes("on-solid"))!;
+    expect(onSolid).toContain("큰 글씨(3:1)는 넘지만 본문(4.5:1)에는 못 쓴다");
+    expect(onSolid).not.toContain("은 물론");
+  });
+
+  it("never emits the forbidden 'use it for large text only' phrasing anywhere", () => {
+    const warnings = [
+      ...buildContrastWarnings(systemFor("#3b82f6"), SCALE_ROLES),
+      ...buildContrastWarnings(FLAT_SYSTEM, SCALE_ROLES),
+    ];
+    expect(warnings.every((w) => !w.includes("큰 글씨에만"))).toBe(true);
+  });
+
+  it("omits the on-solid warning when the solid stop clears AA on white", () => {
+    // solid(index 5)만 아주 어둡게 바꾼다 — 흰 글자가 넉넉히 AA(4.5)를 넘어
+    // on-solid만 통과해야 한다. 나머지 stop은 FLAT_GRAY 그대로라 다른 실패는
+    // 여전히 나올 수 있지만, 여기서는 on-solid 항목만 따로 본다.
+    const darkSolid: readonly string[] = FLAT_GRAY.map((h, i) => (i === 5 ? "#101010" : h));
+    const system: ScaleSet = {
+      accent: darkSolid,
+      neutral: darkSolid,
+      semantic: Object.fromEntries(
+        SEMANTIC_ANCHORS.map((a) => [a.id, darkSolid]),
+      ) as unknown as ScaleSet["semantic"],
+    };
+    const onSolidWarnings = buildContrastWarnings(system, SCALE_ROLES).filter((w) =>
+      w.includes("on-solid"),
+    );
+    expect(onSolidWarnings).toEqual([]);
   });
 });
