@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { toColorFigma } from "../../../src/export/color/figma.js";
-import { fixtureSystem } from "./fixture.js";
+import { fixtureSystem, systemWithOnSolid } from "./fixture.js";
 
 describe("toColorFigma", () => {
   it("emits exactly two collections and no text/effect styles", () => {
@@ -62,5 +62,16 @@ describe("toColorFigma", () => {
   it("runs the contract guards", () => {
     const s = fixtureSystem();
     expect(() => toColorFigma({ ...s, stopKeys: [] })).toThrow();
+  });
+});
+
+describe("on-solid", () => {
+  it("resolves to the same literal colour in both modes, black or white", () => {
+    const f = toColorFigma(systemWithOnSolid());
+    const [, colors] = f.variableCollections;
+    const [light, dark] = colors.modes.map((m) => m.modeId);
+    const v = colors.variables.find((x) => x.name === "accent-on-solid")!;
+    expect(v.valuesByMode[light]).toBe(v.valuesByMode[dark]);
+    expect(["#000000", "#ffffff"]).toContain(v.valuesByMode[light]);
   });
 });

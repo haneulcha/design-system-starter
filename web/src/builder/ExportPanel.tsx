@@ -13,18 +13,10 @@ import {
   toColorFigma,
   toColorSystem,
 } from "@core/export/color/index.js";
-import { SCALE_ORDER, SCALE_ROLES, type ScaleSet } from "@core/lab/palette/roles.js";
-import { STOP_KEYS } from "@core/lab/palette/builder.js";
-
-function downloadFile(filename: string, content: string, mime: string) {
-  const blob = new Blob([content], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
+import { buildContrastWarnings } from "@core/color/contrast.js";
+import { SCALE_ORDER, SCALE_ROLES, type ScaleSet } from "@core/color/roles.js";
+import { STOP_KEYS } from "@core/color/scale.js";
+import { downloadFile, copyText, canCopy } from "../lib/download";
 
 const buttonClass =
   "px-3 py-1.5 rounded-md border border-neutral-200 bg-white text-[11px] font-medium " +
@@ -42,15 +34,18 @@ export function ExportPanel({ scales }: { scales: ScaleSet }) {
     () => toColorSystem(scales, SCALE_ORDER, SCALE_ROLES, STOP_KEYS),
     [scales],
   );
-  const files = useMemo(
-    () => ({
+  const files = useMemo(() => {
+    // 경고 문구는 엔진 계산으로 만들어 산출 코드에 데이터로 넘긴다 — 화면 뱃지
+    // (PreviewPane, /color-palette)와 같은 전체 실패 집합을 쓴다(스펙 D5). 이 값을
+    // 안 넘기면 같은 액센트인데 #builder의 DESIGN.md에만 경고가 0줄이 된다.
+    const warnings = buildContrastWarnings(scales, SCALE_ROLES);
+    return {
       css: generateColorCss(system),
       themeCss: generateColorThemeCss(system),
       figma: JSON.stringify(toColorFigma(system), null, 2),
-      designMd: renderColorDesignMd(system),
-    }),
-    [system],
-  );
+      designMd: renderColorDesignMd(system, warnings),
+    };
+  }, [system, scales]);
   const previewCss = useMemo(
     () => generateColorCss(system, PREVIEW_SELECTORS),
     [system],
@@ -94,8 +89,9 @@ export function ExportPanel({ scales }: { scales: ScaleSet }) {
         </button>
         <button
           type="button"
-          className="px-3 py-1.5 text-[11px] text-neutral-400 hover:text-neutral-700"
-          onClick={() => navigator.clipboard.writeText(files.css)}
+          disabled={!canCopy()}
+          className="px-3 py-1.5 text-[11px] text-neutral-400 hover:text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          onClick={() => copyText(files.css)}
         >
           copy CSS
         </button>
@@ -145,8 +141,11 @@ export function ExportPanel({ scales }: { scales: ScaleSet }) {
           </div>
           <div className="flex gap-2">
             <span
-              className="rounded px-2 py-1 text-[11px] font-medium text-white"
-              style={{ background: "var(--color-accent-solid)" }}
+              className="rounded px-2 py-1 text-[11px] font-medium"
+              style={{
+                background: "var(--color-accent-solid)",
+                color: "var(--color-accent-on-solid)",
+              }}
             >
               솔리드 버튼
             </span>

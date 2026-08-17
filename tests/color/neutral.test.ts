@@ -8,15 +8,15 @@ import {
   cShape,
   SOFT_REF_CMAX,
   STRONG_REF_CMAX,
-} from "../../src/lab/palette/neutral.js";
-import { SCALE_SIZE } from "../../src/lab/palette/builder.js";
+} from "../../src/color/neutral.js";
+import { SCALE_SIZE } from "../../src/color/scale.js";
 import {
   buildNeutral,
   neutralCandidates,
   tintAttractor,
   TINT_STRENGTHS,
   type NeutralCandidate,
-} from "../../src/lab/palette/neutral.js";
+} from "../../src/color/neutral.js";
 
 describe("NEUTRAL_CURVE", () => {
   it("has 11 stops with strictly decreasing lightness", () => {

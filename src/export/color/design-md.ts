@@ -25,7 +25,12 @@ const USAGE_RULES: readonly string[] = [
   "다크를 켜려면 루트에 `.dark` 클래스를 붙인다. 시스템 설정을 자동으로 따르지 않는다.",
 ];
 
-export function renderColorDesignMd(system: ColorSystem): string {
+export function renderColorDesignMd(
+  system: ColorSystem,
+  /** 라이트/다크에서 AA에 미달하는 조합의 설명. 호출자(화면)가 checkContrast 결과로 만든다.
+   *  산출 코드가 직접 재지 않는 이유: 여기서 재면 화면 뱃지와 갈라질 수 있다. */
+  contrastWarnings: readonly string[] = [],
+): string {
   assertColorSystem(system);
   const lines: string[] = ["# 색 시스템", ""];
 
@@ -46,9 +51,11 @@ export function renderColorDesignMd(system: ColorSystem): string {
   );
   for (const role of system.roles) {
     const varname = varName(SCALE_PLACEHOLDER, role.id);
-    lines.push(
-      `| ${role.label} | ${varname} | ${system.stopKeys[role.lightIndex]} | ${system.stopKeys[role.darkIndex]} |`,
-    );
+    const cells =
+      role.kind === "contrast"
+        ? "스케일마다 흑/백 자동 | 좌동"
+        : `${system.stopKeys[role.lightIndex]} | ${system.stopKeys[role.darkIndex]}`;
+    lines.push(`| ${role.label} | ${varname} | ${cells} |`);
   }
   lines.push(
     "",
@@ -64,6 +71,7 @@ export function renderColorDesignMd(system: ColorSystem): string {
       `예: 액센트 스케일의 500 stop은 \`${varName("accent", "500")}\`, ` +
       `그 스케일의 은은한 배경 역할은 \`${varName("accent", "subtle-bg")}\`.`,
   );
+  for (const w of contrastWarnings) lines.push(`- ${w}`);
   lines.push("");
 
   return lines.join("\n");

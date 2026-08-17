@@ -23,21 +23,7 @@
 import { parsePrimary } from "../../generator/color.js";
 import type { Oklch } from "../../schema/types.js";
 import type { AccentAlgorithm, ScaleSpec } from "./types.js";
-
-// stop 50..950 (11개, 앵커=인덱스 5). l = 평균 L, cMult = 평균 C_i/C_anchor.
-export const OURS_CURVE: readonly { l: number; cMult: number }[] = [
-  { l: 0.9772, cMult: 0.092 },
-  { l: 0.9503, cMult: 0.221 },
-  { l: 0.9052, cMult: 0.425 },
-  { l: 0.8393, cMult: 0.689 },
-  { l: 0.7533, cMult: 0.908 },
-  { l: 0.6838, cMult: 1.0 },
-  { l: 0.6014, cMult: 0.985 },
-  { l: 0.518, cMult: 0.872 },
-  { l: 0.4469, cMult: 0.732 },
-  { l: 0.3948, cMult: 0.593 },
-  { l: 0.2777, cMult: 0.42 },
-];
+import { OURS_CURVE } from "../../color/curve.js";
 
 const CURVE_ANCHOR = 5;
 

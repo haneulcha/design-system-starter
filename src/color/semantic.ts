@@ -1,4 +1,4 @@
-// src/lab/palette/semantic.ts
+// src/color/semantic.ts
 //
 // 시맨틱(상태색) 스케일 파생. 액센트와 달리 사용자 입력이 없다 —
 // 빨강=위험/초록=성공은 문화적으로 고정된 자리이고, 코퍼스가 관측한 밴드 폭도
@@ -12,8 +12,8 @@
 // 이 테이블과 자릿수까지 대조할 것. 규칙을 발명하지 않고 레퍼런스 실측을
 // 그대로 싣는다.
 
-import { SCALE_SIZE, clampToGamut, fillScale } from "./builder.js";
-import type { Oklch } from "../../schema/types.js";
+import { SCALE_SIZE, clampToGamut, fillScale } from "./scale.js";
+import type { Oklch } from "../schema/types.js";
 
 export type SemanticId = "error" | "success" | "warning" | "info";
 

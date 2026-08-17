@@ -6,3 +6,14 @@
 
 HTMLCanvasElement.prototype.getContext =
   (() => null) as unknown as HTMLCanvasElement["getContext"];
+
+// 다운로드 경로 테스트가 Blob 내용을 동기로 확인할 수 있게 한다.
+// 프로덕션 코드는 이 프로퍼티를 읽지 않는다 — 테스트 전용 관측 지점이다.
+const RealBlob = globalThis.Blob;
+globalThis.Blob = class extends RealBlob {
+  __text: string;
+  constructor(parts: BlobPart[] = [], options?: BlobPropertyBag) {
+    super(parts, options);
+    this.__text = parts.map(String).join("");
+  }
+} as unknown as typeof Blob;

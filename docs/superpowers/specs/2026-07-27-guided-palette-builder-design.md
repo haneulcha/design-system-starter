@@ -123,7 +123,10 @@ UI는 기존 관례대로 Playwright 수동 검증 — 5단계 완주, 다시 �
 ## v1 범위 밖 (명시적 이월)
 
 - 제품(WizardState/paletteOverrides) 편입 — 별도 사이클
-- 저장/불러오기, URL 공유
+- ~~URL 공유~~ — 해소: `2026-08-15-color-palette-generator-design.md` D6/Task 6
+  (`c3cd953`, 2026-08-16). `/color-palette`가 `replaceState`로 액센트·pin·틴트·
+  역할 이동을 URL에 직렬화한다. **저장/불러오기(localStorage)는 이월** —
+  `2026-08-15-color-palette-generator-design.md`의 "v1 범위 밖" 참고.
 - 미세조정 피커(하이브리드 후보), 5-pick 외 임의 stop 선택
 - 컴포넌트 맥락 미리보기 (stop별 역할 매핑 이후)
 - 다크 모드 스케일

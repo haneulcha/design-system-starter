@@ -1,47 +1,37 @@
 // web/src/builder/BuilderPage.tsx
 //
 // #builder — 가이드드 팔레트 빌더 (RUI 5-pick 플로우). 렌더 전용:
-// 스케일 계산·후보 생성은 전부 @core/lab/palette/builder (순수).
+// 스케일 계산·후보 생성은 @core/color(제품 엔진), 5-pick 순서·안내 카피는
+// @core/lab/palette/guided(학습 플로우).
 // 스펙: docs/superpowers/specs/2026-07-27-guided-palette-builder-design.md
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
+import { candidatesFor, type Candidate } from "@core/color/candidates.js";
+import { fillScale, STOP_KEYS, type Pin } from "@core/color/scale.js";
+import { BUILDER_FLOW, STEP_META, type BuilderStep } from "@core/lab/palette/guided.js";
 import {
-  BUILDER_FLOW,
-  candidatesFor,
-  fillScale,
-  STEP_META,
-  STOP_KEYS,
-  type BuilderStep,
-  type Candidate,
-  type Pin,
-} from "@core/lab/palette/builder.js";
+  neutralCandidates, buildNeutral, tintAttractor,
+  type NeutralCandidate, type NeutralTint,
+} from "@core/color/neutral.js";
 import {
-  neutralCandidates,
-  buildNeutral,
-  tintAttractor,
-  type NeutralCandidate,
-  type NeutralTint,
-} from "@core/lab/palette/neutral.js";
+  SCALE_ORDER, SCALE_ROLES, scaleHasAnchor,
+  type ScaleName, type ScaleRole, type ScaleSet,
+} from "@core/color/roles.js";
 import {
-  SCALE_ORDER,
-  SCALE_ROLES,
-  scaleHasAnchor,
-  type ScaleName,
-  type ScaleRole,
-  type ScaleSet,
-} from "@core/lab/palette/roles.js";
-import {
-  SEMANTIC_ANCHORS,
-  SEMANTIC_SECTION_NOTE,
-  buildSemantic,
-  type SemanticId,
-} from "@core/lab/palette/semantic.js";
+  SEMANTIC_ANCHORS, SEMANTIC_SECTION_NOTE, buildSemantic, type SemanticId,
+} from "@core/color/semantic.js";
+import { onSolidColor } from "@core/color/contrast.js";
 import { oklchToHex, parsePrimary } from "@core/generator/color.js";
 import type { Oklch } from "@core/schema/types.js";
 import { ColorScaleStrip } from "../components/ColorScaleStrip";
 import { OklchPicker } from "../components/OklchPicker";
 import { ExportPanel } from "./ExportPanel";
+
+/** 판별 유니온이 된 뒤로 인덱스를 가진 역할만 따로 잡는다. on-solid은 인덱스가 없다. */
+const STOP_ROLES = SCALE_ROLES.filter((r): r is Extract<ScaleRole, { kind: "stop" }> =>
+  r.kind === "stop",
+);
 
 interface Choice {
   metaKey: number | "neutral"; // STEP_META 조회용
@@ -88,13 +78,14 @@ function MockPanel({
   hexes: readonly string[];
   neutral: readonly string[];
 }) {
-  const role = (id: ScaleRole["id"]) => SCALE_ROLES.find((r) => r.id === id)!;
-  const tip = (id: ScaleRole["id"]) => {
+  const role = (id: Extract<ScaleRole, { kind: "stop" }>["id"]) =>
+    STOP_ROLES.find((r) => r.id === id)!;
+  const tip = (id: Extract<ScaleRole, { kind: "stop" }>["id"]) => {
     const r = role(id);
     return `${r.id} — 라이트 ${STOP_KEYS[r.lightIndex]} / 다크 ${STOP_KEYS[r.darkIndex]}`;
   };
   const vars = Object.fromEntries(
-    SCALE_ROLES.map((r) => [
+    STOP_ROLES.map((r) => [
       `--accent-${r.id}`,
       hexes[mode === "light" ? r.lightIndex : r.darkIndex],
     ]),
@@ -127,8 +118,8 @@ function MockPanel({
         <button
           type="button"
           title={tip("solid")}
-          className="text-xs rounded px-3 py-1.5 text-white"
-          style={{ background: "var(--accent-solid)" }}
+          className="text-xs rounded px-3 py-1.5"
+          style={{ background: "var(--accent-solid)", color: onSolidColor(hexes[role("solid").lightIndex]) }}
         >
           솔리드 버튼
         </button>
@@ -188,7 +179,7 @@ function DarkSection({ scales }: { scales: ScaleSet }) {
               </tr>
             </thead>
             <tbody>
-              {SCALE_ROLES.map((r) => (
+              {STOP_ROLES.map((r) => (
                 <tr key={r.id} className="border-t border-neutral-100 align-top">
                   <td className={`py-1.5 pr-2 ${r.id === "solid" ? "font-medium text-neutral-800" : "text-neutral-600"}`}>
                     {r.label}
@@ -247,8 +238,14 @@ export function BuilderPage() {
   const [choices, setChoices] = useState<Choice[]>([]);
   const [stepIdx, setStepIdx] = useState(0); // BUILDER_FLOW 위치, length면 완료
   const [accentHex, setAccentHex] = useState("#3b82f6");
+  // hex 입력창의 드래프트. accentHex(커밋된 값)와 분리해 둔다 — 안 그러면
+  // "#3" 같은 중간 입력마다 React가 값을 이전 유효값으로 되돌려 한 글자씩
+  // 타이핑을 못 하고 전체 선택 후 붙여넣기만 가능해진다.
+  const [accentDraft, setAccentDraft] = useState(accentHex);
   const [picked, setPicked] = useState<Candidate | null>(null); // 현재 단계 임시 선택
   const [neutralTint, setNeutralTint] = useState<NeutralTint | null>(null);
+
+  useEffect(() => setAccentDraft(accentHex), [accentHex]);
 
   const done = stepIdx >= BUILDER_FLOW.length;
   const step: BuilderStep | null = done ? null : BUILDER_FLOW[stepIdx];
@@ -366,6 +363,12 @@ export function BuilderPage() {
           Refactoring UI 순서로 액센트를 고르면, 뉴트럴은 거기서 스냅되고 상태색은
           고정값으로 따라와 완전한 색 시스템이 됩니다.
         </p>
+        <a
+          href="/color-palette"
+          className="inline-block mt-1 text-[11px] text-neutral-400 hover:text-neutral-700 underline underline-offset-2"
+        >
+          고르는 과정 없이 바로 조정하고 싶다면 컬러 팔레트 도구 →
+        </a>
         <div className="flex gap-1.5 mt-2">
           {BUILDER_FLOW.map((_, i) => (
             <span
@@ -411,9 +414,15 @@ export function BuilderPage() {
             <div className="flex items-start gap-6">
               <OklchPicker hex={accentHex} onChange={setAccentHex} />
               <input
-                value={accentHex}
+                aria-label="액센트 hex"
+                value={accentDraft}
                 onChange={(e) => {
-                  if (/^#[0-9a-fA-F]{6}$/.test(e.target.value)) setAccentHex(e.target.value);
+                  const v = e.target.value;
+                  setAccentDraft(v);
+                  if (/^#[0-9a-fA-F]{6}$/.test(v)) setAccentHex(v);
+                }}
+                onBlur={() => {
+                  if (!/^#[0-9a-fA-F]{6}$/.test(accentDraft)) setAccentDraft(accentHex);
                 }}
                 className="border border-neutral-300 rounded px-2 py-1 text-sm font-mono w-24"
               />

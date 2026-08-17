@@ -7,14 +7,14 @@
 import type { ColorSystem, ExportRole, ExportScale } from "./types.js";
 import { assertColorSystem } from "./types.js";
 
-/** src/lab/palette/roles.ts의 ScaleSet과 구조적으로 같은 모양. */
+/** src/color/roles.ts의 ScaleSet과 구조적으로 같은 모양. */
 export interface ScaleSetLike {
   readonly accent: readonly string[];
   readonly neutral: readonly string[];
   readonly semantic: Readonly<Record<string, readonly string[]>>;
 }
 
-/** src/lab/palette/roles.ts의 ScaleDescriptor와 구조적으로 같은 모양. */
+/** src/color/roles.ts의 ScaleDescriptor와 구조적으로 같은 모양. */
 export interface ScaleDescriptorLike {
   readonly name: string;
   readonly label: string;
@@ -34,7 +34,7 @@ export function toColorSystem(
         : d.name === "neutral"
           ? scales.neutral
           : scales.semantic[d.name];
-    if (!hexes) {
+    if (!hexes?.length) {
       throw new Error(`toColorSystem: no hexes for scale "${d.name}"`);
     }
     return { name: d.name, label: d.label, hexes };

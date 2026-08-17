@@ -14,12 +14,12 @@ function hexes(tag: string, count: number): string[] {
 }
 
 export const FIXTURE_ROLES: readonly ExportRole[] = [
-  { id: "subtle-bg", label: "은은한 배경", lightIndex: 0, darkIndex: 10 },
-  { id: "hover-bg", label: "호버 배경", lightIndex: 1, darkIndex: 9 },
-  { id: "border", label: "테두리", lightIndex: 2, darkIndex: 8 },
-  { id: "solid", label: "솔리드", lightIndex: 5, darkIndex: 5 },
-  { id: "text", label: "텍스트", lightIndex: 6, darkIndex: 4 },
-  { id: "text-strong", label: "진한 텍스트", lightIndex: 7, darkIndex: 3 },
+  { kind: "stop", id: "subtle-bg", label: "은은한 배경", lightIndex: 0, darkIndex: 10 },
+  { kind: "stop", id: "hover-bg", label: "호버 배경", lightIndex: 1, darkIndex: 9 },
+  { kind: "stop", id: "border", label: "테두리", lightIndex: 2, darkIndex: 8 },
+  { kind: "stop", id: "solid", label: "솔리드", lightIndex: 5, darkIndex: 5 },
+  { kind: "stop", id: "text", label: "텍스트", lightIndex: 6, darkIndex: 4 },
+  { kind: "stop", id: "text-strong", label: "진한 텍스트", lightIndex: 7, darkIndex: 3 },
 ];
 
 const FIXTURE_SCALE_DEFS: readonly [string, string, string][] = [
@@ -40,6 +40,18 @@ export function fixtureSystem(): ColorSystem {
   return { stopKeys: [...FIXTURE_STOP_KEYS], scales, roles: FIXTURE_ROLES };
 }
 
+/** fixtureSystem에 on-solid 대비 역할을 더한 시스템. */
+export function systemWithOnSolid(): ColorSystem {
+  const base = fixtureSystem();
+  return {
+    ...base,
+    roles: [
+      ...base.roles,
+      { kind: "contrast", id: "on-solid", label: "솔리드 위 글자", against: "solid" },
+    ],
+  };
+}
+
 /** 가드 테스트용 최소 시스템 — 길이 계약을 짧게 검사한다. */
 export function tinySystem(): ColorSystem {
   return {
@@ -49,8 +61,8 @@ export function tinySystem(): ColorSystem {
       { name: "two", label: "둘", hexes: ["#333333", "#444444", "#555555"] },
     ],
     roles: [
-      { id: "low", label: "낮음", lightIndex: 0, darkIndex: 2 },
-      { id: "mid", label: "중간", lightIndex: 1, darkIndex: 1 },
+      { kind: "stop", id: "low", label: "낮음", lightIndex: 0, darkIndex: 2 },
+      { kind: "stop", id: "mid", label: "중간", lightIndex: 1, darkIndex: 1 },
     ],
   };
 }

@@ -1,4 +1,4 @@
-// src/lab/palette/neutral.ts
+// src/color/neutral.ts
 //
 // 뉴트럴 스케일 파생. 액센트와 달리 자체 L 곡선을 쓰고, hue는 액센트에서
 // 이산 어트랙터로 스냅한다 (neutral.h = accent.h는 웜에서 갈색으로 붕괴).
@@ -7,8 +7,9 @@
 // 상수 출처: scripts/analysis/neutral-curve-stats.ts (tailwind v4.3.3, 2026-08-09).
 // 레퍼런스 갱신 시 다시 돌려 비교할 것.
 
-import { SCALE_SIZE, clampToGamut, type Candidate } from "./builder.js";
-import type { Oklch } from "../../schema/types.js";
+import { SCALE_SIZE, clampToGamut } from "./scale.js";
+import type { Candidate } from "./candidates.js";
+import type { Oklch } from "../schema/types.js";
 
 /** stop 50..950의 평균 L. tailwind 뉴트럴 5종(slate·gray·zinc·neutral·stone)
  *  의 sd가 0.001~0.008 — 다섯 램프가 같은 사다리를 쓴다. 즉 취향 축이 아니다. */

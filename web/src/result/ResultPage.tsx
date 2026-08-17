@@ -161,6 +161,12 @@ export function ResultPage({
             <p className="text-neutral-500 text-sm capitalize">
               {state.preset} archetype — {state.fontFamily}
             </p>
+            <a
+              href="/color-palette"
+              className="inline-block mt-1 text-xs text-neutral-400 hover:text-neutral-700 underline underline-offset-2"
+            >
+              색만 따로 다듬고 싶다면 컬러 팔레트 도구 →
+            </a>
           </div>
 
           {/* Palette */}

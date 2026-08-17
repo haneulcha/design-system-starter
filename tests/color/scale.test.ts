@@ -1,15 +1,7 @@
 import { describe, it, expect } from "vitest";
-import {
-  fillScale,
-  clampToGamut,
-  SCALE_SIZE,
-  STOP_KEYS,
-  type Pin,
-  BUILDER_STEPS,
-  BUILDER_FLOW,
-  STEP_META,
-  candidatesFor,
-} from "../../src/lab/palette/builder.js";
+import { fillScale, clampToGamut, SCALE_SIZE, STOP_KEYS, type Pin } from "../../src/color/scale.js";
+import { candidatesFor } from "../../src/color/candidates.js";
+import { BUILDER_STEPS, BUILDER_FLOW, STEP_META } from "../../src/lab/palette/guided.js";
 import { oursAlgorithm } from "../../src/lab/palette/ours.js";
 import { parsePrimary } from "../../src/generator/color.js";
 
