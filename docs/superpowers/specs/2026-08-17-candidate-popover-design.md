@@ -64,6 +64,17 @@
 (바깥 클릭에서 복귀를 막으려면 오히려 `preventDefault`가 필요한 쪽이다), 실제로 라디오를
 고르면 그 노드가 언마운트되므로 복귀가 없으면 포커스가 `body`로 떨어진다.
 
+**복귀는 effect cleanup에 있어야 한다.** 이 화면에서 닫힘은 `open=false` 재렌더가 아니라
+**언마운트**다 — 호출자가 `{i === openIndex && <Popover open … />}`로 조건부 렌더하기
+때문이다. effect 본문에 두면 제품에서 한 번도 실행되지 않는다. 트리거 요소도 열릴 때
+캡처해 둬야 한다: 호출자의 ref 역시 조건부(`ref={i === openIndex ? … : undefined}`)라,
+닫히는 커밋의 mutation 단계에서 React가 `.current`를 먼저 null로 뗀다.
+
+이 제약은 계획 리뷰에서 드러났다. 처음 쓴 구현은 두 함정을 다 밟았고, 더 나쁘게는
+**Popover 단위 테스트가 초록이었다** — 하네스가 Popover를 마운트한 채 prop만 토글해서
+제품이 안 쓰는 경로를 검증하고 있었다. 하네스는 제품과 같은 조건부 마운트여야 하고,
+조건부 ref까지 포함한 복귀는 `AdjustableScale` 쪽 테스트가 지킨다.
+
 **기각한 대안 (a) Portal + `position: fixed`** (Radix의 실제 구현): 조상의 `overflow`나
 `z-index` 문맥에 갇히지 않는 것이 이득인데, 이 도구에는 모달도 없고 상위에 `overflow`를
 잘라내는 조상도 없다. 포털이 벌어주는 것이 없는 자리에서 스크롤·리사이즈 재계산과
@@ -174,7 +185,7 @@ Popover는 `triggerRef`(바깥 판정 제외 + 포커스 복귀 대상)를 필�
 ```
 openIndex: number | null
 popoverContent: ReactNode      // 페이지가 만든 <CandidatePopover/>
-onClose: () => void
+onClosePopover: () => void     // CandidatePopover 자신의 onClose와 헷갈리지 않게
 ```
 
 상태(`open` / `hover`)와 후보 계산은 지금 그대로 `ColorPalettePage`와 `CandidatePopover`에

@@ -199,7 +199,10 @@ import { useRef, useState } from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { Popover } from "./Popover";
 
-/** 실사용 형태 그대로의 하네스 — 트리거는 부모가 그리고 Popover는 relative 안에 산다. */
+/** 실사용 형태 그대로의 하네스. 두 가지를 제품과 똑같이 맞춘 것이 핵심이다:
+ *  트리거는 부모가 그리고, Popover는 **조건부로 마운트된다**. 닫힘이 open=false
+ *  재렌더가 아니라 언마운트라는 것이 이 컴포넌트의 실제 사용 조건이라, 마운트해 둔
+ *  채 prop만 토글하는 하네스로 검증하면 제품이 안 쓰는 경로를 초록으로 만든다. */
 function Harness({ onClose }: { onClose?: () => void }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -208,35 +211,52 @@ function Harness({ onClose }: { onClose?: () => void }) {
   return (
     <div ref={boundaryRef}>
       <div className="relative">
-        <button
-          ref={triggerRef}
-          type="button"
-          aria-haspopup="dialog"
-          aria-expanded={open}
-          aria-controls={open ? "p1" : undefined}
-          onClick={() => setOpen((v) => !v)}
-        >
+        <button ref={triggerRef} type="button" onClick={() => setOpen((v) => !v)}>
           열기
         </button>
-        <Popover
-          open={open}
-          onClose={close}
-          label="후보"
-          id="p1"
-          triggerRef={triggerRef}
-          boundaryRef={boundaryRef}
-        >
-          <button type="button">안쪽 버튼</button>
-        </Popover>
+        {open && (
+          <Popover
+            open
+            onClose={close}
+            label="후보"
+            id="p1"
+            triggerRef={triggerRef}
+            boundaryRef={boundaryRef}
+          >
+            <button type="button">안쪽 버튼</button>
+          </Popover>
+        )}
       </div>
       <button type="button">바깥 버튼</button>
     </div>
   );
 }
 
+/** open prop 자체의 계약만 보는 하네스. 제품은 조건부 마운트라 이 경로를 안 쓰지만,
+ *  prop이 존재하는 한 그 의미는 지켜져야 한다. */
+function AlwaysMounted({ open }: { open: boolean }) {
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const boundaryRef = useRef<HTMLDivElement>(null);
+  return (
+    <div ref={boundaryRef}>
+      <button ref={triggerRef} type="button">열기</button>
+      <Popover
+        open={open}
+        onClose={() => {}}
+        label="후보"
+        id="p2"
+        triggerRef={triggerRef}
+        boundaryRef={boundaryRef}
+      >
+        <button type="button">안쪽</button>
+      </Popover>
+    </div>
+  );
+}
+
 describe("Popover", () => {
-  it("닫혀 있으면 아무것도 렌더하지 않는다", () => {
-    render(<Harness />);
+  it("open=false면 아무것도 렌더하지 않는다", () => {
+    render(<AlwaysMounted open={false} />);
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
@@ -295,13 +315,10 @@ describe("Popover", () => {
     expect(screen.queryByRole("dialog")).toBeTruthy();
   });
 
-  it("트리거의 aria-expanded가 열림 상태를 따라간다", () => {
-    render(<Harness />);
-    const trigger = screen.getByRole("button", { name: "열기" });
-    expect(trigger.getAttribute("aria-expanded")).toBe("false");
-    fireEvent.click(trigger);
-    expect(trigger.getAttribute("aria-expanded")).toBe("true");
-  });
+  // 트리거의 aria-expanded는 여기서 검증하지 않는다 — Popover는 그 속성에 관여하지
+  // 않으므로(부모가 단다) 여기 테스트를 두면 하네스가 하네스를 검증하는 꼴이 되고,
+  // Popover에 어떤 회귀가 생겨도 절대 빨개지지 않는다. 실제 방어는 AdjustableScale
+  // 쪽 ARIA 테스트가 한다(Task 5).
 
   // Radix의 onCloseAutoFocus 기본값은 닫힘 사유를 가리지 않는다. 이 화면에서는
   // 후보를 고르면 그 라디오가 언마운트되므로, 복귀가 없으면 포커스가 body로
@@ -388,17 +405,31 @@ export function Popover({
   // 닫힐 때 포커스를 돌려줄지 판단하는 근거. activeElement를 닫힌 뒤에 읽으면
   // 늦는다 — 그때는 패널이 이미 사라져 포커스가 body로 떨어진 뒤다.
   const focusWasInside = useRef(false);
-  const wasOpen = useRef(false);
 
+  // 리스너를 open이 바뀔 때만 갈아끼우기 위한 우회. 호출자가 인라인 화살표
+  // 함수를 넘기면(실제로 그렇다) onClose 정체성이 매 렌더 바뀌어, hover 프리뷰로
+  // 페이지가 재렌더될 때마다 document 리스너를 떼었다 붙이게 된다.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; });
+
+  // 복귀는 effect 본문이 아니라 cleanup에 있어야 한다. 이 컴포넌트의 실제
+  // 닫힘은 open=false 재렌더가 아니라 **언마운트**다 — 호출자가
+  // `{i === openIndex && <Popover open … />}`로 조건부 렌더하므로 open prop은
+  // 살아 있는 동안 늘 true다. 본문에 두면 제품에서 한 번도 실행되지 않는다.
+  //
+  // 트리거 요소를 열릴 때 캡처해 두는 것도 같은 이유다: 호출자의 ref도
+  // `ref={i === openIndex ? openTriggerRef : undefined}`라 조건부라서, 닫히는
+  // 커밋의 mutation 단계에서 React가 `.current`를 null로 떼어버린다. passive
+  // effect cleanup은 그 뒤에 돌므로 그때 ref를 읽으면 이미 늦다. 캡처한 DOM
+  // 요소 자체는 여전히 문서에 살아 있다.
   useEffect(() => {
-    if (open) {
-      panelRef.current?.focus();
-      wasOpen.current = true;
-      return;
-    }
-    if (wasOpen.current && focusWasInside.current) triggerRef.current?.focus();
-    wasOpen.current = false;
-    focusWasInside.current = false;
+    if (!open) return;
+    panelRef.current?.focus();
+    const trigger = triggerRef.current;
+    return () => {
+      if (focusWasInside.current) trigger?.focus();
+      focusWasInside.current = false;
+    };
   }, [open, triggerRef]);
 
   // 경계 밖으로 나간 만큼 되민다. jsdom은 rect가 전부 0이라 오프셋이 0으로 남고,
@@ -414,13 +445,13 @@ export function Popover({
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") onCloseRef.current();
     };
     const onPointerDown = (e: Event) => {
       const target = e.target as Node;
       if (panelRef.current?.contains(target)) return;
       if (triggerRef.current?.contains(target)) return;
-      onClose();
+      onCloseRef.current();
     };
     document.addEventListener("keydown", onKeyDown);
     document.addEventListener("pointerdown", onPointerDown);
@@ -428,7 +459,7 @@ export function Popover({
       document.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("pointerdown", onPointerDown);
     };
-  }, [open, onClose, triggerRef]);
+  }, [open, triggerRef]);
 
   if (!open) return null;
 
@@ -453,6 +484,9 @@ export function Popover({
       {/* 화살표는 오프셋의 역부호만큼 되밀어, 패널이 clamp로 밀려도 언제나 앵커
           중앙을 가리킨다 — 어느 stop을 조정 중인지 알려주는 것이 이 화살표의
           유일한 일이라 여기서 어긋나면 없느니만 못하다. */}
+      {/* transform 순서를 바꾸지 말 것: translate가 먼저 쓰이면(오른쪽이 먼저
+          적용되므로 rotate가 나중) 회전된 축을 따라 밀려 화살표가 대각선으로
+          어긋난다. 지금 순서라야 부모의 x축 기준으로 이동한다. */}
       <span
         aria-hidden
         className="absolute -top-1 left-1/2 h-2 w-2 border-l border-t
@@ -472,7 +506,7 @@ cd /Users/haneul/Projects/design-system-starter/web
 pnpm vitest run src/components/Popover.test.tsx
 ```
 
-Expected: PASS (10 tests)
+Expected: PASS (9 tests)
 
 - [ ] **Step 5: 전체 스위트가 여전히 통과하는지 본다**
 
@@ -766,6 +800,27 @@ git commit -m "refactor(color-palette): 후보 목록에서 카드 크롬 분리
     // 닫힌 stop은 열려 있지 않다고 말한다
     expect(screen.getAllByTestId("swatch")[3].getAttribute("aria-expanded")).toBe("false");
   });
+
+  // 포커스 복귀가 실제로 도는 유일한 구성이다. Popover.test의 하네스는 Popover를
+  // 직접 마운트/언마운트하지만, 제품에는 조건부 ref(`ref={i === openIndex ? … :
+  // undefined}`)가 하나 더 얹힌다 — 닫히는 커밋에서 React가 그 ref를 먼저 떼므로,
+  // 복귀 코드가 트리거를 "열릴 때 캡처"하지 않으면 여기서만 조용히 실패한다.
+  it("패널이 사라지면 포커스가 그 stop의 스와치로 돌아온다", () => {
+    const props = {
+      hexes: HEXES,
+      adjustable: [0, 3, 7, 10],
+      pinned: [],
+      onPick: () => {},
+      onClosePopover: () => {},
+      popoverContent: <span>후보 목록</span>,
+    };
+    const { rerender } = render(<AdjustableScale {...props} openIndex={7} />);
+    // 열리면 패널에 포커스가 가 있다 — 복귀의 전제 조건이다.
+    expect(document.activeElement).toBe(screen.getByRole("dialog"));
+    rerender(<AdjustableScale {...props} openIndex={null} />);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(document.activeElement).toBe(screen.getAllByTestId("swatch")[7]);
+  });
 ```
 
 - [ ] **Step 2: 실패를 확인한다**
@@ -905,6 +960,7 @@ export function AdjustableScale({
       })}
     </div>
   );
+}
 ```
 
 `aria-expanded`는 조정 가능한 버튼에만 붙는다 — 조정 불가 스와치는 `<div>`라 애초에 이 분기에 없다.
@@ -916,7 +972,7 @@ cd /Users/haneul/Projects/design-system-starter/web
 pnpm vitest run src/color-palette/AdjustableScale.test.tsx
 ```
 
-Expected: PASS (7 tests)
+Expected: PASS (8 tests)
 
 - [ ] **Step 5: 페이지를 고친다**
 
