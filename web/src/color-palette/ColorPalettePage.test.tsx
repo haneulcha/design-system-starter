@@ -341,4 +341,18 @@ describe("ColorPalettePage", () => {
     expect(["#000000", "#ffffff"]).toContain(onSolid);
     expect(blobs[0]).toContain(`--color-accent-on-solid: ${onSolid};`);
   });
+
+  // 열린 채 다른 스와치를 누르면 실브라우저에서는 pointerdown(바깥 닫기) →
+  // click(토글 열기)의 2-이벤트 시퀀스가 된다. 트리거를 "바깥"에서 빼두지 않으면
+  // 같은 칸을 누를 때 "닫힘 → 즉시 재열림"이 되고, 다른 칸을 누를 때는 순서가
+  // 어긋나 패널이 안 열린다. 페이지 스위트에서 pointerDown을 쓰는 유일한 곳이다.
+  it("열린 채 다른 스와치를 누르면 그 stop의 패널로 옮겨간다", () => {
+    render(<ColorPalettePage />);
+    const stops = screen.getAllByRole("button", { name: /조정/ });
+    fireEvent.click(stops[0]);                 // stop 0 — 후보 2개
+    expect(screen.getAllByRole("radio").length).toBe(2);
+    fireEvent.pointerDown(stops[2]);           // stop 7 — 바깥 판정으로 먼저 닫힘
+    fireEvent.click(stops[2]);                 // 이어서 토글이 연다
+    expect(screen.getAllByRole("radio").length).toBe(3);  // stop 7은 후보 3개
+  });
 });

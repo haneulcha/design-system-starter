@@ -63,18 +63,22 @@ export function ColorPalettePage() {
             pinned={pinned}
             onPick={(i) => { setOpen(open === i ? null : i); setHover(null); }}
             preview={open !== null && hover ? previewScale(state, open, hover) : null}
+            openIndex={open}
+            onClosePopover={() => { setOpen(null); setHover(null); }}
+            popoverContent={
+              open !== null ? (
+                <CandidatePopover
+                  stopIndex={open}
+                  state={state}
+                  onHover={setHover}
+                  onChoose={(hex) =>
+                    setState((s) => ({ ...s, pins: { ...s.pins, [open]: hex ?? undefined } }))
+                  }
+                  onClose={() => { setOpen(null); setHover(null); }}
+                />
+              ) : undefined
+            }
           />
-          {open !== null && (
-            <CandidatePopover
-              stopIndex={open}
-              state={state}
-              onHover={setHover}
-              onChoose={(hex) =>
-                setState((s) => ({ ...s, pins: { ...s.pins, [open]: hex ?? undefined } }))
-              }
-              onClose={() => { setOpen(null); setHover(null); }}
-            />
-          )}
         </section>
         <section className="space-y-2">
           <h2 className="text-xs font-medium text-neutral-500">뉴트럴</h2>

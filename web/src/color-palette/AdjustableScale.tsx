@@ -5,7 +5,9 @@
 // 굵기·명도 같은 정적 표시는 "누를 수 있다"만 말하고 끝나지만, 그림자는 press에서
 // 눌리면서 어포던스와 피드백을 한 언어로 잇는다.
 
+import { useId, useRef, type ReactNode } from "react";
 import { STOP_KEYS } from "@core/color/scale.js";
+import { Popover } from "../components/Popover";
 
 interface Props {
   readonly hexes: readonly string[];
@@ -17,23 +19,42 @@ interface Props {
   /** 캡션(stop 번호) 줄을 그릴지. 기본 true — 상태색처럼 4벌이 접힌 채 쌓이는
    *  자리에서 세로를 아끼는 용도로만 끈다. */
   readonly showCaptions?: boolean;
+  /** 지금 열려 있는 stop. 후보 패널은 그 칸 안에 뜬다. */
+  readonly openIndex?: number | null;
+  /** 패널 내용물. 부모가 만든다 — 후보 계산은 여전히 부모 쪽 일이다. */
+  readonly popoverContent?: ReactNode;
+  readonly onClosePopover?: () => void;
 }
 
 export function AdjustableScale({
   hexes, adjustable, pinned, onPick, preview, showCaptions = true,
+  openIndex = null, popoverContent, onClosePopover,
 }: Props) {
   const shown = preview ?? hexes;
+  // clamp 기준이자 바깥 판정의 바깥쪽 — 띠 자신이 경계다(스펙 D3).
+  const stripRef = useRef<HTMLDivElement>(null);
+  // 열린 칸의 트리거 하나만 들면 된다. 인덱스별 Map을 만들면 ref 객체 정체성이
+  // 매 렌더 바뀌어 Popover의 이펙트가 헛돈다.
+  const openTriggerRef = useRef<HTMLButtonElement>(null);
+  const panelId = useId();
   return (
-    <div className="flex gap-0.5">
+    // 띠 자신이 clamp의 경계다 — 이 밖으로 나가면 옆의 sticky 목업을 덮는다(스펙 D3).
+    <div ref={stripRef} className="flex gap-0.5">
       {shown.map((hex, i) => {
         const canAdjust = adjustable.includes(i);
         const label = `${STOP_KEYS[i]} ${hex}${canAdjust ? " — 조정" : ""}`;
         return (
-          <div key={STOP_KEYS[i]} className="flex-1">
+          // relative는 패널의 absolute 기준이다. 열린 칸에만 필요하지만 11칸에
+          // 균일하게 주는 편이 조건부보다 읽기 쉽고 해가 없다.
+          <div key={STOP_KEYS[i]} className="flex-1 relative">
             {canAdjust && onPick ? (
               <button
                 type="button"
+                ref={i === openIndex ? openTriggerRef : undefined}
                 aria-label={label}
+                aria-haspopup="dialog"
+                aria-expanded={i === openIndex}
+                aria-controls={i === openIndex ? panelId : undefined}
                 data-testid="swatch"
                 onClick={() => onPick(i)}
                 // 그림자는 Tailwind 기본 shadow-sm/lg가 아니라 커스텀 값이다 —
@@ -81,6 +102,21 @@ export function AdjustableScale({
               >
                 {STOP_KEYS[i]}
               </div>
+            )}
+            {/* 패널은 이 칸 안에 산다 — 형제로 내보내면 absolute의 기준이 사라져
+                어느 stop을 조정 중인지가 위치로 안 읽힌다. 라벨에 stop 키를 넣는
+                이유도 같다: 스크린리더에는 위치가 없다. */}
+            {i === openIndex && popoverContent && (
+              <Popover
+                open
+                onClose={onClosePopover ?? (() => {})}
+                label={`${STOP_KEYS[i]} 후보`}
+                id={panelId}
+                triggerRef={openTriggerRef}
+                boundaryRef={stripRef}
+              >
+                {popoverContent}
+              </Popover>
             )}
           </div>
         );
