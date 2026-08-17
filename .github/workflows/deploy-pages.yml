@@ -1,0 +1,69 @@
+name: Deploy web to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 배포는 한 번에 하나만. 진행 중인 실행을 취소하지 않는 건 의도적이다 —
+# 취소된 배포가 Pages를 중간 상태로 남길 수 있다.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # 루트 의존성이 반드시 필요하다. web/tsconfig.json의 include가 "../src"
+      # 전체(= src/cli 포함)를 잡아서 `tsc -b`가 @inquirer/prompts·@types/node 같은
+      # 루트 devDependency의 타입을 요구한다. web만 설치하면 TS2307로 죽는다.
+      - name: Install root deps (pnpm)
+        run: pnpm install --frozen-lockfile
+
+      # web/은 pnpm 워크스페이스 멤버가 아니라 자체 package-lock.json을 쓰는
+      # 별도 npm 프로젝트다(루트 pnpm-workspace.yaml에 packages: 키가 없다).
+      - name: Install web deps (npm)
+        run: npm ci
+        working-directory: web
+
+      - name: Build
+        run: npm run build
+        working-directory: web
+
+      # GitHub Pages는 rewrite를 지원하지 않는다. /color-palette 딥링크는 404로
+      # 떨어지고, 그때 404.html이 서빙되면서 앱이 부팅해 pathname을 읽는다.
+      # 상태코드는 404로 남는다 — SPA 폴백의 알려진 대가.
+      - name: SPA fallback
+        run: cp dist/index.html dist/404.html
+        working-directory: web
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

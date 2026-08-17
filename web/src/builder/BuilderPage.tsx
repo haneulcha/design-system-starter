@@ -10,6 +10,7 @@ import type { CSSProperties } from "react";
 import { candidatesFor, type Candidate } from "@core/color/candidates.js";
 import { fillScale, STOP_KEYS, type Pin } from "@core/color/scale.js";
 import { BUILDER_FLOW, STEP_META, type BuilderStep } from "@core/lab/palette/guided.js";
+import { routeHref } from "../lib/basePath";
 import {
   neutralCandidates, buildNeutral, tintAttractor,
   type NeutralCandidate, type NeutralTint,
@@ -364,7 +365,7 @@ export function BuilderPage() {
           고정값으로 따라와 완전한 색 시스템이 됩니다.
         </p>
         <a
-          href="/color-palette"
+          href={routeHref("/color-palette")}
           className="inline-block mt-1 text-[11px] text-neutral-400 hover:text-neutral-700 underline underline-offset-2"
         >
           고르는 과정 없이 바로 조정하고 싶다면 컬러 팔레트 도구 →

@@ -4,6 +4,7 @@ import { DEFAULT_STATE, useGenerateResult, type WizardState } from "./hooks/useG
 import { LabPage } from "./lab/LabPage";
 import { BuilderPage } from "./builder/BuilderPage";
 import { ColorPalettePage } from "./color-palette/ColorPalettePage";
+import { appPath } from "./lib/basePath";
 
 /** 화면이 넷뿐이라 라우터 라이브러리를 넣지 않는다. path는 새 도구만 쓰고
  *  기존 연구 화면은 해시를 유지한다 — 북마크를 깨지 않기 위해. */
@@ -27,11 +28,9 @@ export function App() {
   const [state, setState] = useState<WizardState>(DEFAULT_STATE);
   const result = useGenerateResult(state);
 
-  // 루트("/")까지 지우면 안 되니 길이 1보다 긴 경로에서만 끝 슬래시를 뗀다.
-  // 위저드·빌더 헤더에서 <a href="/color-palette">를 넣는 순간 실제 링크가
-  // /color-palette/로 도달할 위험이 생긴다(브라우저는 상대 경로를 정규화하지 않는다).
-  const normalizedPath = path.length > 1 ? path.replace(/\/$/, "") : path;
-  if (normalizedPath === "/color-palette") return <ColorPalettePage />;
+  // appPath가 base 접두사와 끝 슬래시를 함께 흡수한다 — GitHub Pages 프로젝트
+  // 사이트에서는 pathname이 /design-system-starter/color-palette로 도착한다.
+  if (appPath(path) === "/color-palette") return <ColorPalettePage />;
   if (hash === "#lab") return <LabPage />;
   if (hash === "#builder") return <BuilderPage />;
 

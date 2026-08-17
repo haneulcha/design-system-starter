@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { WizardState, FullResult, PresetName } from "../hooks/useGenerator";
 import { ARCHETYPES } from "@core/schema/archetypes.js";
+import { routeHref } from "../lib/basePath";
 import { ColorPalette } from "../components/ColorPalette";
 import { DSButton } from "../components/DSButton";
 import { DSInput } from "../components/DSInput";
@@ -162,7 +163,7 @@ export function ResultPage({
               {state.preset} archetype — {state.fontFamily}
             </p>
             <a
-              href="/color-palette"
+              href={routeHref("/color-palette")}
               className="inline-block mt-1 text-xs text-neutral-400 hover:text-neutral-700 underline underline-offset-2"
             >
               색만 따로 다듬고 싶다면 컬러 팔레트 도구 →
