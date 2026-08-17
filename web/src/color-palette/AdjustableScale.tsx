@@ -31,7 +31,7 @@ export function AdjustableScale({
   openIndex = null, popoverContent, onClosePopover,
 }: Props) {
   const shown = preview ?? hexes;
-  // clamp 기준이자 바깥 판정의 바깥쪽 — 띠 자신이 경계다(스펙 D3).
+  // clamp 기준이다 — 띠 자신이 경계다(스펙 D3).
   const stripRef = useRef<HTMLDivElement>(null);
   // 열린 칸의 트리거 하나만 들면 된다. 인덱스별 Map을 만들면 ref 객체 정체성이
   // 매 렌더 바뀌어 Popover의 이펙트가 헛돈다.

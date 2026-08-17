@@ -124,9 +124,10 @@ export function Popover({
       {/* 화살표는 오프셋의 역부호만큼 되밀어, 패널이 clamp로 밀려도 언제나 앵커
           중앙을 가리킨다 — 어느 stop을 조정 중인지 알려주는 것이 이 화살표의
           유일한 일이라 여기서 어긋나면 없느니만 못하다. */}
-      {/* transform 순서를 바꾸지 말 것: translate가 먼저 쓰이면(오른쪽이 먼저
-          적용되므로 rotate가 나중) 회전된 축을 따라 밀려 화살표가 대각선으로
-          어긋난다. 지금 순서라야 부모의 x축 기준으로 이동한다. */}
+      {/* transform 순서를 바꾸지 말 것: rotate를 먼저 쓰면 그 뒤에 오는
+          translate가 이미 회전된 축을 따라 적용돼 화살표가 대각선으로
+          어긋난다. translateX가 먼저(왼쪽) 와야 부모의 원래 x축 기준으로
+          이동한다. */}
       <span
         aria-hidden
         className="absolute -top-1 left-1/2 h-2 w-2 border-l border-t

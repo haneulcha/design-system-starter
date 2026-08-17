@@ -152,4 +152,36 @@ describe("Popover", () => {
     fireEvent.keyDown(document, { key: "Escape" });
     expect(document.activeElement).toBe(outside);
   });
+
+  // clampOffset 자체는 잘 덮여 있지만, 그 값을 패널·화살표 두 transform에 나눠
+  // 싣는 부호 배선은 어디서도 안 본다 — 부호가 하나라도 뒤집혀도 jsdom은 rect가
+  // 전부 0이라 clamp가 발동하지 않으므로 다른 테스트는 전부 초록인 채로 남는다.
+  // getBoundingClientRect를 role=dialog(패널)와 그 외(경계)로 갈라 스텁해
+  // clamp가 실제로 발동하는 상황을 흉내낸다.
+  it("패널이 경계 밖으로 나가면 패널과 화살표가 반대 부호로 되밀린다", () => {
+    const original = Element.prototype.getBoundingClientRect;
+    const rect = (left: number, right: number): DOMRect => ({
+      left, right, top: 0, bottom: 0, width: right - left, height: 0,
+      x: left, y: 0, toJSON() { return {}; },
+    });
+    Element.prototype.getBoundingClientRect = function (this: Element) {
+      // 패널이 경계(0~200) 왼쪽으로 40px 삐져나간 상황 — clampOffset은
+      // boundary.left(0) - panel.left(-40) = 40을 돌려준다.
+      if (this.getAttribute("role") === "dialog") return rect(-40, 60);
+      return rect(0, 200);
+    };
+    try {
+      render(<Harness />);
+      fireEvent.click(screen.getByRole("button", { name: "열기" }));
+      const panel = screen.getByRole("dialog") as HTMLElement;
+      const arrow = panel.querySelector("[aria-hidden]") as HTMLElement;
+      // 패널은 +offset으로 밀리고(경계 안으로), 화살표는 -offset으로 반대
+      // 방향으로 되밀려 앵커 중앙을 계속 가리킨다. 부호가 하나라도 뒤집히면
+      // 이 문자열이 달라진다.
+      expect(panel.style.transform).toBe("translateX(calc(-50% + 40px))");
+      expect(arrow.style.transform).toBe("translateX(calc(-50% - 40px)) rotate(45deg)");
+    } finally {
+      Element.prototype.getBoundingClientRect = original;
+    }
+  });
 });

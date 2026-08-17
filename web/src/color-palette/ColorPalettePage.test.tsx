@@ -355,4 +355,16 @@ describe("ColorPalettePage", () => {
     fireEvent.click(stops[2]);                 // 이어서 토글이 연다
     expect(screen.getAllByRole("radio").length).toBe(3);  // stop 7은 후보 3개
   });
+
+  // hover의 키보드 대응물(D5): 마우스 없이 Tab만으로 라디오에 포커스가 들어와도
+  // "고르기 전에 결과를 본다"가 성립해야 한다 — 화면이 프리뷰를 보여주되, 화살표
+  // 키와 달리 Tab 진입 자체는 선택을 바꾸지 않으므로 확정(URL)까지 가면 안 된다.
+  it("previews the focused candidate on the palette without committing (D5 키보드 대응)", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[2]); // stop 7 — 안 겹침
+    const before = screen.getAllByTestId("swatch")[7].getAttribute("style");
+    fireEvent.focus(screen.getAllByRole("radio")[0]);
+    expect(screen.getAllByTestId("swatch")[7].getAttribute("style")).not.toBe(before);
+    expect(window.location.search).not.toContain("s7=");
+  });
 });
