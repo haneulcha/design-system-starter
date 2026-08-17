@@ -2,8 +2,8 @@
 //
 // 11-stop 띠. 조정 가능한 자리는 누르기 전에 구분되게 표시한다 — "눌러보면 뭔가
 // 나온다"는 발견에 기대지 않는다 (스펙 D3). 어포던스는 depth로 준다 — 캡션의
-// 굵기·명도 같은 정적 표시는 "누를 수 있다"만 말하고 끝나지만, 그림자는
-// hover에서 뜨고 press에서 눌리면서 상호작용 전체를 한 언어로 잇는다.
+// 굵기·명도 같은 정적 표시는 "누를 수 있다"만 말하고 끝나지만, 그림자는 press에서
+// 눌리면서 어포던스와 피드백을 한 언어로 잇는다.
 
 import { STOP_KEYS } from "@core/color/scale.js";
 
@@ -40,13 +40,12 @@ export function AdjustableScale({
                 // 36px 칩에서 기본 스케일은 배율 1에서 거의 안 보였다(사용자 확인).
                 // 광원은 북쪽 고정: 가로 오프셋 0. 대각선을 주면 "종이 조각"처럼
                 // 읽히고, 세로만 주면 "눌리는 버튼"으로 읽힌다.
-                // 블러는 0 — 블러가 있으면 이 칩 크기에서 대비가 흩어져 신호가
-                // 죽는다(이번 변경의 핵심). 기본 깊이는 2px(최초 3px에서 화면
-                // 확인 후 축소), hover는 +2px(4px)로 같은 델타를 유지한다.
-                // press 시 이동 거리(2px)는 기본 깊이(2px)와 같게 맞춘다 —
-                // 눌렀을 때 칩이 그림자가 있던 자리에 정확히 내려앉도록, 물리적
-                // 대응이 깨지지 않게. 깊이 값을 바꿀 때는 이 셋(기본·hover·
-                // press 이동)을 항상 같이 맞출 것.
+                // 블러는 0 — 블러가 있으면 이 칩 크기에서 대비가 흩어져 신호가 죽는다.
+                // press 시 이동 거리(2px)는 기본 깊이(2px)와 같게 맞춘다 — 눌렀을 때
+                // 칩이 그림자가 있던 자리에 정확히 내려앉도록. 두 값은 항상 같이
+                // 움직여야 한다. hover 리프트를 뺀 이유가 바로 이 대응이다(스펙 D4):
+                // 마우스로 누르는 순간은 항상 hover 중이라, hover가 깊이를 4px로
+                // 올려놓으면 2px만 내려가 착지가 어긋났다.
                 // 그림자 색은 그 상태의 테두리 색과 같다 — 한 칩에 서로 다른
                 // 회색이 둘(테두리 하나, 그림자 하나) 있으면 어색해 보인다는
                 // 지적이 있었다. pin 여부에 따라 테두리·그림자가 함께
@@ -58,11 +57,9 @@ export function AdjustableScale({
                   focus-visible:ring-neutral-900 focus-visible:ring-offset-1 ${
                   pinned.includes(i)
                     ? `border-neutral-700
-                       shadow-[0_2px_0_0_var(--color-neutral-700)]
-                       hover:shadow-[0_4px_0_0_var(--color-neutral-700)]`
+                       shadow-[0_2px_0_0_var(--color-neutral-700)]`
                     : `border-neutral-300
-                       shadow-[0_2px_0_0_var(--color-neutral-300)]
-                       hover:shadow-[0_4px_0_0_var(--color-neutral-300)]`
+                       shadow-[0_2px_0_0_var(--color-neutral-300)]`
                 }`}
                 style={{ background: hex }}
               />

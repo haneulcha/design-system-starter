@@ -69,4 +69,23 @@ describe("AdjustableScale", () => {
     const captions = screen.getAllByTestId("stop-caption").map((el) => el.textContent);
     expect(captions).toEqual(["50", "100", "200", "300", "400", "500", "600", "700", "800", "900", "950"]);
   });
+
+  // D4: 팔레트는 색을 나란히 놓고 비교하는 표면이라 마우스가 띠 위를 자주
+  // 가로지른다 — hover 리프트는 "지나가는 것"과 "고르려는 것"을 구별하지 못한다.
+  // 더 결정적으로, 누르는 순간은 항상 hover 중이라 4px 그림자에서 2px만 내려가
+  // "그림자 자리에 정확히 내려앉는다"는 이 파일의 물리 계약이 깨져 있었다.
+  it("조정 가능한 stop에 hover 그림자가 없다 — 기본 깊이와 press는 남는다", () => {
+    render(
+      <AdjustableScale
+        hexes={HEXES}
+        adjustable={[0, 3, 7, 10]}
+        pinned={[]}
+        onPick={() => {}}
+      />,
+    );
+    const s = screen.getAllByTestId("swatch")[3];
+    expect(s.className).not.toContain("hover:shadow");
+    expect(s.className).toContain("shadow-[0_2px");   // 기본 깊이는 남는다
+    expect(s.className).toContain("active:shadow-none"); // press도 남는다
+  });
 });
