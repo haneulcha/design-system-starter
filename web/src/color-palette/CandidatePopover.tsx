@@ -1,8 +1,9 @@
 // web/src/color-palette/CandidatePopover.tsx
 //
-// 후보 3개. hover하면 팔레트와 목업이 그 색으로 다시 그려지고(확정 아님),
-// 클릭해야 확정된다 — 고르기 전에 결과를 본다 (스펙 D3).
+// 후보 3개. hover(또는 키보드 포커스)하면 팔레트와 목업이 그 색으로 다시
+// 그려지고(확정 아님), 클릭해야 확정된다 — 고르기 전에 결과를 본다 (스펙 D3).
 // 후보의 note(교보재 카피)는 이 화면에서 읽지 않는다 (스펙 D9).
+// 이 컴포넌트는 목록만 그린다 — 뜨는 껍데기는 components/Popover가 진다.
 
 import { candidatesFor, type Candidate } from "@core/color/candidates.js";
 import { fillScale, type Pin } from "@core/color/scale.js";
@@ -52,10 +53,9 @@ export function CandidatePopover({ stopIndex, state, onHover, onChoose, onClose 
   const current = state.pins[stopIndex as 0 | 3 | 7 | 10];
 
   return (
-    <div
-      className="mt-2 rounded-lg border border-neutral-300 bg-white p-2 shadow-lg"
-      onMouseLeave={() => onHover(null)}
-    >
+    // 카드 크롬(테두리·그림자·여백)은 이제 Popover 패널이 진다. 여기는 목록만
+    // 남는다 — 크롬이 둘이면 테두리가 겹쳐 보인다.
+    <div onMouseLeave={() => onHover(null)}>
       {candidates.map((cd) => {
         const hex = cd.hex;
         return (
@@ -68,6 +68,11 @@ export function CandidatePopover({ stopIndex, state, onHover, onChoose, onClose 
               type="radio"
               name={`cand-${stopIndex}`}
               checked={current === hex}
+              // hover의 키보드 대응물. Tab으로 라디오 그룹에 들어오는 것은 선택을
+              // 바꾸지 않으므로, 여기서 프리뷰를 띄워야 "고르기 전에 결과를 본다"가
+              // 키보드에서도 성립한다. (화살표 키는 네이티브 규칙대로 이동 즉시
+              // 선택 = 확정이다 — 그건 남는 한계로, 스펙 "알려진 한계" 3번.)
+              onFocus={() => onHover(hex)}
               onChange={() => { onChoose(hex); onClose(); }}
             />
             <span
