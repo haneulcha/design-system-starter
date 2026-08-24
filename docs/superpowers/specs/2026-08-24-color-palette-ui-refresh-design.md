@@ -90,14 +90,23 @@ elevation v1)을 안 먹으면, 그 답은 `docs/research/`와 산출물 파일 
 
 | 크롬 | 결정 | 이유 |
 | --- | --- | --- |
-| 카드 표면(① 앵커 카드 · ③ 받기 카드), 간격, 타이포, radius | **토큰** (`--ds-*`, D2) | 정적인 표면·리듬 — 카테고리가 답한 바로 그 영역 |
+| 카드 표면(① 앵커 카드 · ③ 받기 카드), 간격, 타이포, radius — **레이아웃 레벨만**(스테이지 간격·카드 패딩·그리드 gap·카드 radius) | **토큰** (`--ds-*`, D2) | 정적인 표면·리듬 — 카테고리가 답한 바로 그 영역 |
 | `AdjustableScale` 스와치의 depth 어포던스 | **커스텀 유지** | 0-블러 하드섀도 + press 착지 물리는 상호작용 설계다. 36px 칩에서 블러 섀도는 안 보인다는 실측(3.1 D3)과 press 이동=깊이 대응(3.2 D4)이 근거이고, elevation 카테고리의 블러 섀도로 바꾸면 둘 다 깨진다 |
 | `components/Popover` | **커스텀 유지** | 4화면 공유 크롬이라 이 화면의 범위 밖 + 위와 같은 이유 |
+| 컴포넌트 내부(버튼/입력의 패딩·radius — 예: `DownloadRow`의 `rounded-md px-3 py-2`, `NeutralControl`의 `rounded px-2 py-1`, `AdjustableScale`의 `gap-0.5`, `AccentInput`의 `gap-6`) | **손대지 않음** (이번 범위 밖) | 도그푸딩은 부분적이다 — 어디까지인지가 기록에 없는 것 자체가 IDENTITY 규칙 2 위반에 가깝다. 실측 소비율: spacing alias 8중 6, radius 8중 1(card), elevation 5중 1(raised, ring 제외 후 4중 1). 남은 손값은 별도 사이클의 문제로 남긴다 — 이번에 `rounded-md`를 `--ds-radius-button`으로 바꾸기 시작하면 "왜 나머지는 아닌가"가 다시 열린다 |
 
 즉 3.1 D3에서 뒤집는 것은 "크롬 전체가 토큰 시스템과 무관하다"는 일반 명제뿐이다.
 그 스펙이 실제로 방어하던 대상 — 스와치 그림자의 물리 — 는 그대로 방어된다.
-`AdjustableScale.tsx:60-84`와 `Popover.tsx:3-4`의 주석은 개정 후에도 참이므로
-고치지 않는다.
+`AdjustableScale.tsx:60-84`의 주석은 개정 후에도 참이므로(카테고리를 언급하지
+않고 "Tailwind 기본 shadow가 아니라 커스텀"만 말한다) 고치지 않는다.
+
+**정정 (최종 픽스 웨이브, F1):** 위 문장은 애초에 `Popover.tsx:3-4`도 개정 후
+참이라고 적었으나 틀렸다 — 그 주석은 "도구 자신의 크롬이다 … 무관하다. 섞지
+않는다"는 3.1의 일반 명제를 그대로 선언으로 갖고 있었고, 이 스펙이 그 일반
+명제를 폐기한 뒤에도 고쳐지지 않은 채 남아 있었다. `Popover`는 builder·lab·
+inspector·color-palette 4화면이 공유하는 파일이라, 스펙을 안 읽고 코드부터
+여는 사람이 여기서 폐기된 규칙을 사실로 배우는 경로가 있었다. 이제 좁은
+결론(그림자·물리는 상호작용 설계라 커스텀 유지)만 남기도록 고쳤다.
 
 **주의 — `DS*` 컴포넌트는 여기 못 쓴다.** `DSCard` · `DSButton` 등은
 `DesignTokens`/`DesignSystem` 인스턴스를 props로 받아 **사용자가 생성한 시스템**을
@@ -116,13 +125,21 @@ Tailwind 유틸리티 네임스페이스에 매핑될 때만 의미가 있는데
 **생성 경로:**
 
 ```
-web/scripts/tokens-css.ts        renderTokensCss(): string  (순수 함수, 테스트 대상)
+web/src/tokens/tokensCss.ts      renderTokensCss(): string  (순수 함수, 테스트 대상)
 web/vite.config.ts               플러그인 등록: buildStart에서 renderTokensCss()를
                                  web/src/tokens.generated.css에 기록 (내용이 같으면
                                  안 쓴다 — 무의미한 HMR을 막는다)
 web/src/global.css               @import "./tokens.generated.css";
 .gitignore                       web/src/tokens.generated.css 추가 — 생성물은 커밋하지 않는다
 ```
+
+**정정 (최종 픽스 웨이브, F11):** 이 항목은 애초에 `web/scripts/tokens-css.ts`로
+적었다. 계획서(`docs/superpowers/plans/2026-08-24-color-palette-ui-refresh.md:46`)가
+실제 구현 단계에서 옮긴 이유를 남겼다 — `web/vitest.config.ts`의 `include`가
+`src/**/*.test.{ts,tsx}`라 `scripts/` 자리에 둔 테스트는 수집되지 않는다.
+`web/src/tokens/`로 옮겨 기존 include에 들어오게 했다. 어떤 앱 모듈도 이 파일을
+import하지 않으므로(vite 플러그인만 부른다) 번들에는 안 들어간다. 아래 범위·테스트
+절의 경로도 실제 경로로 맞춘다.
 
 `web/`에는 `tsx`가 없고 별도 predev 스크립트를 루트 패키지에 걸면 두 패키지의
 스크립트가 얽힌다. vite 설정은 esbuild로 번들되므로 `../src`의 TS를 그대로 import할
@@ -136,16 +153,25 @@ web/src/global.css               @import "./tokens.generated.css";
 | --- | --- | --- |
 | spacing | alias 8 (`generateSpacingCategory`, density=comfortable) | `--ds-space-md: 16px` |
 | radius | 이름 토큰 8 (`generateRadiusCategory`, style=standard) | `--ds-radius-card: 12px` |
-| elevation | 레벨 5 (`generateElevationCategory`, shadow × subtle) | `--ds-shadow-raised: …` |
+| elevation | 레벨 4, ring 제외 (`generateElevationCategory`, shadow × subtle) | `--ds-shadow-raised: …` |
 | typography | 프로필 22를 `@utility ds-type-<key>`로 + 폰트 체인 2 | `.ds-type-heading-xxs` |
 
 원 스케일(spacing 12-stop, radius 8-stop 등)을 내보내지 않는 이유: 크롬이 소비해야
 하는 단위는 의미가 붙은 이름이고, 원값까지 열어두면 크롬이 스케일에서 임의로 집어
 쓰는 뒷문이 생긴다. 타이포만 유틸리티로 내보내는 이유: 타이포 프로필은 size·weight·
 line-height·letter-spacing·family 다섯이 항상 묶여 다니는 물건이라 var 다섯 개를
-낱개로 쓰면 묶음이 흩어진다. elevation은 `ringColor` 인자를 안 넘긴다 — style=shadow
-에서는 안 쓰이고(`elevation-category.ts:141-146`), ring 스타일로 knob을 돌리는 것은
-이번 범위가 아니다.
+낱개로 쓰면 묶음이 흩어진다.
+
+**정정 (최종 픽스 웨이브, F2):** 이 항목은 애초에 "elevation은 `ringColor` 인자를
+안 넘긴다 — style=shadow에서는 안 쓰이고, ring 스타일로 knob을 돌리는 것은 이번
+범위가 아니다"라고 적었으나 검증하지 않은 라인 참조를 단정으로 적은 것이었다.
+실제로는 `buildLevelShadow`(`elevation-category.ts`)의 `ring` 분기가 `style` 검사
+**이전에** 무조건 `ringColor`를 쓴다 — style=shadow에서도 `ring` 레벨은 색을 쓴다.
+`ringColor`를 안 넘긴 결과, 스키마의 `DEFAULT_RING_COLOR`(테스트용 fallback 회색,
+`schema/elevation.ts`)가 계보 없이 토큰으로 나가고 있었다. 처방은 인자를 넘기는
+것이 아니라 **`ring` 레벨 자체를 emit에서 빼는 것**이다 — 이 화면은 링 색을 공급할
+뉴트럴 팔레트를(도구 크롬 기준으로) 갖고 있지 않고, 소비자도 없다. `--ds-shadow-none`
+/`raised`/`floating`/`overlay` 넷만 낸다.
 
 **dev 중 `src/schema/` 변경은 dev 서버 재시작이 필요하다.** 스키마 상수는 카테고리
 사이클에서나 바뀌지 이 화면 작업 중에 바뀌는 물건이 아니므로, watcher를 붙이는
@@ -291,11 +317,16 @@ D7("얇게 노출")의 목적("산출물에 이 색이 들어간다"를 보여�
 ### D6. 스테이지 ① — 피커와 hex를 카드 하나로 (시각적 묶음만)
 
 `AccentInput`의 현행 배치(피커 왼쪽, hex 입력 오른쪽, `AccentInput.tsx:23-24`)를
-`--ds-radius-card` + `--ds-space-md` 패딩의 카드 마크업으로 감싼다. **그것뿐이다.**
-L·C·H 숫자 칸은 `OklchPicker` 내부에 그대로 있다 — 사이클 3.1 D1이 근거를 남기고
-정한 배치("밖으로 끌어올리면 피커의 '드래그 중에는 hex를 거치지 않는다'는 설계가
-깨진다", `2026-08-16-…:62-65`)이고, 그 근거는 여전히 유효하며, 피커는 4화면
-공유라 이 화면의 범위 밖이다(비-목표).
+`--ds-radius-card` + `--ds-space-md` 패딩[^d6-sm]의 카드 마크업으로 감싼다.
+**그것뿐이다.** L·C·H 숫자 칸은 `OklchPicker` 내부에 그대로 있다 — 사이클 3.1
+D1이 근거를 남기고 정한 배치("밖으로 끌어올리면 피커의 '드래그 중에는 hex를
+거치지 않는다'는 설계가 깨진다", `2026-08-16-…:62-65`)이고, 그 근거는 여전히
+유효하며, 피커는 4화면 공유라 이 화면의 범위 밖이다(비-목표).
+
+[^d6-sm]: **정정 (최종 픽스 웨이브, F11):** 실제 구현은 `md`가 아니라 `sm`
+    패딩이다 — D3의 나사 목록("카드 패딩 md→sm(①③)")에 세로 예산을 조이려고
+    바꾼 기록이 있는데, 이 항목이 그 변경 전 값을 그대로 남기고 있었다.
+    `AccentInput.tsx`가 실측 기준이다.
 
 ### D7. 스테이지 ③ — 받기 카드
 
@@ -359,7 +390,7 @@ L·C·H 숫자 칸은 `OklchPicker` 내부에 그대로 있다 — 사이클 3.1
 **이 사이클:**
 
 ```
-web/scripts/tokens-css.ts        (신규) renderTokensCss + 테스트
+web/src/tokens/tokensCss.ts      (신규) renderTokensCss + 테스트 (F11: vitest include 때문에 scripts/에서 옮김)
 web/vite.config.ts               토큰 플러그인 등록
 web/src/global.css               @import 추가
 .gitignore                       tokens.generated.css
@@ -381,7 +412,7 @@ web/src/color-palette/
 
 ## 테스트
 
-- **토큰 emit** (`tokens-css.ts`) — `--ds-space-md: 16px` · `--ds-radius-card: 12px`가
+- **토큰 emit** (`tokensCss.ts`) — `--ds-space-md: 16px` · `--ds-radius-card: 12px`가
   있다 / `--ds-shadow-raised`가 subtle 프로필의 문자열과 같다 /
   `ds-type-heading-xxs` 유틸리티가 있다 / `--text-*` 등 기본 네임스페이스 문자열이
   출력에 **없다**. 스키마 값이 바뀌면 여기서 드러난다.
@@ -420,6 +451,14 @@ web/src/color-palette/
 6. **NeutralControl은 APG 라디오 패턴이 아니다** — 상호 배타 선택을 aria-pressed
    토글 그룹으로 표현한다. 화살표 이동=확정 함정을 피하는 의도적 선택이다 (D8).
 7. **3.1 알려진 한계 3의 해소책 문장이 현 코드와 맞지 않는다** — D9 각주 참조.
+8. **도그푸딩은 레이아웃 레벨에서 멈춘다 — 컴포넌트 내부(버튼/입력의 패딩·
+   radius)는 이번 범위 밖이다** (D1 표). 실측 소비율: spacing alias 8중 6,
+   radius 8중 1(card), elevation 5중 1(raised — ring 제외 후 4중 1). 남은
+   손값 예: `DownloadRow`의 `rounded-md px-3 py-2`, `NeutralControl`의
+   `rounded px-2 py-1`, `AdjustableScale`의 `gap-0.5`, `AccentInput`의
+   `gap-6`. 부분 도그푸딩 자체는 문제가 아니지만, 범위가 어디까지인지가
+   기록에 없는 것은 IDENTITY 규칙 2에 걸린다 — 이 항목이 그 기록이다.
+   컴포넌트 내부로 넓히는 것은 별도 사이클의 판단으로 남긴다.
 
 ---
 
