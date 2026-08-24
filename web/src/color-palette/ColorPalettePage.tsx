@@ -48,67 +48,94 @@ export function ColorPalettePage() {
   const onResetShifts = () => setState((s) => ({ ...s, shifts: [] }));
 
   return (
-    <div className="max-w-5xl mx-auto p-8 grid grid-cols-[1fr_320px] gap-8 items-start">
-      <div className="space-y-6">
-        <h1 className="text-lg font-semibold">컬러 팔레트</h1>
-        <AccentInput
-          hex={state.accentHex}
-          onChange={(accentHex) => setState((s) => withAccent(s, accentHex))}
-        />
-        <section className="space-y-1">
-          <h2 className="text-xs font-medium text-neutral-500">액센트</h2>
-          <AdjustableScale
-            hexes={scales.accent}
-            adjustable={[...ADJUSTABLE_STOPS]}
-            pinned={pinned}
-            onPick={(i) => { setOpen(open === i ? null : i); setHover(null); }}
-            preview={open !== null && hover ? previewScale(state, open, hover) : null}
-            openIndex={open}
-            onClosePopover={() => { setOpen(null); setHover(null); }}
-            popoverContent={
-              open !== null ? (
-                <CandidatePopover
-                  stopIndex={open}
-                  state={state}
-                  onHover={setHover}
-                  onChoose={(hex) =>
-                    setState((s) => ({ ...s, pins: { ...s.pins, [open]: hex ?? undefined } }))
-                  }
-                  onClose={() => { setOpen(null); setHover(null); }}
-                />
-              ) : undefined
-            }
+    <div
+      className="mx-auto grid max-w-[1200px] grid-cols-1 items-start
+                 lg:grid-cols-[1fr_380px]"
+      style={{ padding: "var(--ds-space-xl)", gap: "var(--ds-space-xl)" }}
+    >
+      <main style={{ display: "grid", gap: "var(--ds-space-lg)" }}>
+        <h1 className="ds-type-heading-sm">컬러 팔레트</h1>
+
+        <section style={{ display: "grid", gap: "var(--ds-space-sm)" }}>
+          <h2 className="ds-type-heading-xxs">① 앵커 정하기</h2>
+          <AccentInput
+            hex={state.accentHex}
+            onChange={(accentHex) => setState((s) => withAccent(s, accentHex))}
           />
         </section>
-        <section className="space-y-2">
-          <h2 className="text-xs font-medium text-neutral-500">뉴트럴</h2>
-          <AdjustableScale hexes={scales.neutral} adjustable={[]} pinned={[]} />
-          <NeutralControl
-            state={state}
-            onChange={(tint) => setState((s) => ({ ...s, tint }))}
-          />
-        </section>
-        <DownloadRow scales={scales} roles={roles} />
-        <details className="space-y-2">
-          <summary className="cursor-pointer text-xs font-medium text-neutral-500">
-            상태색 4종
-          </summary>
-          <div className="space-y-2 pt-2">
+
+        <section style={{ display: "grid", gap: "var(--ds-space-md)" }}>
+          <h2 className="ds-type-heading-xxs">② 만들어진 팔레트</h2>
+
+          <div style={{ display: "grid", gap: "var(--ds-space-xxs)" }}>
+            <div className="ds-type-caption-sm text-neutral-500">액센트</div>
+            <AdjustableScale
+              hexes={scales.accent}
+              adjustable={[...ADJUSTABLE_STOPS]}
+              pinned={pinned}
+              onPick={(i) => { setOpen(open === i ? null : i); setHover(null); }}
+              preview={open !== null && hover ? previewScale(state, open, hover) : null}
+              openIndex={open}
+              onClosePopover={() => { setOpen(null); setHover(null); }}
+              popoverContent={
+                open !== null ? (
+                  <CandidatePopover
+                    stopIndex={open}
+                    state={state}
+                    onHover={setHover}
+                    onChoose={(hex) =>
+                      setState((s) => ({ ...s, pins: { ...s.pins, [open]: hex ?? undefined } }))
+                    }
+                    onClose={() => { setOpen(null); setHover(null); }}
+                  />
+                ) : undefined
+              }
+            />
+          </div>
+
+          <div style={{ display: "grid", gap: "var(--ds-space-xs)" }}>
+            <div className="ds-type-caption-sm text-neutral-500">뉴트럴</div>
+            <AdjustableScale hexes={scales.neutral} adjustable={[]} pinned={[]} />
+            <NeutralControl
+              state={state}
+              onChange={(tint) => setState((s) => ({ ...s, tint }))}
+            />
+          </div>
+
+          {/* 상태색은 접지 않는다 — 산출물에 무조건 들어가므로 화면에 없으면
+              받아간 파일에 모르는 색이 들어있게 된다 (사이클 3 D7). 라벨을 왼쪽
+              열로 빼고 띠를 compact로 낮춰 세로를 아낀다 (스펙 D3). */}
+          <div
+            data-testid="semantic-section"
+            style={{ display: "grid", gap: "var(--ds-space-xxs)" }}
+          >
+            <div className="ds-type-caption-sm text-neutral-500">상태색</div>
             {SEMANTIC_ANCHORS.map((a) => (
-              <div key={a.id}>
+              <div
+                key={a.id}
+                className="grid grid-cols-[56px_1fr] items-center"
+                style={{ gap: "var(--ds-space-xs)" }}
+              >
                 <div className="ds-type-caption-sm text-neutral-400">{a.label}</div>
                 <AdjustableScale
                   hexes={scales.semantic[a.id]}
                   adjustable={[]}
                   pinned={[]}
                   showCaptions={false}
+                  compact
                 />
               </div>
             ))}
           </div>
-        </details>
-      </div>
-      <div className="sticky top-8">
+        </section>
+
+        <section style={{ display: "grid", gap: "var(--ds-space-sm)" }}>
+          <h2 className="ds-type-heading-xxs">③ 받기</h2>
+          <DownloadRow scales={scales} roles={roles} />
+        </section>
+      </main>
+
+      <aside className="lg:sticky lg:top-8">
         <PreviewPane
           scales={shownScales}
           roles={roles}
@@ -118,7 +145,7 @@ export function ColorPalettePage() {
           onApplyShifts={onApplyShifts}
           onResetShifts={onResetShifts}
         />
-      </div>
+      </aside>
     </div>
   );
 }

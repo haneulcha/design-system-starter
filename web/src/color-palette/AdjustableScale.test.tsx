@@ -153,4 +153,15 @@ describe("AdjustableScale", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(document.activeElement).toBe(screen.getAllByTestId("swatch")[7]);
   });
+
+  it("compact면 스와치 높이가 h-6, 기본은 h-9", () => {
+    const hexes = Array.from({ length: 11 }, () => "#888888");
+    const { rerender } = render(
+      <AdjustableScale hexes={hexes} adjustable={[]} pinned={[]} />,
+    );
+    expect(screen.getAllByTestId("swatch")[0].className).toContain("h-9");
+
+    rerender(<AdjustableScale hexes={hexes} adjustable={[]} pinned={[]} compact />);
+    expect(screen.getAllByTestId("swatch")[0].className).toContain("h-6");
+  });
 });

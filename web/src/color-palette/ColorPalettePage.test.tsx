@@ -398,3 +398,44 @@ describe("크롬 타이포 — 하한 12px", () => {
     expect(badges[0].className).toContain("ds-type-caption-sm");
   });
 });
+
+describe("3단 스테이지 골격", () => {
+  it("h1 하나에 h2 셋이 ①②③ 순서로 있다", () => {
+    render(<ColorPalettePage />);
+    expect(screen.getAllByRole("heading", { level: 1 }).length).toBe(1);
+    const h2 = screen.getAllByRole("heading", { level: 2 });
+    expect(h2.length).toBe(3);
+    expect(h2.map((h) => h.textContent)).toEqual([
+      expect.stringContaining("앵커"),
+      expect.stringContaining("팔레트"),
+      expect.stringContaining("받기"),
+    ]);
+  });
+
+  // 사이클 3 D7로의 회귀 — 접힌 details는 "얇게 노출"이 아니라 "노출 안 함"이었다.
+  // PreviewPane 안에도 "고정값 미달 N건" details가 따로 있어(사이클 3 의도적 설계,
+  // 유지 대상) 페이지 전체에서 details 부재를 단언할 수 없다 — 상태색 섹션으로 좁힌다.
+  it("상태색이 details 없이 첫 화면에 있다", () => {
+    render(<ColorPalettePage />);
+    const section = screen.getByTestId("semantic-section");
+    expect(section.querySelector("details")).toBeNull();
+    expect(section.querySelectorAll("[data-testid='swatch']").length).toBe(44);
+    expect(screen.getAllByTestId("swatch").length).toBe(66);
+  });
+
+  it("상태색 띠만 compact다 — 액센트·뉴트럴은 아니다", () => {
+    render(<ColorPalettePage />);
+    const swatches = screen.getAllByTestId("swatch");
+    // 0-10 액센트, 11-21 뉴트럴, 22-65 상태색 4벌
+    expect(swatches[0].className).toContain("h-9");
+    expect(swatches[11].className).toContain("h-9");
+    expect(swatches[22].className).toContain("h-6");
+    expect(swatches[65].className).toContain("h-6");
+  });
+
+  it("사이드바가 aside이고 프리뷰를 담는다", () => {
+    render(<ColorPalettePage />);
+    const aside = screen.getByRole("complementary");
+    expect(aside.contains(screen.getByTestId("mock-light"))).toBe(true);
+  });
+});

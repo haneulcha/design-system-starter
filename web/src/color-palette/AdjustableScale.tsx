@@ -24,11 +24,14 @@ interface Props {
   /** 패널 내용물. 부모가 만든다 — 후보 계산은 여전히 부모 쪽 일이다. */
   readonly popoverContent?: ReactNode;
   readonly onClosePopover?: () => void;
+  /** 상태색처럼 조정 불가한 띠를 얇게 그린다. 조정 UI가 없어 히트 타깃이
+   *  필요 없고, 사이클 3 D7의 "얇게 노출"이 원래 이 뜻이다 (스펙 D3). */
+  readonly compact?: boolean;
 }
 
 export function AdjustableScale({
   hexes, adjustable, pinned, onPick, preview, showCaptions = true,
-  openIndex = null, popoverContent, onClosePopover,
+  openIndex = null, popoverContent, onClosePopover, compact = false,
 }: Props) {
   const shown = preview ?? hexes;
   // clamp 기준이다 — 띠 자신이 경계다(스펙 D3).
@@ -71,7 +74,7 @@ export function AdjustableScale({
                 // 회색이 둘(테두리 하나, 그림자 하나) 있으면 어색해 보인다는
                 // 지적이 있었다. pin 여부에 따라 테두리·그림자가 함께
                 // neutral-300 ↔ neutral-700으로 움직여 위계도 더 분명해진다.
-                className={`block w-full h-9 rounded-sm border cursor-pointer
+                className={`block w-full ${compact ? "h-6" : "h-9"} rounded-sm border cursor-pointer
                   active:shadow-none active:translate-y-[2px]
                   transition-[box-shadow,transform]
                   focus-visible:outline-none focus-visible:ring-2
@@ -88,7 +91,7 @@ export function AdjustableScale({
               <div
                 aria-label={label}
                 data-testid="swatch"
-                className="w-full h-9 rounded-sm border border-neutral-200"
+                className={`w-full ${compact ? "h-6" : "h-9"} rounded-sm border border-neutral-200`}
                 style={{ background: hex }}
               />
             )}
