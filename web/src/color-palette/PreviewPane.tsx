@@ -111,7 +111,7 @@ function ContrastBadge({ check: c }: { readonly check: ContrastCheck }) {
   return (
     <div
       data-testid="contrast-badge"
-      className={`text-[10px] ${c.adjustable ? "text-neutral-500" : "text-neutral-400"}`}
+      className={`ds-type-caption-sm ${c.adjustable ? "text-neutral-500" : "text-neutral-400"}`}
     >
       {`⚠ ${LABELS[c.scaleName] ?? c.scaleName} ${c.roleId} (${
         c.theme === "light" ? "라이트" : "다크"
@@ -150,7 +150,7 @@ export function PreviewPane({
           ))}
           {fixedFailing.length > 0 && (
             <details>
-              <summary className="cursor-pointer text-[10px] text-neutral-400">
+              <summary className="cursor-pointer ds-type-caption-sm text-neutral-400">
                 {`고정값 미달 ${fixedFailing.length}건`}
               </summary>
               <div className="mt-1 space-y-1">
@@ -167,7 +167,7 @@ export function PreviewPane({
             <button
               type="button"
               onClick={onApplyShifts}
-              className="mt-1 w-full rounded border border-neutral-800 px-2 py-1 text-[11px]"
+              className="mt-1 w-full rounded border border-neutral-800 px-2 py-1 ds-type-caption-sm"
             >
               한 번에 고치기
             </button>
@@ -176,7 +176,7 @@ export function PreviewPane({
             <button
               type="button"
               onClick={onResetShifts}
-              className="mt-1 w-full rounded border border-neutral-300 px-2 py-1 text-[11px] text-neutral-500"
+              className="mt-1 w-full rounded border border-neutral-300 px-2 py-1 ds-type-caption-sm text-neutral-500"
             >
               역할 기본값으로
             </button>

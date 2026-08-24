@@ -85,7 +85,7 @@ export function CandidatePopover({ stopIndex, state, onHover, onChoose, onClose 
       })}
       <button
         type="button"
-        className="mt-1 w-full rounded px-2 py-1 text-[11px] text-neutral-500 hover:bg-neutral-50"
+        className="mt-1 w-full rounded px-2 py-1 ds-type-caption-sm text-neutral-500 hover:bg-neutral-50"
         onClick={() => { onChoose(null); onClose(); }}
       >
         기본으로

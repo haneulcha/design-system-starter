@@ -368,3 +368,33 @@ describe("ColorPalettePage", () => {
     expect(window.location.search).not.toContain("s7=");
   });
 });
+
+describe("크롬 타이포 — 하한 12px", () => {
+  // 목업(Mock)은 명시적 예외다. 사용자 팔레트로 그리는 축소 UI라 하한을 적용하면
+  // 380px 카드가 부풀어 "커지면 정작 색이 안 보인다"(3.1 D2)를 거스른다.
+  it("목업 바깥 크롬에 10~11px 손값이 없다", () => {
+    const { container } = render(<ColorPalettePage />);
+    const mocks = [screen.getByTestId("mock-light"), screen.getByTestId("mock-dark")];
+    const offenders = Array.from(container.querySelectorAll("[class]")).filter((el) => {
+      if (mocks.some((m) => m.contains(el))) return false;
+      // SVG 요소의 className은 문자열이 아니라 SVGAnimatedString이다 — 정규식에
+      // 그대로 태우면 "[object SVGAnimatedString]"으로 강제변환돼 조용히 안 걸리거나
+      // 예외가 난다. 이 페이지는 SVG를 그리는 색 피커를 품고 있어 실제로 부딪힌다.
+      return /text-\[(9|10|11)px\]/.test(el.getAttribute("class") ?? "");
+    });
+    expect(offenders.map((el) => el.getAttribute("class") ?? "")).toEqual([]);
+  });
+
+  it("stop 캡션이 code.sm을 쓴다", () => {
+    render(<ColorPalettePage />);
+    const caption = screen.getAllByTestId("stop-caption")[0];
+    expect(caption.className).toContain("ds-type-code-sm");
+  });
+
+  it("대비 뱃지가 caption.sm을 쓴다", () => {
+    render(<ColorPalettePage />);
+    const badges = screen.getAllByTestId("contrast-badge");
+    expect(badges.length).toBeGreaterThan(0);
+    expect(badges[0].className).toContain("ds-type-caption-sm");
+  });
+});

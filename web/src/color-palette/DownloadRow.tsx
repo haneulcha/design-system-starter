@@ -9,7 +9,7 @@ import { STOP_KEYS } from "@core/color/scale.js";
 import { canCopy, copyText, downloadFile } from "../lib/download";
 
 const btn =
-  "px-3 py-1.5 rounded-md border border-neutral-200 bg-white text-[11px] font-medium " +
+  "px-3 py-1.5 rounded-md border border-neutral-200 bg-white ds-type-body-sm " +
   "text-neutral-700 hover:bg-neutral-50 hover:border-neutral-300 transition-colors";
 
 export function DownloadRow({
@@ -45,7 +45,7 @@ export function DownloadRow({
         </button>
       ))}
       <button type="button" disabled={!canCopy()}
-        className="px-3 py-1.5 text-[11px] text-neutral-400 hover:text-neutral-700 disabled:opacity-40"
+        className="px-3 py-1.5 ds-type-caption-sm text-neutral-400 hover:text-neutral-700 disabled:opacity-40"
         onClick={() => void copyText(files.css)}>
         copy CSS
       </button>

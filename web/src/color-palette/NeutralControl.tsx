@@ -28,7 +28,7 @@ export function NeutralControl({ state, onChange }: Props) {
             type="button"
             aria-label={a.label}
             onClick={() => onChange({ attractorId: a.id, strength })}
-            className={`rounded px-2 py-1 text-[11px] border ${
+            className={`rounded px-2 py-1 ds-type-caption-sm border ${
               activeId === a.id
                 ? "border-neutral-900 font-medium"
                 : "border-neutral-200 hover:border-neutral-400"
@@ -46,7 +46,7 @@ export function NeutralControl({ state, onChange }: Props) {
               key={s}
               type="button"
               onClick={() => onChange({ attractorId: activeId, strength: s })}
-              className={`rounded px-2 py-0.5 text-[11px] border ${
+              className={`rounded px-2 py-0.5 ds-type-caption-sm border ${
                 strength === s ? "border-neutral-900 font-medium" : "border-neutral-200"
               }`}
             >
@@ -60,7 +60,7 @@ export function NeutralControl({ state, onChange }: Props) {
           <button
             type="button"
             onClick={() => onChange(null)}
-            className="text-[11px] text-neutral-400 hover:text-neutral-600 underline"
+            className="ds-type-caption-sm text-neutral-400 hover:text-neutral-600 underline"
           >
             자동으로
           </button>

@@ -346,8 +346,16 @@ function NumberField({
     if (Number(draft) !== value) setDraft(shown);
   }, [value]);
 
+  // 2026-08-24 판단 변경: "OklchPicker 내부 불변"의 원래 근거는 배치·상태
+  // 구조(사이클 3.1 D1 — 드래그 중 hex를 거치지 않는 L·C·H 배선)였는데, 여기
+  // 손값 폰트 크기를 ds-type-* 토큰으로 승격해도 그 배선은 그대로다. 4화면
+  // 공유(builder·lab·inspector·color-palette)라는 두 번째 근거도 막을 이유가
+  // 아니다 — 10~11px는 어느 화면에서도 크롬 하한(12px) 미달이라, 같이 커지는
+  // 것이 그 화면들 각각의 퇴보가 아니라 개선이다. 그래서 "내부 불변"을
+  // "배치·상태는 불변, 타이포는 승격 대상"으로 부분 개정한다 — 크기 클래스
+  // 두 줄만 바꾸고 그 외(드래그 핸들러·클램프·마커 계산·패드 크기)는 그대로.
   return (
-    <label className="flex items-center gap-1 text-[10px] text-neutral-500">
+    <label className="flex items-center gap-1 ds-type-caption-sm text-neutral-500">
       <span className="w-3 font-mono">{label}</span>
       <input
         aria-label={label}
@@ -365,7 +373,7 @@ function NumberField({
           }
         }}
         onBlur={() => setDraft(lastShown.current)}
-        className="w-16 rounded border border-neutral-300 px-1 py-0.5 font-mono text-[11px]"
+        className="w-16 rounded border border-neutral-300 px-1 py-0.5 ds-type-code-sm"
       />
     </label>
   );

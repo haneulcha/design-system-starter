@@ -98,7 +98,7 @@ export function AdjustableScale({
             {showCaptions && (
               <div
                 data-testid="stop-caption"
-                className="mt-1 text-center text-[9px] font-mono text-neutral-400"
+                className="mt-1 text-center ds-type-code-sm text-neutral-400"
               >
                 {STOP_KEYS[i]}
               </div>

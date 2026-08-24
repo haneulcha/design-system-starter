@@ -96,7 +96,7 @@ export function ColorPalettePage() {
           <div className="space-y-2 pt-2">
             {SEMANTIC_ANCHORS.map((a) => (
               <div key={a.id}>
-                <div className="text-[10px] text-neutral-400">{a.label}</div>
+                <div className="ds-type-caption-sm text-neutral-400">{a.label}</div>
                 <AdjustableScale
                   hexes={scales.semantic[a.id]}
                   adjustable={[]}
