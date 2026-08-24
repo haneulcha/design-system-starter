@@ -61,6 +61,7 @@ export function CandidatePopover({ stopIndex, state, onHover, onChoose, onClose 
         return (
           <label
             key={cd.label}
+            data-testid="candidate"
             className="flex items-center gap-2 rounded p-1.5 cursor-pointer hover:bg-neutral-50"
             onMouseEnter={() => onHover(hex)}
           >

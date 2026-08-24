@@ -59,6 +59,7 @@ export function DownloadRow({
         <button
           type="button"
           disabled={!copyable}
+          aria-describedby={copyable ? undefined : "copy-disabled-reason"}
           className="ds-type-caption-sm rounded-md border border-neutral-200 px-3 py-2
                      text-neutral-600 hover:border-neutral-300 disabled:opacity-40"
           onClick={() => void copyText(files.css)}
@@ -67,7 +68,11 @@ export function DownloadRow({
         </button>
       </div>
       {!copyable && (
-        <div className="ds-type-caption-sm text-neutral-400">
+        // id로 버튼과 연결한다(aria-describedby) — 형제 <div>로만 있으면 사유가
+        // 버튼과 프로그램적으로 묶이지 않는다. disabled 버튼은 포커스를 못 받아
+        // 스크린리더가 바로 읽어주진 못하지만, 관계를 명시하는 것 자체가 맞다
+        // (브라우즈 모드 등에서 유효).
+        <div id="copy-disabled-reason" className="ds-type-caption-sm text-neutral-400">
           클립보드를 쓸 수 없는 환경입니다 — 파일로 받으세요.
         </div>
       )}

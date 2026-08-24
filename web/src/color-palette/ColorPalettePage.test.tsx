@@ -466,7 +466,45 @@ describe("받기 카드", () => {
     render(<ColorPalettePage />);
     const copy = screen.getByRole("button", { name: /CSS 복사/ }) as HTMLButtonElement;
     expect(copy.disabled).toBe(true);
-    expect(screen.getByText(/클립보드를 쓸 수 없는 환경/)).toBeTruthy();
+    const reason = screen.getByText(/클립보드를 쓸 수 없는 환경/);
+    expect(reason).toBeTruthy();
+    // 사유가 형제 <div>로만 있으면 포커스가 가도 함께 읽히지 않는다 — aria-describedby로
+    // 버튼과 프로그램적으로 연결한다(disabled라 포커스 자체는 못 받지만, 관계 명시는
+    // 브라우즈 모드에서 유효하다).
+    expect(copy.getAttribute("aria-describedby")).toBe(reason.id);
+    expect(reason.id).toBeTruthy();
     Object.defineProperty(navigator, "clipboard", { value: original, configurable: true });
+  });
+});
+
+describe("접근성", () => {
+  it("뉴트럴 색조/강도가 aria-pressed와 그룹 라벨을 갖는다", () => {
+    render(<ColorPalettePage />);
+    const tintGroup = screen.getByRole("group", { name: "뉴트럴 색조" });
+    const pressed = Array.from(tintGroup.querySelectorAll("[aria-pressed]"))
+      .filter((b) => b.getAttribute("aria-pressed") === "true");
+    expect(pressed.length).toBe(1);
+    expect(screen.getByRole("group", { name: "강도" })).toBeTruthy();
+  });
+
+  // 뱃지는 hover 프리뷰까지 반영해 스와치를 스칠 때마다 바뀐다. 그대로 live면
+  // 스크린리더 스팸이 되므로, 요약은 확정 팔레트(scales) 기준으로 따로 낸다 —
+  // "hover는 미리보기일 뿐 확정이 아니다"라는 이 화면의 계약을 통지에도 적용한다.
+  it("대비 요약이 status이고 hover 프리뷰에 흔들리지 않는다", () => {
+    render(<ColorPalettePage />);
+    const status = screen.getByRole("status");
+    const before = status.textContent;
+    expect(before).toMatch(/대비 미달/);
+
+    fireEvent.click(screen.getAllByTestId("swatch")[3]);
+    const candidate = screen.getAllByTestId("candidate")[0];
+    fireEvent.mouseEnter(candidate);
+    expect(screen.getByRole("status").textContent).toBe(before);
+  });
+
+  it("프리뷰 라이트/다크 라벨이 목업 바깥에 있다", () => {
+    render(<ColorPalettePage />);
+    const light = screen.getByText("라이트");
+    expect(screen.getByTestId("mock-light").contains(light)).toBe(false);
   });
 });
