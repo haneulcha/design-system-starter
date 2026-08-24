@@ -44,7 +44,7 @@ export function DownloadRow({
       style={{
         borderRadius: "var(--ds-radius-card)",
         boxShadow: "var(--ds-shadow-raised)",
-        padding: "var(--ds-space-md)",
+        padding: "var(--ds-space-sm)",
         display: "grid",
         gap: "var(--ds-space-xs)",
       }}

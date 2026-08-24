@@ -24,7 +24,7 @@ export function AccentInput({
       className="border border-neutral-200"
       style={{
         borderRadius: "var(--ds-radius-card)",
-        padding: "var(--ds-space-md)",
+        padding: "var(--ds-space-sm)",
       }}
     >
       <div className="flex items-start gap-6">

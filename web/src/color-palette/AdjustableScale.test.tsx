@@ -154,7 +154,7 @@ describe("AdjustableScale", () => {
     expect(document.activeElement).toBe(screen.getAllByTestId("swatch")[7]);
   });
 
-  it("compact면 스와치 높이가 h-6, 기본은 h-9", () => {
+  it("compact면 스와치 높이가 h-5, 기본은 h-9", () => {
     const hexes = Array.from({ length: 11 }, () => "#888888");
     const { rerender } = render(
       <AdjustableScale hexes={hexes} adjustable={[]} pinned={[]} />,
@@ -162,6 +162,28 @@ describe("AdjustableScale", () => {
     expect(screen.getAllByTestId("swatch")[0].className).toContain("h-9");
 
     rerender(<AdjustableScale hexes={hexes} adjustable={[]} pinned={[]} compact />);
-    expect(screen.getAllByTestId("swatch")[0].className).toContain("h-6");
+    expect(screen.getAllByTestId("swatch")[0].className).toContain("h-5");
+  });
+
+  // stop 50 같은 거의 흰 칩은 그림자가 "칩의 아래 테두리"로 오독된다(스펙 D9,
+  // 확대 확인). boundaryEmphasis는 그 칩의 테두리만 한 단계 진하게 올리고
+  // 그림자는 건드리지 않는다 — "그림자 색 = 테두리 색" 규칙은 지정 안 된
+  // stop에서는 그대로 유지된다.
+  it("boundaryEmphasis에 든 stop만 테두리가 진해지고 그림자는 그대로다", () => {
+    render(
+      <AdjustableScale
+        hexes={HEXES}
+        adjustable={[0, 3]}
+        pinned={[]}
+        onPick={() => {}}
+        boundaryEmphasis={[0]}
+      />,
+    );
+    const swatches = screen.getAllByTestId("swatch");
+    expect(swatches[0].className).toContain("border-neutral-400");
+    expect(swatches[0].className).toContain("shadow-[0_2px_0_0_var(--color-neutral-300)]");
+    // 지정 안 된 조정 가능 stop은 종전과 같이 테두리·그림자가 같은 회색이다.
+    expect(swatches[3].className).toContain("border-neutral-300");
+    expect(swatches[3].className).toContain("shadow-[0_2px_0_0_var(--color-neutral-300)]");
   });
 });

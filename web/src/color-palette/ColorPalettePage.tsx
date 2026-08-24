@@ -55,7 +55,7 @@ export function ColorPalettePage() {
     <div
       className="mx-auto grid max-w-[1200px] grid-cols-1 items-start
                  lg:grid-cols-[1fr_380px]"
-      style={{ padding: "var(--ds-space-xl)", gap: "var(--ds-space-xl)" }}
+      style={{ padding: "var(--ds-space-lg)", gap: "var(--ds-space-xl)" }}
     >
       <main style={{ display: "grid", gap: "var(--ds-space-lg)" }}>
         <h1 className="ds-type-heading-sm">컬러 팔레트</h1>
@@ -77,6 +77,10 @@ export function ColorPalettePage() {
               hexes={scales.accent}
               adjustable={[...ADJUSTABLE_STOPS]}
               pinned={pinned}
+              // stop 50은 거의 흰 칩이라 그림자가 "아래 테두리"로 읽힌다 —
+              // 확대 확인 후 테두리만 neutral-400으로 강화(스펙 D9,
+              // AdjustableScale의 boundaryEmphasis 주석 참조).
+              boundaryEmphasis={[0]}
               onPick={(i) => { setOpen(open === i ? null : i); setHover(null); }}
               preview={open !== null && hover ? previewScale(state, open, hover) : null}
               openIndex={open}

@@ -429,8 +429,8 @@ describe("3단 스테이지 골격", () => {
     // 0-10 액센트, 11-21 뉴트럴, 22-65 상태색 4벌
     expect(swatches[0].className).toContain("h-9");
     expect(swatches[11].className).toContain("h-9");
-    expect(swatches[22].className).toContain("h-6");
-    expect(swatches[65].className).toContain("h-6");
+    expect(swatches[22].className).toContain("h-5");
+    expect(swatches[65].className).toContain("h-5");
   });
 
   it("사이드바가 aside이고 프리뷰를 담는다", () => {
