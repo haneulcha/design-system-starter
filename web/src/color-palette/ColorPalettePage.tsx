@@ -112,28 +112,41 @@ export function ColorPalettePage() {
 
           {/* 상태색은 접지 않는다 — 산출물에 무조건 들어가므로 화면에 없으면
               받아간 파일에 모르는 색이 들어있게 된다 (사이클 3 D7). 라벨을 왼쪽
-              열로 빼고 띠를 compact로 낮춰 세로를 아낀다 (스펙 D3). */}
+              열로 빼고 띠를 compact로 낮춰 세로를 아낀다 (스펙 D3).
+              2×2 그리드는 사람 승인 4번째 나사(Task 7 후속) — 4줄(~112px)을
+              2줄(~56px)로 압축해 900px 세로 예산의 잔여 35.36px 초과분을 덮는다.
+              stop 번호가 없고(showCaptions=false) 조정 불가라 히트 타깃도 없어
+              절반 폭(스톱당 ~30px)에서도 "산출물에 이 색이 들어간다"는 목적은
+              유지된다(사이클 3 D7 "얇게 노출") — CSS 그리드라 DOM 순서·인덱스는
+              그대로다. */}
           <div
             data-testid="semantic-section"
             style={{ display: "grid", gap: "var(--ds-space-xxs)" }}
           >
             <div className="ds-type-caption-sm text-neutral-500">상태색</div>
-            {SEMANTIC_ANCHORS.map((a) => (
-              <div
-                key={a.id}
-                className="grid grid-cols-[56px_1fr] items-center"
-                style={{ gap: "var(--ds-space-xs)" }}
-              >
-                <div className="ds-type-caption-sm text-neutral-400">{a.label}</div>
-                <AdjustableScale
-                  hexes={scales.semantic[a.id]}
-                  adjustable={[]}
-                  pinned={[]}
-                  showCaptions={false}
-                  compact
-                />
-              </div>
-            ))}
+            <div
+              className="grid grid-cols-2"
+              style={{ columnGap: "var(--ds-space-md)", rowGap: "var(--ds-space-xxs)" }}
+            >
+              {SEMANTIC_ANCHORS.map((a) => (
+                <div
+                  key={a.id}
+                  className="grid grid-cols-[56px_1fr] items-center"
+                  style={{ gap: "var(--ds-space-xs)" }}
+                >
+                  <div className="ds-type-caption-sm text-neutral-400 whitespace-nowrap">
+                    {a.label}
+                  </div>
+                  <AdjustableScale
+                    hexes={scales.semantic[a.id]}
+                    adjustable={[]}
+                    pinned={[]}
+                    showCaptions={false}
+                    compact
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
