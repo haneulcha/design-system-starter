@@ -52,10 +52,15 @@ export function renderTokensCss(): string {
   vars.push(`  --ds-font-sans: ${type.fontChains.sans};`);
   vars.push(`  --ds-font-mono: ${type.fontChains.mono};`);
 
+  // 평범한 클래스 셀렉터로 낸다 — @utility는 안 쓴다. 실측(vite plugin ds-tokens
+  // 배선, 2026-08-24) 결과 @tailwindcss/vite는 엔트리 CSS가 @import한 파일 안의
+  // @utility를 처리하지 않는다: --ds-* 커스텀 프로퍼티는 살아나는데 @utility 블록만
+  // 조용히 버려져 클래스가 아무 효과가 없었다. 기능적 차이는 variant(hover:/lg:)
+  // 지원뿐이고 이 화면은 타이포에 variant를 쓰지 않는다.
   const utilities = Object.entries(type.profiles).map(([key, p]) => {
     const family = p.fontFamily === type.fontChains.mono ? "mono" : "sans";
     return [
-      `@utility ds-type-${utilityName(key)} {`,
+      `.ds-type-${utilityName(key)} {`,
       `  font-family: var(--ds-font-${family});`,
       `  font-size: ${p.size}px;`,
       `  font-weight: ${p.weight};`,
