@@ -380,7 +380,9 @@ describe("크롬 타이포 — 하한 12px", () => {
       // SVG 요소의 className은 문자열이 아니라 SVGAnimatedString이다 — 정규식에
       // 그대로 태우면 "[object SVGAnimatedString]"으로 강제변환돼 조용히 안 걸리거나
       // 예외가 난다. 이 페이지는 SVG를 그리는 색 피커를 품고 있어 실제로 부딪힌다.
-      return /text-\[(9|10|11)px\]/.test(el.getAttribute("class") ?? "");
+      // text-2xs도 잡는다 — global.css의 --text-2xs는 10px이고 다른 화면 34곳에서
+      // 쓰이는 흔한 이름이라, arbitrary value만 보면 이 클래스가 들어와도 초록이다.
+      return /text-\[(9|10|11)px\]|\btext-2xs\b/.test(el.getAttribute("class") ?? "");
     });
     expect(offenders.map((el) => el.getAttribute("class") ?? "")).toEqual([]);
   });
@@ -431,6 +433,24 @@ describe("3단 스테이지 골격", () => {
     expect(swatches[11].className).toContain("h-9");
     expect(swatches[22].className).toContain("h-5");
     expect(swatches[65].className).toContain("h-5");
+  });
+
+  // 사람이 승인한 4번째 나사(D3) — 세로 예산 성공(887.36px)이 전적으로 이
+  // grid-cols-2에 걸려 있는데, 지금까지는 지워도 아무것도 안 깨졌다.
+  it("상태색 4벌이 2×2 그리드로 감싸여 있다", () => {
+    render(<ColorPalettePage />);
+    const section = screen.getByTestId("semantic-section");
+    const grid = section.querySelector(".grid-cols-2");
+    expect(grid).toBeTruthy();
+  });
+
+  // 스펙 D9 — stop 50(index 0)은 칩 자체에 색 신호가 없어 테두리만 한 단계
+  // 올린다. boundaryEmphasis=[0] 배선이 실제로 그 인덱스에만 적용되는지 고정한다.
+  it("액센트 stop 0만 테두리가 neutral-400으로 강화돼 있다", () => {
+    render(<ColorPalettePage />);
+    const swatches = screen.getAllByTestId("swatch");
+    expect(swatches[0].className).toContain("border-neutral-400");
+    expect(swatches[1].className).not.toContain("border-neutral-400");
   });
 
   it("사이드바가 aside이고 프리뷰를 담는다", () => {

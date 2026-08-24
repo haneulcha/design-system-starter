@@ -30,8 +30,6 @@ function utilityName(profileKey: string): string {
 export function renderTokensCss(): string {
   const spacing = generateSpacingCategory({ density: "comfortable" });
   const radius = generateRadiusCategory({ style: "standard" });
-  // ringColor를 안 넘긴다 — style="shadow"에서는 쓰이지 않고(elevation-category.ts:141-146),
-  // ring 스타일로 knob을 돌리는 것은 이번 범위가 아니다 (스펙 D2).
   const elevation = generateElevationCategory({ style: "shadow", intensity: "subtle" });
   const type = generateTypographyCategory();
 
@@ -47,8 +45,15 @@ export function renderTokensCss(): string {
     vars.push(`  --ds-radius-${name}: ${len(value)};`);
   }
 
-  vars.push("", "  /* elevation — shadow × subtle, 5레벨. */");
+  // ring 레벨은 emit에서 뺀다. buildLevelShadow는 style 검사보다 앞에서 무조건
+  // ringColor를 쓰는데(elevation-category.ts의 buildLevelShadow, "ring" 분기),
+  // 여기는 generateElevationCategory에 ringColor 인자를 안 넘겨서 스키마의
+  // DEFAULT_RING_COLOR(계보 없는 테스트용 fallback 회색, schema/elevation.ts)가
+  // 그대로 나간다. 이 화면은 링 색을 공급할 뉴트럴 팔레트를(도구 크롬 기준으로)
+  // 갖고 있지 않다 — 색을 공급할 수 없는 레벨은 내보내지 않는다. 소비자도 없다.
+  vars.push("", "  /* elevation — shadow × subtle, ring 제외 4레벨. */");
   for (const level of elevation.levels) {
+    if (level.name === "ring") continue;
     vars.push(`  --ds-shadow-${level.name}: ${level.shadow};`);
   }
 

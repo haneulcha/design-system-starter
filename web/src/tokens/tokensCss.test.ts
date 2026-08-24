@@ -29,6 +29,12 @@ describe("renderTokensCss", () => {
     expect(css).toContain("--ds-shadow-none: none;");
   });
 
+  // ring은 계보 없는 fallback 회색(schema/elevation.ts의 DEFAULT_RING_COLOR)을
+  // 달고 나가던 레벨이었다 — 색을 공급할 뉴트럴 팔레트가 없으니 아예 안 낸다.
+  it("ring 레벨을 내보내지 않는다", () => {
+    expect(css).not.toContain("--ds-shadow-ring");
+  });
+
   it("타이포 프로필을 @utility로 낸다", () => {
     expect(css).toContain("@utility ds-type-heading-sm {");
     expect(css).toContain("@utility ds-type-heading-xxs {");
@@ -45,6 +51,22 @@ describe("renderTokensCss", () => {
     expect(body).toContain("font-weight: 600;");
     expect(body).toContain("line-height: 1.4;");
     expect(body).toContain("font-family: var(--ds-font-sans);");
+  });
+
+  // 프로필 수가 스키마와 어긋나면(추가/누락) 여기서 바로 드러난다 — 렌더러가
+  // Object.entries(type.profiles)를 그대로 도는 것만으로는 개수 보장이 안 된다.
+  it("타이포 프로필 22개를 전부 @utility로 낸다", () => {
+    const count = (css.match(/@utility ds-type-/g) ?? []).length;
+    expect(count).toBe(22);
+  });
+
+  // family 분류(mono vs sans)는 p.fontFamily === type.fontChains.mono로 문자열을
+  // 비교한다 — sans 프로필이 늘어나는 방향의 회귀는 다른 테스트가 잡지만, mono로
+  // 분류돼야 할 프로필이 조용히 sans로 새는 방향은 이 단언이 아니면 안 잡힌다.
+  it("code.sm 유틸리티가 mono 폰트 체인을 쓴다", () => {
+    const block = css.slice(css.indexOf("@utility ds-type-code-sm {"));
+    const body = block.slice(0, block.indexOf("}"));
+    expect(body).toContain("font-family: var(--ds-font-mono);");
   });
 
   it("폰트 체인 두 개를 변수로 낸다", () => {

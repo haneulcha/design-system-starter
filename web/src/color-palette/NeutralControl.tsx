@@ -27,13 +27,17 @@ export function NeutralControl({ state, onChange }: Props) {
            roving tabindex + 화살표 이동=선택을 요구하는데, 그 함정(방향키 한 번이
            곧 확정이라 "고르기 전에 결과를 본다"가 깨지는 것)은 이 화면이
            CandidatePopover에서 이미 밟았다(사이클 3.2 알려진 한계 3). 여기 버튼들은
-           독립 토글이지 상호배타 라디오가 아니므로 group + aria-pressed로 충분하다. */}
+           상호 배타 선택(그룹당 aria-pressed=true가 정확히 하나)이지만, 그 APG
+           라디오 패턴의 함정을 피하려고 group + aria-pressed 토글 그룹으로
+           표현한다. */}
         <div role="group" aria-label="뉴트럴 색조" className="flex flex-wrap gap-1.5">
           {TINT_ATTRACTORS.map((a) => (
             <button
               key={a.id}
               type="button"
-              aria-label={a.label}
+              // aria-label이 visible text(점 표식 포함)를 덮어써서 스크린리더에는
+              // 시각적 "•" 채널이 없다 — 자동 스냅 여부를 라벨 문구에 직접 반영한다.
+              aria-label={a.id === snapped.id ? `${a.label} (자동)` : a.label}
               aria-pressed={activeId === a.id}
               onClick={() => onChange({ attractorId: a.id, strength })}
               className={`rounded px-2 py-1 ds-type-caption-sm border ${

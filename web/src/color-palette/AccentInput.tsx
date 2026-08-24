@@ -29,7 +29,10 @@ export function AccentInput({
     >
       <div className="flex items-start gap-6">
         <OklchPicker hex={hex} onChange={onChange} />
-        <label className="text-xs text-neutral-500">
+        {/* D4 표: hex는 code.sm(12px mono) — 바로 왼쪽 OklchPicker의 L·C·H와
+           같은 급이다. 라벨은 caption.sm. w-28(112px)에 12px mono "#3b82f6"은
+           여유 있게 들어간다(브라우저 확인). */}
+        <label className="ds-type-caption-sm text-neutral-500">
           <span className="block mb-1">액센트 hex</span>
           <input
             aria-label="액센트 hex"
@@ -45,7 +48,7 @@ export function AccentInput({
               // blur 시 형식이 안 맞으면 마지막 유효값으로 되돌린다.
               if (!HEX_RE.test(draft)) setDraft(hex);
             }}
-            className="border border-neutral-300 rounded px-2 py-1 text-sm font-mono w-28"
+            className="border border-neutral-300 rounded px-2 py-1 ds-type-code-sm w-28"
           />
         </label>
       </div>

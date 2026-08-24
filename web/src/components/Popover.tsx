@@ -1,7 +1,9 @@
 // web/src/components/Popover.tsx
 //
-// 앵커 기준 absolute 팝오버. 도구 자신의 크롬이다 — 이 프로젝트가 생성해서
-// 사용자에게 내보내는 디자인 시스템(elevation 카테고리 등)과 무관하다. 섞지 않는다.
+// 앵커 기준 absolute 팝오버. 이 Popover의 그림자·물리는 커스텀 유지다 — 상호작용
+// 설계라 elevation 카테고리로 갈아타지 않는다 (2026-08-24 스펙 D1 경계선). 크롬
+// 전반은 --ds-*를 먹는다 — builder·lab·inspector·color-palette 4화면이 이 파일을
+// 공유하니 그 경계선을 여기 남긴다.
 //
 // Radix / Base UI에서 가져온 계약만 손으로 구현한다(의존성 추가 없음):
 //   · 패널 role="dialog" + aria-label, 열리면 패널 컨테이너 자신에 포커스

@@ -131,7 +131,10 @@ export function ColorPalettePage() {
               {SEMANTIC_ANCHORS.map((a) => (
                 <div
                   key={a.id}
-                  className="grid grid-cols-[56px_1fr] items-center"
+                  // 56px 고정 트랙은 라벨이 자라면(예: 더 긴 문구로 바뀌면) 조용히
+                  // 스와치를 덮는다 — 현 라벨도 12px에서 이미 56px를 살짝 넘겨
+                  // gap이 흡수 중이었다. minmax(56px, auto)로 트랙이 늘어나게 둔다.
+                  className="grid grid-cols-[minmax(56px,auto)_1fr] items-center"
                   style={{ gap: "var(--ds-space-xs)" }}
                 >
                   <div className="ds-type-caption-sm text-neutral-400 whitespace-nowrap">
