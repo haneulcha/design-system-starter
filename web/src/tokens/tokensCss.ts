@@ -8,10 +8,14 @@
 // 등)를 덮으면 global.css를 공유하는 inspector·#lab·#builder가 같이 바뀌어
 // "이 화면만"이라는 범위가 거짓이 된다 (스펙 D2).
 
-import { generateSpacingCategory } from "@core/generator/spacing-category.js";
-import { generateRadiusCategory } from "@core/generator/radius-category.js";
-import { generateElevationCategory } from "@core/generator/elevation-category.js";
-import { generateTypographyCategory } from "@core/generator/typography-category.js";
+// vite.config.ts가 이 파일을 정적 import한다. vite 자신의 config 로딩(esbuild
+// 번들링) 단계는 아직 존재하지 않는 이 config의 resolve.alias를 못 쓰므로,
+// "@core/*" 별칭이 아니라 상대경로로 src/generator에 닿는다 — 별칭 의존은
+// 이 4줄이 전부라 상대경로로도 무리 없다.
+import { generateSpacingCategory } from "../../../src/generator/spacing-category.js";
+import { generateRadiusCategory } from "../../../src/generator/radius-category.js";
+import { generateElevationCategory } from "../../../src/generator/elevation-category.js";
+import { generateTypographyCategory } from "../../../src/generator/typography-category.js";
 
 /** 숫자는 px, 문자열("9999px"·"50%")은 그대로 — radius 토큰의 두 종류를 흡수한다. */
 function len(v: number | string): string {
@@ -52,15 +56,10 @@ export function renderTokensCss(): string {
   vars.push(`  --ds-font-sans: ${type.fontChains.sans};`);
   vars.push(`  --ds-font-mono: ${type.fontChains.mono};`);
 
-  // 평범한 클래스 셀렉터로 낸다 — @utility는 안 쓴다. 실측(vite plugin ds-tokens
-  // 배선, 2026-08-24) 결과 @tailwindcss/vite는 엔트리 CSS가 @import한 파일 안의
-  // @utility를 처리하지 않는다: --ds-* 커스텀 프로퍼티는 살아나는데 @utility 블록만
-  // 조용히 버려져 클래스가 아무 효과가 없었다. 기능적 차이는 variant(hover:/lg:)
-  // 지원뿐이고 이 화면은 타이포에 variant를 쓰지 않는다.
   const utilities = Object.entries(type.profiles).map(([key, p]) => {
     const family = p.fontFamily === type.fontChains.mono ? "mono" : "sans";
     return [
-      `.ds-type-${utilityName(key)} {`,
+      `@utility ds-type-${utilityName(key)} {`,
       `  font-family: var(--ds-font-${family});`,
       `  font-size: ${p.size}px;`,
       `  font-weight: ${p.weight};`,
