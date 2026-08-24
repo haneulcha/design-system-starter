@@ -439,3 +439,34 @@ describe("3단 스테이지 골격", () => {
     expect(aside.contains(screen.getByTestId("mock-light"))).toBe(true);
   });
 });
+
+describe("받기 카드", () => {
+  it("받기 블록이 카드 표면 토큰을 쓴다", () => {
+    render(<ColorPalettePage />);
+    const card = screen.getByTestId("download-card");
+    // 실측: 이 프로젝트의 jsdom(29.1.1)은 style.borderRadius/boxShadow 둘 다
+    // var()를 그대로 되돌린다 — 빈 문자열 위험은 이 버전엔 없었다. 그래도 raw
+    // style 속성으로 단언한다: 타입드 접근자의 버전별 동작에 기대지 않고,
+    // 토큰 없이는 통과할 수 없다는 조건은 두 형태가 동등하게 강하다.
+    expect(card.getAttribute("style")).toContain("var(--ds-radius-card)");
+    expect(card.getAttribute("style")).toContain("var(--ds-shadow-raised)");
+  });
+
+  it("copy CSS가 테두리 있는 보조 버튼이다", () => {
+    render(<ColorPalettePage />);
+    const copy = screen.getByRole("button", { name: /CSS 복사/ });
+    expect(copy.className).toContain("border");
+    expect(copy.className).toContain("ds-type-caption-sm");
+  });
+
+  // 현행은 opacity 40%로 죽어만 있고 이유가 없다 (DownloadRow.tsx:47-48).
+  it("클립보드를 못 쓰면 disabled에 사유가 붙는다", () => {
+    const original = navigator.clipboard;
+    Object.defineProperty(navigator, "clipboard", { value: undefined, configurable: true });
+    render(<ColorPalettePage />);
+    const copy = screen.getByRole("button", { name: /CSS 복사/ }) as HTMLButtonElement;
+    expect(copy.disabled).toBe(true);
+    expect(screen.getByText(/클립보드를 쓸 수 없는 환경/)).toBeTruthy();
+    Object.defineProperty(navigator, "clipboard", { value: original, configurable: true });
+  });
+});

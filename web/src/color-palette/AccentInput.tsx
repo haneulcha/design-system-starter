@@ -20,27 +20,35 @@ export function AccentInput({
   useEffect(() => setDraft(hex), [hex]);
 
   return (
-    <div className="flex items-start gap-6">
-      <OklchPicker hex={hex} onChange={onChange} />
-      <label className="text-xs text-neutral-500">
-        <span className="block mb-1">액센트 hex</span>
-        <input
-          aria-label="액센트 hex"
-          value={draft}
-          onChange={(e) => {
-            const v = e.target.value;
-            setDraft(v);
-            // 형식을 갖췄을 때만 부모에 커밋한다 — 드래프트는 화면에서 자유롭게
-            // 타이핑을 반영하되, 확정된 팔레트 상태는 여전히 유효한 hex만 본다.
-            if (HEX_RE.test(v)) onChange(v.toLowerCase());
-          }}
-          onBlur={() => {
-            // blur 시 형식이 안 맞으면 마지막 유효값으로 되돌린다.
-            if (!HEX_RE.test(draft)) setDraft(hex);
-          }}
-          className="border border-neutral-300 rounded px-2 py-1 text-sm font-mono w-28"
-        />
-      </label>
+    <div
+      className="border border-neutral-200"
+      style={{
+        borderRadius: "var(--ds-radius-card)",
+        padding: "var(--ds-space-md)",
+      }}
+    >
+      <div className="flex items-start gap-6">
+        <OklchPicker hex={hex} onChange={onChange} />
+        <label className="text-xs text-neutral-500">
+          <span className="block mb-1">액센트 hex</span>
+          <input
+            aria-label="액센트 hex"
+            value={draft}
+            onChange={(e) => {
+              const v = e.target.value;
+              setDraft(v);
+              // 형식을 갖췄을 때만 부모에 커밋한다 — 드래프트는 화면에서 자유롭게
+              // 타이핑을 반영하되, 확정된 팔레트 상태는 여전히 유효한 hex만 본다.
+              if (HEX_RE.test(v)) onChange(v.toLowerCase());
+            }}
+            onBlur={() => {
+              // blur 시 형식이 안 맞으면 마지막 유효값으로 되돌린다.
+              if (!HEX_RE.test(draft)) setDraft(hex);
+            }}
+            className="border border-neutral-300 rounded px-2 py-1 text-sm font-mono w-28"
+          />
+        </label>
+      </div>
     </div>
   );
 }

@@ -9,7 +9,7 @@ import { STOP_KEYS } from "@core/color/scale.js";
 import { canCopy, copyText, downloadFile } from "../lib/download";
 
 const btn =
-  "px-3 py-1.5 rounded-md border border-neutral-200 bg-white ds-type-body-sm " +
+  "ds-type-body-sm px-3 py-2 rounded-md border border-neutral-200 bg-white " +
   "text-neutral-700 hover:bg-neutral-50 hover:border-neutral-300 transition-colors";
 
 export function DownloadRow({
@@ -36,19 +36,41 @@ export function DownloadRow({
     ["DESIGN.md", files.designMd, "text/markdown"],
   ];
 
+  const copyable = canCopy();
   return (
-    <div className="flex flex-wrap gap-2 border-t border-neutral-200 pt-4">
-      {items.map(([name, content, mime]) => (
-        <button key={name} type="button" className={btn}
-          onClick={() => downloadFile(name, content, mime)}>
-          {name}
+    <div
+      data-testid="download-card"
+      className="border border-neutral-200 bg-white"
+      style={{
+        borderRadius: "var(--ds-radius-card)",
+        boxShadow: "var(--ds-shadow-raised)",
+        padding: "var(--ds-space-md)",
+        display: "grid",
+        gap: "var(--ds-space-xs)",
+      }}
+    >
+      <div className="flex flex-wrap" style={{ gap: "var(--ds-space-xs)" }}>
+        {items.map(([name, content, mime]) => (
+          <button key={name} type="button" className={btn}
+            onClick={() => downloadFile(name, content, mime)}>
+            {name}
+          </button>
+        ))}
+        <button
+          type="button"
+          disabled={!copyable}
+          className="ds-type-caption-sm rounded-md border border-neutral-200 px-3 py-2
+                     text-neutral-600 hover:border-neutral-300 disabled:opacity-40"
+          onClick={() => void copyText(files.css)}
+        >
+          CSS 복사
         </button>
-      ))}
-      <button type="button" disabled={!canCopy()}
-        className="px-3 py-1.5 ds-type-caption-sm text-neutral-400 hover:text-neutral-700 disabled:opacity-40"
-        onClick={() => void copyText(files.css)}>
-        copy CSS
-      </button>
+      </div>
+      {!copyable && (
+        <div className="ds-type-caption-sm text-neutral-400">
+          클립보드를 쓸 수 없는 환경입니다 — 파일로 받으세요.
+        </div>
+      )}
     </div>
   );
 }
