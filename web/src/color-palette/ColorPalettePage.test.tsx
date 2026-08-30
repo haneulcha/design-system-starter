@@ -1113,8 +1113,10 @@ describe("pin 소멸 알림과 복원 (D6)", () => {
     expect(window.location.search).not.toContain("s7=");
 
     // 드래그 첫 픽셀에 조용히 사라지던 자리다. replaceState라 뒤로가기로도
-    // 못 살리므로 화면이 유일한 복구 경로다.
-    expect(screen.getByText(/되돌렸습니다/)).toBeTruthy();
+    // 못 살리므로 화면이 유일한 복구 경로다. 시각 배너로 좁힌다 — sr-only
+    // 리전도 같은 문구를 담고 있어(리뷰 I-1) 전역 getByText는 두 곳이 잡혀
+    // "여러 요소" 에러를 낸다.
+    expect(within(screen.getByTestId("pin-restore-banner")).getByText(/되돌렸습니다/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "복원" }));
     expect(screen.getAllByTestId("swatch")[7].getAttribute("aria-label")).toBe(pinned);
     // 리뷰 M-3: 스와치 aria-label뿐 아니라 URL도 실제로 돌아오는지 — 이 결함의
@@ -1197,23 +1199,44 @@ describe("pin 소멸 알림과 복원 (D6)", () => {
   });
 
   // 리뷰 I-1: aria-live 리전은 항상 마운트돼 있어야 한다 — 리전 자체가 새로
-  // 삽입되면 대부분의 스크린리더가 그 등장을 못 잡는다. 조건부로 div를 통째로
-  // 넣고 빼는 구현이었다면 이 테스트가 실패했을 것이다(pin이 없을 때도
-  // querySelector가 같은 노드를 찾아야 하고, pin이 생겨도 그 노드가 그대로
-  // 유지돼야 한다 — isSameNode로 노드 정체성을 직접 비교).
-  it("배너의 aria-live 리전은 pin 유무와 무관하게 항상 마운트돼 있다", () => {
-    const { container } = render(<ColorPalettePage />);
-    const regionBefore = container.querySelector('[aria-live="polite"]');
-    expect(regionBefore).toBeTruthy(); // pin이 없어도 리전 자체는 이미 있다
-    expect(regionBefore!.textContent).toBe(""); // 내용은 비어 있다
+  // 삽입되면 대부분의 스크린리더가 그 등장을 못 잡는다. data-testid로 정확히
+  // 이 리전만 골랐다(리뷰 N-1) — 범용 `[aria-live="polite"]` 셀렉터는
+  // PreviewPane의 role="status" 헤드라인도 aria-live="polite"라 함께 잡혀,
+  // "먼저 나온 걸 우연히 골랐을 뿐" 상태로 통과할 위험이 있었다.
+  it("배너의 sr-only 리전은 pin 유무와 무관하게 항상 마운트돼 있다", () => {
+    render(<ColorPalettePage />);
+    const regionBefore = screen.getByTestId("pin-restore-live-region");
+    expect(regionBefore.textContent).toBe(""); // 내용은 비어 있다
+    // 시각 배너(리뷰 N-1로 분리)는 pin이 없으면 DOM에 아예 없다 — grid 행을
+    // 안 먹어야 세로 예산에 안 걸린다.
+    expect(screen.queryByTestId("pin-restore-banner")).toBeNull();
 
     fireEvent.click(screen.getAllByTestId("swatch")[7]);
     fireEvent.click(screen.getAllByRole("radio")[0]);
     fireEvent.change(screen.getByLabelText("색상"), { target: { value: "262" } });
 
-    const regionAfter = container.querySelector('[aria-live="polite"]');
-    expect(regionAfter).toBeTruthy();
-    expect(regionAfter!.isSameNode(regionBefore)).toBe(true); // 같은 노드 — 새로 삽입되지 않았다
-    expect(regionAfter!.textContent).toContain("되돌렸습니다");
+    const regionAfter = screen.getByTestId("pin-restore-live-region");
+    expect(regionAfter.isSameNode(regionBefore)).toBe(true); // 같은 노드 — 새로 삽입되지 않았다
+    expect(regionAfter.textContent).toContain("되돌렸습니다");
+    expect(screen.getByTestId("pin-restore-banner")).toBeTruthy(); // 시각 배너는 이제 있다
+  });
+
+  // 리뷰 N-2 참고 — 무음 no-op: 드랍된 stop을 복원 전에 "같은 값으로" 다시
+  // pin한 뒤 복원을 누르면, `s.pins[i] ?? restored[i]`가 이미 채워진
+  // s.pins[i]를 그대로 쓰므로 팔레트는 전혀 안 바뀌고 배너만 걷힌다 —
+  // 방어적이지만 어디에도 안 적혀 있던 동작이라 여기 고정해 둔다.
+  it("드랍된 stop을 같은 값으로 재pin한 뒤 복원하면 값은 그대로, 배너만 걷힌다", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getAllByTestId("swatch")[7]);
+    fireEvent.click(screen.getAllByRole("radio")[0]); // #295bac
+    fireEvent.change(screen.getByLabelText("색상"), { target: { value: "262" } }); // 드랍
+
+    fireEvent.click(screen.getAllByTestId("swatch")[7]); // 같은 stop을 다시
+    fireEvent.click(screen.getAllByRole("radio")[0]); // 같은 값으로 재pin
+    const beforeRestore = window.location.search;
+
+    fireEvent.click(screen.getByRole("button", { name: "복원" }));
+    expect(window.location.search).toBe(beforeRestore); // 값은 안 바뀜
+    expect(screen.queryByTestId("pin-restore-banner")).toBeNull(); // 배너만 걷힘
   });
 });

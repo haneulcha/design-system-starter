@@ -48,13 +48,25 @@ export function ColorPalettePage() {
   //
   // 교체가 아니라 병합이다(리뷰 C-1) — 배너는 복원을 누르기 전까지 안 걷히므로,
   // 그 사이 사용자가 다른 stop을 새로 pin해도 배너는 그대로다. 그 상태에서
-  // "복원"이 pins를 통째로 갈아치우면(`{ ...s.pins, pins: restored }`) 방금 찍은
-  // 새 pin이 조용히 사라진다 — 이 태스크가 고치려는 결함(조용한 pin 소멸)이
-  // 복원 버튼 안에서 재생산되는 셈이다. 그래서 stop별로 `s.pins[i] ?? restored[i]`:
-  // 사용자가 복원 전에 이미 손댄 stop(undefined가 아님)은 그대로 두고, 아직
-  // 안 건드린 stop만 버퍼 값으로 채운다 — "복원 이후의 새 선택이 이긴다"는
-  // 원칙 하나로 전체 회귀 상태(아무도 안 건드림)와 부분 회귀 상태(일부만
-  // 새로 찍음)를 같은 식으로 처리한다.
+  // "복원"이 pins를 통째로 갈아치우면(수정 전 실제 코드: `{ ...s, pins: restored }`)
+  // 방금 찍은 새 pin이 조용히 사라진다 — 이 태스크가 고치려는 결함(조용한 pin
+  // 소멸)이 복원 버튼 안에서 재생산되는 셈이다. 그래서 stop별로
+  // `s.pins[i] ?? restored[i]`: 사용자가 복원 전에 이미 손댄 stop(undefined가
+  // 아님)은 그대로 두고, 아직 안 건드린 stop만 버퍼 값으로 채운다.
+  //
+  // 경계(리뷰 N-2): "복원 이후의 새 선택이 이긴다"는 원칙은 **새로 pin한
+  // 경우**에만 성립한다 — "기본으로"(팝오버의 pin 해제)로 명시적으로 비운
+  // 경우엔 안 통한다. `??`는 PaletteState.pins[i]의 undefined 하나로 "아직
+  // 안 건드림"과 "명시적으로 기본을 골랐음"을 둘 다 표현하기 때문에 구분을
+  // 못 한다 — pin stop700 → 액센트 변경(드랍) → stop700에서 "기본으로" → 복원을
+  // 하면, s.pins[7]이 여전히 undefined라 restored[7]이 그 자리를 도로 채워
+  // 방금 "기본으로"로 지운 선택을 되살린다. 이건 이번 diff가 만든 회귀가
+  // 아니다 — 교체 구현이었어도 restored가 그 stop을 덮어썼을 것이므로 똑같이
+  // 일어났다. 무음 no-op(같은 stop을 같은 값으로 다시 pin한 뒤 복원하면
+  // 아무 변화 없이 배너만 걷힘)도 같은 종류의 한계다. 두 경우 다 "undefined
+  // 하나가 두 의미를 진다"는 PaletteState.pins의 표현력 한계이지 이 함수의
+  // 버그가 아니다 — 고치려면 "명시적으로 비움"을 별도로 표시하는 타입 변경이
+  // 필요해 이번 사이클 범위(엔진·상태 계약 불변) 밖이다.
   const onRestorePins = () => {
     const restored = droppedPins.current;
     if (!restored) return;
@@ -73,6 +85,10 @@ export function ColorPalettePage() {
   const droppedPinCount = droppedPins.current
     ? ADJUSTABLE_STOPS.filter((i) => droppedPins.current![i] !== undefined).length
     : 0;
+  // 시각 배너·sr-only 리전 둘 다 같은 문구를 쓴다 — 따로 적으면 한쪽만
+  // 고치고 잊는 사고가 난다.
+  const droppedPinMessage =
+    `pin ${droppedPinCount}개를 기본값으로 되돌렸습니다 — 복원은 이 세션에서만 가능해요`;
   const shownScales = useMemo(
     () =>
       open !== null && hover
@@ -129,42 +145,56 @@ export function ColorPalettePage() {
               truncate로 물리적 줄바꿈 자체를 막는다: 좁은 화면에서 문구가
               길어지는 대신 잘리는 쪽을 택한다(1줄 초과는 예산을 넘긴다).
 
-              리전 자체를 항상 마운트한다(리뷰 I-1) — 안의 텍스트/버튼만
-              조건부로 넣고 뺀다. aria-live는 "이미 존재하는 리전 안에서
-              내용이 바뀌는 것"을 감지해 알리는 것이 표준 동작이라, 리전
-              노드 자체가 새로 삽입되면(=조건부 렌더로 div를 통째로 껐다
-              켰다 하면) 대부분의 스크린리더가 그 첫 등장을 못 잡는다.
-              PreviewPane의 대비 요약 role="status" 헤드라인도 같은 이유로
-              항상 마운트돼 있다(그 컴포넌트 주석 참고) — 이 배너도 그
-              패턴을 따른다. role="status"를 안 쓴 이유는 그대로다: 그
-              헤드라인과 같은 role을 쓰면 getByRole("status") 단수 조회가
-              둘을 놓고 충돌한다. */}
+              시각 배너(아래)와 라이브 리전(그 다음)을 분리했다(리뷰 N-1).
+              처음엔 리전 자체를 조건부 렌더 위에 얹었는데, 빈 상태에서도
+              grid 행 하나를 차지해 형제 사이 gap(4px)이 하나 더 끼어들어
+              세로 예산에 4px를 더 먹었다(실측: 상시 마운트 915px vs
+              조건부 911px, 1280×900, scrollHeight). 시각 배너는 원래대로
+              조건부 렌더로 되돌려 빈 상태에서 grid 행 자체가 없게 하고,
+              I-1이 요구한 "리전 상시 마운트"는 아래의 sr-only 리전이
+              대신 진다 — sr-only는 position:absolute라 grid 아이템에서
+              제외돼 행을 안 먹는다. */}
+          {droppedPins.current && (
+            <div
+              data-testid="pin-restore-banner"
+              className="ds-type-caption-sm text-neutral-500 flex items-center gap-2 min-w-0"
+            >
+              {/* 부정어(세션 한정 경고)를 문두 쪽으로 뺐다(리뷰 I-2) —
+                  이전 문구("…복원할 수 없어요")는 390px에서 "수 없어요"가
+                  통째로 잘려 남은 문장이 "복원할"로 끝나며 뜻이 정반대로
+                  읽혔다. 지금 문구는 390px 실측(캔버스 measureText로 실제
+                  폭 재현, 뷰포트는 window.innerWidth로 390 확인 후 측정)
+                  결과 "pin 1개를 기본값으로 되돌렸습니다 — 복원은 이
+                  세션에서만 …"까지만 보이고 "가능해요"만 잘린다 — 잘린
+                  뒤 남는 문장이 뒤집히지 않고 그냥 말줄임으로 끝난다. */}
+              <span className="truncate">{droppedPinMessage}</span>
+              <button
+                type="button"
+                onClick={onRestorePins}
+                className="shrink-0 rounded px-2 py-0.5 border border-neutral-300 text-neutral-700 hover:bg-neutral-50"
+              >
+                복원
+              </button>
+            </div>
+          )}
+          {/* 스크린리더 전용 상시 마운트 리전(리뷰 I-1·N-1) — 위 시각 배너와
+              달리 항상 DOM에 있고 sr-only라 화면·레이아웃엔 안 잡힌다.
+              aria-live는 "이미 존재하는 리전 안에서 내용이 바뀌는 것"을
+              감지해 알리는 게 표준 동작이라, 리전 노드 자체가 새로
+              삽입되면(=조건부로 통째로 껐다 켰다 하면) 대부분의
+              스크린리더가 그 첫 등장을 못 잡는다 — 그래서 이 리전은 항상
+              있고 텍스트 내용(빈 문자열 ↔ 메시지)만 바뀐다. 시각 배너에는
+              그래서 aria-live를 안 단다 — 둘 다 달면 같은 알림이 두 번
+              낭독된다. role="status"를 안 쓴 이유는 그대로다: PreviewPane의
+              대비 요약 헤드라인이 이미 role="status"를 쓰고 있어 같은
+              role을 더 쓰면 getByRole("status") 단수 조회가 둘을 놓고
+              충돌한다. */}
           <div
             aria-live="polite"
-            className="ds-type-caption-sm text-neutral-500 flex items-center gap-2 min-w-0"
+            data-testid="pin-restore-live-region"
+            className="sr-only"
           >
-            {droppedPins.current && (
-              <>
-                {/* 부정어(세션 한정 경고)를 문두 쪽으로 뺐다(리뷰 I-2) —
-                    이전 문구("…복원할 수 없어요")는 390px에서 "수 없어요"가
-                    통째로 잘려 남은 문장이 "복원할"로 끝나며 뜻이 정반대로
-                    읽혔다. 지금 문구는 390px 실측(캔버스 measureText로 실제
-                    폭 재현, 뷰포트는 window.innerWidth로 390 확인 후 측정)
-                    결과 "pin 1개를 기본값으로 되돌렸습니다 — 복원은 이
-                    세션에서만 …"까지만 보이고 "가능해요"만 잘린다 — 잘린
-                    뒤 남는 문장이 뒤집히지 않고 그냥 말줄임으로 끝난다. */}
-                <span className="truncate">
-                  pin {droppedPinCount}개를 기본값으로 되돌렸습니다 — 복원은 이 세션에서만 가능해요
-                </span>
-                <button
-                  type="button"
-                  onClick={onRestorePins}
-                  className="shrink-0 rounded px-2 py-0.5 border border-neutral-300 text-neutral-700 hover:bg-neutral-50"
-                >
-                  복원
-                </button>
-              </>
-            )}
+            {droppedPins.current ? droppedPinMessage : ""}
           </div>
           <AdjustableScale
             hexes={scales.accent}
