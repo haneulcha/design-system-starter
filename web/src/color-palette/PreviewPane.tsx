@@ -14,9 +14,11 @@ import type { MockTarget } from "./mockTargets";
 import { shiftHighlightTargets, summarizeShifts } from "./shiftSummary";
 
 // "잠깐 짚는다"의 길이. DownloadRow의 복사 피드백(2000ms)보다 살짝 길다 —
-// 여긴 색 칩 하나가 아니라 문장을 읽어야 해서다.
+// 여긴 색 칩 하나가 아니라 문장을 읽어야 해서다. 이 타이머는 강조 링만
+// 끈다 — 요약 문장(appliedShifts)은 별개 상태라 여기서 안 건드린다(M-1:
+// 같이 걷으면 aria-live가 "새 정보 없이" 한 번 더 낭독한다).
 const APPLIED_HIGHLIGHT_MS = 3000;
-const EMPTY_HIGHLIGHT: ReadonlySet<MockTarget> = new Set();
+const EMPTY_HIGHLIGHT: readonly MockTarget[] = [];
 
 // 강조 아웃라인 — 목업 배경·전경은 전부 사용자 팔레트라 어떤 단일 고정색도
 // 대비를 보장하지 못한다(전역 제약: 팔레트 색을 쓰지 않는다). 흰/검 이중
@@ -59,8 +61,11 @@ function Mock({
    *  강조할지 결정하는 매핑(mockTargetFor)은 이 컴포넌트 밖(순수 함수)에 있다. */
   highlight: MockTarget | null;
   /** "한 번에 고치기" 직후 잠깐 짚을 대상들(Task 7). hover와 발생원이 다를 뿐
-   *  같은 링 장치를 쓴다 — 새로 만들지 않는다. text-strong처럼 한 역할이 두
-   *  스케일(neutral·accent)에 동시에 대응 요소를 가질 수 있어 복수형이다. */
+   *  같은 링 장치를 쓴다 — 새로 만들지 않는다. **이 테마의 몫만** 들어온다 —
+   *  PreviewPane이 shiftHighlightTargets의 light/dark를 갈라 각 Mock에
+   *  넘긴다(라이트만 움직였는데 다크 목업까지 켜지면 거짓 강조가 된다).
+   *  text-strong처럼 한 역할이 여러 스케일(neutral·accent·error …)에 동시에
+   *  대응 요소를 가질 수 있어 복수형이다. */
   autoHighlight: ReadonlySet<MockTarget>;
   /** 역방향(목업 → 뱃지)도 같은 상태를 공유한다 — 목업 요소를 직접 hover해도
    *  같은 hoveredTarget이 오른다(스펙 D3 Step 5). */
@@ -279,7 +284,13 @@ export function PreviewPane({
   // `shifts` 값을 여기서 붙잡아 두지 않으면 영영 못 보여준다. RoleShift.from은
   // 애초에 상태/URL에 저장되지 않으므로(엔진 주석 참고, shiftSummary.ts) 이
   // 스냅샷이 유일한 기회다.
+  //
+  // 강조 링과 요약 문장을 서로 다른 상태로 나눈다 — 링은 "잠깐"(타이머로
+  // 꺼짐)이어야 하지만, 문장까지 같이 지우면 role="status"의 텍스트가
+  // 바뀌어 스크린리더가 새 정보 없이 한 번 더 낭독한다(M-1). 문장은 다음
+  // 적용이나 "역할 기본값으로"로 명시적으로 걷힐 때까지 남는다.
   const [appliedShifts, setAppliedShifts] = useState<readonly RoleShift[] | null>(null);
+  const [highlightActive, setHighlightActive] = useState(false);
   const clearTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -290,25 +301,38 @@ export function PreviewPane({
 
   const handleApply = () => {
     setAppliedShifts(shifts); // 사라지기 전에 스냅샷
+    setHighlightActive(true);
     onApplyShifts();
     if (clearTimerRef.current !== null) window.clearTimeout(clearTimerRef.current);
-    // 목업 강조는 "잠깐" 짚는 것이다 — 계속 켜두면 다음 조작과 헷갈린다.
-    // 문장(요약)은 같은 타이머로 같이 걷는다: 강조가 꺼진 뒤에도 "무엇을
-    // 옮겼는지"만 텍스트로 남으면 그 문장이 지금 상태를 설명하는 것처럼
-    // 오독된다 — 근거 있는 순간(방금)에만 존재해야 한다.
+    // 목업 강조만 "잠깐" 짚는다 — 계속 켜두면 다음 조작과 헷갈린다. 문장은
+    // 안 건드린다(위 상태 분리 이유 참고).
     clearTimerRef.current = window.setTimeout(() => {
-      setAppliedShifts(null);
+      setHighlightActive(false);
       clearTimerRef.current = null;
     }, APPLIED_HIGHLIGHT_MS);
   };
 
+  // "역할 기본값으로"는 방금 적용한 이동 자체를 되돌린다 — 그 순간 "옮겼습니다"
+  // 문장이 남아 있으면 되돌린 팔레트 위에 안 맞는 서술이 얹힌다(M-3). 되돌리는
+  // 동작도 요약·강조를 같이 걷는다.
+  const handleReset = () => {
+    setAppliedShifts(null);
+    setHighlightActive(false);
+    if (clearTimerRef.current !== null) {
+      window.clearTimeout(clearTimerRef.current);
+      clearTimerRef.current = null;
+    }
+    onResetShifts();
+  };
+
   const appliedSummary = appliedShifts ? summarizeShifts(appliedShifts) : "";
-  const autoHighlight = appliedShifts
-    ? new Set(shiftHighlightTargets(appliedShifts))
-    : EMPTY_HIGHLIGHT;
+  const themeTargets =
+    appliedShifts && highlightActive ? shiftHighlightTargets(appliedShifts) : null;
+  const lightAutoHighlight = new Set(themeTargets?.light ?? EMPTY_HIGHLIGHT);
+  const darkAutoHighlight = new Set(themeTargets?.dark ?? EMPTY_HIGHLIGHT);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-testid="preview-pane">
       {/* 라이트/다크 라벨은 목업 바깥이다 — 안에 넣으면 중립 크롬 텍스트가 사용자
          팔레트 배경(n[0]/n[10]) 위에 앉아 대비를 보장할 수 없고, "크롬은 중립
          고정, 팔레트는 프리뷰 안에서만"의 선이 흐려진다. */}
@@ -316,14 +340,14 @@ export function PreviewPane({
         <div className="ds-type-caption-sm text-neutral-500">라이트</div>
         <Mock
           theme="light" scales={scales} roles={roles}
-          highlight={hoveredTarget} autoHighlight={autoHighlight} onHover={setHoveredTarget}
+          highlight={hoveredTarget} autoHighlight={lightAutoHighlight} onHover={setHoveredTarget}
         />
       </div>
       <div style={{ display: "grid", gap: "var(--ds-space-xxs)" }}>
         <div className="ds-type-caption-sm text-neutral-500">다크</div>
         <Mock
           theme="dark" scales={scales} roles={roles}
-          highlight={hoveredTarget} autoHighlight={autoHighlight} onHover={setHoveredTarget}
+          highlight={hoveredTarget} autoHighlight={darkAutoHighlight} onHover={setHoveredTarget}
         />
       </div>
       {/* 이 패널의 유일한 라이브 리전(DownloadRow에도 role="status"가 하나 더
@@ -405,7 +429,7 @@ export function PreviewPane({
           {shifts.length === 0 && hasApplied && (
             <button
               type="button"
-              onClick={onResetShifts}
+              onClick={handleReset}
               className="mt-1 w-full rounded border border-neutral-300 px-2 py-1 ds-type-caption-sm text-neutral-500"
             >
               역할 기본값으로
