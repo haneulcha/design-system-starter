@@ -1,5 +1,5 @@
 // web/src/color-palette/DownloadRow.tsx
-import { useMemo } from "react";
+import { useMemo, useEffect, useRef, useState } from "react";
 import {
   generateColorCss, generateColorThemeCss, renderColorDesignMd, toColorFigma, toColorSystem,
 } from "@core/export/color/index.js";
@@ -12,9 +12,23 @@ const btn =
   "ds-type-body-sm px-3 py-2 rounded-md border border-neutral-200 bg-white " +
   "text-neutral-700 hover:bg-neutral-50 hover:border-neutral-300 transition-colors";
 
+type CopyState = "idle" | "ok" | "fail";
+
 export function DownloadRow({
   scales, roles,
 }: { readonly scales: ScaleSet; readonly roles: readonly ScaleRole[] }) {
+  const [copied, setCopied] = useState<CopyState>("idle");
+  const timerRef = useRef<number | null>(null);
+
+  // 언마운트 시 타이머 정리 — 2초 뒤 setState가 도는데 그 사이 언마운트되면 경고가 난다.
+  useEffect(() => {
+    return () => {
+      if (timerRef.current !== null) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
+
   const files = useMemo(() => {
     const system = toColorSystem(scales, SCALE_ORDER, roles, STOP_KEYS);
     // 경고 문구는 엔진 계산으로 만들어 산출 코드에 데이터로 넘긴다 — 산출 코드가 대비를
@@ -37,6 +51,22 @@ export function DownloadRow({
   ];
 
   const copyable = canCopy();
+
+  // 결과를 버리지 않는다 — copyText는 권한 거부에서 false를 낸다. 성공만
+  // 표시하면 실패가 조용해져 지금(void로 버리는 것)과 다를 바 없다.
+  const onCopy = async () => {
+    const success = await copyText(files.css);
+    setCopied(success ? "ok" : "fail");
+    // 기존 타이머가 있으면 취소하고 새로 시작한다
+    if (timerRef.current !== null) {
+      clearTimeout(timerRef.current);
+    }
+    timerRef.current = window.setTimeout(() => {
+      setCopied("idle");
+      timerRef.current = null;
+    }, 2000);
+  };
+
   return (
     <div
       data-testid="download-card"
@@ -62,9 +92,9 @@ export function DownloadRow({
           aria-describedby={copyable ? undefined : "copy-disabled-reason"}
           className="ds-type-caption-sm rounded-md border border-neutral-200 px-3 py-2
                      text-neutral-600 hover:border-neutral-300 disabled:opacity-40"
-          onClick={() => void copyText(files.css)}
+          onClick={onCopy}
         >
-          CSS 복사
+          {copied === "ok" ? "복사됨" : "CSS 복사"}
         </button>
       </div>
       {!copyable && (
@@ -76,6 +106,12 @@ export function DownloadRow({
         // 왜 복사 버튼이 안 되는지 알 수 없으므로 장식이 아니다 (스펙 D2).
         <div id="copy-disabled-reason" className="ds-type-caption-sm text-neutral-500">
           클립보드를 쓸 수 없는 환경입니다 — 파일로 받으세요.
+        </div>
+      )}
+      {copied === "fail" && (
+        // 복사 실패도 알려야 한다 — role="status"로 aria-live 암시적 선언
+        <div role="status" className="ds-type-caption-sm text-neutral-500">
+          복사하지 못했습니다 — 파일로 받으세요.
         </div>
       )}
     </div>

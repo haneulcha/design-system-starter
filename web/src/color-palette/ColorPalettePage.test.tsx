@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { onSolidColor } from "@core/color/contrast.js";
 import { ColorPalettePage } from "./ColorPalettePage";
@@ -496,6 +496,33 @@ describe("받기 카드", () => {
     expect(copy.getAttribute("aria-describedby")).toBe(reason.id);
     expect(reason.id).toBeTruthy();
     Object.defineProperty(navigator, "clipboard", { value: original, configurable: true });
+  });
+});
+
+describe("복사 피드백 (스펙 D8)", () => {
+  const original = Object.getOwnPropertyDescriptor(navigator, "clipboard");
+  const stub = (writeText: () => Promise<void>) =>
+    Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+
+  afterEach(() => {
+    // 전역을 만졌으면 반드시 되돌린다 — 안 되돌리면 이 파일의 다른 테스트가
+    // 실행 순서에 따라 깨진다.
+    if (original) Object.defineProperty(navigator, "clipboard", original);
+  });
+
+  it("CSS 복사 성공이 통지된다", async () => {
+    stub(() => Promise.resolve());
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getByRole("button", { name: /CSS 복사/ }));
+    expect(await screen.findByText("복사됨")).toBeTruthy();
+  });
+
+  it("CSS 복사 실패도 통지된다", async () => {
+    // 성공만 처리하면 실패가 조용해져서 지금(void로 버리는 것)과 같아진다.
+    stub(() => Promise.reject(new Error("denied")));
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getByRole("button", { name: /CSS 복사/ }));
+    expect(await screen.findByText(/복사하지 못했습니다/)).toBeTruthy();
   });
 });
 
