@@ -3,7 +3,7 @@
 // 라이트·다크를 토글이 아니라 동시에 보여준다 — 대비 실패는 다크에서만 나는
 // 경우가 흔한데 토글이면 그것을 못 보고 지나간다 (스펙 D8).
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { bgLabel, formatRatio, onSolidColor } from "@core/color/contrast.js";
 import type { ContrastCheck, RoleShift } from "@core/color/contrast.js";
 import { SCALE_ORDER } from "@core/color/roles.js";
@@ -11,6 +11,12 @@ import type { ScaleRole, ScaleSet } from "@core/color/roles.js";
 import { roleLabel, triageChecks } from "./contrastTriage";
 import { mockTargetFor } from "./mockTargets";
 import type { MockTarget } from "./mockTargets";
+import { shiftHighlightTargets, summarizeShifts } from "./shiftSummary";
+
+// "잠깐 짚는다"의 길이. DownloadRow의 복사 피드백(2000ms)보다 살짝 길다 —
+// 여긴 색 칩 하나가 아니라 문장을 읽어야 해서다.
+const APPLIED_HIGHLIGHT_MS = 3000;
+const EMPTY_HIGHLIGHT: ReadonlySet<MockTarget> = new Set();
 
 // 강조 아웃라인 — 목업 배경·전경은 전부 사용자 팔레트라 어떤 단일 고정색도
 // 대비를 보장하지 못한다(전역 제약: 팔레트 색을 쓰지 않는다). 흰/검 이중
@@ -44,7 +50,7 @@ const BAR_STOPS = [3, 4, 5, 6, 7] as const;
 const BAR_HEIGHTS = [26, 42, 34, 48, 38] as const;
 
 function Mock({
-  theme, scales, roles, highlight, onHover,
+  theme, scales, roles, highlight, autoHighlight, onHover,
 }: {
   theme: "light" | "dark";
   scales: ScaleSet;
@@ -52,6 +58,10 @@ function Mock({
   /** 뱃지 hover가 올린 강조 대상. Mock은 이걸 받아 그리기만 한다 — 무엇을
    *  강조할지 결정하는 매핑(mockTargetFor)은 이 컴포넌트 밖(순수 함수)에 있다. */
   highlight: MockTarget | null;
+  /** "한 번에 고치기" 직후 잠깐 짚을 대상들(Task 7). hover와 발생원이 다를 뿐
+   *  같은 링 장치를 쓴다 — 새로 만들지 않는다. text-strong처럼 한 역할이 두
+   *  스케일(neutral·accent)에 동시에 대응 요소를 가질 수 있어 복수형이다. */
+  autoHighlight: ReadonlySet<MockTarget>;
   /** 역방향(목업 → 뱃지)도 같은 상태를 공유한다 — 목업 요소를 직접 hover해도
    *  같은 hoveredTarget이 오른다(스펙 D3 Step 5). */
   onHover: (t: MockTarget | null) => void;
@@ -61,6 +71,9 @@ function Mock({
   const n = scales.neutral;
   const err = scales.semantic.error;
   const solid = at(a, "solid");
+  // hover든 "한 번에 고치기" 직후 자동 강조든 같은 링을 켠다 — 소스가
+  // 두 개이지 장치는 하나다.
+  const isActive = (t: MockTarget) => highlight === t || autoHighlight.has(t);
   return (
     <div
       data-testid={`mock-${theme}`}
@@ -79,9 +92,9 @@ function Mock({
         <div>
           <div
             data-mock-target="card-text"
-            data-highlighted={highlight === "card-text" ? "true" : undefined}
+            data-highlighted={isActive("card-text") ? "true" : undefined}
             className="text-[11px] font-semibold"
-            style={{ color: at(n, "text-strong"), ...highlightStyle(highlight === "card-text") }}
+            style={{ color: at(n, "text-strong"), ...highlightStyle(isActive("card-text")) }}
             onMouseEnter={() => onHover("card-text")}
             onMouseLeave={() => onHover(null)}
           >
@@ -89,9 +102,9 @@ function Mock({
           </div>
           <div
             data-mock-target="card-subtext"
-            data-highlighted={highlight === "card-subtext" ? "true" : undefined}
+            data-highlighted={isActive("card-subtext") ? "true" : undefined}
             className="text-[10px]"
-            style={{ color: at(n, "text"), ...highlightStyle(highlight === "card-subtext") }}
+            style={{ color: at(n, "text"), ...highlightStyle(isActive("card-subtext")) }}
             onMouseEnter={() => onHover("card-subtext")}
             onMouseLeave={() => onHover(null)}
           >
@@ -118,10 +131,10 @@ function Mock({
           <span
             data-testid="mock-solid-btn"
             data-mock-target="solid-btn"
-            data-highlighted={highlight === "solid-btn" ? "true" : undefined}
+            data-highlighted={isActive("solid-btn") ? "true" : undefined}
             className="rounded px-2.5 py-1 text-[11px] font-medium"
             style={{
-              background: solid, color: onSolidColor(solid), ...highlightStyle(highlight === "solid-btn"),
+              background: solid, color: onSolidColor(solid), ...highlightStyle(isActive("solid-btn")),
             }}
             onMouseEnter={() => onHover("solid-btn")}
             onMouseLeave={() => onHover(null)}
@@ -130,13 +143,13 @@ function Mock({
           </span>
           <span
             data-mock-target="share-btn"
-            data-highlighted={highlight === "share-btn" ? "true" : undefined}
+            data-highlighted={isActive("share-btn") ? "true" : undefined}
             className="rounded border px-2.5 py-1 text-[11px] font-medium"
             style={{
               background: at(a, "subtle-bg"),
               borderColor: at(a, "border"),
               color: at(a, "text-strong"),
-              ...highlightStyle(highlight === "share-btn"),
+              ...highlightStyle(isActive("share-btn")),
             }}
             onMouseEnter={() => onHover("share-btn")}
             onMouseLeave={() => onHover(null)}
@@ -145,11 +158,11 @@ function Mock({
           </span>
           <span
             data-mock-target="error-badge"
-            data-highlighted={highlight === "error-badge" ? "true" : undefined}
+            data-highlighted={isActive("error-badge") ? "true" : undefined}
             className="ml-auto rounded px-1.5 py-0.5 text-[10px]"
             style={{
               background: at(err, "subtle-bg"), color: at(err, "text-strong"),
-              ...highlightStyle(highlight === "error-badge"),
+              ...highlightStyle(isActive("error-badge")),
             }}
             onMouseEnter={() => onHover("error-badge")}
             onMouseLeave={() => onHover(null)}
@@ -258,6 +271,42 @@ export function PreviewPane({
   // 라이트·다크 두 Mock이 같은 상태를 보므로 한쪽에서 켠 강조가 양쪽에 다 뜬다 —
   // "같은 역할"이라는 게 테마를 가로지르는 개념임을 그대로 보여준다.
   const [hoveredTarget, setHoveredTarget] = useState<MockTarget | null>(null);
+
+  // "한 번에 고치기"가 방금 무엇을 옮겼는지(D5). onApplyShifts가 호출되면
+  // 부모가 팔레트를 다시 계산하고, 그 결과 이 컴포넌트가 받는 `shifts` prop은
+  // 대개 다음 렌더에서 비어버린다 — 실패가 고쳐졌으니 suggestRoleShifts가 더
+  // 이상 낼 제안이 없어서다. 그래서 "무엇을 옮겼는가"는 클릭하는 그 순간의
+  // `shifts` 값을 여기서 붙잡아 두지 않으면 영영 못 보여준다. RoleShift.from은
+  // 애초에 상태/URL에 저장되지 않으므로(엔진 주석 참고, shiftSummary.ts) 이
+  // 스냅샷이 유일한 기회다.
+  const [appliedShifts, setAppliedShifts] = useState<readonly RoleShift[] | null>(null);
+  const clearTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (clearTimerRef.current !== null) window.clearTimeout(clearTimerRef.current);
+    };
+  }, []);
+
+  const handleApply = () => {
+    setAppliedShifts(shifts); // 사라지기 전에 스냅샷
+    onApplyShifts();
+    if (clearTimerRef.current !== null) window.clearTimeout(clearTimerRef.current);
+    // 목업 강조는 "잠깐" 짚는 것이다 — 계속 켜두면 다음 조작과 헷갈린다.
+    // 문장(요약)은 같은 타이머로 같이 걷는다: 강조가 꺼진 뒤에도 "무엇을
+    // 옮겼는지"만 텍스트로 남으면 그 문장이 지금 상태를 설명하는 것처럼
+    // 오독된다 — 근거 있는 순간(방금)에만 존재해야 한다.
+    clearTimerRef.current = window.setTimeout(() => {
+      setAppliedShifts(null);
+      clearTimerRef.current = null;
+    }, APPLIED_HIGHLIGHT_MS);
+  };
+
+  const appliedSummary = appliedShifts ? summarizeShifts(appliedShifts) : "";
+  const autoHighlight = appliedShifts
+    ? new Set(shiftHighlightTargets(appliedShifts))
+    : EMPTY_HIGHLIGHT;
+
   return (
     <div className="space-y-3">
       {/* 라이트/다크 라벨은 목업 바깥이다 — 안에 넣으면 중립 크롬 텍스트가 사용자
@@ -267,23 +316,30 @@ export function PreviewPane({
         <div className="ds-type-caption-sm text-neutral-500">라이트</div>
         <Mock
           theme="light" scales={scales} roles={roles}
-          highlight={hoveredTarget} onHover={setHoveredTarget}
+          highlight={hoveredTarget} autoHighlight={autoHighlight} onHover={setHoveredTarget}
         />
       </div>
       <div style={{ display: "grid", gap: "var(--ds-space-xxs)" }}>
         <div className="ds-type-caption-sm text-neutral-500">다크</div>
         <Mock
           theme="dark" scales={scales} roles={roles}
-          highlight={hoveredTarget} onHover={setHoveredTarget}
+          highlight={hoveredTarget} autoHighlight={autoHighlight} onHover={setHoveredTarget}
         />
       </div>
       {/* 이 패널의 유일한 라이브 리전(DownloadRow에도 role="status"가 하나 더
          있지만 복사 성공/실패 통지용이라 목적이 다르다 — 그건 공존이 정상이고
          지울 대상이 아니다). 헤드라인 자체가 role="status"다 — sr-only 요약을
          따로 두면 스크린리더가 같은 말을 두 번 듣는다(3.3 D8-2 개정).
-         개수는 확정 팔레트(summaryChecks) 기준이라 hover에 흔들리지 않는다. */}
+         개수는 확정 팔레트(summaryChecks) 기준이라 hover에 흔들리지 않는다.
+
+         "한 번에 고치기" 직후에는 같은 리전에 무엇을 옮겼는지를 이어 붙인다
+         (Task 7, D5) — 두 번째 role="status"를 새로 만들지 않는다. 별도
+         리전을 두면 헤드라인과 이 문장이 거의 동시에 바뀌어 스크린리더가
+         두 번 끼어들며 읽는다; 하나로 합치면 "무엇이 몇 건 남았고 방금
+         무엇을 옮겼는지"가 한 번에 낭독된다. */}
       <div role="status" aria-live="polite" className="ds-type-body-sm font-semibold text-neutral-700">
         {`고칠 수 있는 대비 미달 ${summaryFixableCount}건`}
+        {appliedSummary && ` — ${appliedSummary}`}
       </div>
       {failing.length > 0 && (
         <div className="space-y-1 rounded-md border border-neutral-200 p-2">
@@ -340,7 +396,7 @@ export function PreviewPane({
           {shifts.length > 0 && (
             <button
               type="button"
-              onClick={onApplyShifts}
+              onClick={handleApply}
               className="mt-1 w-full rounded border border-neutral-800 px-2 py-1 ds-type-caption-sm"
             >
               한 번에 고치기

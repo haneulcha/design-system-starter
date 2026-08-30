@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { onSolidColor } from "@core/color/contrast.js";
 import { ColorPalettePage } from "./ColorPalettePage";
 import { DEFAULT_ACCENT, defaultState, deriveScales } from "./paletteState";
@@ -793,5 +793,74 @@ describe("경고 ↔ 목업 강조 (스펙 D3, 2026-08-30 개정)", () => {
 
     fireEvent.mouseLeave(solidLight);
     expect(solidDark?.getAttribute("data-highlighted")).toBeNull();
+  });
+});
+
+describe("한 번에 고치기가 무엇을 바꿨는지 말한다 (Task 7, D5)", () => {
+  afterEach(() => vi.useRealTimers());
+
+  // eab308에서 실제로 나오는 이동: text 6→8(600→800), text-strong 7→9
+  // (700→900) — __probe로 확인한 실측값. suggestRoleShifts가 다음 렌더에서
+  // 빈 배열을 내므로(고쳐졌으니 더 제안할 게 없다) 이 문장은 클릭 시점의
+  // 스냅샷이어야만 만들어질 수 있다.
+  it("같은 라이브 리전에 옮긴 역할·stop을 이어 붙인다", () => {
+    window.history.replaceState({}, "", "/color-palette?v=1&a=eab308");
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getByRole("button", { name: "한 번에 고치기" }));
+    expect(screen.getByRole("status").textContent).toBe(
+      "고칠 수 있는 대비 미달 0건 — 텍스트 (링크)를 600 → 800으로, 진한 텍스트를 700 → 900으로 옮겼습니다",
+    );
+  });
+
+  // 두 번째 role="status"를 새로 만들지 않았는지 — PreviewPane 안에 라이브
+  // 리전이 하나뿐이어야 한다(DownloadRow의 것은 별개 컴포넌트라 안 센다).
+  it("PreviewPane 안 라이브 리전은 여전히 하나뿐이다", () => {
+    window.history.replaceState({}, "", "/color-palette?v=1&a=eab308");
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getByRole("button", { name: "한 번에 고치기" }));
+    expect(screen.getAllByRole("status").length).toBe(1);
+  });
+
+  // text-strong은 neutral(card-text)·accent(share-btn) 둘 다 대응 요소가
+  // 있고, text는 neutral(card-subtext)에만 있다(mockTargets.ts) — Task 6의
+  // 강조 장치를 그대로 재사용했다면 셋 다 라이트·다크 양쪽에서 켜져야 한다.
+  it("이동한 역할들의 목업 요소를 잠깐 짚는다", () => {
+    window.history.replaceState({}, "", "/color-palette?v=1&a=eab308");
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getByRole("button", { name: "한 번에 고치기" }));
+
+    for (const testId of ["mock-light", "mock-dark"] as const) {
+      const mock = screen.getByTestId(testId);
+      for (const target of ["card-text", "card-subtext", "share-btn"] as const) {
+        expect(
+          mock.querySelector(`[data-mock-target="${target}"]`)?.getAttribute("data-highlighted"),
+        ).toBe("true");
+      }
+      // 대응 요소가 없는 target(예: 실패 배지)까지 번져선 안 된다.
+      expect(
+        mock.querySelector('[data-mock-target="error-badge"]')?.getAttribute("data-highlighted"),
+      ).toBeNull();
+    }
+  });
+
+  it("짚어주는 강조는 잠깐이다 — 시간이 지나면 꺼지고 문장도 사라진다", () => {
+    vi.useFakeTimers();
+    window.history.replaceState({}, "", "/color-palette?v=1&a=eab308");
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getByRole("button", { name: "한 번에 고치기" }));
+
+    const cardText = screen
+      .getByTestId("mock-light")
+      .querySelector('[data-mock-target="card-text"]')!;
+    expect(cardText.getAttribute("data-highlighted")).toBe("true");
+
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+
+    expect(cardText.getAttribute("data-highlighted")).toBeNull();
+    // 강조가 꺼진 뒤엔 문장도 같이 걷힌다 — 방금 옮긴 게 아닌데 옮겼다고
+    // 계속 말하면 화면이 지금 상태를 설명하는 것처럼 오독된다.
+    expect(screen.getByRole("status").textContent).toBe("고칠 수 있는 대비 미달 0건");
   });
 });
