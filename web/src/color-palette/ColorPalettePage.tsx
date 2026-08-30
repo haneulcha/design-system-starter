@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { checkContrast, suggestRoleShifts } from "@core/color/contrast.js";
 import { SEMANTIC_ANCHORS } from "@core/color/semantic.js";
 import {
@@ -22,9 +22,39 @@ export function ColorPalettePage() {
     window.history.replaceState({}, "", `${window.location.pathname}${serialize(state)}`);
   }, [state]);
 
+  // 되돌리기 버퍼는 페이지 로컬이다 — PaletteState·paletteUrl에 넣을 수 없다
+  // (이번 사이클 비-목표: 상태 계약 불변). 그래서 새로고침하면 사라진다.
+  // 근본 해법(pin을 절대 hex 대신 선택 정체성으로 저장)은 다음 사이클이다.
+  const droppedPins = useRef<PaletteState["pins"] | null>(null);
+
+  const onAccentChange = (accentHex: string) =>
+    setState((s) => {
+      const had = ADJUSTABLE_STOPS.some((i) => s.pins[i] !== undefined);
+      // 전이(있다 → 없다)에서만 기록한다 — hue 스트립은 pointermove마다
+      // 커밋하므로, 매 커밋마다 기록하면 드래그 두 번째 픽셀에서 버퍼가
+      // (withAccent가 이미 비운) 빈 pins로 덮인다. 첫 픽셀에서 잡은 값만
+      // "복원" 대상이어야 한다.
+      if (had) droppedPins.current = s.pins;
+      return withAccent(s, accentHex);
+    });
+
+  // "복원"은 명시적 클릭에서만 부른다 — 사이클 3 D6은 자동 복원은 안 한다고
+  // 정했고, 그 판단은 안 뒤집는다(브리프 참고). 클릭 시점엔 pin이 사라진 이유가
+  // 이미 화면에 있으니(알림 문구) 원안이 걱정한 "왜 사라졌는지 모른다"가 해소돼
+  // 있다.
+  const onRestorePins = () => {
+    const restored = droppedPins.current;
+    if (!restored) return;
+    droppedPins.current = null; // 복원했으니 알림도 같이 걷는다
+    setState((s) => ({ ...s, pins: restored }));
+  };
+
   const scales = useMemo(() => deriveScales(state), [state]);
   const roles = useMemo(() => deriveRoles(state), [state]);
   const pinned = ADJUSTABLE_STOPS.filter((i) => state.pins[i] !== undefined);
+  const droppedPinCount = droppedPins.current
+    ? ADJUSTABLE_STOPS.filter((i) => droppedPins.current![i] !== undefined).length
+    : 0;
   const shownScales = useMemo(
     () =>
       open !== null && hover
@@ -69,10 +99,7 @@ export function ColorPalettePage() {
 
       <section className="lg:col-start-1" style={{ display: "grid", gap: "var(--ds-space-sm)" }}>
         <h2 className="ds-type-heading-xxs">① 앵커 정하기</h2>
-        <AccentInput
-          hex={state.accentHex}
-          onChange={(accentHex) => setState((s) => withAccent(s, accentHex))}
-        />
+        <AccentInput hex={state.accentHex} onChange={onAccentChange} />
       </section>
 
       <section className="lg:col-start-1" style={{ display: "grid", gap: "var(--ds-space-md)" }}>
@@ -80,6 +107,26 @@ export function ColorPalettePage() {
 
         <div style={{ display: "grid", gap: "var(--ds-space-xxs)" }}>
           <div className="ds-type-caption-sm text-neutral-500">액센트</div>
+          {/* 액센트 띠 바로 위, 한 줄 상한 — main 컬럼 세로 예산에 걸린다.
+              truncate로 물리적 줄바꿈 자체를 막는다: 좁은 화면에서 문구가
+              길어지는 대신 잘리는 쪽을 택한다(1줄 초과는 예산을 넘긴다). */}
+          {droppedPins.current && (
+            <div
+              aria-live="polite"
+              className="ds-type-caption-sm text-neutral-500 flex items-center gap-2 min-w-0"
+            >
+              <span className="truncate">
+                pin {droppedPinCount}개를 기본값으로 되돌렸습니다 — 새로고침하면 복원할 수 없어요
+              </span>
+              <button
+                type="button"
+                onClick={onRestorePins}
+                className="shrink-0 rounded px-2 py-0.5 border border-neutral-300 text-neutral-700 hover:bg-neutral-50"
+              >
+                복원
+              </button>
+            </div>
+          )}
           <AdjustableScale
             hexes={scales.accent}
             adjustable={[...ADJUSTABLE_STOPS]}

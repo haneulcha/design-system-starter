@@ -1092,3 +1092,75 @@ describe("한 번에 고치기가 무엇을 바꿨는지 말한다 (Task 7, D5)"
     ).toBeNull();
   });
 });
+
+// Task 10 (D6): withAccent가 pins를 전부 버리는 폐기 자체는 유지한다 — 근거
+// (paletteState.ts의 withAccent 주석: hue 보간으로 중간 구간이 섞이고, 남은
+// pin은 어떤 후보와도 안 맞으면서 값은 계속 적용된다)가 여전히 유효하다.
+// 이 스위트는 "조용히 사라진다"만 "알리고 되돌릴 수 있다"로 부분 개정한다.
+describe("pin 소멸 알림과 복원 (D6)", () => {
+  it("액센트 변경으로 pin이 사라지면 알리고 되돌릴 수 있다", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getAllByTestId("swatch")[7]); // stop 700
+    fireEvent.click(screen.getAllByRole("radio")[0]); // stop 700 pin
+    const pinned = screen.getAllByTestId("swatch")[7].getAttribute("aria-label");
+
+    // 기본 액센트(#3b82f6)의 H는 실측 259.81 — 262는 hue 스트립 1px 드래그
+    // 수준의 미세 조정이다.
+    fireEvent.change(screen.getByLabelText("색상"), { target: { value: "262" } });
+
+    // 드래그 첫 픽셀에 조용히 사라지던 자리다. replaceState라 뒤로가기로도
+    // 못 살리므로 화면이 유일한 복구 경로다.
+    expect(screen.getByText(/되돌렸습니다/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "복원" }));
+    expect(screen.getAllByTestId("swatch")[7].getAttribute("aria-label")).toBe(pinned);
+  });
+
+  it("pin이 없었으면 알림이 안 뜬다", () => {
+    render(<ColorPalettePage />);
+    fireEvent.change(screen.getByLabelText("색상"), { target: { value: "262" } });
+    // 전이(있다 → 없다)에서만 뜬다. pointermove마다 뜨면 드래그 내내 깜빡인다.
+    expect(screen.queryByText(/되돌렸습니다/)).toBeNull();
+  });
+
+  // 드래그 두 번째 픽셀 이상 — pins가 이미 비어 있는 채로 또 withAccent가
+  // 불리면 "전이" 조건(had)이 거짓이라 버퍼를 덮지 않는다. 덮었다면 복원해도
+  // 빈 pins가 나와 원래 pin을 영영 잃는다.
+  it("연속 조정(드래그 여러 픽셀)에서도 첫 전이의 pin만 복원 버퍼에 남는다", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getAllByTestId("swatch")[7]); // stop 700
+    fireEvent.click(screen.getAllByRole("radio")[0]);
+    const pinned = screen.getAllByTestId("swatch")[7].getAttribute("aria-label");
+
+    fireEvent.change(screen.getByLabelText("색상"), { target: { value: "262" } }); // 전이 — 기록
+    fireEvent.change(screen.getByLabelText("색상"), { target: { value: "264" } }); // pins 이미 빈 채 — 안 덮음
+    fireEvent.change(screen.getByLabelText("색상"), { target: { value: "266" } }); // 역시 안 덮음
+
+    fireEvent.click(screen.getByRole("button", { name: "복원" }));
+    expect(screen.getAllByTestId("swatch")[7].getAttribute("aria-label")).toBe(pinned);
+  });
+
+  // Task 9가 만들어 둔 "후보 밖" 경로(candidateMatch.ts의 MAX_DISTANCE·
+  // pickCurrent, CandidatePopover의 "지금 색은 이 앵커의 후보에 없습니다")를
+  // 그대로 탄다 — 새로 구현하지 않고 이미 동작하는 경로를 여기서 고정한다.
+  //
+  // radio[2]("쨍한", 태스크 배경의 예시 URL과 같은 #0e56c2)를 쓴다 — 실측하면
+  // radio[0]("중립적")은 이 hue 폭(259.81°→262°)에서 새 후보와 최소 체비셰프
+  // 거리 6으로, MAX_DISTANCE(10) 안에 남아 "후보 밖"을 안 탄다. radio[2]만
+  // 최소 거리 15로 상한을 넘어 이 시나리오에서 실제로 null 경로를 밟는다
+  // (직접 실행해 확인: candidatesFor(7, …)와 pickCurrent를 오프라인으로 돌려
+  // [6,13,23]/[18,9,10]/[33,24,15]를 얻었다 — radio[2]행의 최솟값 15만 10 초과).
+  it("복원된 pin이 새 액센트 후보 밖이면 팝오버가 '후보 밖'을 말한다 (Task 9 경로 재사용)", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getAllByTestId("swatch")[7]); // stop 700
+    fireEvent.click(screen.getAllByRole("radio")[2]); // "쨍한" — #0e56c2, 태스크 배경 예시와 동일
+
+    fireEvent.change(screen.getByLabelText("색상"), { target: { value: "262" } });
+    fireEvent.click(screen.getByRole("button", { name: "복원" }));
+
+    fireEvent.click(screen.getAllByTestId("swatch")[7]); // 복원된 pin으로 재오픈
+    const radios = screen.getAllByRole("radio") as HTMLInputElement[];
+    expect(radios.length).toBeGreaterThan(0); // 후보 자체는 있다
+    expect(radios.some((r) => r.checked)).toBe(false);
+    expect(screen.getByText("지금 색은 이 앵커의 후보에 없습니다")).toBeTruthy();
+  });
+});
