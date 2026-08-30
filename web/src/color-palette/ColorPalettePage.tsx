@@ -52,119 +52,126 @@ export function ColorPalettePage() {
   const onResetShifts = () => setState((s) => ({ ...s, shifts: [] }));
 
   return (
-    <div
+    <main
       className="mx-auto grid max-w-[1200px] grid-cols-1 items-start
                  lg:grid-cols-[1fr_380px]"
-      style={{ padding: "var(--ds-space-lg)", gap: "var(--ds-space-xl)" }}
+      style={{
+        padding: "var(--ds-space-lg)",
+        // row/column을 갈라 잡는다 — 하나로 32(--ds-space-xl)를 쓰면 스테이지
+        // 사이가 24에서 32로 벌어져 3칸에서 +24px, 3.3이 남긴 세로 여유
+        // 12.64px를 그 자리에서 넘긴다.
+        rowGap: "var(--ds-space-lg)",
+        columnGap: "var(--ds-space-xl)",
+      }}
     >
-      <main style={{ display: "grid", gap: "var(--ds-space-lg)" }}>
-        <h1 className="ds-type-heading-sm">컬러 팔레트</h1>
+      <h1 className="ds-type-heading-sm lg:col-span-2">컬러 팔레트</h1>
 
-        <section style={{ display: "grid", gap: "var(--ds-space-sm)" }}>
-          <h2 className="ds-type-heading-xxs">① 앵커 정하기</h2>
-          <AccentInput
-            hex={state.accentHex}
-            onChange={(accentHex) => setState((s) => withAccent(s, accentHex))}
+      <section className="lg:col-start-1" style={{ display: "grid", gap: "var(--ds-space-sm)" }}>
+        <h2 className="ds-type-heading-xxs">① 앵커 정하기</h2>
+        <AccentInput
+          hex={state.accentHex}
+          onChange={(accentHex) => setState((s) => withAccent(s, accentHex))}
+        />
+      </section>
+
+      <section className="lg:col-start-1" style={{ display: "grid", gap: "var(--ds-space-md)" }}>
+        <h2 className="ds-type-heading-xxs">② 만들어진 팔레트</h2>
+
+        <div style={{ display: "grid", gap: "var(--ds-space-xxs)" }}>
+          <div className="ds-type-caption-sm text-neutral-500">액센트</div>
+          <AdjustableScale
+            hexes={scales.accent}
+            adjustable={[...ADJUSTABLE_STOPS]}
+            pinned={pinned}
+            // stop 50은 거의 흰 칩이라 그림자가 "아래 테두리"로 읽힌다 —
+            // 확대 확인 후 테두리만 neutral-400으로 강화(스펙 D9,
+            // AdjustableScale의 boundaryEmphasis 주석 참조).
+            boundaryEmphasis={[0]}
+            onPick={(i) => { setOpen(open === i ? null : i); setHover(null); }}
+            preview={open !== null && hover ? previewScale(state, open, hover) : null}
+            openIndex={open}
+            onClosePopover={() => { setOpen(null); setHover(null); }}
+            popoverContent={
+              open !== null ? (
+                <CandidatePopover
+                  stopIndex={open}
+                  state={state}
+                  onHover={setHover}
+                  onChoose={(hex) =>
+                    setState((s) => ({ ...s, pins: { ...s.pins, [open]: hex ?? undefined } }))
+                  }
+                  onClose={() => { setOpen(null); setHover(null); }}
+                />
+              ) : undefined
+            }
           />
-        </section>
+        </div>
 
-        <section style={{ display: "grid", gap: "var(--ds-space-md)" }}>
-          <h2 className="ds-type-heading-xxs">② 만들어진 팔레트</h2>
+        <div style={{ display: "grid", gap: "var(--ds-space-xs)" }}>
+          <div className="ds-type-caption-sm text-neutral-500">뉴트럴</div>
+          <AdjustableScale hexes={scales.neutral} adjustable={[]} pinned={[]} />
+          <NeutralControl
+            state={state}
+            onChange={(tint) => setState((s) => ({ ...s, tint }))}
+          />
+        </div>
 
-          <div style={{ display: "grid", gap: "var(--ds-space-xxs)" }}>
-            <div className="ds-type-caption-sm text-neutral-500">액센트</div>
-            <AdjustableScale
-              hexes={scales.accent}
-              adjustable={[...ADJUSTABLE_STOPS]}
-              pinned={pinned}
-              // stop 50은 거의 흰 칩이라 그림자가 "아래 테두리"로 읽힌다 —
-              // 확대 확인 후 테두리만 neutral-400으로 강화(스펙 D9,
-              // AdjustableScale의 boundaryEmphasis 주석 참조).
-              boundaryEmphasis={[0]}
-              onPick={(i) => { setOpen(open === i ? null : i); setHover(null); }}
-              preview={open !== null && hover ? previewScale(state, open, hover) : null}
-              openIndex={open}
-              onClosePopover={() => { setOpen(null); setHover(null); }}
-              popoverContent={
-                open !== null ? (
-                  <CandidatePopover
-                    stopIndex={open}
-                    state={state}
-                    onHover={setHover}
-                    onChoose={(hex) =>
-                      setState((s) => ({ ...s, pins: { ...s.pins, [open]: hex ?? undefined } }))
-                    }
-                    onClose={() => { setOpen(null); setHover(null); }}
-                  />
-                ) : undefined
-              }
-            />
-          </div>
-
-          <div style={{ display: "grid", gap: "var(--ds-space-xs)" }}>
-            <div className="ds-type-caption-sm text-neutral-500">뉴트럴</div>
-            <AdjustableScale hexes={scales.neutral} adjustable={[]} pinned={[]} />
-            <NeutralControl
-              state={state}
-              onChange={(tint) => setState((s) => ({ ...s, tint }))}
-            />
-          </div>
-
-          {/* 상태색은 접지 않는다 — 산출물에 무조건 들어가므로 화면에 없으면
-              받아간 파일에 모르는 색이 들어있게 된다 (사이클 3 D7). 라벨을 왼쪽
-              열로 빼고 띠를 compact로 낮춰 세로를 아낀다 (스펙 D3).
-              2×2 그리드는 사람 승인 4번째 나사(Task 7 후속) — 4줄(~112px)을
-              2줄(~56px)로 압축해 900px 세로 예산의 잔여 35.36px 초과분을 덮는다.
-              stop 번호가 없고(showCaptions=false) 조정 불가라 히트 타깃도 없어
-              절반 폭(스톱당 ~30px)에서도 "산출물에 이 색이 들어간다"는 목적은
-              유지된다(사이클 3 D7 "얇게 노출") — CSS 그리드라 DOM 순서·인덱스는
-              그대로다. */}
+        {/* 상태색은 접지 않는다 — 산출물에 무조건 들어가므로 화면에 없으면
+            받아간 파일에 모르는 색이 들어있게 된다 (사이클 3 D7). 라벨을 왼쪽
+            열로 빼고 띠를 compact로 낮춰 세로를 아낀다 (스펙 D3).
+            2×2 그리드는 사람 승인 4번째 나사(Task 7 후속) — 4줄(~112px)을
+            2줄(~56px)로 압축해 900px 세로 예산의 잔여 35.36px 초과분을 덮는다.
+            stop 번호가 없고(showCaptions=false) 조정 불가라 히트 타깃도 없어
+            절반 폭(스톱당 ~30px)에서도 "산출물에 이 색이 들어간다"는 목적은
+            유지된다(사이클 3 D7 "얇게 노출") — CSS 그리드라 DOM 순서·인덱스는
+            그대로다. */}
+        <div
+          data-testid="semantic-section"
+          style={{ display: "grid", gap: "var(--ds-space-xxs)" }}
+        >
+          <div className="ds-type-caption-sm text-neutral-500">상태색</div>
+          {/* 2×2는 lg 전용이다 — 390px에서 그대로 두면 스톱당 폭이 ~7px로
+              줄어 사이클 3 D7 "얇게 노출"의 목적(그래도 색은 식별된다)이
+              깨진다. 좁은 화면은 1열로 쌓아 스톱 폭을 지킨다. */}
           <div
-            data-testid="semantic-section"
-            style={{ display: "grid", gap: "var(--ds-space-xxs)" }}
+            className="grid grid-cols-1 lg:grid-cols-2"
+            style={{ columnGap: "var(--ds-space-md)", rowGap: "var(--ds-space-xxs)" }}
           >
-            <div className="ds-type-caption-sm text-neutral-500">상태색</div>
-            <div
-              className="grid grid-cols-2"
-              style={{ columnGap: "var(--ds-space-md)", rowGap: "var(--ds-space-xxs)" }}
-            >
-              {SEMANTIC_ANCHORS.map((a) => (
+            {SEMANTIC_ANCHORS.map((a) => (
+              <div
+                key={a.id}
+                // 56px 고정 트랙은 라벨이 자라면(예: 더 긴 문구로 바뀌면) 조용히
+                // 스와치를 덮는다 — 현 라벨도 12px에서 이미 56px를 살짝 넘겨
+                // gap이 흡수 중이었다. minmax(56px, auto)로 트랙이 늘어나게 둔다.
+                className="grid grid-cols-[minmax(56px,auto)_1fr] items-center"
+                style={{ gap: "var(--ds-space-xs)" }}
+              >
                 <div
-                  key={a.id}
-                  // 56px 고정 트랙은 라벨이 자라면(예: 더 긴 문구로 바뀌면) 조용히
-                  // 스와치를 덮는다 — 현 라벨도 12px에서 이미 56px를 살짝 넘겨
-                  // gap이 흡수 중이었다. minmax(56px, auto)로 트랙이 늘어나게 둔다.
-                  className="grid grid-cols-[minmax(56px,auto)_1fr] items-center"
-                  style={{ gap: "var(--ds-space-xs)" }}
+                  // 라벨 색은 neutral-500이다 — 400은 흰 배경에서 2.58:1로 기준
+                  // 미달이다. 상태색 이름을 못 읽으면 어느 팔레트인지 알 수
+                  // 없으므로 장식이 아니다 (스펙 D2).
+                  className="ds-type-caption-sm text-neutral-500 whitespace-nowrap"
                 >
-                  <div
-                    // 라벨 색은 neutral-500이다 — 400은 흰 배경에서 2.58:1로 기준
-                    // 미달이다. 상태색 이름을 못 읽으면 어느 팔레트인지 알 수
-                    // 없으므로 장식이 아니다 (스펙 D2).
-                    className="ds-type-caption-sm text-neutral-500 whitespace-nowrap"
-                  >
-                    {a.label}
-                  </div>
-                  <AdjustableScale
-                    hexes={scales.semantic[a.id]}
-                    adjustable={[]}
-                    pinned={[]}
-                    showCaptions={false}
-                    compact
-                  />
+                  {a.label}
                 </div>
-              ))}
-            </div>
+                <AdjustableScale
+                  hexes={scales.semantic[a.id]}
+                  adjustable={[]}
+                  pinned={[]}
+                  showCaptions={false}
+                  compact
+                />
+              </div>
+            ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section style={{ display: "grid", gap: "var(--ds-space-sm)" }}>
-          <h2 className="ds-type-heading-xxs">③ 받기</h2>
-          <DownloadRow scales={scales} roles={roles} />
-        </section>
-      </main>
-
-      <aside className="lg:sticky lg:top-8">
+      {/* 좁은 화면에서는 자연 DOM 순서로 ②와 ③ 사이에 온다 — order 불필요
+          (order는 형제 컨테이너 경계를 못 넘어 aside를 main의 직계 자식으로
+          평탄화하지 않으면 애초에 쓸 수 없었다). lg에서는 2열 첫 행으로 올라가
+          세 스테이지 옆에 sticky로 선다. */}
+      <aside className="lg:col-start-2 lg:row-start-2 lg:row-span-3 lg:sticky lg:top-8">
         <PreviewPane
           scales={shownScales}
           roles={roles}
@@ -176,6 +183,11 @@ export function ColorPalettePage() {
           summaryChecks={summaryChecks}
         />
       </aside>
-    </div>
+
+      <section className="lg:col-start-1" style={{ display: "grid", gap: "var(--ds-space-sm)" }}>
+        <h2 className="ds-type-heading-xxs">③ 받기</h2>
+        <DownloadRow scales={scales} roles={roles} />
+      </section>
+    </main>
   );
 }

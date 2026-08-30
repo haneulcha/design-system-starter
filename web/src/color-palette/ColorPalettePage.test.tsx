@@ -437,10 +437,12 @@ describe("3단 스테이지 골격", () => {
 
   // 사람이 승인한 4번째 나사(D3) — 세로 예산 성공(887.36px)이 전적으로 이
   // grid-cols-2에 걸려 있는데, 지금까지는 지워도 아무것도 안 깨졌다.
-  it("상태색 4벌이 2×2 그리드로 감싸여 있다", () => {
+  // D1(사이클 4)에서 lg 전용으로 좁혔다 — 390px에서 2×2를 그대로 두면 스톱당
+  // 폭이 ~7px가 되어 사이클 3 D7 "얇게 노출"의 목적이 그 자리에서 죽는다.
+  it("상태색 4벌이 lg에서 2×2 그리드로 감싸여 있다", () => {
     render(<ColorPalettePage />);
     const section = screen.getByTestId("semantic-section");
-    const grid = section.querySelector(".grid-cols-2");
+    const grid = section.querySelector('[class*="lg:grid-cols-2"]');
     expect(grid).toBeTruthy();
   });
 

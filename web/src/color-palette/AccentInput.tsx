@@ -27,7 +27,9 @@ export function AccentInput({
         padding: "var(--ds-space-sm)",
       }}
     >
-      <div className="flex items-start gap-6">
+      {/* wrap을 허용한다 — 이 행의 min-content(피커 256 + gap 24 + hex 112 = 392)가
+          카드·페이지 패딩과 합쳐져 페이지 전체의 가로 하한 442px를 만들고 있었다. */}
+      <div className="flex flex-wrap items-start gap-6">
         <OklchPicker hex={hex} onChange={onChange} />
         {/* D4 표: hex는 code.sm(12px mono) — 바로 왼쪽 OklchPicker의 L·C·H와
            같은 급이다. 라벨은 caption.sm. w-28(112px)에 12px mono "#3b82f6"은

@@ -93,7 +93,11 @@ export function OklchPicker({ hex, onChange }: OklchPickerProps) {
         hue={lch.h}
         onPick={(h) => commit({ ...lch, c: clampChromaToGamut(lch.l, desiredC.current, h), h })}
       />
-      <div className="flex gap-2 pt-1">
+      {/* 3.3이 좁힌 "배치·상태 구조는 불변"에 flex-wrap 하나를 예외로 둔다 (스펙 D1).
+          이 행의 min-content(3 × (라벨 12 + gap 4 + 칸 64) + 2 × gap 8 = 256)가
+          페이지 가로 하한을 만들어 성공 기준 1을 물리적으로 불가능하게 하기
+          때문이다. 드래그 배선·클램프·마커 계산·패드 크기는 그대로다. */}
+      <div className="flex flex-wrap gap-2 pt-1">
         <NumberField
           label="L" value={lch.l} min={0} max={1} step={0.001} decimals={3}
           onCommit={(l) => commit({ ...lch, c: clampChromaToGamut(l, desiredC.current, lch.h), l })}
