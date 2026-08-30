@@ -14,15 +14,37 @@ import path from "path";
 // (2026-08-30 사람 판단으로 유지 결정 — 취약한 테스트라는 지적은 맞지만
 //  가드로서의 값이 그 비용보다 크다고 봤다.)
 describe("reduced-motion 경계 (스펙 D9)", () => {
-  const cssPath = path.resolve(process.cwd(), "src/global.css");
+  // import.meta.dirname을 쓰는 이유: import.meta.url은 vitest+jsdom에서 non-file
+  // scheme으로 변환돼 fileURLToPath가 TypeError로 깬다. process.cwd()는 CLI
+  // runner가 저장소 루트로 둬도 vitest의 root 설정을 무시해서 의도와 다른
+  // 경로를 찾는다. import.meta.dirname은 그 둘 다 피하고 vitest 환경에서도
+  // 정상 작동한다 (Node 20.11+).
+  const cssPath = path.join(import.meta.dirname, "../global.css");
 
   it("reduced-motion 블록이 존재한다", () => {
     expect(readFileSync(cssPath, "utf8")).toMatch(/prefers-reduced-motion/);
   });
 
   it("변위를 끄지 않는다", () => {
-    const block = readFileSync(cssPath, "utf8")
-      .split("prefers-reduced-motion")[1] ?? "";
+    const css = readFileSync(cssPath, "utf8");
+    // 닫는 중괄호까지 범위를 좁혀라 — 뒤에 무관한 CSS가 붙고 그 안에
+    // 우연히 transform: none이 있으면 오탐한다. 중첩 구조({...{...}...})를
+    // 제대로 처리하려면 중괄호 깊이를 추적한다.
+    const start = css.indexOf("prefers-reduced-motion");
+    if (start === -1) {
+      throw new Error("prefers-reduced-motion not found");
+    }
+    const firstBrace = css.indexOf("{", start);
+    let depth = 0;
+    let block = "";
+    for (let i = firstBrace; i < css.length; i++) {
+      block += css[i];
+      if (css[i] === "{") depth++;
+      if (css[i] === "}") {
+        depth--;
+        if (depth === 0) break;
+      }
+    }
     expect(block).not.toMatch(/transform:\s*none/);
     expect(block).not.toMatch(/transition:\s*none/);
   });
