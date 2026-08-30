@@ -91,11 +91,27 @@ describe("ColorPalettePage", () => {
   });
 
   // stop 3(300)은 세 후보 전부가 같은 경계로 클램프돼 커브 기본값과도 같다 —
-  // 선택지가 하나뿐이라는 사실 자체가 "여기는 고를 게 없다"는 정보다(D9).
-  it("collapses all three candidates at stop 3 into one", () => {
+  // 선택지가 하나뿐이라는 사실 자체가 "여기는 고를 게 없다"는 정보다.
+  // 2026-08-30 D7-2로 사이클 3 D9를 부분 개정: "왜 고를 게 없나"(조작 사실)는
+  // 이제 문구로도 싣는다 — 라디오 1개만 남는 화면은 정보가 아니라 고장으로
+  // 읽혔다(실측).
+  it("collapses all three candidates at stop 3 into one, with a reason", () => {
     render(<ColorPalettePage />);
     fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[1]); // stop 3
     expect(screen.getAllByRole("radio").length).toBe(1);
+    expect(screen.getByText("이 앵커에서는 클램프로 후보 폭이 좁아 선택지가 겹칩니다")).toBeTruthy();
+  });
+
+  // stop 7(700)은 pin을 고른 적이 없어도 곡선이 이미 어떤 색을 그리고 있다 —
+  // 그 자리를 아무도 체크하지 않으면 "지금 뭐가 적용 중인지" 알 수 없다(D7-1
+  // 수정 전 실측: 0/3). getAllByTestId("swatch")[7]은 accent 11-stop 띠의
+  // stop-index 7과 DOM 순서가 그대로 일치한다(다른 "swatch[7]" 단언들과 동일 — 이
+  // 파일의 line 154 참고로 실측).
+  it("pin이 없어도 현재 적용 중인 후보가 체크된다", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getAllByTestId("swatch")[7]); // stop 700
+    const checked = screen.getAllByRole("radio").filter((r) => (r as HTMLInputElement).checked);
+    expect(checked.length).toBe(1);
   });
 
   it("changes the palette in place when a candidate is chosen", () => {
@@ -111,15 +127,17 @@ describe("ColorPalettePage", () => {
   it("records the chosen stop in the URL", () => {
     render(<ColorPalettePage />);
     fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[0]);
-    // dedup 후 stop 0은 라디오가 2개뿐이라 radio[1]을 쓴다.
-    fireEvent.click(screen.getAllByRole("radio")[1]);
+    // radio[1]("균형")은 D7 수정 이후 곡선 기본값과 정확히 일치해 열 때부터
+    // 이미 checked다 — 같은 라디오를 다시 클릭해도 네이티브 change가 안
+    // 일어난다. 실제로 상태가 바뀌는 radio[0]("중립적")을 쓴다.
+    fireEvent.click(screen.getAllByRole("radio")[0]);
     expect(window.location.search).toContain("s0=");
   });
 
   it("reverts to the curve default", () => {
     render(<ColorPalettePage />);
     fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[0]);
-    fireEvent.click(screen.getAllByRole("radio")[1]);
+    fireEvent.click(screen.getAllByRole("radio")[0]);
     fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[0]);
     fireEvent.click(screen.getByRole("button", { name: "기본으로" }));
     expect(window.location.search).not.toContain("s0=");
@@ -129,7 +147,9 @@ describe("ColorPalettePage", () => {
   it("discards stop pins when the accent changes", () => {
     render(<ColorPalettePage />);
     fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[0]);
-    fireEvent.click(screen.getAllByRole("radio")[1]);
+    // radio[1]은 곡선 기본값과 이미 같아 클릭이 no-op이다(위 "records the
+    // chosen stop" 주석 참조) — radio[0]을 써야 pin이 실제로 생긴다.
+    fireEvent.click(screen.getAllByRole("radio")[0]);
     expect(window.location.search).toContain("s0=");
     fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#ef4444" } });
     expect(window.location.search).not.toContain("s0=");

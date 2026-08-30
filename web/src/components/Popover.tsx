@@ -43,6 +43,11 @@ export function Popover({
 }: PopoverProps): ReactElement | null {
   const panelRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
+  // 경계(띠) 폭 상한. 고정 px을 주지 않는 이유: 겹침 사유 문구(D7-2)가 붙으면
+  // 패널이 넓어질 수 있는데, clampOffset은 "패널이 경계보다 넓으면" clamp를
+  // 포기한다(그 함수 헤더 주석 참조) — 포기하면 패널이 sticky 목업을 덮는다.
+  // 그걸 막으려고 애초에 경계를 재는 것이니, 상한도 그 경계 폭 자체여야 한다.
+  const [maxWidth, setMaxWidth] = useState<number | null>(null);
 
   // 닫힐 때 포커스를 돌려줄지 판단하는 근거. activeElement를 닫힌 뒤에 읽으면
   // 늦는다 — 그때는 패널이 이미 사라져 포커스가 body로 떨어진 뒤다.
@@ -75,13 +80,17 @@ export function Popover({
   }, [open, triggerRef]);
 
   // 경계 밖으로 나간 만큼 되민다. jsdom은 rect가 전부 0이라 오프셋이 0으로 남고,
-  // 그래서 이 계산이 컴포넌트 테스트를 깨뜨리지 않는다.
+  // 그래서 이 계산이 컴포넌트 테스트를 깨뜨리지 않는다. maxWidth도 같은 이유로
+  // jsdom에서는 null(무제한)로 남는다 — 0을 상한으로 주면 실제로는 아무 문제가
+  // 없는데도 시각적으로만 깨진 것처럼 보일 자리라, 측정값이 0이면 상한을 안 건다.
   useLayoutEffect(() => {
-    if (!open) { setOffset(0); return; }
+    if (!open) { setOffset(0); setMaxWidth(null); return; }
     const panel = panelRef.current?.getBoundingClientRect();
     const boundary = boundaryRef.current?.getBoundingClientRect();
     if (!panel || !boundary) return;
     setOffset(clampOffset(panel, boundary));
+    const boundaryWidth = boundary.right - boundary.left;
+    setMaxWidth(boundaryWidth > 0 ? boundaryWidth : null);
   }, [open, boundaryRef]);
 
   useEffect(() => {
@@ -121,7 +130,13 @@ export function Popover({
       // 뒤에 오는 쪽이 이겨서 clamp 오프셋이 조용히 사라진다.
       className="absolute top-full left-1/2 z-20 mt-2 w-max rounded-lg
                  border border-neutral-300 bg-white p-2 shadow-lg focus:outline-none"
-      style={{ transform: `translateX(calc(-50% + ${offset}px))` }}
+      style={{
+        transform: `translateX(calc(-50% + ${offset}px))`,
+        // 고정 px이 아니라 실측 경계 폭이 상한이다 — clampOffset은 패널이
+        // 경계보다 넓으면 clamp를 포기하므로(위 주석), 상한이 없으면 사유
+        // 문구로 패널이 넓어질 때 그 포기 경로를 그대로 밟는다.
+        ...(maxWidth !== null ? { maxWidth } : {}),
+      }}
     >
       {/* 화살표는 오프셋의 역부호만큼 되밀어, 패널이 clamp로 밀려도 언제나 앵커
           중앙을 가리킨다 — 어느 stop을 조정 중인지 알려주는 것이 이 화살표의
