@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { onSolidColor } from "@core/color/contrast.js";
 import { ColorPalettePage } from "./ColorPalettePage";
 import { DEFAULT_ACCENT, defaultState, deriveScales } from "./paletteState";
@@ -505,16 +505,29 @@ describe("복사 피드백 (스펙 D8)", () => {
     Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
 
   afterEach(() => {
-    // 전역을 만졌으면 반드시 되돌린다 — 안 되돌리면 이 파일의 다른 테스트가
-    // 실행 순서에 따라 깨진다.
-    if (original) Object.defineProperty(navigator, "clipboard", original);
+    // jsdom에서 navigator.clipboard는 own/inherited 프로퍼티로 원래 존재하지 않는다.
+    // Object.getOwnPropertyDescriptor는 항상 undefined를 반환하므로, original도
+    // undefined다. 따라서 if (original)은 거짓이 되어 defineProperty 경로는 작동하지
+    // 않는다 — original이 있을 때만 복원하는 로직은 원상태(프로퍼티 부재)를 영구히 못
+    // 복원한다. 스텁이 남으면 나중 테스트가 조용히 깨지는 시한폭탄이다. 원래 상태를
+    // 정확히 복원하려면 original이 없을 때는 deleteProperty로 제거해야 한다.
+    if (original) {
+      Object.defineProperty(navigator, "clipboard", original);
+    } else {
+      delete (navigator as unknown as Record<string, unknown>).clipboard;
+    }
   });
 
   it("CSS 복사 성공이 통지된다", async () => {
     stub(() => Promise.resolve());
     render(<ColorPalettePage />);
     fireEvent.click(screen.getByRole("button", { name: /CSS 복사/ }));
-    expect(await screen.findByText("복사됨")).toBeTruthy();
+    // 라이브 리전(role="status")에서 성공 문구를 찾는다 — 버튼 라벨과 구분.
+    await waitFor(() => {
+      const statusElements = screen.queryAllByRole("status");
+      const found = statusElements.some(el => el.textContent?.includes("복사되었습니다"));
+      expect(found).toBe(true);
+    });
   });
 
   it("CSS 복사 실패도 통지된다", async () => {
@@ -522,7 +535,24 @@ describe("복사 피드백 (스펙 D8)", () => {
     stub(() => Promise.reject(new Error("denied")));
     render(<ColorPalettePage />);
     fireEvent.click(screen.getByRole("button", { name: /CSS 복사/ }));
-    expect(await screen.findByText(/복사하지 못했습니다/)).toBeTruthy();
+    // 라이브 리전(role="status")에서 실패 문구를 찾는다.
+    await waitFor(() => {
+      const statusElements = screen.queryAllByRole("status");
+      const found = statusElements.some(el => el.textContent?.includes("복사하지 못했습니다"));
+      expect(found).toBe(true);
+    });
+  });
+
+  // 원복이 실제로 되는지 검증 — 스텁이 영구히 남아서 나중 테스트가 깨지는 사태를 막는다.
+  it("afterEach가 navigator.clipboard를 원래 상태(undefined)로 복원한다", async () => {
+    stub(() => Promise.resolve());
+    render(<ColorPalettePage />);
+    // 이 시점에서 clipboard는 stub { writeText: [Function] }
+    expect(typeof navigator.clipboard).toBe("object");
+  });
+  // 위 테스트가 afterEach를 지나 아래에 도달했다면, clipboard가 원복되었다는 뜻.
+  it("afterEach 후 clipboard가 삭제됐음을 확인한다", () => {
+    expect(navigator.clipboard).toBeUndefined();
   });
 });
 

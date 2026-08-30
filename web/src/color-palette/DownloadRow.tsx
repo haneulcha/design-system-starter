@@ -108,10 +108,12 @@ export function DownloadRow({
           클립보드를 쓸 수 없는 환경입니다 — 파일로 받으세요.
         </div>
       )}
-      {copied === "fail" && (
-        // 복사 실패도 알려야 한다 — role="status"로 aria-live 암시적 선언
+      {copied !== "idle" && (
+        // 성공·실패를 role="status"로 알린다 — 라이브 리전이 스크린리더에 자동 낭독된다.
+        // 버튼 라벨 변경은 시각 피드백이고, 라이브 리전은 보조기술 사용자에게 동일한 정보.
+        // DownloadRow 안에 라이브 리전은 하나만 있어야 한다.
         <div role="status" className="ds-type-caption-sm text-neutral-500">
-          복사하지 못했습니다 — 파일로 받으세요.
+          {copied === "ok" ? "복사되었습니다" : "복사하지 못했습니다 — 파일로 받으세요."}
         </div>
       )}
     </div>
