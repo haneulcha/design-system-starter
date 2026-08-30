@@ -664,7 +664,8 @@ describe("받기 카드", () => {
     expect(copy.className).toContain("ds-type-caption-sm");
   });
 
-  // 현행은 opacity 40%로 죽어만 있고 이유가 없다 (DownloadRow.tsx:47-48).
+  // 현행은 opacity 40%로 죽어만 있고 이유가 없다
+  // (`DownloadRow`의 CSS 복사 버튼, `disabled:opacity-40` 클래스).
   it("클립보드를 못 쓰면 disabled에 사유가 붙는다", () => {
     const original = navigator.clipboard;
     Object.defineProperty(navigator, "clipboard", { value: undefined, configurable: true });
@@ -1134,15 +1135,24 @@ describe("pin 소멸 알림과 복원 (D6)", () => {
   // 드래그 두 번째 픽셀 이상 — pins가 이미 비어 있는 채로 또 withAccent가
   // 불리면 "전이" 조건(had)이 거짓이라 버퍼를 덮지 않는다. 덮었다면 복원해도
   // 빈 pins가 나와 원래 pin을 영영 잃는다.
+  //
+  // 리뷰 I-1로 pointerdown/pointerup을 감싸는 이유: 버퍼 만료(다음 액센트
+  // 변경에서 폐기)가 dragActive를 본다 — 드래그 중이 아니면 즉시 폐기한다.
+  // 이 테스트가 실측하려는 것이 "같은 드래그 안의 연속 pointermove"이므로,
+  // 그 조건을 실제로 성립시키려면 진짜 pointerdown~pointerup 사이에서
+  // 값을 바꿔야 한다 — 안 감싸면(이전 버전) dragActive가 계속 거짓이라 두
+  // 번째 변경에서 버퍼가 만료돼 이 테스트 자체가 실패한다.
   it("연속 조정(드래그 여러 픽셀)에서도 첫 전이의 pin만 복원 버퍼에 남는다", () => {
     render(<ColorPalettePage />);
     fireEvent.click(screen.getAllByTestId("swatch")[7]); // stop 700
     fireEvent.click(screen.getAllByRole("radio")[0]); // #295bac
     const pinned = screen.getAllByTestId("swatch")[7].getAttribute("aria-label");
 
+    fireEvent.pointerDown(window); // 드래그 시작 — 이 사이엔 버퍼가 안 만료된다
     fireEvent.change(screen.getByLabelText("색상"), { target: { value: "262" } }); // 전이 — 기록
     fireEvent.change(screen.getByLabelText("색상"), { target: { value: "264" } }); // pins 이미 빈 채 — 안 덮음
     fireEvent.change(screen.getByLabelText("색상"), { target: { value: "266" } }); // 역시 안 덮음
+    fireEvent.pointerUp(window); // 드래그 종료
 
     fireEvent.click(screen.getByRole("button", { name: "복원" }));
     expect(screen.getAllByTestId("swatch")[7].getAttribute("aria-label")).toBe(pinned);
@@ -1238,5 +1248,79 @@ describe("pin 소멸 알림과 복원 (D6)", () => {
     fireEvent.click(screen.getByRole("button", { name: "복원" }));
     expect(window.location.search).toBe(beforeRestore); // 값은 안 바뀜
     expect(screen.queryByTestId("pin-restore-banner")).toBeNull(); // 배너만 걷힘
+  });
+});
+
+// 최종 브랜치 리뷰 I-1: 되돌리기 버퍼(droppedPins)에 만료가 없었다 — pin이
+// 사라졌다는 배너가 새 pin이나 추가 액센트 변경을 거쳐도 세션 내내 안 걷혔고,
+// 그 상태에서 "복원"을 누르면 이미 무관해진 색(예: 파랑 시절 pin)이 지금
+// 팔레트(예: 초록)에 병합돼 들어갔다. 고른 만료 방식은 onAccentChange에서
+// `had`가 거짓일 때(=이번 액센트 변경 이전에 이미 pins가 비어 있었을 때, 즉
+// 지금 바꾸는 액센트가 버퍼가 기억하는 "직전 드랍"의 그다음이라는 뜻) 버퍼를
+// 버리는 쪽이다 — onChoose(새 pin 커밋)에서 버리는 대안도 있었지만, 이 버그의
+// 핵심 위험(사이클 3 D6이 막으려던 "다른 색끼리 섞인 pin")은 액센트를 반복해
+// 바꿀 때 생기지 새 pin을 찍을 때는 안 생긴다 — 병합 로직(`s.pins[i] ??
+// restored[i]`)이 새 pin 자체는 이미 안전하게 지킨다(바로 위 "복원이 그 사이에
+// 새로 찍은 다른 stop의 pin을 덮어쓰지 않는다" 테스트). 그래서 위험이 실제로
+// 나는 지점(액센트 재변경)에 만료를 건다. `had`가 참이면(그 시점에 살아있는
+// pin이 있으면) 만료가 아니라 **교체**다 — 그 pin이 지금 막 드랍되는 것이므로
+// 버퍼는 그 최신 드랍을 담아야 한다(첫 번째 테스트가 이 경로를 고정한다).
+// 아래 세 테스트는 최종 리뷰가 재현한 표의 세 시퀀스를 그대로 고정한다.
+describe("pin 소멸 배너 만료 (최종 리뷰 I-1)", () => {
+  it("드랍 후 다른 stop을 새로 pin하면, 그 pin이 다시 드랍될 때 버퍼가 최신 값으로 교체된다", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getAllByTestId("swatch")[7]); // stop 700
+    fireEvent.click(screen.getAllByRole("radio")[0]); // #295bac
+    fireEvent.change(screen.getByLabelText("색상"), { target: { value: "262" } }); // 드랍
+    expect(screen.getByTestId("pin-restore-banner")).toBeTruthy();
+
+    fireEvent.click(screen.getAllByTestId("swatch")[3]); // stop 300 — 배너가 뜬 채로 새로 pin
+    fireEvent.click(screen.getAllByRole("radio")[0]);
+    // 새 pin만으로는 안 걷힌다 — 액센트를 안 바꿨으니 만료 조건(다음 액센트
+    // 변경) 자체가 아직 안 왔다.
+    expect(screen.getByTestId("pin-restore-banner")).toBeTruthy();
+
+    // 액센트를 바꾸면 이번엔 stop300 pin이 막 드랍되는 참이라 had=true —
+    // 버퍼가 "폐기"가 아니라 stop300의 값으로 **교체**된다. stop700의 옛
+    // 값(#295bac)은 이제 버퍼 어디에도 없다.
+    fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#ef4444" } });
+    expect(screen.getByTestId("pin-restore-banner")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "복원" }));
+    expect(window.location.search).not.toContain("s7="); // stop700의 옛 pin은 안 돌아온다
+    expect(window.location.search).toMatch(/s3=/); // stop300만 복원된다
+  });
+
+  it("드랍 후 액센트를 두 번 더 바꾸면 배너는 두 번째 변경에서 이미 걷힌다", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getAllByTestId("swatch")[7]); // stop 700
+    fireEvent.click(screen.getAllByRole("radio")[0]); // #295bac
+    expect(window.location.search).toContain("s7=295bac");
+
+    fireEvent.change(screen.getByLabelText("색상"), { target: { value: "262" } }); // 드랍(1차 변경)
+    expect(screen.getByTestId("pin-restore-banner")).toBeTruthy();
+    expect(within(screen.getByTestId("pin-restore-banner")).getByText(/pin 1개/)).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#ef4444" } }); // 2차 변경 — had=false, 버퍼 폐기
+    expect(screen.queryByTestId("pin-restore-banner")).toBeNull();
+
+    fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#22c55e" } }); // 3차 변경 — 이미 null이라 그대로
+    expect(screen.queryByTestId("pin-restore-banner")).toBeNull();
+  });
+
+  it("배너가 걷힌 뒤에는 복원 버튼이 없어 다른 색의 pin이 섞여 들어갈 수 없다", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getAllByTestId("swatch")[7]); // stop 700
+    fireEvent.click(screen.getAllByRole("radio")[0]); // #295bac — "파랑"에서 고른 pin
+
+    fireEvent.change(screen.getByLabelText("색상"), { target: { value: "262" } }); // 드랍
+    fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#ef4444" } }); // 빨강
+    fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#22c55e" } }); // 초록
+
+    // 복원 버튼 자체가 없다 — 눌러서 파랑 시절 pin(#295bac)이 초록 팔레트에
+    // 섞여 들어가는 경로(리뷰가 재현한 `?a=22c55e&s7=295bac`)가 UI에서 막힌다.
+    expect(screen.queryByRole("button", { name: "복원" })).toBeNull();
+    expect(window.location.search).toContain("a=22c55e");
+    expect(window.location.search).not.toContain("s7=295bac");
   });
 });

@@ -27,6 +27,29 @@ export function ColorPalettePage() {
   // 근본 해법(pin을 절대 hex 대신 선택 정체성으로 저장)은 다음 사이클이다.
   const droppedPins = useRef<PaletteState["pins"] | null>(null);
 
+  // 버퍼 만료 판정에 쓰는 "지금 드래그 중인가"(리뷰 I-1). HueStrip·LcPad
+  // 둘 다 pointerdown~pointerup 사이 매 pointermove마다 onChange를 커밋한다
+  // (OklchPicker.tsx의 HueStrip/LcPad 주석 참고) — 즉 진짜 드래그 한 번이
+  // onAccentChange를 수십~수백 번 부른다. 이 ref가 없으면 "다음 액센트
+  // 변경에서 버퍼를 버린다"는 판정이 드래그의 **두 번째 pointermove**에서
+  // 이미 발동해 버려, 사용자가 마우스를 떼기도 전에 배너가 사라진다 — 이
+  // 사이클의 대표 기능(D6: 알리고 복원할 수 있게 한다)이 정작 그 기능을 가장
+  // 많이 쓰는 경로(hue/LC 드래그)에서 사실상 안 뜨는 꼴이 된다. window
+  // 리스너를 쓰는 이유는 pointerdown이 HueStrip/LcPad 각자의 div에서
+  // 시작해도 버블링으로 window까지 올라오기 때문 — 어느 쪽에서 드래그가
+  // 시작했는지 구분할 필요가 없다.
+  const dragActive = useRef(false);
+  useEffect(() => {
+    const onDown = () => { dragActive.current = true; };
+    const onUp = () => { dragActive.current = false; };
+    window.addEventListener("pointerdown", onDown);
+    window.addEventListener("pointerup", onUp);
+    return () => {
+      window.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("pointerup", onUp);
+    };
+  }, []);
+
   const onAccentChange = (accentHex: string) =>
     setState((s) => {
       const had = ADJUSTABLE_STOPS.some((i) => s.pins[i] !== undefined);
@@ -37,7 +60,29 @@ export function ColorPalettePage() {
       // 불려도(개발 모드가 순수성 검증을 위해 하는 재호출) 매번 같은 `s`를
       // 받아 같은 값을 계산하므로 두 번 대입해도 결과가 같다 — 멱등이라
       // 안전하다(리뷰로 실측 확인).
-      if (had) droppedPins.current = s.pins;
+      if (had) {
+        // 이 대입은 무조건 **교체**다 — 버퍼에 이미 옛 드랍이 남아 있어도
+        // 지금 살아있는 pins로 덮어쓴다(리뷰 I-1). 지금 막 드랍되는 pin이
+        // "가장 최근"이므로 옛 버퍼(예: stop700을 드랍하고 새로 pin한
+        // stop300이 다시 드랍되는 경우)는 더 이상 복원 대상이 아니다.
+        droppedPins.current = s.pins;
+      } else if (droppedPins.current && !dragActive.current) {
+        // 버퍼 만료(리뷰 I-1). had가 거짓인데 지금 드래그 중도 아니면, 이
+        // 액센트 변경은 방금 그 드랍을 만든 "같은 제스처의 다음 pointermove"가
+        // 아니라 **그 뒤에 벌어진 별개의 변경**이다(예: 드래그를 끝내고 hex
+        // 입력창에 새 값을 치거나, 새 드래그를 다시 시작함 — 후자는 그
+        // 드래그의 첫 pointerdown이 window 리스너보다 먼저 이 업데이터에
+        // 닿아 dragActive가 아직 갱신 전이므로 여기서 잡힌다). withAccent는
+        // accentHex가 뭐든 pins를 무조건 새로 비우므로, "직전 드랍"이 아닌
+        // 버퍼를 계속 들고 있으면 onRestorePins가 그 값을 지금 팔레트에
+        // 병합해 색이 섞인 hex를 만든다(사이클 3 D6이 막으려던 것의 재생산 —
+        // withAccent 주석 참고). 그래서 곧바로 버린다: 배너는 "복원 클릭"
+        // 또는 "드래그가 끝난 뒤의 다음 액센트 변경" 중 먼저 오는 쪽에서
+        // 걷힌다. onChoose로 새 pin만 찍는 동안은(액센트를 안 바꾸는 한) 안
+        // 걷힌다 — 병합 로직(onRestorePins의 `s.pins[i] ?? restored[i]`)이
+        // 그 경우엔 이미 안전하기 때문이다.
+        droppedPins.current = null;
+      }
       return withAccent(s, accentHex);
     });
 
@@ -46,8 +91,10 @@ export function ColorPalettePage() {
   // 이미 화면에 있으니(알림 문구) 원안이 걱정한 "왜 사라졌는지 모른다"가 해소돼
   // 있다.
   //
-  // 교체가 아니라 병합이다(리뷰 C-1) — 배너는 복원을 누르기 전까지 안 걷히므로,
-  // 그 사이 사용자가 다른 stop을 새로 pin해도 배너는 그대로다. 그 상태에서
+  // 교체가 아니라 병합이다(리뷰 C-1) — 배너는 "복원" 클릭이나 다음 액센트
+  // 변경(리뷰 I-1, onAccentChange의 버퍼 만료) 중 먼저 오는 쪽에서 걷힌다.
+  // 액센트를 안 바꾸는 한은 그 사이 사용자가 다른 stop을 새로 pin해도 배너는
+  // 그대로다. 그 상태에서
   // "복원"이 pins를 통째로 갈아치우면(수정 전 실제 코드: `{ ...s, pins: restored }`)
   // 방금 찍은 새 pin이 조용히 사라진다 — 이 태스크가 고치려는 결함(조용한 pin
   // 소멸)이 복원 버튼 안에서 재생산되는 셈이다. 그래서 stop별로
