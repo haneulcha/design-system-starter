@@ -6,7 +6,7 @@
 // 얇게 만들면 그 계약은 아무도 안 지키게 된다.
 
 import { describe, it, expect, vi } from "vitest";
-import { useRef, useState } from "react";
+import { StrictMode, useRef, useState } from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { Popover } from "./Popover";
 
@@ -184,13 +184,21 @@ describe("Popover", () => {
     };
   }
 
+  // 2026-08-30 재리뷰 수정(G-1): 아래 두 테스트를 <StrictMode>로 감싼다.
+  // main.tsx가 실제로 <StrictMode>로 앱을 감싸므로(R-1 재리뷰 2차가 겪은 바로
+  // 그 조건), dev 모드에서 마운트 시 레이아웃 이펙트의 setup이 두 번 불린다.
+  // 일반 render()는 StrictMode 밖이라 이중 호출이 재현되지 않는다 — 그래서
+  // "누적"(prev + delta) 버전으로 되돌려도 이 파일은 계속 초록이었다(리뷰
+  // 실측: 대체 버전은 2 failed로 잡히지만 누적 버전은 16 passed로 통과해
+  // 버렸다). 여기서 StrictMode를 벗기지 말 것 — 벗기면 이 회귀 가드가 다시
+  // 조용히 죽는다.
   it("패널이 경계 밖으로 나가면 패널과 화살표가 반대 부호로 되밀린다", () => {
     const original = Element.prototype.getBoundingClientRect;
     // 패널이 경계(0~200) 왼쪽으로 40px 삐져나간 자연 위치 — clampOffset은
     // boundary.left(0) - panel.left(-40) = 40을 돌려준다.
     Element.prototype.getBoundingClientRect = stubDialogRect(-40, 60, 200);
     try {
-      render(<Harness />);
+      render(<StrictMode><Harness /></StrictMode>);
       fireEvent.click(screen.getByRole("button", { name: "열기" }));
       const panel = screen.getByRole("dialog") as HTMLElement;
       const arrow = panel.querySelector("[aria-hidden]") as HTMLElement;
@@ -209,15 +217,22 @@ describe("Popover", () => {
   // "대체"였을 때 그 보정이 0으로 리셋되며 패널이 다시 경계 밖(80px, sticky
   // 목업 위)으로 튀어나갔다. maxWidth 이펙트가 반드시 한 번 더(2패스) 돌게
   // boundary 폭을 BOUNDARY_MARGIN(8)보다 넉넉히 준다.
+  //
+  // <StrictMode>가 없으면 이 테스트는 "대체" 버전만 잡고 "누적" 버전은 못
+  // 잡는다 — 누적 버전을 되돌려 StrictMode 없이 돌리면 여전히 -80px로
+  // 초록이지만, StrictMode로 감싸면 마운트 시 이중 호출로 1패스의 델타가
+  // 두 번 쌓여 -160px로 빨개진다(재리뷰에서 직접 확인).
   it("1패스가 이미 경계 안으로 보정했으면 2패스가 그 보정을 지우지 않는다", () => {
     const original = Element.prototype.getBoundingClientRect;
     Element.prototype.getBoundingClientRect = stubDialogRect(180, 280, 200);
     try {
-      render(<Harness />);
+      render(<StrictMode><Harness /></StrictMode>);
       fireEvent.click(screen.getByRole("button", { name: "열기" }));
       const panel = screen.getByRole("dialog") as HTMLElement;
       // 대체 버전이었다면 2패스가 delta=0을 총 오프셋으로 덮어써 이 값이
-      // "translateX(calc(-50% + 0px))"이 됐을 것이다.
+      // "translateX(calc(-50% + 0px))"이 됐을 것이다. 누적 버전이었다면
+      // StrictMode의 마운트 시 이중 호출로 1패스 델타가 두 번 쌓여
+      // "translateX(calc(-50% + -160px))"가 됐을 것이다.
       expect(panel.style.transform).toBe("translateX(calc(-50% + -80px))");
     } finally {
       Element.prototype.getBoundingClientRect = original;
