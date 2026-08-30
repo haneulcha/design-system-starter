@@ -127,17 +127,31 @@ describe("ColorPalettePage", () => {
   it("records the chosen stop in the URL", () => {
     render(<ColorPalettePage />);
     fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[0]);
-    // radio[1]("균형")은 D7 수정 이후 곡선 기본값과 정확히 일치해 열 때부터
-    // 이미 checked다 — 같은 라디오를 다시 클릭해도 네이티브 change가 안
-    // 일어난다. 실제로 상태가 바뀌는 radio[0]("중립적")을 쓴다.
-    fireEvent.click(screen.getAllByRole("radio")[0]);
+    // dedup 후 stop 0은 라디오가 2개뿐이라 radio[1]을 쓴다.
+    fireEvent.click(screen.getAllByRole("radio")[1]);
     expect(window.location.search).toContain("s0=");
+  });
+
+  // I-3 리뷰 수정 확인: radio[1]("균형")은 D7-1 수정 이후 곡선 기본값과 정확히
+  // 일치해 열 때부터 이미 checked다. checked가 change로만 커밋되면 이미
+  // checked인 라디오를 다시 눌러도 아무 일도 안 일어나는 죽은 클릭이 된다 —
+  // "곡선 기본값을 명시적으로 pin해서 고정"할 방법도 사라진다. click에도
+  // 커밋을 걸어(CandidatePopover 참조) 이미 checked인 라디오도 확정·닫힘이
+  // 일어나야 한다.
+  it("commits even when clicking the already-checked (curve default) radio", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[0]);
+    const radios = screen.getAllByRole("radio") as HTMLInputElement[];
+    expect(radios[1].checked).toBe(true); // 열 때부터 이미 checked
+    fireEvent.click(radios[1]);
+    expect(window.location.search).toContain("s0="); // 명시적으로 pin됐다
+    expect(screen.queryByRole("dialog")).toBeNull(); // 팝오버도 닫혔다
   });
 
   it("reverts to the curve default", () => {
     render(<ColorPalettePage />);
     fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[0]);
-    fireEvent.click(screen.getAllByRole("radio")[0]);
+    fireEvent.click(screen.getAllByRole("radio")[1]);
     fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[0]);
     fireEvent.click(screen.getByRole("button", { name: "기본으로" }));
     expect(window.location.search).not.toContain("s0=");
@@ -147,9 +161,7 @@ describe("ColorPalettePage", () => {
   it("discards stop pins when the accent changes", () => {
     render(<ColorPalettePage />);
     fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[0]);
-    // radio[1]은 곡선 기본값과 이미 같아 클릭이 no-op이다(위 "records the
-    // chosen stop" 주석 참조) — radio[0]을 써야 pin이 실제로 생긴다.
-    fireEvent.click(screen.getAllByRole("radio")[0]);
+    fireEvent.click(screen.getAllByRole("radio")[1]);
     expect(window.location.search).toContain("s0=");
     fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#ef4444" } });
     expect(window.location.search).not.toContain("s0=");
@@ -439,6 +451,85 @@ describe("ColorPalettePage", () => {
     expect(screen.getAllByTestId("swatch")[7].getAttribute("style")).not.toBe(before);
     expect(window.location.search).not.toContain("s7=");
   });
+});
+
+// 2026-08-30 리뷰(C-1): checked가 argmin이 아니라 "정확 일치 있으면 정확 일치,
+// 없으면 TOLERANCE 근사"라는 2단 판정이었을 때, pin이 다른 stop의 문맥 변화로
+// 후보 집합 밖으로 밀려나면(=정확 일치가 사라지면) 근사 폴백이 발동했고, 그
+// 폴백은 "허용치 안의 후보 전부"를 참으로 만들어 같은 name의 라디오 그룹에
+// checked가 둘 이상 생겼다. 실측 스윕(2-pick 시퀀스 42,300건): multi-checked
+// 144건(0.34%), zero-checked 4,449건(10.5%) — 검증에 쓴 6액센트×4stop=24조합만
+// 보면 0건이라 그 스윕 없이는 못 잡는다. pickCurrent를 argmin으로 바꿔 구조적으로
+// 막았다(candidateMatch.ts 참조) — 아래는 그 반증 시퀀스를 그대로 고정한 회귀
+// 테스트와, "checked는 항상 0개 또는 1개"라는 불변식 자체를 박은 테스트다.
+describe("후보 팝오버 — checked 유일성 (리뷰 C-1)", () => {
+  function openStop(stopIndex: 0 | 1 | 2 | 3) {
+    fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[stopIndex]);
+  }
+  function checkedRadios() {
+    return screen
+      .getAllByRole("radio")
+      .filter((r) => (r as HTMLInputElement).checked);
+  }
+
+  // 리뷰어가 실제 컴포넌트로 재현한 그 시퀀스. 고치기 전엔 재열기 시점에
+  // radio 2개가 동시에 checked였고, 둘 다 클릭해도 URL이 안 바뀌고 팝오버도
+  // 안 닫히는 완전히 죽은 팝오버였다.
+  it("stop 300 pin → stop 50 pin → stop 300 재열기에서도 checked는 하나뿐이다", () => {
+    render(<ColorPalettePage />);
+    fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#de297b" } });
+
+    openStop(1); // stop 3(300)
+    fireEvent.click(screen.getAllByRole("radio")[0]); // "차분한" — 팝오버 자동으로 닫힘
+
+    openStop(0); // stop 0(50)
+    fireEvent.click(screen.getAllByRole("radio")[0]); // "중립적"
+
+    openStop(1); // stop 3(300) 재열기 — 문맥(stop 50 pin)이 바뀐 채 다시 계산됨
+    expect(checkedRadios().length).toBeLessThanOrEqual(1);
+
+    // 죽은 팝오버가 아니라는 것도 함께 확인한다: 아무 라디오나 눌러도 커밋되고 닫힌다.
+    fireEvent.click(screen.getAllByRole("radio")[0]);
+    expect(window.location.search).toContain("s3=");
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  // 위 시퀀스 하나로는 "우연히 안 걸린 조합"과 "구조적으로 안 걸리는 조합"을
+  // 구별 못 한다 — 여러 액센트 × pin 순서 조합을 훑어 불변식 자체를 확인한다.
+  // 전수 스윕(리뷰의 42,300건)은 여기서 재현하지 않는다 — argmin의 유일성은
+  // candidateMatch.test.ts에서 순수 함수로 이미 증명돼 있고, 여기서는 실제
+  // 컴포넌트 배선이 그 보장을 깨지 않는지만 표본으로 확인한다.
+  it("checked는 액센트·pin 조합을 바꿔도 항상 0개 또는 1개다", () => {
+    const accents = ["#3b82f6", "#de297b", "#f5d90a"];
+    const stopButtonIndex = [0, 1, 2, 3] as const; // stop 0, 3, 7, 10
+    // 순서쌍 전체(4×3=12)가 아니라 짝없는 쌍(6개)만 — pinFirst/pinSecond를
+    // 맞바꾼 두 순서는 "문맥이 바뀐 채 재계산된다"는 같은 실패 모드를 검사하므로
+    // 표본 하나면 충분하고, 전부 돌리면 렌더 60회로 테스트가 무거워진다.
+    const pairs: readonly [0 | 1 | 2 | 3, 0 | 1 | 2 | 3][] = [
+      [0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3],
+    ];
+
+    for (const accentHex of accents) {
+      for (const [pinFirst, pinSecond] of pairs) {
+        const { unmount } = render(<ColorPalettePage />);
+        fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: accentHex } });
+
+        openStop(pinFirst);
+        fireEvent.click(screen.getAllByRole("radio")[0]);
+
+        openStop(pinSecond);
+        fireEvent.click(screen.getAllByRole("radio")[0]);
+
+        // pin 두 개를 심은 뒤 조정 가능한 stop 전부를 다시 열어 checked를 잰다.
+        for (const reopen of stopButtonIndex) {
+          openStop(reopen);
+          expect(checkedRadios().length).toBeLessThanOrEqual(1);
+          fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[reopen]); // 닫기(토글)
+        }
+        unmount();
+      }
+    }
+  }, 20000);
 });
 
 describe("크롬 타이포 — 하한 12px", () => {

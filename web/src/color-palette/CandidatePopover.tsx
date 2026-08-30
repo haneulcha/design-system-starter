@@ -8,7 +8,7 @@
 import { candidatesFor, type Candidate } from "@core/color/candidates.js";
 import { fillScale, type Pin } from "@core/color/scale.js";
 import { oklchToHex, parsePrimary } from "@core/generator/color.js";
-import { isCurrent } from "./candidateMatch";
+import { resolveCurrent } from "./candidateMatch";
 import { ADJUSTABLE_STOPS, type PaletteState } from "./paletteState";
 
 interface Props {
@@ -71,19 +71,16 @@ export function CandidatePopover({ stopIndex, state, onHover, onChoose, onClose 
   // 이미 "기본"이라는 이름의 후보가 있어 승격하면 라디오가 중복되거나
   // dedupeByHex가 하나를 지운다.
   const curveDefaultHex = oklchToHex(fillScale(pins)[stopIndex]);
-  const target = current ?? curveDefaultHex;
-  // 근사 일치는 "정확히 일치하는 후보가 하나도 없을 때"의 안전망으로만 쓴다 —
-  // 항상 근사로 비교하면 stop 0처럼 후보끼리 hex 마지막 자리 하나 차이로
-  // 붙어 있는 자리(중립적 #f4f8fe vs 균형 #f3f8ff, 채널 diff 1)에서 TOLERANCE가
-  // 그 실제로 다른 두 후보를 같이 "현재"로 잡아버린다(실측: 라디오 2개가
-  // 동시에 checked가 되어 같은 name의 네이티브 라디오 그룹이 서로를 밀어내며
-  // 클릭이 씹혔다 — 자기 리뷰에서 발견). 정확 일치가 있으면 그걸로 충분하고
-  // (24조합 중 22는 항상 여기로 끝난다), 없을 때만(웜톤 stop 950의 왕복 오차
-  // 2건) TOLERANCE 안의 후보를 찾는다 — 그 두 경우엔 후보 간 거리가 15 이상
-  // 벌어져 있어 안전망이 다른 후보를 잘못 집을 일이 없다.
-  const hasExactMatch = candidates.some((cd) => cd.hex === target);
-  const isChecked = (hex: string) =>
-    hasExactMatch ? hex === target : isCurrent(hex, target);
+  // 2026-08-30 리뷰 반증: "인접 후보 간 거리 15 이상이라 고정 허용치가 안전하다"는
+  // 처음 판단은 거짓이었다 — 실측하면 파랑/보라 stop 50은 거리 1까지 좁아진다.
+  // TOLERANCE 창으로 "정확 일치 있으면 그걸로, 없으면 근사"라는 2단 판정을 짰더니
+  // stop 50처럼 후보 두 개가 원래 가까운 자리에서 실제로 다른 두 후보가 같은
+  // 창에 걸려 동시에 checked가 됐다(리뷰어가 실제 컴포넌트로 재현: 액센트
+  // #de297b에서 stop 300 pin → stop 50 pin → stop 300 재열기 → 라디오 2개 동시
+  // checked, 클릭 둘 다 no-op). 창 판정을 버리고 argmin(resolveCurrent)으로
+  // 바꿨다 — 거리 비교이지 "창 안/밖"이 아니라서 동시 당첨 자체가 구조적으로
+  // 없다(candidateMatch.ts 참조).
+  const currentHex = resolveCurrent(candidates.map((cd) => cd.hex), current, curveDefaultHex);
 
   return (
     // 카드 크롬(테두리·그림자·여백)은 이제 Popover 패널이 진다. 여기는 목록만
@@ -101,15 +98,22 @@ export function CandidatePopover({ stopIndex, state, onHover, onChoose, onClose 
             <input
               type="radio"
               name={`cand-${stopIndex}`}
-              // isChecked: 정확 일치가 있으면 정확 일치만 보고, 없을 때만
-              // candidateMatch의 근사 일치로 넘어간다 (위 target 계산 주석 참조).
-              checked={isChecked(hex)}
+              checked={hex === currentHex}
               // hover의 키보드 대응물. Tab으로 라디오 그룹에 들어오는 것은 선택을
               // 바꾸지 않으므로, 여기서 프리뷰를 띄워야 "고르기 전에 결과를 본다"가
               // 키보드에서도 성립한다. (화살표 키는 네이티브 규칙대로 이동 즉시
               // 선택 = 확정이다 — 그건 남는 한계로, 스펙 "알려진 한계" 3번.)
               onFocus={() => onHover(hex)}
+              // change뿐 아니라 click에도 커밋한다. 이미 checked인 라디오(항상
+              // 하나 있다 — "적용 중"을 보여주는 게 D7-1의 목적이다)를 다시
+              // 클릭하면 checked 값이 안 바뀌어 네이티브 change가 안 뜬다 —
+              // change만 쓰면 그 라디오는 죽은 클릭이 되고(리뷰 I-3), 곡선
+              // 기본값을 "명시적으로 pin해서 고정"할 방법이 없어진다. click은
+              // checked 변화와 무관하게 항상 뜨므로 여기에도 커밋을 걸어
+              // 두 경로가 겹쳐 fire돼도(실제로 바뀌는 경우) onChoose가 같은
+              // hex를 두 번 받을 뿐이라 무해하다.
               onChange={() => { onChoose(hex); onClose(); }}
+              onClick={() => { onChoose(hex); onClose(); }}
             />
             <span
               className="inline-block w-5 h-5 rounded-sm border border-neutral-200"
