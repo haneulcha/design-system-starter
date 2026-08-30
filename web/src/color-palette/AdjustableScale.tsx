@@ -24,11 +24,22 @@ interface Props {
   /** 패널 내용물. 부모가 만든다 — 후보 계산은 여전히 부모 쪽 일이다. */
   readonly popoverContent?: ReactNode;
   readonly onClosePopover?: () => void;
+  /** 상태색처럼 조정 불가한 띠를 얇게 그린다. 조정 UI가 없어 히트 타깃이
+   *  필요 없고, 사이클 3 D7의 "얇게 노출"이 원래 이 뜻이다 (스펙 D3). */
+  readonly compact?: boolean;
+  /** 거의 흰 칩(stop 50 등) 전용 — 테두리만 neutral-400으로 한 단계 올린다.
+   *  그림자는 건드리지 않는다(스펙 D9). 칩 자체에 색 신호가 없으면 테두리(1px)
+   *  와 그림자(2px, 같은 회색)가 gap도 blur도 없이 이어붙어 "칩의 아래 테두리"로
+   *  읽힌다 — 채도 있는 칩(300·700·900)은 칩 색 자체가 경계를 만들어 문제가
+   *  없었다(확대 확인). "그림자 색 = 테두리 색" 규칙은 pinned/기본 케이스에서
+   *  그대로 유지된다 — 이 예외 하나만 테두리가 그림자보다 한 단계 진하다. */
+  readonly boundaryEmphasis?: readonly number[];
 }
 
 export function AdjustableScale({
   hexes, adjustable, pinned, onPick, preview, showCaptions = true,
-  openIndex = null, popoverContent, onClosePopover,
+  openIndex = null, popoverContent, onClosePopover, compact = false,
+  boundaryEmphasis = [],
 }: Props) {
   const shown = preview ?? hexes;
   // clamp 기준이다 — 띠 자신이 경계다(스펙 D3).
@@ -71,7 +82,7 @@ export function AdjustableScale({
                 // 회색이 둘(테두리 하나, 그림자 하나) 있으면 어색해 보인다는
                 // 지적이 있었다. pin 여부에 따라 테두리·그림자가 함께
                 // neutral-300 ↔ neutral-700으로 움직여 위계도 더 분명해진다.
-                className={`block w-full h-9 rounded-sm border cursor-pointer
+                className={`block w-full ${compact ? "h-5" : "h-9"} rounded-sm border cursor-pointer
                   active:shadow-none active:translate-y-[2px]
                   transition-[box-shadow,transform]
                   focus-visible:outline-none focus-visible:ring-2
@@ -79,8 +90,11 @@ export function AdjustableScale({
                   pinned.includes(i)
                     ? `border-neutral-700
                        shadow-[0_2px_0_0_var(--color-neutral-700)]`
-                    : `border-neutral-300
-                       shadow-[0_2px_0_0_var(--color-neutral-300)]`
+                    : boundaryEmphasis.includes(i)
+                      ? `border-neutral-400
+                         shadow-[0_2px_0_0_var(--color-neutral-300)]`
+                      : `border-neutral-300
+                         shadow-[0_2px_0_0_var(--color-neutral-300)]`
                 }`}
                 style={{ background: hex }}
               />
@@ -88,7 +102,7 @@ export function AdjustableScale({
               <div
                 aria-label={label}
                 data-testid="swatch"
-                className="w-full h-9 rounded-sm border border-neutral-200"
+                className={`w-full ${compact ? "h-5" : "h-9"} rounded-sm border border-neutral-200`}
                 style={{ background: hex }}
               />
             )}
@@ -98,7 +112,7 @@ export function AdjustableScale({
             {showCaptions && (
               <div
                 data-testid="stop-caption"
-                className="mt-1 text-center text-[9px] font-mono text-neutral-400"
+                className="mt-1 text-center ds-type-code-sm text-neutral-400"
               >
                 {STOP_KEYS[i]}
               </div>

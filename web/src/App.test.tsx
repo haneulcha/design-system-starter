@@ -12,7 +12,9 @@ describe("App 라우팅", () => {
   it("renders the colour tool at /color-palette", () => {
     goTo("/color-palette");
     render(<App />);
-    expect(screen.getByRole("heading", { name: /팔레트/ })).toBeTruthy();
+    // level: 1 — 태스크 4가 붙인 h2 "② 만들어진 팔레트"도 /팔레트/에 걸려
+    // level 없이는 getByRole이 둘을 찾고 모호하다며 실패한다.
+    expect(screen.getByRole("heading", { level: 1, name: /팔레트/ })).toBeTruthy();
   });
 
   it("still renders the guided builder at #builder", () => {
@@ -26,7 +28,7 @@ describe("App 라우팅", () => {
   it("renders the colour tool at /color-palette/ (trailing slash)", () => {
     goTo("/color-palette/");
     render(<App />);
-    expect(screen.getByRole("heading", { name: /팔레트/ })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 1, name: /팔레트/ })).toBeTruthy();
   });
 
   // /color-palette가 위저드·빌더 어디서도 링크로 안 닿으면 URL을 직접 타이핑

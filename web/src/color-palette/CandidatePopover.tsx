@@ -61,6 +61,7 @@ export function CandidatePopover({ stopIndex, state, onHover, onChoose, onClose 
         return (
           <label
             key={cd.label}
+            data-testid="candidate"
             className="flex items-center gap-2 rounded p-1.5 cursor-pointer hover:bg-neutral-50"
             onMouseEnter={() => onHover(hex)}
           >
@@ -85,7 +86,7 @@ export function CandidatePopover({ stopIndex, state, onHover, onChoose, onClose 
       })}
       <button
         type="button"
-        className="mt-1 w-full rounded px-2 py-1 text-[11px] text-neutral-500 hover:bg-neutral-50"
+        className="mt-1 w-full rounded px-2 py-1 ds-type-caption-sm text-neutral-500 hover:bg-neutral-50"
         onClick={() => { onChoose(null); onClose(); }}
       >
         기본으로

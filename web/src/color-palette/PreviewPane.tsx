@@ -111,7 +111,7 @@ function ContrastBadge({ check: c }: { readonly check: ContrastCheck }) {
   return (
     <div
       data-testid="contrast-badge"
-      className={`text-[10px] ${c.adjustable ? "text-neutral-500" : "text-neutral-400"}`}
+      className={`ds-type-caption-sm ${c.adjustable ? "text-neutral-500" : "text-neutral-400"}`}
     >
       {`⚠ ${LABELS[c.scaleName] ?? c.scaleName} ${c.roleId} (${
         c.theme === "light" ? "라이트" : "다크"
@@ -123,7 +123,7 @@ function ContrastBadge({ check: c }: { readonly check: ContrastCheck }) {
 }
 
 export function PreviewPane({
-  scales, roles, checks, shifts, hasApplied, onApplyShifts, onResetShifts,
+  scales, roles, checks, shifts, hasApplied, onApplyShifts, onResetShifts, summaryChecks,
 }: {
   readonly scales: ScaleSet;
   readonly roles: readonly ScaleRole[];
@@ -132,6 +132,7 @@ export function PreviewPane({
   readonly hasApplied: boolean;
   readonly onApplyShifts: () => void;
   readonly onResetShifts: () => void;
+  readonly summaryChecks: readonly ContrastCheck[];
 }) {
   const failing = checks.filter((c) => !c.passes);
   // adjustable=true(사용자가 손댈 수 있는 것)를 위에 그대로 두고, adjustable=false
@@ -139,10 +140,30 @@ export function PreviewPane({
   // 아니라 실제로 손댈 수 있는 게 몇 건인지가 먼저 보여야 한다.
   const adjustableFailing = failing.filter((c) => c.adjustable);
   const fixedFailing = failing.filter((c) => !c.adjustable);
+  const summaryFailing = summaryChecks.filter((c) => !c.passes);
   return (
     <div className="space-y-3">
-      <Mock theme="light" scales={scales} roles={roles} />
-      <Mock theme="dark" scales={scales} roles={roles} />
+      {/* 라이트/다크 라벨은 목업 바깥이다 — 안에 넣으면 중립 크롬 텍스트가 사용자
+         팔레트 배경(n[0]/n[10]) 위에 앉아 대비를 보장할 수 없고, "크롬은 중립
+         고정, 팔레트는 프리뷰 안에서만"의 선이 흐려진다. */}
+      <div style={{ display: "grid", gap: "var(--ds-space-xxs)" }}>
+        <div className="ds-type-caption-sm text-neutral-500">라이트</div>
+        <Mock theme="light" scales={scales} roles={roles} />
+      </div>
+      <div style={{ display: "grid", gap: "var(--ds-space-xxs)" }}>
+        <div className="ds-type-caption-sm text-neutral-500">다크</div>
+        <Mock theme="dark" scales={scales} roles={roles} />
+      </div>
+      {/* 뱃지 목록(checks)은 hover 프리뷰(shownScales)까지 반영해 스와치를 스칠
+         때마다 바뀐다. 그대로 aria-live를 달면 스크린리더에 마우스 움직임이
+         그대로 중계된다 — 요약은 확정 팔레트(summaryChecks=scales) 기준으로 따로
+         내어, "hover는 미리보기일 뿐 확정이 아니다"라는 이 화면의 계약을
+         통지에도 적용한다. */}
+      <div role="status" aria-live="polite" className="sr-only">
+        {`대비 미달 ${summaryFailing.length}건, 조정 가능 ${
+          summaryFailing.filter((c) => c.adjustable).length
+        }건`}
+      </div>
       {failing.length > 0 && (
         <div className="space-y-1 rounded-md border border-neutral-200 p-2">
           {adjustableFailing.map((c) => (
@@ -150,7 +171,7 @@ export function PreviewPane({
           ))}
           {fixedFailing.length > 0 && (
             <details>
-              <summary className="cursor-pointer text-[10px] text-neutral-400">
+              <summary className="cursor-pointer ds-type-caption-sm text-neutral-400">
                 {`고정값 미달 ${fixedFailing.length}건`}
               </summary>
               <div className="mt-1 space-y-1">
@@ -167,7 +188,7 @@ export function PreviewPane({
             <button
               type="button"
               onClick={onApplyShifts}
-              className="mt-1 w-full rounded border border-neutral-800 px-2 py-1 text-[11px]"
+              className="mt-1 w-full rounded border border-neutral-800 px-2 py-1 ds-type-caption-sm"
             >
               한 번에 고치기
             </button>
@@ -176,7 +197,7 @@ export function PreviewPane({
             <button
               type="button"
               onClick={onResetShifts}
-              className="mt-1 w-full rounded border border-neutral-300 px-2 py-1 text-[11px] text-neutral-500"
+              className="mt-1 w-full rounded border border-neutral-300 px-2 py-1 ds-type-caption-sm text-neutral-500"
             >
               역할 기본값으로
             </button>

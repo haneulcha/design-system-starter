@@ -368,3 +368,163 @@ describe("ColorPalettePage", () => {
     expect(window.location.search).not.toContain("s7=");
   });
 });
+
+describe("크롬 타이포 — 하한 12px", () => {
+  // 목업(Mock)은 명시적 예외다. 사용자 팔레트로 그리는 축소 UI라 하한을 적용하면
+  // 380px 카드가 부풀어 "커지면 정작 색이 안 보인다"(3.1 D2)를 거스른다.
+  it("목업 바깥 크롬에 10~11px 손값이 없다", () => {
+    const { container } = render(<ColorPalettePage />);
+    const mocks = [screen.getByTestId("mock-light"), screen.getByTestId("mock-dark")];
+    const offenders = Array.from(container.querySelectorAll("[class]")).filter((el) => {
+      if (mocks.some((m) => m.contains(el))) return false;
+      // SVG 요소의 className은 문자열이 아니라 SVGAnimatedString이다 — 정규식에
+      // 그대로 태우면 "[object SVGAnimatedString]"으로 강제변환돼 조용히 안 걸리거나
+      // 예외가 난다. 이 페이지는 SVG를 그리는 색 피커를 품고 있어 실제로 부딪힌다.
+      // text-2xs도 잡는다 — global.css의 --text-2xs는 10px이고 다른 화면 34곳에서
+      // 쓰이는 흔한 이름이라, arbitrary value만 보면 이 클래스가 들어와도 초록이다.
+      return /text-\[(9|10|11)px\]|\btext-2xs\b/.test(el.getAttribute("class") ?? "");
+    });
+    expect(offenders.map((el) => el.getAttribute("class") ?? "")).toEqual([]);
+  });
+
+  it("stop 캡션이 code.sm을 쓴다", () => {
+    render(<ColorPalettePage />);
+    const caption = screen.getAllByTestId("stop-caption")[0];
+    expect(caption.className).toContain("ds-type-code-sm");
+  });
+
+  it("대비 뱃지가 caption.sm을 쓴다", () => {
+    render(<ColorPalettePage />);
+    const badges = screen.getAllByTestId("contrast-badge");
+    expect(badges.length).toBeGreaterThan(0);
+    expect(badges[0].className).toContain("ds-type-caption-sm");
+  });
+});
+
+describe("3단 스테이지 골격", () => {
+  it("h1 하나에 h2 셋이 ①②③ 순서로 있다", () => {
+    render(<ColorPalettePage />);
+    expect(screen.getAllByRole("heading", { level: 1 }).length).toBe(1);
+    const h2 = screen.getAllByRole("heading", { level: 2 });
+    expect(h2.length).toBe(3);
+    expect(h2.map((h) => h.textContent)).toEqual([
+      expect.stringContaining("앵커"),
+      expect.stringContaining("팔레트"),
+      expect.stringContaining("받기"),
+    ]);
+  });
+
+  // 사이클 3 D7로의 회귀 — 접힌 details는 "얇게 노출"이 아니라 "노출 안 함"이었다.
+  // PreviewPane 안에도 "고정값 미달 N건" details가 따로 있어(사이클 3 의도적 설계,
+  // 유지 대상) 페이지 전체에서 details 부재를 단언할 수 없다 — 상태색 섹션으로 좁힌다.
+  it("상태색이 details 없이 첫 화면에 있다", () => {
+    render(<ColorPalettePage />);
+    const section = screen.getByTestId("semantic-section");
+    expect(section.querySelector("details")).toBeNull();
+    expect(section.querySelectorAll("[data-testid='swatch']").length).toBe(44);
+    expect(screen.getAllByTestId("swatch").length).toBe(66);
+  });
+
+  it("상태색 띠만 compact다 — 액센트·뉴트럴은 아니다", () => {
+    render(<ColorPalettePage />);
+    const swatches = screen.getAllByTestId("swatch");
+    // 0-10 액센트, 11-21 뉴트럴, 22-65 상태색 4벌
+    expect(swatches[0].className).toContain("h-9");
+    expect(swatches[11].className).toContain("h-9");
+    expect(swatches[22].className).toContain("h-5");
+    expect(swatches[65].className).toContain("h-5");
+  });
+
+  // 사람이 승인한 4번째 나사(D3) — 세로 예산 성공(887.36px)이 전적으로 이
+  // grid-cols-2에 걸려 있는데, 지금까지는 지워도 아무것도 안 깨졌다.
+  it("상태색 4벌이 2×2 그리드로 감싸여 있다", () => {
+    render(<ColorPalettePage />);
+    const section = screen.getByTestId("semantic-section");
+    const grid = section.querySelector(".grid-cols-2");
+    expect(grid).toBeTruthy();
+  });
+
+  // 스펙 D9 — stop 50(index 0)은 칩 자체에 색 신호가 없어 테두리만 한 단계
+  // 올린다. boundaryEmphasis=[0] 배선이 실제로 그 인덱스에만 적용되는지 고정한다.
+  it("액센트 stop 0만 테두리가 neutral-400으로 강화돼 있다", () => {
+    render(<ColorPalettePage />);
+    const swatches = screen.getAllByTestId("swatch");
+    expect(swatches[0].className).toContain("border-neutral-400");
+    expect(swatches[1].className).not.toContain("border-neutral-400");
+  });
+
+  it("사이드바가 aside이고 프리뷰를 담는다", () => {
+    render(<ColorPalettePage />);
+    const aside = screen.getByRole("complementary");
+    expect(aside.contains(screen.getByTestId("mock-light"))).toBe(true);
+  });
+});
+
+describe("받기 카드", () => {
+  it("받기 블록이 카드 표면 토큰을 쓴다", () => {
+    render(<ColorPalettePage />);
+    const card = screen.getByTestId("download-card");
+    // 실측: 이 프로젝트의 jsdom(29.1.1)은 style.borderRadius/boxShadow 둘 다
+    // var()를 그대로 되돌린다 — 빈 문자열 위험은 이 버전엔 없었다. 그래도 raw
+    // style 속성으로 단언한다: 타입드 접근자의 버전별 동작에 기대지 않고,
+    // 토큰 없이는 통과할 수 없다는 조건은 두 형태가 동등하게 강하다.
+    expect(card.getAttribute("style")).toContain("var(--ds-radius-card)");
+    expect(card.getAttribute("style")).toContain("var(--ds-shadow-raised)");
+  });
+
+  it("copy CSS가 테두리 있는 보조 버튼이다", () => {
+    render(<ColorPalettePage />);
+    const copy = screen.getByRole("button", { name: /CSS 복사/ });
+    expect(copy.className).toContain("border");
+    expect(copy.className).toContain("ds-type-caption-sm");
+  });
+
+  // 현행은 opacity 40%로 죽어만 있고 이유가 없다 (DownloadRow.tsx:47-48).
+  it("클립보드를 못 쓰면 disabled에 사유가 붙는다", () => {
+    const original = navigator.clipboard;
+    Object.defineProperty(navigator, "clipboard", { value: undefined, configurable: true });
+    render(<ColorPalettePage />);
+    const copy = screen.getByRole("button", { name: /CSS 복사/ }) as HTMLButtonElement;
+    expect(copy.disabled).toBe(true);
+    const reason = screen.getByText(/클립보드를 쓸 수 없는 환경/);
+    expect(reason).toBeTruthy();
+    // 사유가 형제 <div>로만 있으면 포커스가 가도 함께 읽히지 않는다 — aria-describedby로
+    // 버튼과 프로그램적으로 연결한다(disabled라 포커스 자체는 못 받지만, 관계 명시는
+    // 브라우즈 모드에서 유효하다).
+    expect(copy.getAttribute("aria-describedby")).toBe(reason.id);
+    expect(reason.id).toBeTruthy();
+    Object.defineProperty(navigator, "clipboard", { value: original, configurable: true });
+  });
+});
+
+describe("접근성", () => {
+  it("뉴트럴 색조/강도가 aria-pressed와 그룹 라벨을 갖는다", () => {
+    render(<ColorPalettePage />);
+    const tintGroup = screen.getByRole("group", { name: "뉴트럴 색조" });
+    const pressed = Array.from(tintGroup.querySelectorAll("[aria-pressed]"))
+      .filter((b) => b.getAttribute("aria-pressed") === "true");
+    expect(pressed.length).toBe(1);
+    expect(screen.getByRole("group", { name: "강도" })).toBeTruthy();
+  });
+
+  // 뱃지는 hover 프리뷰까지 반영해 스와치를 스칠 때마다 바뀐다. 그대로 live면
+  // 스크린리더 스팸이 되므로, 요약은 확정 팔레트(scales) 기준으로 따로 낸다 —
+  // "hover는 미리보기일 뿐 확정이 아니다"라는 이 화면의 계약을 통지에도 적용한다.
+  it("대비 요약이 status이고 hover 프리뷰에 흔들리지 않는다", () => {
+    render(<ColorPalettePage />);
+    const status = screen.getByRole("status");
+    const before = status.textContent;
+    expect(before).toMatch(/대비 미달/);
+
+    fireEvent.click(screen.getAllByTestId("swatch")[3]);
+    const candidate = screen.getAllByTestId("candidate")[0];
+    fireEvent.mouseEnter(candidate);
+    expect(screen.getByRole("status").textContent).toBe(before);
+  });
+
+  it("프리뷰 라이트/다크 라벨이 목업 바깥에 있다", () => {
+    render(<ColorPalettePage />);
+    const light = screen.getByText("라이트");
+    expect(screen.getByTestId("mock-light").contains(light)).toBe(false);
+  });
+});

@@ -21,46 +21,67 @@ export function NeutralControl({ state, onChange }: Props) {
 
   return (
     <div className="space-y-2">
-      <div className="flex flex-wrap gap-1.5">
-        {TINT_ATTRACTORS.map((a) => (
-          <button
-            key={a.id}
-            type="button"
-            aria-label={a.label}
-            onClick={() => onChange({ attractorId: a.id, strength })}
-            className={`rounded px-2 py-1 text-[11px] border ${
-              activeId === a.id
-                ? "border-neutral-900 font-medium"
-                : "border-neutral-200 hover:border-neutral-400"
-            }`}
-          >
-            {a.label}
-            {a.id === snapped.id && <span className="ml-1 text-neutral-400">•</span>}
-          </button>
-        ))}
-      </div>
-      <div className="flex items-center gap-1.5">
-        {!achromatic &&
-          (["soft", "strong"] as const).map((s) => (
+      <div style={{ display: "grid", gap: "var(--ds-space-xxs)" }}>
+        <div className="ds-type-caption-sm text-neutral-500">색조</div>
+        {/* role="group"만 쓰고 radiogroup을 쓰지 않는 이유: APG 라디오 패턴은
+           roving tabindex + 화살표 이동=선택을 요구하는데, 그 함정(방향키 한 번이
+           곧 확정이라 "고르기 전에 결과를 본다"가 깨지는 것)은 이 화면이
+           CandidatePopover에서 이미 밟았다(사이클 3.2 알려진 한계 3). 여기 버튼들은
+           상호 배타 선택(그룹당 aria-pressed=true가 정확히 하나)이지만, 그 APG
+           라디오 패턴의 함정을 피하려고 group + aria-pressed 토글 그룹으로
+           표현한다. */}
+        <div role="group" aria-label="뉴트럴 색조" className="flex flex-wrap gap-1.5">
+          {TINT_ATTRACTORS.map((a) => (
             <button
-              key={s}
+              key={a.id}
               type="button"
-              onClick={() => onChange({ attractorId: activeId, strength: s })}
-              className={`rounded px-2 py-0.5 text-[11px] border ${
-                strength === s ? "border-neutral-900 font-medium" : "border-neutral-200"
+              // aria-label이 visible text(점 표식 포함)를 덮어써서 스크린리더에는
+              // 시각적 "•" 채널이 없다 — 자동 스냅 여부를 라벨 문구에 직접 반영한다.
+              aria-label={a.id === snapped.id ? `${a.label} (자동)` : a.label}
+              aria-pressed={activeId === a.id}
+              onClick={() => onChange({ attractorId: a.id, strength })}
+              className={`rounded px-2 py-1 ds-type-caption-sm border ${
+                activeId === a.id
+                  ? "border-neutral-900 font-medium"
+                  : "border-neutral-200 hover:border-neutral-400"
               }`}
             >
-              {s === "soft" ? "은은" : "뚜렷"}
+              {a.label}
+              {a.id === snapped.id && <span className="ml-1 text-neutral-400">•</span>}
             </button>
           ))}
+        </div>
+      </div>
+      <div className="flex items-center gap-1.5">
+        {!achromatic && (
+          <div style={{ display: "grid", gap: "var(--ds-space-xxs)" }}>
+            <div className="ds-type-caption-sm text-neutral-500">강도</div>
+            <div role="group" aria-label="강도" className="flex items-center gap-1.5">
+              {(["soft", "strong"] as const).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  aria-pressed={strength === s}
+                  onClick={() => onChange({ attractorId: activeId, strength: s })}
+                  className={`rounded px-2 py-0.5 ds-type-caption-sm border ${
+                    strength === s ? "border-neutral-900 font-medium" : "border-neutral-200"
+                  }`}
+                >
+                  {s === "soft" ? "은은" : "뚜렷"}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         {/* 칩이든 강도든 한 번 누르면 어트랙터가 확정된다(state.tint !== null) —
            액센트를 나중에 바꿔도 자동 스냅으로 돌아가지 못하는 함정이 되지
-           않도록, 확정된 상태에서만 되돌릴 길을 둔다. */}
+           않도록, 확정된 상태에서만 되돌릴 길을 둔다. "자동으로"는 선택지가
+           아니라 되돌리기라 강도 그룹 밖에 둔다. */}
         {state.tint && (
           <button
             type="button"
             onClick={() => onChange(null)}
-            className="text-[11px] text-neutral-400 hover:text-neutral-600 underline"
+            className="ds-type-caption-sm text-neutral-400 hover:text-neutral-600 underline"
           >
             자동으로
           </button>
