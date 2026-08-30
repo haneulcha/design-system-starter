@@ -55,11 +55,28 @@ export function isCurrent(candidateHex: string, currentHex: string): boolean {
   );
 }
 
-/** target에 가장 가까운 후보 hex 하나(argmin). candidates가 비었으면 null.
- *  동률이면 배열에서 먼저 오는 쪽 — candidatesFor의 순서(중립적→균형→색이
- *  드러나는, 차분한→균형→쨍한)가 이미 의미 있는 순서라 임의로 안 섞는다.
- *  candidates의 hex가 서로 달라야(dedupeByHex 이후) "정확히 하나"가 보장된다 —
- *  중복 hex가 남아 있으면 그중 배열상 먼저 오는 것이 뽑힌다. */
+// 2026-08-30 재리뷰(R-2): argmin은 후보가 하나라도 있으면 무조건 "가장 가까운
+// 것"을 고른다 — target이 사실 그 어떤 후보와도 안 닮았어도 승자를 낸다. 실측
+// (액센트 180종 × 2-pick 시퀀스, 체비셰프 거리, 80,932건)로 승자 거리 분포를 재면:
+//   0=65,004 | 1–2=10,466 | 3–5=2,436 | 6–10=1,503 | 11–20=957 | 21–40=409 | >40=157
+// 10 이하가 98.1%다 — 왕복 오차·클램프로 후보가 살짝 밀린 정상적인 근접이다.
+// 11 이상(1.9%)부터 승자 거리가 두 자릿수로 벌어지고, 최댓값은 55
+// (`#e2e236` stop 300: 적용색 #f4f23c vs 승자 #f1f173) — 눈에 띄게 다른 색을
+// "지금 적용 중"이라고 가리키는 셈이다. 색 도구가 그러면 안 된다: 아무것도 안
+// 보여주는 건 정직하고, 틀린 걸 보여주는 건 거짓말이다. 그래서 상한을 10으로
+// 두고, 넘으면 null(체크 없음)을 낸다 — 화면은 그 null을 "지금 색은 이 앵커의
+// 후보에 없습니다"로 말한다(CandidatePopover 참조). 이 자리는 Task 10의 D6
+// pin-복원("복원된 pin은 새 액센트 후보 어디에도 없다") 시나리오가 그대로
+// 올라탈 자리이기도 하다 — 스펙이 예고한 "후보 밖" 상태가 여기다.
+const MAX_DISTANCE = 10;
+
+/** target에 가장 가까운 후보 hex 하나(argmin). 그 거리가 MAX_DISTANCE를
+ *  넘으면(=target이 사실 이 후보 목록 소속이 아니면) null — candidates가
+ *  비었을 때도 null. 동률이면 배열에서 먼저 오는 쪽 — candidatesFor의 순서
+ *  (중립적→균형→색이 드러나는, 차분한→균형→쨍한)가 이미 의미 있는 순서라
+ *  임의로 안 섞는다. candidates의 hex가 서로 달라야(dedupeByHex 이후)
+ *  "정확히 하나"가 보장된다 — 중복 hex가 남아 있으면 그중 배열상 먼저 오는
+ *  것이 뽑힌다. */
 export function pickCurrent(candidates: readonly string[], target: string): string | null {
   let best: string | null = null;
   let bestDistance = Infinity;
@@ -70,7 +87,7 @@ export function pickCurrent(candidates: readonly string[], target: string): stri
       best = hex;
     }
   }
-  return best;
+  return best !== null && bestDistance <= MAX_DISTANCE ? best : null;
 }
 
 /** 팝오버가 열릴 때 "지금 적용 중"으로 표시할 후보 하나. pin이 있으면 pin,

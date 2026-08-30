@@ -120,12 +120,34 @@ export function Popover({
   // 2단계: 오프셋. deps에 maxWidth를 넣어 상한이 커밋되고 패널이 그 폭으로
   // 다시 그려진 뒤 이 이펙트가 한 번 더 돌게 한다 — panelRef가 그때서야
   // 좁아진 실제 rect를 돌려준다.
+  //
+  // 2026-08-30 리뷰 수정(R-1, 재리뷰 1차): setOffset(clampOffset(...))로
+  // "대체"하던 것이 회귀였다 — panelRef.getBoundingClientRect()는 이미 적용된
+  // offset을 포함한 실제 화면 좌표라, clampOffset의 반환값은 "지금 자리에서
+  // 얼마나 더 밀어야 하는지"(델타)이지 "총 오프셋"이 아니다. 1패스가 이미
+  // 보정에 성공한 뒤 2패스가 그 자리를 다시 재면 델타=0이 나오는데, 그 0을
+  // 총 오프셋으로 대입하면 1패스의 보정이 지워졌다(1280 stop 950이 sticky
+  // 목업 위로 튀어나감).
+  //
+  // 2026-08-30 리뷰 수정(R-1, 재리뷰 2차): 위 수정을 **누적**(prev + delta)으로
+  // 고쳤더니 이 앱이 `<StrictMode>`(main.tsx)로 감싸여 있다는 걸 놓쳤다 —
+  // dev 모드에서 React는 마운트 시 레이아웃 이펙트의 setup을 **두 번**
+  // 부른다(그 사이 cleanup은 이 이펙트엔 없어 no-op). 두 호출 다 같은
+  // 커밋(같은 panel rect, 같은 offset 클로저값)을 보고 같은 델타를 큐에
+  // 넣으므로, "누적"은 그 델타를 두 번 더해 보정이 **두 배**로 걸렸다(실측:
+  // 1280 stop 50에서 기대 117.27이 아니라 234.539). 대체도 누적도 아니라
+  // **절대값 재계산**이어야 한다: 지금 rect에서 "이미 적용된" offset(클로저로
+  // 읽은 현재 state)을 역산해 자연(미보정) 위치를 복원한 뒤, 그 자연 위치
+  // 기준으로 다시 계산해 그대로 대입한다. 같은 입력(같은 렌더의 rect·offset)
+  // 이면 몇 번을 다시 불러도 같은 결과가 나온다(멱등) — StrictMode의 이중
+  // 호출도, 이 이펙트의 정상적인 2패스 재실행도 둘 다 안전하다.
   useLayoutEffect(() => {
     if (!open) { setOffset(0); return; }
     const panel = panelRef.current?.getBoundingClientRect();
     const boundary = boundaryRef.current?.getBoundingClientRect();
     if (!panel || !boundary) return;
-    setOffset(clampOffset(panel, boundary));
+    const naturalPanel = { left: panel.left - offset, right: panel.right - offset };
+    setOffset(clampOffset(naturalPanel, boundary));
   }, [open, boundaryRef, maxWidth]);
 
   useEffect(() => {

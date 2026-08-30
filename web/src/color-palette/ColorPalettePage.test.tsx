@@ -532,6 +532,26 @@ describe("후보 팝오버 — checked 유일성 (리뷰 C-1)", () => {
   }, 20000);
 });
 
+// 2026-08-30 재리뷰(R-2): argmin은 후보가 있기만 하면 무조건 승자를 낸다 —
+// target(pin)이 문맥 변화로 후보 집합에서 아주 멀리 밀려나도 "가장 덜 먼" 후보를
+// "지금 적용 중"으로 표시했다. 실측(액센트 180종 스윕)에서 승자 거리가 최대
+// 55(체비셰프)까지 벌어졌다 — 색 도구가 눈에 띄게 다른 색을 "적용 중"이라고
+// 가리키면 안 된다. 아래는 그 실제 사례를 그대로 재현한다: 액센트 #e2e236,
+// stop 3(300)에 URL로 직접 pin(#f4f23c)을 심으면 이 문맥에서 재계산되는 후보
+// 셋(#edefa2·#eff18c·#f0f174) 전부가 이 pin과 56 이상 떨어져 있다(직접 확인).
+describe("후보 팝오버 — 후보 밖 (리뷰 R-2)", () => {
+  it("target이 모든 후보와 MAX_DISTANCE보다 멀면 체크 없이 '후보 밖'을 말한다", () => {
+    window.history.replaceState({}, "", "/color-palette?v=1&a=e2e236&s3=f4f23c");
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[1]); // stop 3
+
+    const radios = screen.getAllByRole("radio") as HTMLInputElement[];
+    expect(radios.length).toBeGreaterThan(0); // 후보 자체는 있다
+    expect(radios.some((r) => r.checked)).toBe(false); // 그중 어느 것도 "이거다"는 아니다
+    expect(screen.getByText("지금 색은 이 앵커의 후보에 없습니다")).toBeTruthy();
+  });
+});
+
 describe("크롬 타이포 — 하한 12px", () => {
   // 목업(Mock)은 명시적 예외다. 사용자 팔레트로 그리는 축소 UI라 하한을 적용하면
   // 380px 카드가 부풀어 "커지면 정작 색이 안 보인다"(3.1 D2)를 거스른다.

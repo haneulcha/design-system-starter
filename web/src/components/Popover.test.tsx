@@ -158,18 +158,37 @@ describe("Popover", () => {
   // 전부 0이라 clamp가 발동하지 않으므로 다른 테스트는 전부 초록인 채로 남는다.
   // getBoundingClientRect를 role=dialog(패널)와 그 외(경계)로 갈라 스텁해
   // clamp가 실제로 발동하는 상황을 흉내낸다.
-  it("패널이 경계 밖으로 나가면 패널과 화살표가 반대 부호로 되밀린다", () => {
-    const original = Element.prototype.getBoundingClientRect;
+  //
+  // 2026-08-30 리뷰 수정(R-1): 이 스텁이 원래 **정적**이었다 — role=dialog에는
+  // 항상 같은 좌표를 돌려줘 이미 적용된 translateX(offset)를 반영하지 않았다.
+  // 그래서 오프셋을 "대체"하는 회귀(2패스가 이미 보정된 패널을 다시 재서
+  // delta=0을 내고 그 0을 총 오프셋으로 덮어써 1패스의 보정을 지우는 버그)가
+  // 나도 이 테스트는 계속 초록이었다 — 두 패스가 매번 같은(오프셋 미반영)
+  // rect에서 같은 delta를 내니 대체와 누적을 구별 못 했다. 실제 브라우저의
+  // getBoundingClientRect는 transform을 반영하므로, 스텁도 role=dialog
+  // 엘리먼트의 현재 style.transform에서 적용된 offset을 읽어 자연 좌표에
+  // 더해 돌려주도록 고쳤다 — 이래야 2패스가 "이미 보정된" 실제 위치를 재고,
+  // 대체 버전이었다면 여기서 다시 빨개진다.
+  function stubDialogRect(naturalLeft: number, naturalRight: number, boundaryRight: number) {
     const rect = (left: number, right: number): DOMRect => ({
       left, right, top: 0, bottom: 0, width: right - left, height: 0,
       x: left, y: 0, toJSON() { return {}; },
     });
-    Element.prototype.getBoundingClientRect = function (this: Element) {
-      // 패널이 경계(0~200) 왼쪽으로 40px 삐져나간 상황 — clampOffset은
-      // boundary.left(0) - panel.left(-40) = 40을 돌려준다.
-      if (this.getAttribute("role") === "dialog") return rect(-40, 60);
-      return rect(0, 200);
+    return function (this: Element) {
+      if (this.getAttribute("role") === "dialog") {
+        const match = /-50%\s*\+\s*(-?[\d.]+)px/.exec((this as HTMLElement).style.transform);
+        const appliedOffset = match ? Number(match[1]) : 0;
+        return rect(naturalLeft + appliedOffset, naturalRight + appliedOffset);
+      }
+      return rect(0, boundaryRight);
     };
+  }
+
+  it("패널이 경계 밖으로 나가면 패널과 화살표가 반대 부호로 되밀린다", () => {
+    const original = Element.prototype.getBoundingClientRect;
+    // 패널이 경계(0~200) 왼쪽으로 40px 삐져나간 자연 위치 — clampOffset은
+    // boundary.left(0) - panel.left(-40) = 40을 돌려준다.
+    Element.prototype.getBoundingClientRect = stubDialogRect(-40, 60, 200);
     try {
       render(<Harness />);
       fireEvent.click(screen.getByRole("button", { name: "열기" }));
@@ -180,6 +199,26 @@ describe("Popover", () => {
       // 이 문자열이 달라진다.
       expect(panel.style.transform).toBe("translateX(calc(-50% + 40px))");
       expect(arrow.style.transform).toBe("translateX(calc(-50% - 40px)) rotate(45deg)");
+    } finally {
+      Element.prototype.getBoundingClientRect = original;
+    }
+  });
+
+  // 리뷰 R-1 재현: 1280px stop 950 실측에서 패널이 경계 오른쪽으로 넘쳐
+  // (자연 위치 180~280, 경계 0~200) 1패스가 -80으로 정확히 보정했는데, 2패스가
+  // "대체"였을 때 그 보정이 0으로 리셋되며 패널이 다시 경계 밖(80px, sticky
+  // 목업 위)으로 튀어나갔다. maxWidth 이펙트가 반드시 한 번 더(2패스) 돌게
+  // boundary 폭을 BOUNDARY_MARGIN(8)보다 넉넉히 준다.
+  it("1패스가 이미 경계 안으로 보정했으면 2패스가 그 보정을 지우지 않는다", () => {
+    const original = Element.prototype.getBoundingClientRect;
+    Element.prototype.getBoundingClientRect = stubDialogRect(180, 280, 200);
+    try {
+      render(<Harness />);
+      fireEvent.click(screen.getByRole("button", { name: "열기" }));
+      const panel = screen.getByRole("dialog") as HTMLElement;
+      // 대체 버전이었다면 2패스가 delta=0을 총 오프셋으로 덮어써 이 값이
+      // "translateX(calc(-50% + 0px))"이 됐을 것이다.
+      expect(panel.style.transform).toBe("translateX(calc(-50% + -80px))");
     } finally {
       Element.prototype.getBoundingClientRect = original;
     }

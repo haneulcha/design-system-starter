@@ -104,14 +104,14 @@ export function CandidatePopover({ stopIndex, state, onHover, onChoose, onClose 
               // 키보드에서도 성립한다. (화살표 키는 네이티브 규칙대로 이동 즉시
               // 선택 = 확정이다 — 그건 남는 한계로, 스펙 "알려진 한계" 3번.)
               onFocus={() => onHover(hex)}
-              // change뿐 아니라 click에도 커밋한다. 이미 checked인 라디오(항상
-              // 하나 있다 — "적용 중"을 보여주는 게 D7-1의 목적이다)를 다시
-              // 클릭하면 checked 값이 안 바뀌어 네이티브 change가 안 뜬다 —
-              // change만 쓰면 그 라디오는 죽은 클릭이 되고(리뷰 I-3), 곡선
-              // 기본값을 "명시적으로 pin해서 고정"할 방법이 없어진다. click은
-              // checked 변화와 무관하게 항상 뜨므로 여기에도 커밋을 걸어
-              // 두 경로가 겹쳐 fire돼도(실제로 바뀌는 경우) onChoose가 같은
-              // hex를 두 번 받을 뿐이라 무해하다.
+              // change뿐 아니라 click에도 커밋한다. checked인 라디오가 있으면
+              // (R-2로 없을 수도 있다 — 아래 currentHex===null 분기 참조)
+              // 그걸 다시 클릭해도 checked 값이 안 바뀌어 네이티브 change가
+              // 안 뜬다 — change만 쓰면 그 라디오는 죽은 클릭이 되고(리뷰
+              // I-3), 곡선 기본값을 "명시적으로 pin해서 고정"할 방법이
+              // 없어진다. click은 checked 변화와 무관하게 항상 뜨므로 여기에도
+              // 커밋을 걸어 두 경로가 겹쳐 fire돼도(실제로 바뀌는 경우)
+              // onChoose가 같은 hex를 두 번 받을 뿐이라 무해하다.
               onChange={() => { onChoose(hex); onClose(); }}
               onClick={() => { onChoose(hex); onClose(); }}
             />
@@ -126,6 +126,20 @@ export function CandidatePopover({ stopIndex, state, onHover, onChoose, onClose 
       {collapsed > 0 && (
         <p className="mt-1 px-1.5 ds-type-caption-sm text-neutral-500">
           이 앵커에서는 클램프로 후보 폭이 좁아 선택지가 겹칩니다
+        </p>
+      )}
+      {/* 리뷰 R-2: resolveCurrent는 target(pin 또는 곡선 기본값)이 어떤 후보와도
+          MAX_DISTANCE 안에 안 들면 null을 낸다 — argmin이 무조건 "가장 가까운
+          후보"를 승자로 뿌리면, pin이 다른 stop의 문맥 변화로 후보 집합에서
+          멀리 밀려났을 때도 눈에 띄게 다른 색을 "지금 적용 중"이라고 거짓말할
+          수 있어서다(실측 최대 거리 55). null이면 라디오는 하나도 안 켜지고
+          — 이 사실("지금 색이 후보 밖이다")을 대신 말한다. "왜 이 색이
+          좋은가"(학습)가 아니라 "왜 체크가 없나"(조작 사실)라 D7-2와 같은
+          경계를 통과한다. Task 10의 D6 pin-복원("복원된 pin은 새 액센트
+          후보 어디에도 없다")이 이 자리를 그대로 쓴다. */}
+      {currentHex === null && (
+        <p className="mt-1 px-1.5 ds-type-caption-sm text-neutral-500">
+          지금 색은 이 앵커의 후보에 없습니다
         </p>
       )}
       <button
