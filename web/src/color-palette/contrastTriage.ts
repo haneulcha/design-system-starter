@@ -22,6 +22,17 @@ export function triageChecks(
   checks: readonly ContrastCheck[],
   shifts: readonly RoleShift[],
 ): Triage {
+  // `c.adjustable &&`는 장식이 아니다 — shifts 매칭만으로 이미 on-solid이
+  // 걸러지니 지워도 될 것처럼 보이지만, 지우면 조용히 틀린다. shifts는 확정
+  // 팔레트에서 "이 roleId·theme에 이동이 있는가"만 보고, 그 이동을 **어느
+  // 스케일**에 적용해야 하는지는 안 담는다 — role·theme만으로 매칭하면 상태색
+  // (warning·success 등, adjustable=false)의 같은 roleId·theme 실패까지
+  // "고칠 수 있다"고 새어 들어온다. 실측(`?a=eab308`, contrastTriage.test.ts
+  // 커버 범위 밖의 페이지 통합 테스트로 확인): 이 항을 지우면 헤드라인이
+  // "고칠 수 있는 대비 미달 4건"에서 "11건"으로 뛴다 — warning·success의
+  // text·text-strong 실패 7건이 섞여 들어와서다. 그 상태색들은 앵커가
+  // 고정이라 애초에 손댈 수 없는데, "한 번에 고치기"가 못 고치는 것까지
+  // 고칠 수 있다고 약속하게 된다.
   const canFix = (c: ContrastCheck) =>
     c.adjustable && shifts.some((s) => s.roleId === c.roleId && s.theme === c.theme);
   return {

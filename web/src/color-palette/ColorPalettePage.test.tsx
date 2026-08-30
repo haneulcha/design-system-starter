@@ -269,6 +269,14 @@ describe("ColorPalettePage", () => {
     expect(badgesInside.length).toBe(10);
     const tagged = badgesInside.filter((el) => (el.textContent ?? "").includes("고정"));
     expect(tagged.length).toBe(9);
+    // 개수만 9/10이면 엉뚱한 뱃지가 꼬리표를 잃어도 통과한다 — 꼬리표 없는
+    // 그 한 건이 정확히 accent on-solid임을 지목해야 원래 단언 강도(옛
+    // every(includes("고정")))가 잡던 걸 되찾는다(리뷰 M-7). accent on-solid만
+    // 스케일이 accent라 adjustable=true라서 "고정" 꼬리표가 안 붙는다 — 나머지
+    // 9건은 상태색(warning·success·error·info) 스케일이라 adjustable=false.
+    const untagged = badgesInside.filter((el) => !(el.textContent ?? "").includes("고정"));
+    expect(untagged.length).toBe(1);
+    expect(untagged[0].textContent).toContain("솔리드 위 글자");
   });
 
   // 기본 팔레트는 고칠 수 있는 게 0건이므로 접힌 그룹 밖에는 아무 뱃지도 남지 않는다 —
@@ -281,6 +289,35 @@ describe("ColorPalettePage", () => {
     const allBadges = screen.getAllByTestId("contrast-badge");
     const outside = allBadges.filter((el) => !details.contains(el));
     expect(outside.length).toBe(0);
+  });
+
+  // 기본 파랑은 fixable이 항상 0이라 `fixable.map(...)` 렌더 경로(접힘 밖 뱃지
+  // 목록)를 한 번도 실행 안 하고도 스위트가 전부 통과할 수 있었다(리뷰 I-1) —
+  // 그 슬롯을 fixable을 아예 <details> 안에 넣어버리거나 헤드라인이 항상 0을
+  // 찍는 배선 버그가 나도 안 잡힌다는 뜻이다. eab308은 고칠 수 있는 게 있는
+  // 상태라 이 경로를 실제로 태운다 — 아래 개수·문구는 실행해서 확인한 값이다.
+  it("renders the fixable badges outside the collapsed group for an accent with a real fix", () => {
+    window.history.replaceState({}, "", "/color-palette?v=1&a=eab308");
+    render(<ColorPalettePage />);
+    expect(screen.getByRole("status").textContent).toBe("고칠 수 있는 대비 미달 4건");
+
+    const allBadges = screen.getAllByTestId("contrast-badge");
+    expect(allBadges.length).toBe(13);
+
+    const details = document.querySelector("details")!;
+    const outside = allBadges.filter((el) => !details.contains(el));
+    const outsideText = outside.map((el) => el.textContent ?? "");
+    expect(outsideText).toEqual([
+      "⚠ 액센트 텍스트 (링크) (라이트 · 은은한 배경) 2.61 / 4.5",
+      "⚠ 액센트 텍스트 (링크) (라이트 · 페이지 배경) 2.67 / 4.5",
+      "⚠ 액센트 진한 텍스트 (라이트 · 은은한 배경) 3.98 / 4.5",
+      "⚠ 액센트 진한 텍스트 (라이트 · 페이지 배경) 4.07 / 4.5",
+    ]);
+    // fixable 뱃지는 "고정" 꼬리표가 없다 — accent 스케일이라 adjustable=true.
+    expect(outsideText.every((t) => !t.includes("고정"))).toBe(true);
+
+    const inside = allBadges.filter((el) => details.contains(el));
+    expect(inside.length).toBe(9);
   });
 
   it("offers no fix for a blue accent", () => {
@@ -581,18 +618,43 @@ describe("접근성", () => {
     expect(screen.getByRole("group", { name: "강도" })).toBeTruthy();
   });
 
-  // 뱃지는 hover 프리뷰까지 반영해 스와치를 스칠 때마다 바뀐다. 그대로 live면
-  // 스크린리더 스팸이 되므로, 요약은 확정 팔레트(scales) 기준으로 따로 낸다 —
-  // "hover는 미리보기일 뿐 확정이 아니다"라는 이 화면의 계약을 통지에도 적용한다.
+  // 뱃지는 hover 프리뷰(shownScales)까지 반영해 스와치를 스칠 때마다 바뀐다.
+  // 헤드라인은 그 뱃지 목록과 별개로 확정 팔레트(scales) 기준으로 낸다 —
+  // "hover는 미리보기일 뿐 확정이 아니다"라는 이 화면의 계약을 헤드라인 자체의
+  // role="status"에도 적용한다(별도 sr-only 요약은 없다, 3.3 D8-2 개정).
+  //
+  // 기본 파랑(shifts=[])을 쓰면 fixable count가 무엇을 넣어도 구조적으로 항상
+  // 0이라 "always 0으로 무너지는 회귀"를 못 잡는다(리뷰 I-2) — eab308(고칠 수
+  // 있는 게 4건, 실행해서 확인한 값)을 써서 헤드라인이 비영(非零)임을 먼저
+  // 고정한다.
   it("대비 요약이 status이고 hover 프리뷰에 흔들리지 않는다", () => {
+    window.history.replaceState({}, "", "/color-palette?v=1&a=eab308");
     render(<ColorPalettePage />);
     const status = screen.getByRole("status");
     const before = status.textContent;
-    expect(before).toMatch(/대비 미달/);
+    expect(before).toBe("고칠 수 있는 대비 미달 4건");
 
     fireEvent.click(screen.getAllByTestId("swatch")[3]);
     const candidate = screen.getAllByTestId("candidate")[0];
     fireEvent.mouseEnter(candidate);
+    expect(screen.getByRole("status").textContent).toBe(before);
+  });
+
+  // 위 테스트는 eab308에서 hover 가능한 모든 후보를 실행해서 확인한 결과 실제
+  // 대비 판정이 바뀌는 후보가 하나도 없다 — 그래서 "요약이 checks(hover 반영)
+  // 기준으로 되돌아가는" 회귀는 위 테스트만으로는 못 잡는다. #22c55e·stop
+  // 10("더 깊게" 후보, "applies the fix from the confirmed palette" 테스트가
+  // 이미 이 조합으로 hover가 실제 판정을 바꾼다는 걸 증명해 둔 자리다)는 그
+  // 회귀에 이빨이 있는 걸 실행해서 확인했다: 헤드라인 계산을 summaryChecks
+  // 대신 checks로 바꾸면 이 hover에서 "4건" → "2건"으로 실제로 움직인다.
+  it("고칠 수 있는 개수가 실제로 요동칠 수 있는 후보를 hover해도 헤드라인은 확정 값에 고정된다", () => {
+    window.history.replaceState({}, "", "/color-palette?v=1&a=22c55e");
+    render(<ColorPalettePage />);
+    const before = screen.getByRole("status").textContent;
+    expect(before).toBe("고칠 수 있는 대비 미달 4건");
+
+    fireEvent.click(screen.getAllByRole("button", { name: /조정/ })[3]); // stop 10
+    fireEvent.mouseEnter(screen.getAllByRole("radio")[1]); // "더 깊게"
     expect(screen.getByRole("status").textContent).toBe(before);
   });
 

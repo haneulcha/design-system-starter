@@ -166,8 +166,10 @@ export function PreviewPane({
         <div className="ds-type-caption-sm text-neutral-500">다크</div>
         <Mock theme="dark" scales={scales} roles={roles} />
       </div>
-      {/* 이 화면의 유일한 라이브 리전. 헤드라인 자체가 role="status"다 — sr-only
-         요약을 따로 두면 스크린리더가 같은 말을 두 번 듣는다(3.3 D8-2 개정).
+      {/* 이 패널의 유일한 라이브 리전(DownloadRow에도 role="status"가 하나 더
+         있지만 복사 성공/실패 통지용이라 목적이 다르다 — 그건 공존이 정상이고
+         지울 대상이 아니다). 헤드라인 자체가 role="status"다 — sr-only 요약을
+         따로 두면 스크린리더가 같은 말을 두 번 듣는다(3.3 D8-2 개정).
          개수는 확정 팔레트(summaryChecks) 기준이라 hover에 흔들리지 않는다. */}
       <div role="status" aria-live="polite" className="ds-type-body-sm font-semibold text-neutral-700">
         {`고칠 수 있는 대비 미달 ${summaryFixableCount}건`}
@@ -186,6 +188,16 @@ export function PreviewPane({
                 // 요약 텍스트는 neutral-500이다 — 400은 2.58:1로 미달이다.
                 // 고칠 수 없는 건수와 사유를 못 읽으면 왜 접혀 있는지 알 수
                 // 없으므로 장식이 아니다 (스펙 D2).
+                //
+                // 아래 사유 문구는 unfixable의 실제 구성(상태색 앵커 고정 +
+                // on-solid 관례값 2종)에 의존한다 — 하드코딩이다. 지금은 이
+                // 두 사유가 unfixable의 전부지만(triageChecks가 왜 두 종류뿐인지는
+                // suggestRoleShifts가 TEXT_ROLES에만 제안을 내는 구조 때문),
+                // suggestRoleShifts가 accent/neutral의 text 실패에도 제안을 못
+                // 내는 경우(clamp 실패로 found === null)가 생기면 세 번째 사유가
+                // 필요해진다. 그런 상태는 현재 도달 불가로 확인됐다(리뷰에서
+                // 무작위 액센트 2400개 + 적용 후 410개로 검증) — 그래도 이 문구를
+                // 고칠 때는 unfixable의 실제 구성부터 다시 확인해야 한다.
                 className="cursor-pointer ds-type-caption-sm text-neutral-500"
               >
                 {`고칠 수 없는 미달 ${unfixable.length}건 — 상태색은 고정 앵커, 솔리드 위 글자는 관례값이라 이 화면에서 못 바꿉니다`}

@@ -38,9 +38,10 @@ export function ColorPalettePage() {
   // 적용된다: hover 중에 "한 번에 고치기"를 눌러도 확정 색 기준 이동이 적용돼야
   // 한다(Task 12의 다운로드가 shownScales가 아니라 scales를 쓰는 것과 같은 원칙).
   const checks = useMemo(() => checkContrast(shownScales, roles), [shownScales, roles]);
-  // 뱃지는 hover 프리뷰(shownScales)를 보고, 스크린리더 요약(status)은 확정
-  // 팔레트(scales)를 본다 — hover는 미리보기일 뿐 확정이 아니라는 이 화면의
-  // 계약이 통지에도 적용된다.
+  // 뱃지는 hover 프리뷰(shownScales)를 보고, 헤드라인(role="status" — 3.3
+  // D8-2 개정으로 별도 sr-only 요약을 걷고 헤드라인 자체가 라이브 리전이 됐다)
+  // 은 확정 팔레트(scales)를 본다 — hover는 미리보기일 뿐 확정이 아니라는 이
+  // 화면의 계약이 통지에도 적용된다.
   const summaryChecks = useMemo(() => checkContrast(scales, roles), [scales, roles]);
   const shifts = useMemo(() => suggestRoleShifts(scales, roles), [scales, roles]);
   const hasApplied = state.shifts.length > 0;
