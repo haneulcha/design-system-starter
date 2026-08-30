@@ -71,8 +71,10 @@ export function DownloadRow({
         // id로 버튼과 연결한다(aria-describedby) — 형제 <div>로만 있으면 사유가
         // 버튼과 프로그램적으로 묶이지 않는다. disabled 버튼은 포커스를 못 받아
         // 스크린리더가 바로 읽어주진 못하지만, 관계를 명시하는 것 자체가 맞다
-        // (브라우즈 모드 등에서 유효).
-        <div id="copy-disabled-reason" className="ds-type-caption-sm text-neutral-400">
+        // (브라우즈 모드 등에서 유효). 사유 텍스트는 neutral-500이다 —
+        // 400은 2.58:1로 미달이다. 클립보드 사용 불가 이유를 못 읽으면
+        // 왜 복사 버튼이 안 되는지 알 수 없으므로 장식이 아니다 (스펙 D2).
+        <div id="copy-disabled-reason" className="ds-type-caption-sm text-neutral-500">
           클립보드를 쓸 수 없는 환경입니다 — 파일로 받으세요.
         </div>
       )}

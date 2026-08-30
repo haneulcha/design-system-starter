@@ -111,7 +111,10 @@ function ContrastBadge({ check: c }: { readonly check: ContrastCheck }) {
   return (
     <div
       data-testid="contrast-badge"
-      className={`ds-type-caption-sm ${c.adjustable ? "text-neutral-500" : "text-neutral-400"}`}
+      // 뱃지 색은 neutral-500이다 — adjustable이 false인 "고정" 뱃지도
+      // 400은 2.58:1로 미달이다. 대비 미달 사항을 못 읽으면 알 수 없으므로
+      // 장식이 아니다 (스펙 D2).
+      className={`ds-type-caption-sm text-neutral-500`}
     >
       {`⚠ ${LABELS[c.scaleName] ?? c.scaleName} ${c.roleId} (${
         c.theme === "light" ? "라이트" : "다크"
@@ -171,7 +174,12 @@ export function PreviewPane({
           ))}
           {fixedFailing.length > 0 && (
             <details>
-              <summary className="cursor-pointer ds-type-caption-sm text-neutral-400">
+              <summary
+                // 요약 텍스트는 neutral-500이다 — 400은 2.58:1로 미달이다.
+                // 고정값 미달 건수를 못 읽으면 몇 건이 숨겨져 있는지 알 수
+                // 없으므로 장식이 아니다 (스펙 D2).
+                className="cursor-pointer ds-type-caption-sm text-neutral-500"
+              >
                 {`고정값 미달 ${fixedFailing.length}건`}
               </summary>
               <div className="mt-1 space-y-1">

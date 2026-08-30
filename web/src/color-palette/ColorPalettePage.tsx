@@ -137,7 +137,12 @@ export function ColorPalettePage() {
                   className="grid grid-cols-[minmax(56px,auto)_1fr] items-center"
                   style={{ gap: "var(--ds-space-xs)" }}
                 >
-                  <div className="ds-type-caption-sm text-neutral-400 whitespace-nowrap">
+                  <div
+                    // 라벨 색은 neutral-500이다 — 400은 흰 배경에서 2.58:1로 기준
+                    // 미달이다. 상태색 이름을 못 읽으면 어느 팔레트인지 알 수
+                    // 없으므로 장식이 아니다 (스펙 D2).
+                    className="ds-type-caption-sm text-neutral-500 whitespace-nowrap"
+                  >
                     {a.label}
                   </div>
                   <AdjustableScale
