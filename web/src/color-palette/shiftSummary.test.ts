@@ -47,10 +47,18 @@ describe("summarizeShifts", () => {
     expect(s).not.toContain("라이트");
   });
 
-  // 라이트·다크가 함께 이동하면(같은 role이라도 from/to는 roles.ts의
-  // lightIndex/darkIndex가 달라 항상 다른 값이다 — text는 6/4, text-strong은
-  // 7/3) 두 테마 문장을 " / "로 잇는다.
-  it("라이트·다크가 함께 이동하면 두 문장을 잇는다", () => {
+  // 방어적 코드 테스트 — 실제 정상 경로가 아니다. 라이트·다크가 "함께"
+  // 이동하는 RoleShift[]는 suggestRoleShifts가 지금 만드는 어떤 입력으로도
+  // 관측되지 않았다(재리뷰 스캔: 액센트 14,641개 격자 + pin 조합 1,020건
+  // 전부 0건). summarizeShifts는 그래도 RoleShift[]를 받는 순수 함수라
+  // 호출자를 suggestRoleShifts로 한정할 수 없고, "지금 못 봤다"가 "구조적으로
+  // 불가능하다"의 증명도 아니다(같은 테마 안 dedup처럼 롤 정의상 확정적으로
+  // 막힌 것과는 다르다 — 이건 그냥 관측 범위 밖이다). 그래서 이 테스트는
+  // "정상적으로 일어나는 일"이 아니라 "함수 계약(테마별로 나눠 ' / '로
+  // 잇는다)을 지키는 방어적 코드"로만 검증한다 — 같은 role이라도 from/to는
+  // roles.ts의 lightIndex/darkIndex가 달라 항상 다른 값이다(text는 6/4,
+  // text-strong은 7/3).
+  it("[방어적] 라이트·다크가 함께 오면(현재 UI로는 도달 불가) 그래도 두 문장을 잇는다", () => {
     const s = summarizeShifts([
       { roleId: "text", theme: "light", from: 6, to: 7 },
       { roleId: "text", theme: "dark", from: 4, to: 3 },

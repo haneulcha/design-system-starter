@@ -11,7 +11,7 @@ import type { ScaleRole, ScaleSet } from "@core/color/roles.js";
 import { roleLabel, triageChecks } from "./contrastTriage";
 import { mockTargetFor } from "./mockTargets";
 import type { MockTarget } from "./mockTargets";
-import { shiftHighlightTargets, summarizeShifts } from "./shiftSummary";
+import { checksFingerprint, shiftHighlightTargets, summarizeShifts } from "./shiftSummary";
 
 // "잠깐 짚는다"의 길이. DownloadRow의 복사 피드백(2000ms)보다 살짝 길다 —
 // 여긴 색 칩 하나가 아니라 문장을 읽어야 해서다. 이 타이머는 강조 링만
@@ -292,6 +292,9 @@ export function PreviewPane({
   const [appliedShifts, setAppliedShifts] = useState<readonly RoleShift[] | null>(null);
   const [highlightActive, setHighlightActive] = useState(false);
   const clearTimerRef = useRef<number | null>(null);
+  // 적용 시점의 확정 대비 상태 지문 — 요약 문장의 "만료 조건"이다(재리뷰
+  // B-1). null이면 "아직 기준선을 안 잡았다"(적용 전, 또는 방금 걷혔다).
+  const baselineFingerprintRef = useRef<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -299,13 +302,52 @@ export function PreviewPane({
     };
   }, []);
 
+  // B-1: 3초 타이머는 강조 링만 끄고 문장은 남긴다(M-1) — 그런데 아무 조건
+  // 없이 문장을 계속 남겨두면, 이후 액센트를 바꾸는 등 이 shift와 무관한
+  // 팔레트 변화가 와도 "방금 옮겼습니다"가 안 걷힌다. 새 문제가 생겨도
+  // "역할 기본값으로" 버튼조차 사라지므로(shifts.length===0 조건) 회수할
+  // 수단도 없어진다.
+  //
+  // 그래서 별도 만료 신호를 둔다: summaryChecks(확정 팔레트 기준 — hover에
+  // 안 흔들린다, 위 checksFingerprint 주석 참고)의 지문을 적용 직후 한 번
+  // 스냅샷해 두고, 이후 그 지문이 달라지면(=이 shift 적용만으로는 설명 안
+  // 되는 변화가 왔다) 요약·강조를 함께 걷는다. 적용이 만든 변화 자체는 이
+  // effect가 이미 반영된 뒤의 summaryChecks를 기준선으로 잡으므로(React가
+  // 같은 이벤트의 setAppliedShifts + onApplyShifts를 한 커밋으로 묶는다)
+  // 오탐하지 않는다 — 적용 직후 첫 실행에서는 "기준선이 아직 없다"만 하고
+  // 지운다.
+  useEffect(() => {
+    if (!appliedShifts) {
+      baselineFingerprintRef.current = null;
+      return;
+    }
+    const current = checksFingerprint(summaryChecks);
+    if (baselineFingerprintRef.current === null) {
+      baselineFingerprintRef.current = current; // 방금 적용된 상태를 기준선으로.
+      return;
+    }
+    if (current !== baselineFingerprintRef.current) {
+      // 무관한 팔레트 변화 — 요약이 지금 상태를 더 이상 설명하지 못한다.
+      setAppliedShifts(null);
+      setHighlightActive(false);
+      baselineFingerprintRef.current = null;
+      if (clearTimerRef.current !== null) {
+        window.clearTimeout(clearTimerRef.current);
+        clearTimerRef.current = null;
+      }
+    }
+    // appliedShifts·summaryChecks 외에는 의도적으로 안 본다 — 이 effect의
+    // 역할은 "두 값의 관계"뿐이라 다른 의존성을 넣으면 무관한 렌더에도 돈다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appliedShifts, summaryChecks]);
+
   const handleApply = () => {
     setAppliedShifts(shifts); // 사라지기 전에 스냅샷
     setHighlightActive(true);
     onApplyShifts();
     if (clearTimerRef.current !== null) window.clearTimeout(clearTimerRef.current);
     // 목업 강조만 "잠깐" 짚는다 — 계속 켜두면 다음 조작과 헷갈린다. 문장은
-    // 안 건드린다(위 상태 분리 이유 참고).
+    // 안 건드린다(위 상태 분리 이유 참고) — 위 만료 effect가 별도로 걷는다.
     clearTimerRef.current = window.setTimeout(() => {
       setHighlightActive(false);
       clearTimerRef.current = null;
@@ -318,6 +360,7 @@ export function PreviewPane({
   const handleReset = () => {
     setAppliedShifts(null);
     setHighlightActive(false);
+    baselineFingerprintRef.current = null;
     if (clearTimerRef.current !== null) {
       window.clearTimeout(clearTimerRef.current);
       clearTimerRef.current = null;

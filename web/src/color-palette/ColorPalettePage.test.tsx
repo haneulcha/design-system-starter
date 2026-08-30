@@ -910,6 +910,40 @@ describe("한 번에 고치기가 무엇을 바꿨는지 말한다 (Task 7, D5)"
     expect(screen.getByRole("status").textContent).toContain("옮겼습니다");
   });
 
+  // B-1(재리뷰): 3초 타이머는 강조 링만 껐지 문장은 안 지웠다 — 그 상태로
+  // 이 shift와 무관한 팔레트 변화(액센트 교체)가 오면 stale한 "옮겼습니다"가
+  // aria-live로 재낭독되고, 새 제안이 생기면 "역할 기본값으로" 버튼도
+  // 사라져 회수 수단이 없어졌다(재리뷰어 실측: #00a3a3 적용 → #990000 교체
+  // → "…2건 — 라이트: 텍스트 (링크)를 600 → 700으로…"가 그대로 남음).
+  //
+  // M-1이 요구한 "3초 뒤 중복 없음"과 B-1이 요구한 "무관한 변화 시 걷힘"을
+  // 한 생애주기 안에서 같이 단언한다: 3초가 지나도(M-1) 무관한 변화가 없는
+  // 동안은 문장이 남고, 그 뒤 액센트를 바꾸면(B-1) 걷힌다.
+  it("3초 뒤에는 링만 꺼지고(M-1), 이후 액센트를 바꾸면 문장까지 걷힌다(B-1)", () => {
+    vi.useFakeTimers();
+    window.history.replaceState({}, "", "/color-palette?v=1&a=00a3a3");
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getByRole("button", { name: "한 번에 고치기" }));
+    expect(screen.getByRole("status").textContent).toContain("옮겼습니다");
+
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    // M-1: 3초가 지나도 무관한 변화가 없으면 문장은 그대로다.
+    expect(screen.getByRole("status").textContent).toContain("옮겼습니다");
+
+    act(() => {
+      fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#990000" } });
+    });
+
+    // B-1: 무관한 팔레트 변화(액센트 교체)가 오면 stale한 요약이 걷힌다.
+    expect(screen.getByRole("status").textContent).not.toContain("옮겼습니다");
+    const light = screen.getByTestId("mock-light");
+    expect(
+      light.querySelector('[data-mock-target="card-text"]')?.getAttribute("data-highlighted"),
+    ).toBeNull();
+  });
+
   // M-3: "역할 기본값으로"로 되돌리면 방금 옮겼다는 서술이 되돌린 팔레트
   // 위에 남아선 안 된다 — 요약·강조를 함께 걷는다.
   it("역할 기본값으로 되돌리면 요약 문장과 강조가 함께 사라진다 (M-3)", () => {
