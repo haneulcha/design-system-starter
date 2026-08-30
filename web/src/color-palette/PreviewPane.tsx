@@ -3,11 +3,23 @@
 // 라이트·다크를 토글이 아니라 동시에 보여준다 — 대비 실패는 다크에서만 나는
 // 경우가 흔한데 토글이면 그것을 못 보고 지나간다 (스펙 D8).
 
+import { useState } from "react";
 import { bgLabel, formatRatio, onSolidColor } from "@core/color/contrast.js";
 import type { ContrastCheck, RoleShift } from "@core/color/contrast.js";
 import { SCALE_ORDER } from "@core/color/roles.js";
 import type { ScaleRole, ScaleSet } from "@core/color/roles.js";
 import { roleLabel, triageChecks } from "./contrastTriage";
+import { mockTargetFor } from "./mockTargets";
+import type { MockTarget } from "./mockTargets";
+
+// 강조 아웃라인 — 목업 배경·전경은 전부 사용자 팔레트라 어떤 단일 고정색도
+// 대비를 보장하지 못한다(전역 제약: 팔레트 색을 쓰지 않는다). 흰/검 이중
+// 링이면 배경이 무엇이든 최소 한쪽 링은 반드시 도드라진다 — 크롬 중립색.
+const HIGHLIGHT_RING = { boxShadow: "0 0 0 2px #ffffff, 0 0 0 4px #171717" } as const;
+
+function highlightStyle(active: boolean) {
+  return active ? HIGHLIGHT_RING : undefined;
+}
 
 const LABELS: Record<string, string> = Object.fromEntries(
   SCALE_ORDER.map((d) => [d.name, d.label]),
@@ -32,8 +44,18 @@ const BAR_STOPS = [3, 4, 5, 6, 7] as const;
 const BAR_HEIGHTS = [26, 42, 34, 48, 38] as const;
 
 function Mock({
-  theme, scales, roles,
-}: { theme: "light" | "dark"; scales: ScaleSet; roles: readonly ScaleRole[] }) {
+  theme, scales, roles, highlight, onHover,
+}: {
+  theme: "light" | "dark";
+  scales: ScaleSet;
+  roles: readonly ScaleRole[];
+  /** 뱃지 hover가 올린 강조 대상. Mock은 이걸 받아 그리기만 한다 — 무엇을
+   *  강조할지 결정하는 매핑(mockTargetFor)은 이 컴포넌트 밖(순수 함수)에 있다. */
+  highlight: MockTarget | null;
+  /** 역방향(목업 → 뱃지)도 같은 상태를 공유한다 — 목업 요소를 직접 hover해도
+   *  같은 hoveredTarget이 오른다(스펙 D3 Step 5). */
+  onHover: (t: MockTarget | null) => void;
+}) {
   const at = (hexes: readonly string[], id: string) => hexes[stopIdx(roles, id, theme)];
   const a = scales.accent;
   const n = scales.neutral;
@@ -55,15 +77,36 @@ function Mock({
         style={{ background: at(n, "hover-bg"), borderColor: at(n, "border") }}
       >
         <div>
-          <div className="text-[11px] font-semibold" style={{ color: at(n, "text-strong") }}>
+          <div
+            data-mock-target="card-text"
+            data-highlighted={highlight === "card-text" ? "true" : undefined}
+            className="text-[11px] font-semibold"
+            style={{ color: at(n, "text-strong"), ...highlightStyle(highlight === "card-text") }}
+            onMouseEnter={() => onHover("card-text")}
+            onMouseLeave={() => onHover(null)}
+          >
             주간 활성 사용자
           </div>
-          <div className="text-[10px]" style={{ color: at(n, "text") }}>
+          <div
+            data-mock-target="card-subtext"
+            data-highlighted={highlight === "card-subtext" ? "true" : undefined}
+            className="text-[10px]"
+            style={{ color: at(n, "text"), ...highlightStyle(highlight === "card-subtext") }}
+            onMouseEnter={() => onHover("card-subtext")}
+            onMouseLeave={() => onHover(null)}
+          >
             지난 5주
           </div>
         </div>
 
-        <div className="flex items-end gap-1.5" style={{ height: 48 }}>
+        <div
+          data-mock-target="bars"
+          data-highlighted={highlight === "bars" ? "true" : undefined}
+          className="flex items-end gap-1.5"
+          style={{ height: 48, ...highlightStyle(highlight === "bars") }}
+          onMouseEnter={() => onHover("bars")}
+          onMouseLeave={() => onHover(null)}
+        >
           {BAR_STOPS.map((s, i) => (
             <div
               key={s}
@@ -77,24 +120,42 @@ function Mock({
         <div className="flex items-center gap-2">
           <span
             data-testid="mock-solid-btn"
+            data-mock-target="solid-btn"
+            data-highlighted={highlight === "solid-btn" ? "true" : undefined}
             className="rounded px-2.5 py-1 text-[11px] font-medium"
-            style={{ background: solid, color: onSolidColor(solid) }}
+            style={{
+              background: solid, color: onSolidColor(solid), ...highlightStyle(highlight === "solid-btn"),
+            }}
+            onMouseEnter={() => onHover("solid-btn")}
+            onMouseLeave={() => onHover(null)}
           >
             보고서 열기
           </span>
           <span
+            data-mock-target="share-btn"
+            data-highlighted={highlight === "share-btn" ? "true" : undefined}
             className="rounded border px-2.5 py-1 text-[11px] font-medium"
             style={{
               background: at(a, "subtle-bg"),
               borderColor: at(a, "border"),
               color: at(a, "text-strong"),
+              ...highlightStyle(highlight === "share-btn"),
             }}
+            onMouseEnter={() => onHover("share-btn")}
+            onMouseLeave={() => onHover(null)}
           >
             공유
           </span>
           <span
+            data-mock-target="error-badge"
+            data-highlighted={highlight === "error-badge" ? "true" : undefined}
             className="ml-auto rounded px-1.5 py-0.5 text-[10px]"
-            style={{ background: at(err, "subtle-bg"), color: at(err, "text-strong") }}
+            style={{
+              background: at(err, "subtle-bg"), color: at(err, "text-strong"),
+              ...highlightStyle(highlight === "error-badge"),
+            }}
+            onMouseEnter={() => onHover("error-badge")}
+            onMouseLeave={() => onHover(null)}
           >
             실패 2
           </span>
@@ -108,7 +169,29 @@ function Mock({
 // 이어붙여 매칭하므로, 수치를 자식 span에 넣으면 "경고 … 2.96" 형태의
 // 질의가 영원히 실패한다. against·"고정" 꼬리표도 같은 이유로 문자열
 // 결합으로만 넣는다 — 자식 요소를 두지 않는다.
-function ContrastBadge({ check: c }: { readonly check: ContrastCheck }) {
+function ContrastBadge({
+  check: c, target, onHover,
+}: {
+  readonly check: ContrastCheck;
+  /** 이 뱃지가 가리키는 목업 요소. unfixable 뱃지는 대상이 있어도 넘기지
+   *  않는다 — 대응 요소가 없어 아무 일도 안 일어나면 고장으로 읽힌다(스펙
+   *  D3 Step 5). target이 없으면 아래 hover 배선 자체를 달지 않는다. */
+  readonly target?: MockTarget | null;
+  readonly onHover?: (t: MockTarget | null) => void;
+}) {
+  // target·onHover 둘 다 있어야 배선한다 — unfixable 목록은 이 둘을 아예
+  // 넘기지 않으므로 wired가 항상 false라 data-highlights도, 이벤트도 없다.
+  const wired = target != null && onHover != null;
+  const hoverProps = wired
+    ? {
+        "data-highlights": target,
+        tabIndex: 0,
+        onMouseEnter: () => onHover(target),
+        onMouseLeave: () => onHover(null),
+        onFocus: () => onHover(target),
+        onBlur: () => onHover(null),
+      }
+    : {};
   return (
     <div
       data-testid="contrast-badge"
@@ -116,6 +199,7 @@ function ContrastBadge({ check: c }: { readonly check: ContrastCheck }) {
       // 400은 2.58:1로 미달이다. 대비 미달 사항을 못 읽으면 알 수 없으므로
       // 장식이 아니다 (스펙 D2).
       className={`ds-type-caption-sm text-neutral-500`}
+      {...hoverProps}
     >
       {`⚠ ${LABELS[c.scaleName] ?? c.scaleName} ${roleLabel(c.roleId)} (${
         c.theme === "light" ? "라이트" : "다크"
@@ -153,6 +237,11 @@ export function PreviewPane({
   // 깨진다.
   const summaryFailing = summaryChecks.filter((c) => !c.passes);
   const summaryFixableCount = triageChecks(summaryFailing, shifts).fixable.length;
+
+  // 뱃지 → 목업, 목업 → 뱃지 양방향이 이 상태 하나를 공유한다(스펙 D3 Step 5).
+  // 라이트·다크 두 Mock이 같은 상태를 보므로 한쪽에서 켠 강조가 양쪽에 다 뜬다 —
+  // "같은 역할"이라는 게 테마를 가로지르는 개념임을 그대로 보여준다.
+  const [hoveredTarget, setHoveredTarget] = useState<MockTarget | null>(null);
   return (
     <div className="space-y-3">
       {/* 라이트/다크 라벨은 목업 바깥이다 — 안에 넣으면 중립 크롬 텍스트가 사용자
@@ -160,11 +249,17 @@ export function PreviewPane({
          고정, 팔레트는 프리뷰 안에서만"의 선이 흐려진다. */}
       <div style={{ display: "grid", gap: "var(--ds-space-xxs)" }}>
         <div className="ds-type-caption-sm text-neutral-500">라이트</div>
-        <Mock theme="light" scales={scales} roles={roles} />
+        <Mock
+          theme="light" scales={scales} roles={roles}
+          highlight={hoveredTarget} onHover={setHoveredTarget}
+        />
       </div>
       <div style={{ display: "grid", gap: "var(--ds-space-xxs)" }}>
         <div className="ds-type-caption-sm text-neutral-500">다크</div>
-        <Mock theme="dark" scales={scales} roles={roles} />
+        <Mock
+          theme="dark" scales={scales} roles={roles}
+          highlight={hoveredTarget} onHover={setHoveredTarget}
+        />
       </div>
       {/* 이 패널의 유일한 라이브 리전(DownloadRow에도 role="status"가 하나 더
          있지만 복사 성공/실패 통지용이라 목적이 다르다 — 그건 공존이 정상이고
@@ -177,7 +272,12 @@ export function PreviewPane({
       {failing.length > 0 && (
         <div className="space-y-1 rounded-md border border-neutral-200 p-2">
           {fixable.map((c) => (
-            <ContrastBadge key={`${c.scaleName}-${c.roleId}-${c.theme}-${c.against}`} check={c} />
+            <ContrastBadge
+              key={`${c.scaleName}-${c.roleId}-${c.theme}-${c.against}`}
+              check={c}
+              target={mockTargetFor(c.scaleName, c.roleId)}
+              onHover={setHoveredTarget}
+            />
           ))}
           {unfixable.length > 0 && (
             <details>

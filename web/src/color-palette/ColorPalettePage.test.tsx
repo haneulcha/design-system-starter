@@ -664,3 +664,61 @@ describe("접근성", () => {
     expect(screen.getByTestId("mock-light").contains(light)).toBe(false);
   });
 });
+
+describe("경고 ↔ 목업 강조 (스펙 D3)", () => {
+  it("고칠 수 있는 경고에 hover하면 목업 요소가 강조된다", () => {
+    render(<ColorPalettePage />);
+    // hex 입력으로 노란 액센트를 만든다 — 기본 파랑은 fixable이 0건이라
+    // 강조할 대상 자체가 없다 (D3의 대상은 고칠 수 있는 경고뿐이다).
+    fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#f5d90a" } });
+
+    const badges = screen.getAllByTestId("contrast-badge");
+    const fixable = badges.find((b) => /텍스트/.test(b.textContent ?? ""));
+    expect(fixable).toBeTruthy();
+
+    fireEvent.mouseEnter(fixable!);
+    const share = screen.getByTestId("mock-light").querySelector('[data-mock-target="share-btn"]');
+    expect(share?.getAttribute("data-highlighted")).toBe("true");
+
+    fireEvent.mouseLeave(fixable!);
+    expect(share?.getAttribute("data-highlighted")).toBeNull();
+  });
+
+  it("고칠 수 없는 경고에는 강조가 붙지 않는다", () => {
+    render(<ColorPalettePage />);
+    // 대응 요소가 없는 경고에 hover해서 아무 일도 안 일어나면 고장으로 읽힌다 —
+    // 아예 배선하지 않는다. 사유는 D4의 한 줄이 대신 말한다.
+    const details = screen.getByText(/고칠 수 없는 미달/).closest("details")!;
+    const inside = details.querySelectorAll('[data-testid="contrast-badge"]');
+    inside.forEach((b) => expect(b.getAttribute("data-highlights")).toBeNull());
+  });
+
+  // 라이트 목업에서 켠 강조가 다크 목업에도 뜨는지 — hoveredTarget이 두 Mock
+  // 인스턴스에 공유된 하나의 상태임을 실제로 검증한다(위 두 테스트만으론
+  // "light Mock 안에서만 상태가 산다"는 실수를 못 잡는다).
+  it("한쪽 목업에서 켠 강조가 다른 쪽 목업에도 뜬다", () => {
+    render(<ColorPalettePage />);
+    fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#f5d90a" } });
+    const badges = screen.getAllByTestId("contrast-badge");
+    const fixable = badges.find((b) => /텍스트/.test(b.textContent ?? ""));
+
+    fireEvent.mouseEnter(fixable!);
+    const shareDark = screen.getByTestId("mock-dark").querySelector('[data-mock-target="share-btn"]');
+    expect(shareDark?.getAttribute("data-highlighted")).toBe("true");
+  });
+
+  // 역방향(목업 → 뱃지) — 목업의 "보고서 열기" 버튼을 직접 hover해도 같은
+  // hoveredTarget이 오른다. 배지 쪽 시각 변화는 없지만(Mock만 아웃라인을
+  // 얹는다), 상태가 실제로 공유되는지는 같은 target의 다른 목업 요소가
+  // 켜지는지로 확인할 수 있다.
+  it("목업 요소를 직접 hover해도 같은 상태가 오른다 (역방향)", () => {
+    render(<ColorPalettePage />);
+    const solidLight = screen.getByTestId("mock-light").querySelector('[data-mock-target="solid-btn"]')!;
+    fireEvent.mouseEnter(solidLight);
+    const solidDark = screen.getByTestId("mock-dark").querySelector('[data-mock-target="solid-btn"]');
+    expect(solidDark?.getAttribute("data-highlighted")).toBe("true");
+
+    fireEvent.mouseLeave(solidLight);
+    expect(solidDark?.getAttribute("data-highlighted")).toBeNull();
+  });
+});
