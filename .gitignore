@@ -6,4 +6,4 @@ data/*
 !data/references/
 
 .playwright-mcp/
-web/src/tokens.generated.css
+web/src/tokens.generated.css.impeccable/

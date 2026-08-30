@@ -453,22 +453,34 @@ L×C 패드와 hue 스트립은 role도 tabindex도 없는 div라 스크린리�
 
 - [ ] **Step 1: 실패하는 테스트를 쓴다**
 
-```tsx
-it("CSS 복사 성공이 통지된다", async () => {
-  const writeText = vi.fn().mockResolvedValue(undefined);
-  Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
-  render(<ColorPalettePage />);
-  fireEvent.click(screen.getByRole("button", { name: /CSS 복사/ }));
-  expect(await screen.findByText("복사됨")).toBeTruthy();
-});
+**`navigator.clipboard`를 반드시 원복한다** — 이 파일의 기존 테스트("클립보드를 못 쓰면 disabled에 사유가 붙는다")가 같은 전역을 만지고 원복하는 패턴을 이미 쓴다. 원복을 빠뜨리면 실행 순서에 따라 그 테스트가 깨진다.
 
-it("CSS 복사 실패도 통지된다", async () => {
-  // 성공만 처리하면 실패가 조용해져서 지금과 같아진다 — 둘 다 말해야 한다.
-  const writeText = vi.fn().mockRejectedValue(new Error("denied"));
-  Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
-  render(<ColorPalettePage />);
-  fireEvent.click(screen.getByRole("button", { name: /CSS 복사/ }));
-  expect(await screen.findByText(/복사하지 못했습니다/)).toBeTruthy();
+```tsx
+describe("복사 피드백 (스펙 D8)", () => {
+  const original = Object.getOwnPropertyDescriptor(navigator, "clipboard");
+  const stub = (writeText: () => Promise<void>) =>
+    Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+
+  afterEach(() => {
+    // 전역을 만졌으면 반드시 되돌린다 — 안 되돌리면 이 파일의 다른 테스트가
+    // 실행 순서에 따라 깨진다.
+    if (original) Object.defineProperty(navigator, "clipboard", original);
+  });
+
+  it("CSS 복사 성공이 통지된다", async () => {
+    stub(() => Promise.resolve());
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getByRole("button", { name: /CSS 복사/ }));
+    expect(await screen.findByText("복사됨")).toBeTruthy();
+  });
+
+  it("CSS 복사 실패도 통지된다", async () => {
+    // 성공만 처리하면 실패가 조용해져서 지금(void로 버리는 것)과 같아진다.
+    stub(() => Promise.reject(new Error("denied")));
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getByRole("button", { name: /CSS 복사/ }));
+    expect(await screen.findByText(/복사하지 못했습니다/)).toBeTruthy();
+  });
 });
 ```
 
@@ -750,11 +762,34 @@ Run: `cd web && pnpm test mockTargets` → FAIL (모듈 없음)
 
 - [ ] **Step 6: 통합 테스트를 추가한다**
 
+기본 팔레트는 `fixable`이 0건이라 강조할 대상이 없다. **노란 액센트로 상태를 만든다** — `#f5d90a`에서 조정 가능 실패 4건(액센트 `text`·`text-strong`)이 나오고 그것들이 `공유` 버튼에 대응한다.
+
 ```tsx
 it("고칠 수 있는 경고에 hover하면 목업 요소가 강조된다", () => {
   render(<ColorPalettePage />);
-  // 기본 팔레트는 fixable이 0이므로 노란 액센트로 만든 상태가 필요하다.
-  // (URL 파싱 경로를 쓰거나 hex 입력을 바꿔 만든다)
+  // hex 입력으로 노란 액센트를 만든다 — 기본 파랑은 fixable이 0건이라
+  // 강조할 대상 자체가 없다 (D3의 대상은 고칠 수 있는 경고뿐이다).
+  fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#f5d90a" } });
+
+  const badges = screen.getAllByTestId("contrast-badge");
+  const fixable = badges.find((b) => /텍스트/.test(b.textContent ?? ""));
+  expect(fixable).toBeTruthy();
+
+  fireEvent.mouseEnter(fixable!);
+  const share = screen.getByTestId("mock-light").querySelector('[data-mock-target="share-btn"]');
+  expect(share?.getAttribute("data-highlighted")).toBe("true");
+
+  fireEvent.mouseLeave(fixable!);
+  expect(share?.getAttribute("data-highlighted")).toBeNull();
+});
+
+it("고칠 수 없는 경고에는 강조가 붙지 않는다", () => {
+  render(<ColorPalettePage />);
+  // 대응 요소가 없는 경고에 hover해서 아무 일도 안 일어나면 고장으로 읽힌다 —
+  // 아예 배선하지 않는다. 사유는 D4의 한 줄이 대신 말한다.
+  const details = screen.getByText(/고칠 수 없는 미달/).closest("details")!;
+  const inside = details.querySelectorAll('[data-testid="contrast-badge"]');
+  inside.forEach((b) => expect(b.getAttribute("data-highlights")).toBeNull());
 });
 ```
 
@@ -852,15 +887,34 @@ RoleShift.from은 URL에 저장되지 않으므로(엔진 주석: 옛 링크가 
 - [ ] **Step 1: 경계를 테스트로 고정한다**
 
 ```tsx
-it("reduced-motion이 전이 시간만 없애고 최종 상태는 남긴다", () => {
-  // 이 화면엔 이미 모션이 있다 — AdjustableScale의 press 착지
-  // (transition-[box-shadow,transform])다. reduced-motion이 transform을
-  // 통째로 끄면 3.1 D3 / 3.2 D4가 세운 어포던스("press 이동 2px = 기본 깊이
-  // 2px, 칩이 그림자가 있던 자리에 정확히 내려앉는다")가 사라진다.
-  // 끄는 것은 트윈이지 변위가 아니다.
-  const css = readFileSync(resolve(__dirname, "../global.css"), "utf8");
-  expect(css).toMatch(/prefers-reduced-motion/);
-  expect(css).not.toMatch(/transform:\s*none/);
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { describe, expect, it } from "vitest";
+
+// ⚠️ 이것은 동작 테스트가 아니다 — 의도적으로 소스 텍스트를 단언한다.
+// jsdom은 @media (prefers-reduced-motion)을 평가하지 않아 진짜 동작 검증이
+// 불가능하고, 실제 동작 확인은 Step 4의 브라우저 실측이 맡는다.
+//
+// 이 테스트의 일은 하나뿐이다: **기록된 판단의 회귀 가드.** 스펙 D9가
+// "끄는 것은 트윈이지 변위가 아니다"를 못 박았는데, 나중에 누가 선의로
+// `transform: none`을 추가하면 3.1 D3 / 3.2 D4가 세운 press 착지 어포던스
+// ("이동 2px = 깊이 2px, 칩이 그림자가 있던 자리에 정확히 내려앉는다")가
+// 조용히 죽는다. 그 회귀를 잡는 것이 이 단언의 존재 이유다.
+// (2026-08-30 사람 판단으로 유지 결정 — 취약한 테스트라는 지적은 맞지만
+//  가드로서의 값이 그 비용보다 크다고 봤다.)
+describe("reduced-motion 경계 (스펙 D9)", () => {
+  const cssPath = fileURLToPath(new URL("../global.css", import.meta.url));
+
+  it("reduced-motion 블록이 존재한다", () => {
+    expect(readFileSync(cssPath, "utf8")).toMatch(/prefers-reduced-motion/);
+  });
+
+  it("변위를 끄지 않는다", () => {
+    const block = readFileSync(cssPath, "utf8")
+      .split("prefers-reduced-motion")[1] ?? "";
+    expect(block).not.toMatch(/transform:\s*none/);
+    expect(block).not.toMatch(/transition:\s*none/);
+  });
 });
 ```
 
