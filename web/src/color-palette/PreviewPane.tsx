@@ -7,6 +7,7 @@ import { bgLabel, formatRatio, onSolidColor } from "@core/color/contrast.js";
 import type { ContrastCheck, RoleShift } from "@core/color/contrast.js";
 import { SCALE_ORDER } from "@core/color/roles.js";
 import type { ScaleRole, ScaleSet } from "@core/color/roles.js";
+import { roleLabel, triageChecks } from "./contrastTriage";
 
 const LABELS: Record<string, string> = Object.fromEntries(
   SCALE_ORDER.map((d) => [d.name, d.label]),
@@ -116,7 +117,7 @@ function ContrastBadge({ check: c }: { readonly check: ContrastCheck }) {
       // 장식이 아니다 (스펙 D2).
       className={`ds-type-caption-sm text-neutral-500`}
     >
-      {`⚠ ${LABELS[c.scaleName] ?? c.scaleName} ${c.roleId} (${
+      {`⚠ ${LABELS[c.scaleName] ?? c.scaleName} ${roleLabel(c.roleId)} (${
         c.theme === "light" ? "라이트" : "다크"
       } · ${bgLabel(c.against)}) ${formatRatio(c.ratio)} / ${c.required}${
         c.adjustable ? "" : " · 고정"
@@ -138,12 +139,20 @@ export function PreviewPane({
   readonly summaryChecks: readonly ContrastCheck[];
 }) {
   const failing = checks.filter((c) => !c.passes);
-  // adjustable=true(사용자가 손댈 수 있는 것)를 위에 그대로 두고, adjustable=false
-  // (고정값이라 못 고치는 것)는 접어서 위계를 가른다 — 훑어봤을 때 "경고 10개"가
-  // 아니라 실제로 손댈 수 있는 게 몇 건인지가 먼저 보여야 한다.
-  const adjustableFailing = failing.filter((c) => c.adjustable);
-  const fixedFailing = failing.filter((c) => !c.adjustable);
+  // "스케일을 손댈 수 있는가"(adjustable)가 아니라 "이 실패를 고칠 수 있는가"로
+  // 가른다 (스펙 D4) — on-solid은 accent 스케일이라 adjustable=true여도
+  // suggestRoleShifts가 절대 이동을 제안하지 않으므로(엔진의 onSolidWarning:
+  // 관례값이라 stop을 옮겨 고칠 수 없다) triageChecks가 구조적으로 이걸
+  // "고칠 수 없는 것"에 남긴다. shifts는 확정 팔레트(scales) 기준으로 이미
+  // 계산돼 들어오므로 여기서 hover를 타지 않는다.
+  const { fixable, unfixable } = triageChecks(failing, shifts);
+
+  // 헤드라인 개수는 확정 팔레트(summaryChecks) 기준이어야 한다 — checks는 hover
+  // 프리뷰(shownScales)까지 반영해 스와치를 스칠 때마다 바뀌므로, 그대로 쓰면
+  // "hover는 미리보기일 뿐 확정이 아니다"라는 이 화면의 계약이 헤드라인에서
+  // 깨진다.
   const summaryFailing = summaryChecks.filter((c) => !c.passes);
+  const summaryFixableCount = triageChecks(summaryFailing, shifts).fixable.length;
   return (
     <div className="space-y-3">
       {/* 라이트/다크 라벨은 목업 바깥이다 — 안에 넣으면 중립 크롬 텍스트가 사용자
@@ -157,33 +166,32 @@ export function PreviewPane({
         <div className="ds-type-caption-sm text-neutral-500">다크</div>
         <Mock theme="dark" scales={scales} roles={roles} />
       </div>
-      {/* 뱃지 목록(checks)은 hover 프리뷰(shownScales)까지 반영해 스와치를 스칠
-         때마다 바뀐다. 그대로 aria-live를 달면 스크린리더에 마우스 움직임이
-         그대로 중계된다 — 요약은 확정 팔레트(summaryChecks=scales) 기준으로 따로
-         내어, "hover는 미리보기일 뿐 확정이 아니다"라는 이 화면의 계약을
-         통지에도 적용한다. */}
-      <div role="status" aria-live="polite" className="sr-only">
-        {`대비 미달 ${summaryFailing.length}건, 조정 가능 ${
-          summaryFailing.filter((c) => c.adjustable).length
-        }건`}
+      {/* 이 화면의 유일한 라이브 리전. 헤드라인 자체가 role="status"다 — sr-only
+         요약을 따로 두면 스크린리더가 같은 말을 두 번 듣는다(3.3 D8-2 개정).
+         개수는 확정 팔레트(summaryChecks) 기준이라 hover에 흔들리지 않는다. */}
+      <div role="status" aria-live="polite" className="ds-type-body-sm font-semibold text-neutral-700">
+        {`고칠 수 있는 대비 미달 ${summaryFixableCount}건`}
       </div>
       {failing.length > 0 && (
         <div className="space-y-1 rounded-md border border-neutral-200 p-2">
-          {adjustableFailing.map((c) => (
+          {fixable.map((c) => (
             <ContrastBadge key={`${c.scaleName}-${c.roleId}-${c.theme}-${c.against}`} check={c} />
           ))}
-          {fixedFailing.length > 0 && (
+          {unfixable.length > 0 && (
             <details>
+              {/* 개수는 접힌 상태에서도 남는다 — 사이클 3 D7("산출물에 무조건
+                 들어가므로 화면에 없으면 받아간 파일에 모르는 것이 들어있게
+                 된다")이 여기에도 걸린다. 접는 것은 목록이지 사실이 아니다. */}
               <summary
                 // 요약 텍스트는 neutral-500이다 — 400은 2.58:1로 미달이다.
-                // 고정값 미달 건수를 못 읽으면 몇 건이 숨겨져 있는지 알 수
+                // 고칠 수 없는 건수와 사유를 못 읽으면 왜 접혀 있는지 알 수
                 // 없으므로 장식이 아니다 (스펙 D2).
                 className="cursor-pointer ds-type-caption-sm text-neutral-500"
               >
-                {`고정값 미달 ${fixedFailing.length}건`}
+                {`고칠 수 없는 미달 ${unfixable.length}건 — 상태색은 고정 앵커, 솔리드 위 글자는 관례값이라 이 화면에서 못 바꿉니다`}
               </summary>
               <div className="mt-1 space-y-1">
-                {fixedFailing.map((c) => (
+                {unfixable.map((c) => (
                   <ContrastBadge
                     key={`${c.scaleName}-${c.roleId}-${c.theme}-${c.against}`}
                     check={c}

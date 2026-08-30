@@ -195,10 +195,11 @@ describe("ColorPalettePage", () => {
   });
 
   // 파랑 액센트는 흰 글자를 지키므로 on-solid이 3.68로 미달 표시된다 (스펙 D5).
+  // 뱃지는 roleId를 생으로 안 찍고 엔진(SCALE_ROLES)의 라벨을 쓴다.
   it("shows the on-solid miss for the default blue accent", () => {
     render(<ColorPalettePage />);
     const badges = screen.getAllByTestId("contrast-badge").map((el) => el.textContent ?? "");
-    expect(badges.some((t) => t.includes("on-solid") && t.includes("3.6"))).toBe(true);
+    expect(badges.some((t) => t.includes("솔리드 위 글자") && t.includes("3.6"))).toBe(true);
   });
 
   // 경고 스케일의 text/라이트 검사는 subtle-bg 대·page 대 두 번 뜬다 — against가
@@ -206,8 +207,10 @@ describe("ColorPalettePage", () => {
   it("labels which background each duplicate-looking badge was measured against", () => {
     render(<ColorPalettePage />);
     const badges = screen.getAllByTestId("contrast-badge").map((el) => el.textContent ?? "");
+    // roleId "text"는 이제 엔진 라벨 "텍스트 (링크)"로 찍힌다 — "진한 텍스트"(text-strong)와
+    // 겹치지 않는 유일한 부분 문자열이라 이걸로 골라야 role이 섞이지 않는다.
     const warningTextLight = badges.filter(
-      (t) => t.includes("경고") && t.includes("text") && t.includes("라이트"),
+      (t) => t.includes("경고") && t.includes("텍스트 (링크)") && t.includes("라이트"),
     );
     expect(warningTextLight.length).toBeGreaterThanOrEqual(2);
     expect(warningTextLight.every((t, _, all) => all.indexOf(t) === all.lastIndexOf(t)))
@@ -222,7 +225,7 @@ describe("ColorPalettePage", () => {
     render(<ColorPalettePage />);
     const badges = screen.getAllByTestId("contrast-badge").map((el) => el.textContent ?? "");
     const warningBadge = badges.find((t) => t.includes("경고"))!;
-    const accentOnSolid = badges.find((t) => t.includes("on-solid"))!;
+    const accentOnSolid = badges.find((t) => t.includes("솔리드 위 글자"))!;
     expect(warningBadge).toContain("고정");
     expect(accentOnSolid).not.toContain("고정");
   });
@@ -233,39 +236,51 @@ describe("ColorPalettePage", () => {
     render(<ColorPalettePage />);
     const badges = screen.getAllByTestId("contrast-badge").map((el) => el.textContent ?? "");
     const successStrong = badges.find(
-      (t) => t.includes("성공") && t.includes("text-strong") && t.includes("페이지 배경"),
+      (t) => t.includes("성공") && t.includes("진한 텍스트") && t.includes("페이지 배경"),
     );
     expect(successStrong).toBeDefined();
     expect(successStrong).toContain("4.49");
     expect(badges.every((t) => !t.includes("4.50"))).toBe(true);
   });
 
-  // 고정값 미달은 접혀서 개수만 보이고, 조정 가능한 것(accent on-solid)은 접히지
-  // 않은 채 위에 남는다 — 10건 중 9건이 고정, 1건이 on-solid(스펙 위 확인값).
-  it("collapses the fixed-failure badges behind a summary with the right count", () => {
+  // "고칠 수 있는가"(triageChecks)로 가른다 — "스케일을 손댈 수 있는가"(adjustable)가
+  // 아니다 (스펙 D4). accent on-solid는 스케일이 accent라 adjustable=true이지만
+  // 엔진의 onSolidWarning이 "stop을 옮겨 고칠 수 없다"고 못 박아서 suggestRoleShifts가
+  // 절대 이걸 제안하지 않는다 — 그래서 기본 팔레트는 10건 전부가 "고칠 수 없는 것"이다
+  // (실행해서 확인한 값: fixable 0, unfixable 10).
+  const UNFIXABLE_SUMMARY =
+    "고칠 수 없는 미달 10건 — 상태색은 고정 앵커, 솔리드 위 글자는 관례값이라 이 화면에서 못 바꿉니다";
+
+  it("collapses the unfixable-failure badges behind a summary with the right count", () => {
     render(<ColorPalettePage />);
-    const summary = screen.getByText("고정값 미달 9건");
+    const summary = screen.getByText(UNFIXABLE_SUMMARY);
     expect(summary.tagName).toBe("SUMMARY");
     expect(summary.closest("details")?.hasAttribute("open")).toBe(false);
   });
 
-  it("lists all nine fixed badges inside the collapsed group", () => {
+  // 10건 모두 "고칠 수 없는 것"에 들어가지만, "고정"(adjustable=false) 꼬리표는
+  // 스케일 소유권 별개 축이라 여전히 9건에만 붙는다 — accent/on-solid만 스케일이
+  // accent(adjustable=true)라 꼬리표가 없다.
+  it("lists all ten unfixable badges inside the collapsed group, nine of them tagged fixed", () => {
     render(<ColorPalettePage />);
-    const summary = screen.getByText("고정값 미달 9건");
+    const summary = screen.getByText(UNFIXABLE_SUMMARY);
     const details = summary.closest("details")!;
     const badgesInside = Array.from(details.querySelectorAll('[data-testid="contrast-badge"]'));
-    expect(badgesInside.length).toBe(9);
-    expect(badgesInside.every((el) => (el.textContent ?? "").includes("고정"))).toBe(true);
+    expect(badgesInside.length).toBe(10);
+    const tagged = badgesInside.filter((el) => (el.textContent ?? "").includes("고정"));
+    expect(tagged.length).toBe(9);
   });
 
-  it("keeps the adjustable badge outside the collapsed group", () => {
+  // 기본 팔레트는 고칠 수 있는 게 0건이므로 접힌 그룹 밖에는 아무 뱃지도 남지 않는다 —
+  // 예전엔 accent on-solid가 "조정 가능"으로 분류돼 밖에 남았지만, 그건 못 고치는데
+  // 대책 없이 맨 위에 뜨는 위계 오류였다(스펙 D4의 핵심 문제).
+  it("leaves no badges outside the collapsed group when nothing is fixable", () => {
     render(<ColorPalettePage />);
-    const summary = screen.getByText("고정값 미달 9건");
+    const summary = screen.getByText(UNFIXABLE_SUMMARY);
     const details = summary.closest("details")!;
     const allBadges = screen.getAllByTestId("contrast-badge");
     const outside = allBadges.filter((el) => !details.contains(el));
-    expect(outside.length).toBe(1);
-    expect(outside[0].textContent).toContain("on-solid");
+    expect(outside.length).toBe(0);
   });
 
   it("offers no fix for a blue accent", () => {
