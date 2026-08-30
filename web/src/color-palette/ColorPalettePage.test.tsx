@@ -1101,18 +1101,25 @@ describe("pin 소멸 알림과 복원 (D6)", () => {
   it("액센트 변경으로 pin이 사라지면 알리고 되돌릴 수 있다", () => {
     render(<ColorPalettePage />);
     fireEvent.click(screen.getAllByTestId("swatch")[7]); // stop 700
-    fireEvent.click(screen.getAllByRole("radio")[0]); // stop 700 pin
+    fireEvent.click(screen.getAllByRole("radio")[0]); // stop 700 pin — #295bac
+    expect(window.location.search).toContain("s7=295bac");
     const pinned = screen.getAllByTestId("swatch")[7].getAttribute("aria-label");
 
     // 기본 액센트(#3b82f6)의 H는 실측 259.81 — 262는 hue 스트립 1px 드래그
     // 수준의 미세 조정이다.
     fireEvent.change(screen.getByLabelText("색상"), { target: { value: "262" } });
+    // 이 태스크의 전제 확인: pin이 URL에서 실제로 사라진다(replaceState라
+    // 뒤로가기로도 못 돌아온다는 배경 그대로).
+    expect(window.location.search).not.toContain("s7=");
 
     // 드래그 첫 픽셀에 조용히 사라지던 자리다. replaceState라 뒤로가기로도
     // 못 살리므로 화면이 유일한 복구 경로다.
     expect(screen.getByText(/되돌렸습니다/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "복원" }));
     expect(screen.getAllByTestId("swatch")[7].getAttribute("aria-label")).toBe(pinned);
+    // 리뷰 M-3: 스와치 aria-label뿐 아니라 URL도 실제로 돌아오는지 — 이 결함의
+    // 전제가 "URL이 안 돌아온다"였으므로 URL 회복 자체를 단언해야 한다.
+    expect(window.location.search).toContain("s7=295bac");
   });
 
   it("pin이 없었으면 알림이 안 뜬다", () => {
@@ -1128,7 +1135,7 @@ describe("pin 소멸 알림과 복원 (D6)", () => {
   it("연속 조정(드래그 여러 픽셀)에서도 첫 전이의 pin만 복원 버퍼에 남는다", () => {
     render(<ColorPalettePage />);
     fireEvent.click(screen.getAllByTestId("swatch")[7]); // stop 700
-    fireEvent.click(screen.getAllByRole("radio")[0]);
+    fireEvent.click(screen.getAllByRole("radio")[0]); // #295bac
     const pinned = screen.getAllByTestId("swatch")[7].getAttribute("aria-label");
 
     fireEvent.change(screen.getByLabelText("색상"), { target: { value: "262" } }); // 전이 — 기록
@@ -1137,6 +1144,30 @@ describe("pin 소멸 알림과 복원 (D6)", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "복원" }));
     expect(screen.getAllByTestId("swatch")[7].getAttribute("aria-label")).toBe(pinned);
+    expect(window.location.search).toContain("s7=295bac"); // 리뷰 M-3: URL 회복도 단언
+  });
+
+  // 리뷰 C-1: 배너는 복원을 누르기 전까지 안 걷힌다 — 그 사이 사용자가 다른
+  // stop을 새로 pin하면, 교체(replace) 구현은 그 새 pin을 "복원" 클릭이
+  // 조용히 덮어썼다. 리뷰어 실측 재현 시퀀스 그대로: pin stop700 → H 변경(드랍)
+  // → pin stop300(새 선택) → 복원 클릭 → 둘 다 살아있어야 한다.
+  it("복원이 그 사이에 새로 찍은 다른 stop의 pin을 덮어쓰지 않는다", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getAllByTestId("swatch")[7]); // stop 700
+    fireEvent.click(screen.getAllByRole("radio")[0]); // #295bac
+    expect(window.location.search).toContain("s7=295bac");
+
+    fireEvent.change(screen.getByLabelText("색상"), { target: { value: "262" } }); // 드랍
+    expect(window.location.search).not.toContain("s7=");
+
+    fireEvent.click(screen.getAllByTestId("swatch")[3]); // stop 300 — 배너가 뜬 채로 새로 pin
+    fireEvent.click(screen.getAllByRole("radio")[0]);
+    expect(window.location.search).toMatch(/s3=/);
+
+    fireEvent.click(screen.getByRole("button", { name: "복원" }));
+    // 병합이라 둘 다 살아있다 — 교체였다면 s3가 사라졌을 것이다.
+    expect(window.location.search).toContain("s7=295bac");
+    expect(window.location.search).toMatch(/s3=/);
   });
 
   // Task 9가 만들어 둔 "후보 밖" 경로(candidateMatch.ts의 MAX_DISTANCE·
@@ -1156,11 +1187,33 @@ describe("pin 소멸 알림과 복원 (D6)", () => {
 
     fireEvent.change(screen.getByLabelText("색상"), { target: { value: "262" } });
     fireEvent.click(screen.getByRole("button", { name: "복원" }));
+    expect(window.location.search).toContain("s7=0e56c2"); // 리뷰 M-3: URL 회복 단언
 
     fireEvent.click(screen.getAllByTestId("swatch")[7]); // 복원된 pin으로 재오픈
     const radios = screen.getAllByRole("radio") as HTMLInputElement[];
     expect(radios.length).toBeGreaterThan(0); // 후보 자체는 있다
     expect(radios.some((r) => r.checked)).toBe(false);
     expect(screen.getByText("지금 색은 이 앵커의 후보에 없습니다")).toBeTruthy();
+  });
+
+  // 리뷰 I-1: aria-live 리전은 항상 마운트돼 있어야 한다 — 리전 자체가 새로
+  // 삽입되면 대부분의 스크린리더가 그 등장을 못 잡는다. 조건부로 div를 통째로
+  // 넣고 빼는 구현이었다면 이 테스트가 실패했을 것이다(pin이 없을 때도
+  // querySelector가 같은 노드를 찾아야 하고, pin이 생겨도 그 노드가 그대로
+  // 유지돼야 한다 — isSameNode로 노드 정체성을 직접 비교).
+  it("배너의 aria-live 리전은 pin 유무와 무관하게 항상 마운트돼 있다", () => {
+    const { container } = render(<ColorPalettePage />);
+    const regionBefore = container.querySelector('[aria-live="polite"]');
+    expect(regionBefore).toBeTruthy(); // pin이 없어도 리전 자체는 이미 있다
+    expect(regionBefore!.textContent).toBe(""); // 내용은 비어 있다
+
+    fireEvent.click(screen.getAllByTestId("swatch")[7]);
+    fireEvent.click(screen.getAllByRole("radio")[0]);
+    fireEvent.change(screen.getByLabelText("색상"), { target: { value: "262" } });
+
+    const regionAfter = container.querySelector('[aria-live="polite"]');
+    expect(regionAfter).toBeTruthy();
+    expect(regionAfter!.isSameNode(regionBefore)).toBe(true); // 같은 노드 — 새로 삽입되지 않았다
+    expect(regionAfter!.textContent).toContain("되돌렸습니다");
   });
 });

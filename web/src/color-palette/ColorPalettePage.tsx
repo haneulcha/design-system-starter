@@ -33,7 +33,10 @@ export function ColorPalettePage() {
       // 전이(있다 → 없다)에서만 기록한다 — hue 스트립은 pointermove마다
       // 커밋하므로, 매 커밋마다 기록하면 드래그 두 번째 픽셀에서 버퍼가
       // (withAccent가 이미 비운) 빈 pins로 덮인다. 첫 픽셀에서 잡은 값만
-      // "복원" 대상이어야 한다.
+      // "복원" 대상이어야 한다. 이 업데이터가 React 18 StrictMode에서 두 번
+      // 불려도(개발 모드가 순수성 검증을 위해 하는 재호출) 매번 같은 `s`를
+      // 받아 같은 값을 계산하므로 두 번 대입해도 결과가 같다 — 멱등이라
+      // 안전하다(리뷰로 실측 확인).
       if (had) droppedPins.current = s.pins;
       return withAccent(s, accentHex);
     });
@@ -42,11 +45,26 @@ export function ColorPalettePage() {
   // 정했고, 그 판단은 안 뒤집는다(브리프 참고). 클릭 시점엔 pin이 사라진 이유가
   // 이미 화면에 있으니(알림 문구) 원안이 걱정한 "왜 사라졌는지 모른다"가 해소돼
   // 있다.
+  //
+  // 교체가 아니라 병합이다(리뷰 C-1) — 배너는 복원을 누르기 전까지 안 걷히므로,
+  // 그 사이 사용자가 다른 stop을 새로 pin해도 배너는 그대로다. 그 상태에서
+  // "복원"이 pins를 통째로 갈아치우면(`{ ...s.pins, pins: restored }`) 방금 찍은
+  // 새 pin이 조용히 사라진다 — 이 태스크가 고치려는 결함(조용한 pin 소멸)이
+  // 복원 버튼 안에서 재생산되는 셈이다. 그래서 stop별로 `s.pins[i] ?? restored[i]`:
+  // 사용자가 복원 전에 이미 손댄 stop(undefined가 아님)은 그대로 두고, 아직
+  // 안 건드린 stop만 버퍼 값으로 채운다 — "복원 이후의 새 선택이 이긴다"는
+  // 원칙 하나로 전체 회귀 상태(아무도 안 건드림)와 부분 회귀 상태(일부만
+  // 새로 찍음)를 같은 식으로 처리한다.
   const onRestorePins = () => {
     const restored = droppedPins.current;
     if (!restored) return;
     droppedPins.current = null; // 복원했으니 알림도 같이 걷는다
-    setState((s) => ({ ...s, pins: restored }));
+    setState((s) => ({
+      ...s,
+      pins: Object.fromEntries(
+        ADJUSTABLE_STOPS.map((i) => [i, s.pins[i] ?? restored[i]]),
+      ) as PaletteState["pins"],
+    }));
   };
 
   const scales = useMemo(() => deriveScales(state), [state]);
@@ -109,24 +127,45 @@ export function ColorPalettePage() {
           <div className="ds-type-caption-sm text-neutral-500">액센트</div>
           {/* 액센트 띠 바로 위, 한 줄 상한 — main 컬럼 세로 예산에 걸린다.
               truncate로 물리적 줄바꿈 자체를 막는다: 좁은 화면에서 문구가
-              길어지는 대신 잘리는 쪽을 택한다(1줄 초과는 예산을 넘긴다). */}
-          {droppedPins.current && (
-            <div
-              aria-live="polite"
-              className="ds-type-caption-sm text-neutral-500 flex items-center gap-2 min-w-0"
-            >
-              <span className="truncate">
-                pin {droppedPinCount}개를 기본값으로 되돌렸습니다 — 새로고침하면 복원할 수 없어요
-              </span>
-              <button
-                type="button"
-                onClick={onRestorePins}
-                className="shrink-0 rounded px-2 py-0.5 border border-neutral-300 text-neutral-700 hover:bg-neutral-50"
-              >
-                복원
-              </button>
-            </div>
-          )}
+              길어지는 대신 잘리는 쪽을 택한다(1줄 초과는 예산을 넘긴다).
+
+              리전 자체를 항상 마운트한다(리뷰 I-1) — 안의 텍스트/버튼만
+              조건부로 넣고 뺀다. aria-live는 "이미 존재하는 리전 안에서
+              내용이 바뀌는 것"을 감지해 알리는 것이 표준 동작이라, 리전
+              노드 자체가 새로 삽입되면(=조건부 렌더로 div를 통째로 껐다
+              켰다 하면) 대부분의 스크린리더가 그 첫 등장을 못 잡는다.
+              PreviewPane의 대비 요약 role="status" 헤드라인도 같은 이유로
+              항상 마운트돼 있다(그 컴포넌트 주석 참고) — 이 배너도 그
+              패턴을 따른다. role="status"를 안 쓴 이유는 그대로다: 그
+              헤드라인과 같은 role을 쓰면 getByRole("status") 단수 조회가
+              둘을 놓고 충돌한다. */}
+          <div
+            aria-live="polite"
+            className="ds-type-caption-sm text-neutral-500 flex items-center gap-2 min-w-0"
+          >
+            {droppedPins.current && (
+              <>
+                {/* 부정어(세션 한정 경고)를 문두 쪽으로 뺐다(리뷰 I-2) —
+                    이전 문구("…복원할 수 없어요")는 390px에서 "수 없어요"가
+                    통째로 잘려 남은 문장이 "복원할"로 끝나며 뜻이 정반대로
+                    읽혔다. 지금 문구는 390px 실측(캔버스 measureText로 실제
+                    폭 재현, 뷰포트는 window.innerWidth로 390 확인 후 측정)
+                    결과 "pin 1개를 기본값으로 되돌렸습니다 — 복원은 이
+                    세션에서만 …"까지만 보이고 "가능해요"만 잘린다 — 잘린
+                    뒤 남는 문장이 뒤집히지 않고 그냥 말줄임으로 끝난다. */}
+                <span className="truncate">
+                  pin {droppedPinCount}개를 기본값으로 되돌렸습니다 — 복원은 이 세션에서만 가능해요
+                </span>
+                <button
+                  type="button"
+                  onClick={onRestorePins}
+                  className="shrink-0 rounded px-2 py-0.5 border border-neutral-300 text-neutral-700 hover:bg-neutral-50"
+                >
+                  복원
+                </button>
+              </>
+            )}
+          </div>
           <AdjustableScale
             hexes={scales.accent}
             adjustable={[...ADJUSTABLE_STOPS]}
