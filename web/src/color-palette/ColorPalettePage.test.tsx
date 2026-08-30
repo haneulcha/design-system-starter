@@ -665,15 +665,20 @@ describe("접근성", () => {
   });
 });
 
-describe("경고 ↔ 목업 강조 (스펙 D3)", () => {
+describe("경고 ↔ 목업 강조 (스펙 D3, 2026-08-30 개정)", () => {
+  // 리뷰 C-1로 /텍스트/ → /진한 텍스트/로 좁혔다. "액센트 텍스트 (링크)"와
+  // "액센트 진한 텍스트" 둘 다 "텍스트"를 부분 문자열로 포함하는데, text(링크)는
+  // 공유 버튼의 어떤 stop과도 안 겹쳐 mockTargetFor가 null을 낸다(#00a3a3
+  // 반증: 텍스트(링크)만 실패·진한 텍스트는 통과인데 공유 버튼이 켜지면 거짓을
+  // 가리키는 셈이다). "진한 텍스트"만 골라야 실제로 배선된 뱃지를 잡는다.
   it("고칠 수 있는 경고에 hover하면 목업 요소가 강조된다", () => {
     render(<ColorPalettePage />);
     // hex 입력으로 노란 액센트를 만든다 — 기본 파랑은 fixable이 0건이라
-    // 강조할 대상 자체가 없다 (D3의 대상은 고칠 수 있는 경고뿐이다).
+    // 강조할 대상 자체가 없다.
     fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#f5d90a" } });
 
     const badges = screen.getAllByTestId("contrast-badge");
-    const fixable = badges.find((b) => /텍스트/.test(b.textContent ?? ""));
+    const fixable = badges.find((b) => /진한 텍스트/.test(b.textContent ?? ""));
     expect(fixable).toBeTruthy();
 
     fireEvent.mouseEnter(fixable!);
@@ -684,34 +689,102 @@ describe("경고 ↔ 목업 강조 (스펙 D3)", () => {
     expect(share?.getAttribute("data-highlighted")).toBeNull();
   });
 
-  it("고칠 수 없는 경고에는 강조가 붙지 않는다", () => {
+  // S-1: 배선 기준이 fixable → target != null로 바뀌었다. accent/on-solid은
+  // triageChecks가 구조적으로 항상 unfixable로 보내는데(suggestRoleShifts가
+  // TEXT_ROLES에만 제안한다) 목업엔 대응 요소(보고서 열기)가 있다 — D3의
+  // 대표 사례가 기본 팔레트(#3b82f6)에서 바로 이 케이스다. "고정" 꼬리표가
+  // 안 붙은 걸로 accent 소유(다른 상태색의 on-solid과 구분)를 확인한다.
+  it("고칠 수 없어도 대응 요소가 있으면 강조된다 — 액센트 on-solid → 보고서 열기", () => {
     render(<ColorPalettePage />);
-    // 대응 요소가 없는 경고에 hover해서 아무 일도 안 일어나면 고장으로 읽힌다 —
-    // 아예 배선하지 않는다. 사유는 D4의 한 줄이 대신 말한다.
+    const badges = screen.getAllByTestId("contrast-badge");
+    const onSolid = badges.find(
+      (b) => /솔리드 위 글자/.test(b.textContent ?? "") && !/고정/.test(b.textContent ?? ""),
+    );
+    expect(onSolid).toBeTruthy();
+
+    fireEvent.mouseEnter(onSolid!);
+    const solidBtn = screen.getByTestId("mock-light").querySelector('[data-mock-target="solid-btn"]');
+    expect(solidBtn?.getAttribute("data-highlighted")).toBe("true");
+
+    fireEvent.mouseLeave(onSolid!);
+    expect(solidBtn?.getAttribute("data-highlighted")).toBeNull();
+  });
+
+  // M-4: onFocus/onBlur(키보드 경로)도 onMouseEnter/onMouseLeave와 같은
+  // 상태를 올려야 한다 — 마우스로만 테스트하면 tabIndex를 단 이유가 검증
+  // 안 된 채로 남는다.
+  it("키보드 포커스로도 강조된다 (onFocus/onBlur)", () => {
+    render(<ColorPalettePage />);
+    const badges = screen.getAllByTestId("contrast-badge");
+    const onSolid = badges.find(
+      (b) => /솔리드 위 글자/.test(b.textContent ?? "") && !/고정/.test(b.textContent ?? ""),
+    )!;
+
+    fireEvent.focus(onSolid);
+    const solidBtn = screen.getByTestId("mock-light").querySelector('[data-mock-target="solid-btn"]');
+    expect(solidBtn?.getAttribute("data-highlighted")).toBe("true");
+
+    fireEvent.blur(onSolid);
+    expect(solidBtn?.getAttribute("data-highlighted")).toBeNull();
+  });
+
+  // M-3: "안 붙는다"를 data-highlights 부재만으로 보이면 실제 hover 시 아무
+  // 것도 안 켜지는지는 증명하지 못한다. target === null인 뱃지(상태색
+  // text·text-strong 등)를 실제로 hover해서 두 목업 어디에도 강조가 안 뜨는지
+  // 확인한다. accent/on-solid(이제 유일하게 배선되는 unfixable 뱃지)는
+  // 제외한다 — 그건 위 테스트가 "붙어야 한다"를 이미 고정했다.
+  it("대응 요소가 없는 경고는 실제로 hover해도 아무 것도 안 켜진다", () => {
+    render(<ColorPalettePage />);
     const details = screen.getByText(/고칠 수 없는 미달/).closest("details")!;
-    const inside = details.querySelectorAll('[data-testid="contrast-badge"]');
-    inside.forEach((b) => expect(b.getAttribute("data-highlights")).toBeNull());
+    const inside = Array.from(details.querySelectorAll('[data-testid="contrast-badge"]'));
+    const unwired = inside.filter((b) => !/솔리드 위 글자/.test(b.textContent ?? ""));
+    expect(unwired.length).toBeGreaterThan(0);
+
+    unwired.forEach((b) => {
+      expect(b.getAttribute("data-highlights")).toBeNull();
+      fireEvent.mouseEnter(b);
+      const anyHighlighted = document.querySelectorAll('[data-highlighted="true"]');
+      expect(anyHighlighted.length).toBe(0);
+      fireEvent.mouseLeave(b);
+    });
   });
 
   // 라이트 목업에서 켠 강조가 다크 목업에도 뜨는지 — hoveredTarget이 두 Mock
-  // 인스턴스에 공유된 하나의 상태임을 실제로 검증한다(위 두 테스트만으론
-  // "light Mock 안에서만 상태가 산다"는 실수를 못 잡는다).
+  // 인스턴스에 공유된 하나의 상태임을 실제로 검증한다.
   it("한쪽 목업에서 켠 강조가 다른 쪽 목업에도 뜬다", () => {
     render(<ColorPalettePage />);
     fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#f5d90a" } });
     const badges = screen.getAllByTestId("contrast-badge");
-    const fixable = badges.find((b) => /텍스트/.test(b.textContent ?? ""));
+    const fixable = badges.find((b) => /진한 텍스트/.test(b.textContent ?? ""));
 
     fireEvent.mouseEnter(fixable!);
     const shareDark = screen.getByTestId("mock-dark").querySelector('[data-mock-target="share-btn"]');
     expect(shareDark?.getAttribute("data-highlighted")).toBe("true");
   });
 
-  // 역방향(목업 → 뱃지) — 목업의 "보고서 열기" 버튼을 직접 hover해도 같은
-  // hoveredTarget이 오른다. 배지 쪽 시각 변화는 없지만(Mock만 아웃라인을
-  // 얹는다), 상태가 실제로 공유되는지는 같은 target의 다른 목업 요소가
-  // 켜지는지로 확인할 수 있다.
-  it("목업 요소를 직접 hover해도 같은 상태가 오른다 (역방향)", () => {
+  // S-2 (스펙 개정): 역방향(목업 → 뱃지)이 이제 상태만 공유하는 게 아니라
+  // 대응 뱃지도 실제로 강조한다 — 목업 요소를 직접 hover했을 때 같은 target을
+  // 가리키는 뱃지에 data-highlighted="true"가 붙는지를 본다("가리켜서
+  // 가르친다"가 양방향으로 성립하려면 뱃지 쪽에도 시각 변화가 있어야 한다).
+  it("목업 요소를 직접 hover하면 대응 뱃지가 강조된다 (역방향)", () => {
+    render(<ColorPalettePage />);
+    const badges = screen.getAllByTestId("contrast-badge");
+    const onSolid = badges.find(
+      (b) => /솔리드 위 글자/.test(b.textContent ?? "") && !/고정/.test(b.textContent ?? ""),
+    )!;
+    expect(onSolid.getAttribute("data-highlighted")).toBeNull();
+
+    const solidLight = screen.getByTestId("mock-light").querySelector('[data-mock-target="solid-btn"]')!;
+    fireEvent.mouseEnter(solidLight);
+    expect(onSolid.getAttribute("data-highlighted")).toBe("true");
+
+    fireEvent.mouseLeave(solidLight);
+    expect(onSolid.getAttribute("data-highlighted")).toBeNull();
+  });
+
+  // 역방향이 다른 목업 인스턴스에도 같은 상태를 올리는지(단일 hoveredTarget
+  // state 공유)는 별개로 계속 고정해 둔다.
+  it("목업 요소를 직접 hover해도 같은 상태가 오른다 (역방향, 목업↔목업)", () => {
     render(<ColorPalettePage />);
     const solidLight = screen.getByTestId("mock-light").querySelector('[data-mock-target="solid-btn"]')!;
     fireEvent.mouseEnter(solidLight);

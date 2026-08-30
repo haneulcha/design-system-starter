@@ -23,14 +23,18 @@ describe("mockTargetFor (스펙 D3)", () => {
     expect(mockTargetFor("success", "text-strong")).toBeNull();
   });
 
-  // 위 목록엔 없지만 실제로 배선을 완성시키는 조합 — noSubtle-bg는 "확인된
-  // 사실"에도 있고(D3 브리프), 액센트 text(text-strong의 짝, TEXT_ROLES의
-  // 나머지 절반)도 같은 공유 버튼을 가리켜야 한다. 실측(#f5d90a)에서 고칠 수
-  // 있는 실패 4건 중 DOM에 가장 먼저 뜨는 것이 정확히 accent/text다 — 이게
-  // null이면 그 뱃지에 아무리 hover해도 공유 버튼이 안 켜진다.
-  it("액센트 subtle-bg·text도 공유 버튼이다", () => {
+  // subtle-bg는 "확인된 사실"에도 있다(D3 브리프) — 공유 버튼의 배경이 그 롤이다.
+  it("액센트 subtle-bg도 공유 버튼이다", () => {
     expect(mockTargetFor("accent", "subtle-bg")).toBe("share-btn");
-    expect(mockTargetFor("accent", "text")).toBe("share-btn");
+  });
+
+  // 리뷰 반증(C-1): text(텍스트 링크)는 text-strong과 TEXT_ROLES 짝이지만 Mock의
+  // 공유 버튼은 text-strong stop만 쓴다 — text는 다른 stop이고 목업에 그 stop을
+  // 쓰는 요소가 없다. #00a3a3에서 실측: 액센트 텍스트(링크)만 실패하고 진한
+  // 텍스트는 AA를 통과하는데, "같은 축이니 같은 버튼"으로 매핑하면 멀쩡한 공유
+  // 버튼이 링을 두른다 — 도구가 거짓을 가리키게 된다. null이 맞다.
+  it("액센트 text(텍스트 링크)는 공유 버튼이 아니다 — null", () => {
+    expect(mockTargetFor("accent", "text")).toBeNull();
   });
 
   it("error의 subtle-bg·text-strong은 실패 배지다", () => {

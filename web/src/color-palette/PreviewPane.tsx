@@ -99,14 +99,11 @@ function Mock({
           </div>
         </div>
 
-        <div
-          data-mock-target="bars"
-          data-highlighted={highlight === "bars" ? "true" : undefined}
-          className="flex items-end gap-1.5"
-          style={{ height: 48, ...highlightStyle(highlight === "bars") }}
-          onMouseEnter={() => onHover("bars")}
-          onMouseLeave={() => onHover(null)}
-        >
+        {/* 막대는 data-mock-target을 달지 않는다 — a[3..7] 원시 인덱스로 그려서
+           어떤 역할과도 안 묶이므로 mockTargetFor가 "bars"를 반환할 일이 없다
+           (mockTargets.ts 참고). 강조·hover 배선을 달면 아무 뱃지도 못 켜는
+           죽은 핸들러만 남는다 — 리뷰 M-6. */}
+        <div className="flex items-end gap-1.5" style={{ height: 48 }}>
           {BAR_STOPS.map((s, i) => (
             <div
               key={s}
@@ -170,18 +167,27 @@ function Mock({
 // 질의가 영원히 실패한다. against·"고정" 꼬리표도 같은 이유로 문자열
 // 결합으로만 넣는다 — 자식 요소를 두지 않는다.
 function ContrastBadge({
-  check: c, target, onHover,
+  check: c, target, hoveredTarget, onHover,
 }: {
   readonly check: ContrastCheck;
-  /** 이 뱃지가 가리키는 목업 요소. unfixable 뱃지는 대상이 있어도 넘기지
-   *  않는다 — 대응 요소가 없어 아무 일도 안 일어나면 고장으로 읽힌다(스펙
-   *  D3 Step 5). target이 없으면 아래 hover 배선 자체를 달지 않는다. */
-  readonly target?: MockTarget | null;
-  readonly onHover?: (t: MockTarget | null) => void;
+  /** 이 뱃지가 가리키는 목업 요소. 배선 기준은 "고칠 수 있는가"(fixable)가
+   *  아니라 이 값이 null이 아닌가다(2026-08-30 스펙 개정, D3) — accent/on-solid은
+   *  절대 못 고치는(unfixable) 경고인데 목업엔 대응 요소(보고서 열기)가 있어서,
+   *  fixable로 가르면 이 대표 사례가 영원히 안 가리켜졌다. */
+  readonly target: MockTarget | null;
+  /** 역방향(목업 → 뱃지) 강조 판정용 — 이 뱃지의 target과 같으면 자기 자신을
+   *  강조한다. */
+  readonly hoveredTarget: MockTarget | null;
+  readonly onHover: (t: MockTarget | null) => void;
 }) {
-  // target·onHover 둘 다 있어야 배선한다 — unfixable 목록은 이 둘을 아예
-  // 넘기지 않으므로 wired가 항상 false라 data-highlights도, 이벤트도 없다.
-  const wired = target != null && onHover != null;
+  const wired = target != null;
+  const isHighlighted = wired && hoveredTarget === target;
+  // tabIndex는 onFocus/onBlur(키보드 hover 등가)가 실제로 발화하려면 이 요소가
+  // 포커스를 받을 수 있어야 해서 단다 — div는 기본이 비포커스다. wired인
+  // 뱃지에만 붙이므로(target === null인 뱃지는 tabIndex 자체가 없다) 탭
+  // 순서가 뱃지마다 비대칭이다: 가리킬 데가 있는 뱃지만 탭으로 들르고, 없는
+  // 뱃지는 건너뛴다 — 가리킬 게 없는데 포커스만 받아 아무 반응 없는 정지
+  // 지점을 만들지 않기 위함이다(고장으로 읽히는 것을 피한다는 D3의 같은 원칙).
   const hoverProps = wired
     ? {
         "data-highlights": target,
@@ -195,10 +201,14 @@ function ContrastBadge({
   return (
     <div
       data-testid="contrast-badge"
+      data-highlighted={isHighlighted ? "true" : undefined}
       // 뱃지 색은 neutral-500이다 — adjustable이 false인 "고정" 뱃지도
       // 400은 2.58:1로 미달이다. 대비 미달 사항을 못 읽으면 알 수 없으므로
-      // 장식이 아니다 (스펙 D2).
-      className={`ds-type-caption-sm text-neutral-500`}
+      // 장식이 아니다 (스펙 D2). 강조는 Mock과 같은 크롬 중립 링을 재사용한다
+      // (스펙 D3 개정 "역방향도 완성한다" — 목업 hover가 대응 뱃지도 밝혀야
+      // 양방향 교육이 성립한다).
+      className="ds-type-caption-sm text-neutral-500"
+      style={isHighlighted ? HIGHLIGHT_RING : undefined}
       {...hoverProps}
     >
       {`⚠ ${LABELS[c.scaleName] ?? c.scaleName} ${roleLabel(c.roleId)} (${
@@ -229,6 +239,12 @@ export function PreviewPane({
   // 관례값이라 stop을 옮겨 고칠 수 없다) triageChecks가 구조적으로 이걸
   // "고칠 수 없는 것"에 남긴다. shifts는 확정 팔레트(scales) 기준으로 이미
   // 계산돼 들어오므로 여기서 hover를 타지 않는다.
+  //
+  // 이 fixable/unfixable 나눔은 "화면 어디에(접힌 목록 안/밖) 배치할지"만
+  // 정한다 — 목업 강조 배선(아래 두 .map)은 이 축을 보지 않는다. D3가 처음엔
+  // fixable에만 배선했다가 개정됐다: accent/on-solid은 구조적으로 항상
+  // unfixable인데 목업에 대응 요소(보고서 열기)가 있어서, fixable로 배선을
+  // 가르면 그 대표 사례가 unfixable 목록 안에 갇혀 영원히 안 가리켜졌다.
   const { fixable, unfixable } = triageChecks(failing, shifts);
 
   // 헤드라인 개수는 확정 팔레트(summaryChecks) 기준이어야 한다 — checks는 hover
@@ -276,6 +292,7 @@ export function PreviewPane({
               key={`${c.scaleName}-${c.roleId}-${c.theme}-${c.against}`}
               check={c}
               target={mockTargetFor(c.scaleName, c.roleId)}
+              hoveredTarget={hoveredTarget}
               onHover={setHoveredTarget}
             />
           ))}
@@ -303,10 +320,18 @@ export function PreviewPane({
                 {`고칠 수 없는 미달 ${unfixable.length}건 — 상태색은 고정 앵커, 솔리드 위 글자는 관례값이라 이 화면에서 못 바꿉니다`}
               </summary>
               <div className="mt-1 space-y-1">
+                {/* unfixable도 target != null이면 배선한다 — accent/on-solid이
+                   바로 그 경우다("한 번에 고치기"로는 못 고치지만 목업의
+                   "보고서 열기"를 가리킬 수는 있다). 나머지(상태색 text·
+                   text-strong 등)는 mockTargetFor가 null을 내므로 그대로
+                   비배선이다. */}
                 {unfixable.map((c) => (
                   <ContrastBadge
                     key={`${c.scaleName}-${c.roleId}-${c.theme}-${c.against}`}
                     check={c}
+                    target={mockTargetFor(c.scaleName, c.roleId)}
+                    hoveredTarget={hoveredTarget}
+                    onHover={setHoveredTarget}
                   />
                 ))}
               </div>
