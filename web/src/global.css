@@ -4,3 +4,15 @@
 @theme {
   --text-2xs: 0.625rem;
 }
+
+/* 이 레포 최초의 reduced-motion 블록이다. 끄는 것은 **트윈이지 변위가 아니다** —
+   AdjustableScale의 press 착지는 transform으로 어포던스를 만들고, 그것을 끄면
+   3.1 D3 / 3.2 D4가 세운 "칩이 그림자가 있던 자리에 정확히 내려앉는다"가
+   사라진다. 최종 상태는 그대로 두고 전이 시간만 없앤다 (스펙 D9). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

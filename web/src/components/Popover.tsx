@@ -2,8 +2,13 @@
 //
 // 앵커 기준 absolute 팝오버. 이 Popover의 그림자·물리는 커스텀 유지다 — 상호작용
 // 설계라 elevation 카테고리로 갈아타지 않는다 (2026-08-24 스펙 D1 경계선). 크롬
-// 전반은 --ds-*를 먹는다 — builder·lab·inspector·color-palette 4화면이 이 파일을
-// 공유하니 그 경계선을 여기 남긴다.
+// 전반은 --ds-*를 먹는다.
+//
+// 2026-08-30 리뷰 정정: 이 자리 주석이 한동안 "builder·lab·inspector·
+// color-palette 4화면이 이 파일을 공유한다"고 적어 왔는데 사실이 아니다(이번
+// 변경 이전부터 틀려 있었다) — 이 파일을 import하는 곳은 AdjustableScale
+// 하나뿐이고, 그건 ColorPalettePage에서만 쓰인다. 폭발 반경은 /color-palette
+// 뿐이다.
 //
 // Radix / Base UI에서 가져온 계약만 손으로 구현한다(의존성 추가 없음):
 //   · 패널 role="dialog" + aria-label, 열리면 패널 컨테이너 자신에 포커스
@@ -28,6 +33,13 @@ import {
 } from "react";
 import { clampOffset } from "./popoverPosition";
 
+// 패널 상한을 경계 폭보다 이만큼 좁게 준다. clampOffset은 패널 폭이 경계 폭과
+// "같거나 크면"(>=) 포기하므로 0보다는 커야 하고, 브라우저의 subpixel 반올림
+// (max-width: 271.6px가 실제로 272px로 렌더되는 식)에도 `<` 부등호가 안전하게
+// 유지될 정도의 여유가 필요하다 — 실측 여백(320px 화면, 띠 272px)에 견줘
+// 시각적으로도 자연스러운 값.
+const BOUNDARY_MARGIN = 8;
+
 interface PopoverProps {
   readonly open: boolean;
   readonly onClose: () => void;
@@ -43,6 +55,19 @@ export function Popover({
 }: PopoverProps): ReactElement | null {
   const panelRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
+  // 경계(띠) 폭 상한. 고정 px을 주지 않는 이유: 겹침 사유 문구(D7-2)가 붙으면
+  // 패널이 넓어질 수 있는데, clampOffset은 "패널이 경계보다 넓으면" clamp를
+  // 포기한다(그 함수 헤더 주석 참조) — 포기하면 패널이 sticky 목업을 덮는다.
+  // 그걸 막으려고 애초에 경계를 재는 것이니, 상한도 그 경계 폭에 묶는다.
+  //
+  // 2026-08-30 리뷰 수정(C-2): 상한을 경계 폭과 "같게" 줬던 첫 구현이 회귀였다.
+  // clampOffset은 `panel.width >= boundary.width`면 포기하는데, max-width를
+  // 경계 폭과 정확히 같게 주면 내용이 넘칠 때 패널이 그 상한까지 꽉 차 폭이
+  // 경계와 같아져(>=) 매번 포기 분기를 탄다. 320px 실측(emulate viewport,
+  // innerWidth 320 확인): stop 50 패널이 경계 밖으로 100.5px 나갔다. 여백
+  // BOUNDARY_MARGIN만큼 상한을 경계보다 확실히 좁게 준다 — subpixel 반올림에도
+  // `<` 가 깨지지 않을 정도의 여유다.
+  const [maxWidth, setMaxWidth] = useState<number | null>(null);
 
   // 닫힐 때 포커스를 돌려줄지 판단하는 근거. activeElement를 닫힌 뒤에 읽으면
   // 늦는다 — 그때는 패널이 이미 사라져 포커스가 body로 떨어진 뒤다.
@@ -74,15 +99,56 @@ export function Popover({
     };
   }, [open, triggerRef]);
 
-  // 경계 밖으로 나간 만큼 되민다. jsdom은 rect가 전부 0이라 오프셋이 0으로 남고,
-  // 그래서 이 계산이 컴포넌트 테스트를 깨뜨리지 않는다.
+  // 상한 계산과 오프셋 계산을 두 단계로 나눈다(리뷰 C-2). 한 이펙트에서 같이
+  // 하면 오프셋이 "상한 적용 전" 패널 rect(사유 문구로 넓어진 자연 폭)로
+  // 계산된다 — 그 시점엔 아직 style.maxWidth가 안 붙어 있어서다. maxWidth
+  // state가 반영돼 패널이 실제로 좁아진 뒤에야 오프셋을 다시 재야 한다.
+  //
+  // 1단계: 상한. 패널 폭과 무관하게 경계만 본다. jsdom은 rect가 전부 0이라
+  // null(무제한)로 남고, 그래서 이 계산이 컴포넌트 테스트를 깨뜨리지 않는다.
+  // 알려진 한계(M-8, offset과 동일): 열 때 한 번만 잰다 — 열려 있는 동안
+  // 창 크기가 바뀌어도 재계산하지 않는다. 이 도구는 뷰포트 리사이즈 중에
+  // 팝오버를 열어 둔 채로 쓰는 시나리오가 없어 지금은 감수한다.
+  useLayoutEffect(() => {
+    if (!open) { setMaxWidth(null); return; }
+    const boundary = boundaryRef.current?.getBoundingClientRect();
+    if (!boundary) return;
+    const boundaryWidth = boundary.right - boundary.left;
+    setMaxWidth(boundaryWidth > BOUNDARY_MARGIN ? boundaryWidth - BOUNDARY_MARGIN : null);
+  }, [open, boundaryRef]);
+
+  // 2단계: 오프셋. deps에 maxWidth를 넣어 상한이 커밋되고 패널이 그 폭으로
+  // 다시 그려진 뒤 이 이펙트가 한 번 더 돌게 한다 — panelRef가 그때서야
+  // 좁아진 실제 rect를 돌려준다.
+  //
+  // 2026-08-30 리뷰 수정(R-1, 재리뷰 1차): setOffset(clampOffset(...))로
+  // "대체"하던 것이 회귀였다 — panelRef.getBoundingClientRect()는 이미 적용된
+  // offset을 포함한 실제 화면 좌표라, clampOffset의 반환값은 "지금 자리에서
+  // 얼마나 더 밀어야 하는지"(델타)이지 "총 오프셋"이 아니다. 1패스가 이미
+  // 보정에 성공한 뒤 2패스가 그 자리를 다시 재면 델타=0이 나오는데, 그 0을
+  // 총 오프셋으로 대입하면 1패스의 보정이 지워졌다(1280 stop 950이 sticky
+  // 목업 위로 튀어나감).
+  //
+  // 2026-08-30 리뷰 수정(R-1, 재리뷰 2차): 위 수정을 **누적**(prev + delta)으로
+  // 고쳤더니 이 앱이 `<StrictMode>`(main.tsx)로 감싸여 있다는 걸 놓쳤다 —
+  // dev 모드에서 React는 마운트 시 레이아웃 이펙트의 setup을 **두 번**
+  // 부른다(그 사이 cleanup은 이 이펙트엔 없어 no-op). 두 호출 다 같은
+  // 커밋(같은 panel rect, 같은 offset 클로저값)을 보고 같은 델타를 큐에
+  // 넣으므로, "누적"은 그 델타를 두 번 더해 보정이 **두 배**로 걸렸다(실측:
+  // 1280 stop 50에서 기대 117.27이 아니라 234.539). 대체도 누적도 아니라
+  // **절대값 재계산**이어야 한다: 지금 rect에서 "이미 적용된" offset(클로저로
+  // 읽은 현재 state)을 역산해 자연(미보정) 위치를 복원한 뒤, 그 자연 위치
+  // 기준으로 다시 계산해 그대로 대입한다. 같은 입력(같은 렌더의 rect·offset)
+  // 이면 몇 번을 다시 불러도 같은 결과가 나온다(멱등) — StrictMode의 이중
+  // 호출도, 이 이펙트의 정상적인 2패스 재실행도 둘 다 안전하다.
   useLayoutEffect(() => {
     if (!open) { setOffset(0); return; }
     const panel = panelRef.current?.getBoundingClientRect();
     const boundary = boundaryRef.current?.getBoundingClientRect();
     if (!panel || !boundary) return;
-    setOffset(clampOffset(panel, boundary));
-  }, [open, boundaryRef]);
+    const naturalPanel = { left: panel.left - offset, right: panel.right - offset };
+    setOffset(clampOffset(naturalPanel, boundary));
+  }, [open, boundaryRef, maxWidth]);
 
   useEffect(() => {
     if (!open) return;
@@ -121,7 +187,13 @@ export function Popover({
       // 뒤에 오는 쪽이 이겨서 clamp 오프셋이 조용히 사라진다.
       className="absolute top-full left-1/2 z-20 mt-2 w-max rounded-lg
                  border border-neutral-300 bg-white p-2 shadow-lg focus:outline-none"
-      style={{ transform: `translateX(calc(-50% + ${offset}px))` }}
+      style={{
+        transform: `translateX(calc(-50% + ${offset}px))`,
+        // 고정 px이 아니라 실측 경계 폭이 상한이다 — clampOffset은 패널이
+        // 경계보다 넓으면 clamp를 포기하므로(위 주석), 상한이 없으면 사유
+        // 문구로 패널이 넓어질 때 그 포기 경로를 그대로 밟는다.
+        ...(maxWidth !== null ? { maxWidth } : {}),
+      }}
     >
       {/* 화살표는 오프셋의 역부호만큼 되밀어, 패널이 clamp로 밀려도 언제나 앵커
           중앙을 가리킨다 — 어느 stop을 조정 중인지 알려주는 것이 이 화살표의

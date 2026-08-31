@@ -93,20 +93,24 @@ export function OklchPicker({ hex, onChange }: OklchPickerProps) {
         hue={lch.h}
         onPick={(h) => commit({ ...lch, c: clampChromaToGamut(lch.l, desiredC.current, h), h })}
       />
-      <div className="flex gap-2 pt-1">
+      {/* 3.3이 좁힌 "배치·상태 구조는 불변"에 flex-wrap 하나를 예외로 둔다 (스펙 D1).
+          이 행의 min-content(3 × (라벨 12 + gap 4 + 칸 64) + 2 × gap 8 = 256)가
+          페이지 가로 하한을 만들어 성공 기준 1을 물리적으로 불가능하게 하기
+          때문이다. 드래그 배선·클램프·마커 계산·패드 크기는 그대로다. */}
+      <div className="flex flex-wrap gap-2 pt-1">
         <NumberField
-          label="L" value={lch.l} min={0} max={1} step={0.001} decimals={3}
+          label="L" ariaLabel="명도" value={lch.l} min={0} max={1} step={0.001} decimals={3}
           onCommit={(l) => commit({ ...lch, c: clampChromaToGamut(l, desiredC.current, lch.h), l })}
         />
         <NumberField
-          label="C" value={lch.c} min={0} max={CHROMA_MAX} step={0.001} decimals={3}
+          label="C" ariaLabel="채도" value={lch.c} min={0} max={CHROMA_MAX} step={0.001} decimals={3}
           onCommit={(c) => {
             desiredC.current = c;
             commit({ ...lch, c: clampChromaToGamut(lch.l, c, lch.h) });
           }}
         />
         <NumberField
-          label="H" value={lch.h} min={0} max={360} step={0.5} decimals={1}
+          label="H" ariaLabel="색상" value={lch.h} min={0} max={360} step={0.5} decimals={1}
           onCommit={(h) => commit({ ...lch, c: clampChromaToGamut(lch.l, desiredC.current, h), h })}
         />
       </div>
@@ -217,6 +221,7 @@ function LcPad({
   return (
     <div
       ref={wrapRef}
+      aria-hidden="true"
       className="relative w-full h-36 rounded overflow-hidden border border-neutral-200 cursor-crosshair touch-none"
       onPointerDown={(e) => {
         draggingRef.current = true;
@@ -290,6 +295,7 @@ function HueStrip({
   return (
     <div
       ref={wrapRef}
+      aria-hidden="true"
       className="relative w-full h-3 rounded-full cursor-crosshair touch-none"
       style={{ background: HUE_GRADIENT }}
       onPointerDown={(e) => {
@@ -314,9 +320,10 @@ function HueStrip({
 // "0." 같은 중간 상태가 통과하지 못해 한 글자씩 칠 수 없다.
 
 function NumberField({
-  label, value, min, max, step, decimals, onCommit,
+  label, ariaLabel, value, min, max, step, decimals, onCommit,
 }: {
   readonly label: string;
+  readonly ariaLabel: string;
   readonly value: number;
   readonly min: number;
   readonly max: number;
@@ -356,9 +363,13 @@ function NumberField({
   // 두 줄만 바꾸고 그 외(드래그 핸들러·클램프·마커 계산·패드 크기)는 그대로.
   return (
     <label className="flex items-center gap-1 ds-type-caption-sm text-neutral-500">
-      <span className="w-3 font-mono">{label}</span>
+      {/* 시각 라벨은 한 글자를 유지한다 — 폭이 w-3이고 L·C·H는 이 도구 사용자에게
+          통용되는 표기다. 보조기술에는 한 글자로 부족해 aria-label만 늘린다:
+          패드를 aria-hidden으로 숨긴 이상 이 칸들이 유일한 접근 경로이고,
+          "L"만으로는 그 역할을 못 한다 (스펙 D10). */}
+      <span className="w-3 font-mono" aria-hidden>{label}</span>
       <input
-        aria-label={label}
+        aria-label={ariaLabel}
         type="number"
         inputMode="decimal"
         min={min}

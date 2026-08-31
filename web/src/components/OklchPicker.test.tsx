@@ -19,21 +19,21 @@ function Harness({ initial = "#3b82f6" }: { initial?: string }) {
 describe("OklchPicker 숫자 칸", () => {
   it("L·C·H 세 칸을 그린다", () => {
     render(<Harness />);
-    expect(screen.getByLabelText("L")).toBeTruthy();
-    expect(screen.getByLabelText("C")).toBeTruthy();
-    expect(screen.getByLabelText("H")).toBeTruthy();
+    expect(screen.getByLabelText("명도")).toBeTruthy();
+    expect(screen.getByLabelText("채도")).toBeTruthy();
+    expect(screen.getByLabelText("색상")).toBeTruthy();
   });
 
   // 미세조정이 이 태스크의 존재 이유다 — 스텝이 굵으면 의미가 없다.
   it("L 칸의 스텝이 0.001이다", () => {
     render(<Harness />);
-    expect(screen.getByLabelText("L").getAttribute("step")).toBe("0.001");
+    expect(screen.getByLabelText("명도").getAttribute("step")).toBe("0.001");
   });
 
   it("L을 치면 hex가 따라온다", () => {
     render(<Harness />);
     const before = screen.getByTestId("hex").textContent;
-    fireEvent.change(screen.getByLabelText("L"), { target: { value: "0.700" } });
+    fireEvent.change(screen.getByLabelText("명도"), { target: { value: "0.700" } });
     expect(screen.getByTestId("hex").textContent).not.toBe(before);
   });
 
@@ -47,7 +47,7 @@ describe("OklchPicker 숫자 칸", () => {
     const before = hexToOklch(screen.getByTestId("hex").textContent!)!;
     expect(before.c).toBeGreaterThan(0.1); // #3b82f6은 채도가 있는 파랑이어야 시작점이 유효
 
-    const l = screen.getByLabelText("L") as HTMLInputElement;
+    const l = screen.getByLabelText("명도") as HTMLInputElement;
     fireEvent.change(l, { target: { value: "0" } });
     fireEvent.change(l, { target: { value: "0.7" } });
     fireEvent.change(l, { target: { value: "0.75" } });
@@ -66,7 +66,7 @@ describe("OklchPicker 숫자 칸", () => {
   // 회복이 아니라 h=200에서 잘린 0.106에 눌러앉으면 래칫이 재현된 것이다.
   it("H 칸에 연속으로 타이핑해도 채도가 래칫처럼 죽지 않는다", () => {
     render(<Harness />);
-    const h = screen.getByLabelText("H") as HTMLInputElement;
+    const h = screen.getByLabelText("색상") as HTMLInputElement;
     fireEvent.change(h, { target: { value: "10" } });
     fireEvent.change(h, { target: { value: "200" } });
     fireEvent.change(h, { target: { value: "320" } });
@@ -80,8 +80,8 @@ describe("OklchPicker 숫자 칸", () => {
   // gamut 밖 조합을 조용히 자르면 "왜 안 들어가지"가 된다 (스펙 D1).
   it("gamut 밖 채도를 치면 잘린 값이 칸에 되돌아온다", () => {
     render(<Harness />);
-    fireEvent.change(screen.getByLabelText("L"), { target: { value: "0.950" } });
-    const c = screen.getByLabelText("C") as HTMLInputElement;
+    fireEvent.change(screen.getByLabelText("명도"), { target: { value: "0.950" } });
+    const c = screen.getByLabelText("채도") as HTMLInputElement;
     fireEvent.change(c, { target: { value: "0.300" } });
     expect(Number(c.value)).toBeLessThan(0.3);
     expect(Number(c.value)).toBeGreaterThan(0);
@@ -95,7 +95,7 @@ describe("OklchPicker 숫자 칸", () => {
   // jsdom도 그대로 따른다 — 컴포넌트에 도달하기 전에 값이 버려진다.
   it("타이핑한 값을 정규화된 표기로 덮어쓰지 않는다", () => {
     render(<Harness />);
-    const l = screen.getByLabelText("L") as HTMLInputElement;
+    const l = screen.getByLabelText("명도") as HTMLInputElement;
     fireEvent.change(l, { target: { value: "0.7" } });
     expect(l.value).toBe("0.7"); // "0.700"으로 바뀌면 안 된다
   });
@@ -103,16 +103,34 @@ describe("OklchPicker 숫자 칸", () => {
   it("빈 입력은 커밋하지 않는다", () => {
     render(<Harness />);
     const before = screen.getByTestId("hex").textContent;
-    fireEvent.change(screen.getByLabelText("L"), { target: { value: "" } });
+    fireEvent.change(screen.getByLabelText("명도"), { target: { value: "" } });
     expect(screen.getByTestId("hex").textContent).toBe(before);
   });
 
   it("blur 시 무효 입력을 마지막 유효값으로 되돌린다", () => {
     render(<Harness />);
-    const l = screen.getByLabelText("L") as HTMLInputElement;
+    const l = screen.getByLabelText("명도") as HTMLInputElement;
     const valid = l.value;
     fireEvent.change(l, { target: { value: "" } });
     fireEvent.blur(l);
     expect(l.value).toBe(valid);
+  });
+});
+
+describe("OklchPicker 보조기술", () => {
+  it("패드와 hue 스트립이 보조기술에서 숨겨진다", () => {
+    const { container } = render(<Harness />);
+    const canvas = container.querySelector("canvas");
+    // 포인터 편의 장치다 — 같은 값이 L/C/H 칸으로 도달 가능하고, 그쪽이 공식
+    // 경로다. 숨기지 않으면 스크린리더에 이름 없는 그래픽이 둘 남는다.
+    expect(canvas?.closest("[aria-hidden='true']")).toBeTruthy();
+  });
+
+  it("L·C·H 칸이 한 글자가 아닌 이름을 갖는다", () => {
+    render(<Harness />);
+    // 한 글자 라벨("L")로는 "이쪽이 공식 접근 경로"라는 선언을 지탱하지 못한다.
+    expect(screen.getByLabelText("명도")).toBeTruthy();
+    expect(screen.getByLabelText("채도")).toBeTruthy();
+    expect(screen.getByLabelText("색상")).toBeTruthy();
   });
 });

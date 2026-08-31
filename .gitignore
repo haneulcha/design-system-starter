@@ -7,3 +7,4 @@ data/*
 
 .playwright-mcp/
 web/src/tokens.generated.css
+.impeccable/

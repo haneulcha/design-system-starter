@@ -47,7 +47,17 @@ export function NeutralControl({ state, onChange }: Props) {
               }`}
             >
               {a.label}
-              {a.id === snapped.id && <span className="ml-1 text-neutral-400">•</span>}
+              {a.id === snapped.id && (
+                <span
+                  // 점 표식 색은 neutral-500이다 — 400은 2.58:1로 미달이다.
+                  // 어느 칩이 자동으로 붙은 것인지 못 읽으면 알 수 없으므로
+                  // 장식이 아니다. aria-label에 "(자동)"이 들어가지만 (40행),
+                  // 시각 채널로도 구분 가능해야 한다 (스펙 D2).
+                  className="ml-1 text-neutral-500"
+                >
+                  •
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -81,7 +91,10 @@ export function NeutralControl({ state, onChange }: Props) {
           <button
             type="button"
             onClick={() => onChange(null)}
-            className="ds-type-caption-sm text-neutral-400 hover:text-neutral-600 underline"
+            // 링크 색은 neutral-500이다 — 400은 2.58:1로 미달이다.
+            // "되돌리기" 버튼을 못 읽으면 자동 스냅으로 돌아갈 길이 없으므로
+            // 장식이 아니다 (스펙 D2).
+            className="ds-type-caption-sm text-neutral-500 hover:text-neutral-700 underline"
           >
             자동으로
           </button>

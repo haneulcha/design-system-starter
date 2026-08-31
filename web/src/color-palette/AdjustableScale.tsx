@@ -112,7 +112,10 @@ export function AdjustableScale({
             {showCaptions && (
               <div
                 data-testid="stop-caption"
-                className="mt-1 text-center ds-type-code-sm text-neutral-400"
+                // 캡션 색은 neutral-500이다 — 400은 흰 배경에서 2.58:1로, 이 화면이
+                // 재고 있는 바로 그 기준(4.5:1)에 미달한다. stop 번호를 못 읽으면
+                // 어느 자리인지 알 수 없으므로 장식이 아니다 (스펙 D2).
+                className="mt-1 text-center ds-type-code-sm text-neutral-500"
               >
                 {STOP_KEYS[i]}
               </div>
