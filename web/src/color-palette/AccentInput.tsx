@@ -35,10 +35,12 @@ export function AccentInput({
   // 없어진다**(시작만 세면 되므로 pointerup/pointercancel/lostpointercapture
   // 중 무엇이 오든, 혹은 아예 안 오든 상관없다). 세대는 셋 중 하나에서만
   // 새로 열린다:
-  //   1. 피커 서브트리 안에서 새 pointerdown(새 드래그 시작)
-  //   2. 피커 서브트리 안 어떤 입력이 focusin(NumberField에 포커스 진입)
+  //   1. 피커 서브트리 안에서 새 pointerdown(새 드래그 시작) 또는
+  //      pointercancel(아래 F-1 참고 — 이것도 "시작"으로 센다)
+  //   2. 피커 서브트리 밖에서 안으로 들어오는 focusin(아래 F-2 참고 —
+  //      L↔C↔H 사이의 이동은 새 세대가 아니다)
   //   3. hex 입력창 자체의 커밋(항상 자기 자신만의 새 세대 — 아래 참고)
-  // 그 사이의 모든 커밋(pointermove 연속, 같은 포커스 안에서의 ArrowUp
+  // 그 사이의 모든 커밋(pointermove 연속, 같은 세션 안에서의 ArrowUp
   // 반복)은 세대가 안 바뀌므로 "같은 조정"으로 묶인다.
   const sessionGen = useRef(0);
   const pickerWrapRef = useRef<HTMLDivElement>(null);
@@ -56,14 +58,46 @@ export function AccentInput({
     // 때 이미 새 세대가 반영돼 있다(직접 실행 순서 확인).
     const onPointerDown = () => { sessionGen.current += 1; };
     wrap.addEventListener("pointerdown", onPointerDown);
-    // focusin은 버블링하는 focus 이벤트다(plain "focus"는 안 한다) — L/C/H
-    // 숫자 칸에 포커스가 들어올 때마다 새 세대를 연다. blur/focusout처럼
+    // 리뷰 라운드 3, F-1: pointercancel도 "시작" 취급으로 새 세대를 연다.
+    // 근인은 OklchPicker(HueStrip·LcPad)의 draggingRef가 pointerup에서만
+    // 내려가고 pointercancel을 안 듣는 것이다 — pointercancel 뒤에도
+    // draggingRef가 참으로 남아, 버튼을 뗀 채 마우스만 움직여도
+    // pointermove가 계속 pick()을 불러 onChange가 나온다(브라우저 실측
+    // 확인). 그 draggingRef 자체를 고치려면 OklchPicker의 드래그 배선을
+    // 건드려야 해서 이번 사이클 경계(4번째 부분 개정) 밖이다 — 대신 여기서
+    // "pointercancel도 새 세대"로 방어한다: draggingRef가 고착돼 계속
+    // 커밋이 나와도, 그 커밋들의 세대가 pointercancel 시점에 이미 바뀌어
+    // 있어 다음 번 onAccentChange에서 곧바로(had가 거짓이면) 만료된다.
+    // 증가는 단조라 이 방어 자체가 "끝을 놓쳐 고착"되는 실패 모드를 만들지
+    // 않는다 — pointercancel을 또 놓쳐도(예: lostpointercapture만 오는
+    // 브라우저) 다음 pointerdown이나 hex 칸 커밋이 여전히 세대를 연다.
+    const onPointerCancel = () => { sessionGen.current += 1; };
+    wrap.addEventListener("pointercancel", onPointerCancel);
+    // focusin은 버블링하는 focus 이벤트다(plain "focus"는 안 한다) — 이
+    // 서브트리 밖에서 안으로 들어올 때만 새 세대를 연다. blur/focusout처럼
     // "끝"을 별도로 안 듣는 이유는 pointerdown과 같다: 시작만 세면 끝을
     // 놓쳐서 영원히 고착되는 실패 모드 자체가 생기지 않는다.
-    const onFocusIn = () => { sessionGen.current += 1; };
+    //
+    // 리뷰 라운드 3, F-2: relatedTarget이 이 wrapper 안이면(=L↔C↔H
+    // NumberField 사이의 Tab 이동) 세대를 안 연다. 처음엔 서브트리 안 어떤
+    // focusin이든 새 세대를 열었는데, 그러면 "명도에서 드랍 → Tab으로
+    // 채도 이동 → 넛지 한 번"에서 채도 넛지가 곧바로 새 세대 취급돼
+    // 배너가 사라진다 — 파란 채널 1/255 같은 눈에 안 띄는 변화로 복원
+    // 수단이 영구히 사라지는 결과였다(N-2와 같은 계열). D10이 NumberField
+    // 셋을 공식 접근 경로로 묶은 이상, 그 셋 사이의 이동은 "같은 조정
+    // 도구 안에서의 이동"이지 새 조정의 시작이 아니다 — 마우스가
+    // HueStrip↔LcPad 사이를 오가도 같은 드래그면 세대가 안 바뀌는 것과
+    // 대칭이다. 그래서 relatedTarget(포커스가 어디서 왔는지)이 이
+    // wrapper 안이면 건너뛴다: 서브트리 밖(예: hex 칸, 스와치, 페이지의
+    // 다른 곳)에서 들어올 때만 새 세대다.
+    const onFocusIn = (e: FocusEvent) => {
+      if (e.relatedTarget instanceof Node && wrap.contains(e.relatedTarget)) return;
+      sessionGen.current += 1;
+    };
     wrap.addEventListener("focusin", onFocusIn);
     return () => {
       wrap.removeEventListener("pointerdown", onPointerDown);
+      wrap.removeEventListener("pointercancel", onPointerCancel);
       wrap.removeEventListener("focusin", onFocusIn);
     };
   }, []);

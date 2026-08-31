@@ -1207,6 +1207,70 @@ describe("pin 소멸 알림과 복원 (D6)", () => {
     expect(window.location.search).not.toContain("s7=295bac"); // 파랑 시절 pin이 안 섞인다
   });
 
+  // 리뷰 라운드 3, F-1: 위 테스트는 pointercancel 뒤 hex 칸(항상 새 세대)만
+  // 썼다 — OklchPicker의 실제 결함(HueStrip의 draggingRef가 pointerup에서만
+  // 내려가고 pointercancel을 안 들어, 취소 뒤에도 버튼을 뗀 채 마우스만
+  // 움직이면 pick()이 계속 나온다)은 안 건드렸다. 이 테스트는 그 실제
+  // 결함 경로를 그대로 태운다 — 진짜 HueStrip DOM에 pointerdown하고,
+  // pointercancel 뒤 window에 pointermove를 여러 번 쏴서 OklchPicker가
+  // 정말로 계속 커밋을 내는지(브라우저 실측과 동일 패턴), 그런데도
+  // AccentInput의 pointercancel→새 세대 방어 덕에 오염이 안 나는지 본다.
+  it("pointercancel 뒤 OklchPicker의 draggingRef가 고착돼 계속 커밋해도 오염이 없다", () => {
+    const { container } = render(<ColorPalettePage />);
+    fireEvent.click(screen.getAllByTestId("swatch")[7]); // stop 700
+    fireEvent.click(screen.getAllByRole("radio")[0]); // #295bac — "파랑" pin
+
+    const hueStrip = container.querySelector(".cursor-crosshair.rounded-full")!;
+    fireEvent.pointerDown(hueStrip, { clientX: 100, clientY: 6 }); // 드랍
+    expect(window.location.search).not.toContain("s7=");
+    expect(screen.getByTestId("pin-restore-banner")).toBeTruthy();
+
+    fireEvent.pointerCancel(hueStrip, { clientX: 100, clientY: 6 }); // pointerup 없이 취소
+    // OklchPicker는 pointercancel을 안 들으므로 draggingRef가 참으로
+    // 남는다 — 버튼 없이 이동해도(jsdom엔 buttons 상태가 없어 그대로
+    // pointermove) HueStrip의 window 리스너가 여전히 pick()을 부른다.
+    fireEvent.pointerMove(window, { clientX: 120, clientY: 6 });
+    fireEvent.pointerMove(window, { clientX: 140, clientY: 6 });
+    fireEvent.pointerMove(window, { clientX: 160, clientY: 6 });
+
+    // AccentInput의 pointercancel 리스너가 이미 새 세대를 열어 놨으므로,
+    // 그 뒤에 고착된 draggingRef가 만들어낸 커밋들은 전부 "다른 세대"로
+    // 판정돼 첫 커밋에서 곧바로 만료된다.
+    expect(screen.queryByTestId("pin-restore-banner")).toBeNull();
+    expect(screen.queryByRole("button", { name: "복원" })).toBeNull();
+    expect(window.location.search).not.toContain("s7=295bac"); // 파랑 시절 pin이 안 섞인다
+  });
+
+  // 리뷰 라운드 3, F-2: L→C→H 사이의 Tab 이동은 새 세대가 아니다. 명도에서
+  // 드랍한 뒤 Tab으로 채도로 넘어가 넛지해도 배너·복원 버튼이 살아있어야
+  // 한다 — 그렇지 않으면 파란 채널 1/255 같은 눈에 안 띄는 변화로 복원
+  // 수단이 영구히 사라진다(D10이 NumberField 셋을 공식 접근 경로로 묶은
+  // 이상 N-2와 같은 계열의 결함).
+  it("L에서 드랍 후 Tab으로 C로 넘어가 넛지해도 배너가 유지된다", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getAllByTestId("swatch")[7]); // stop 700
+    fireEvent.click(screen.getAllByRole("radio")[0]); // #295bac
+    const pinned = screen.getAllByTestId("swatch")[7].getAttribute("aria-label");
+
+    const lField = screen.getByLabelText("명도");
+    const cField = screen.getByLabelText("채도");
+
+    fireEvent.focusIn(lField); // 명도로 포커스 진입 — 새 세대
+    fireEvent.change(lField, { target: { value: "0.63" } }); // 드랍
+    expect(screen.getByTestId("pin-restore-banner")).toBeTruthy();
+
+    // Tab: 명도 → 채도. relatedTarget이 wrapper 안(=lField)이므로 세대가
+    // 안 바뀐다.
+    fireEvent.focusOut(lField, { relatedTarget: cField });
+    fireEvent.focusIn(cField, { relatedTarget: lField });
+    fireEvent.change(cField, { target: { value: "0.2" } }); // 채도 넛지 — 같은 세대
+
+    expect(screen.getByTestId("pin-restore-banner")).toBeTruthy(); // 유지
+    fireEvent.click(screen.getByRole("button", { name: "복원" }));
+    expect(screen.getAllByTestId("swatch")[7].getAttribute("aria-label")).toBe(pinned);
+    expect(window.location.search).toContain("s7=295bac");
+  });
+
   // 리뷰 C-1: 배너는 복원을 누르기 전까지 안 걷힌다 — 그 사이 사용자가 다른
   // stop을 새로 pin하면, 교체(replace) 구현은 그 새 pin을 "복원" 클릭이
   // 조용히 덮어썼다. 리뷰어 실측 재현 시퀀스 그대로: pin stop700 → H 변경(드랍)
