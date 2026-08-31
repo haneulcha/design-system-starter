@@ -1136,27 +1136,75 @@ describe("pin 소멸 알림과 복원 (D6)", () => {
   // 불리면 "전이" 조건(had)이 거짓이라 버퍼를 덮지 않는다. 덮었다면 복원해도
   // 빈 pins가 나와 원래 pin을 영영 잃는다.
   //
-  // 리뷰 I-1로 pointerdown/pointerup을 감싸는 이유: 버퍼 만료(다음 액센트
-  // 변경에서 폐기)가 dragActive를 본다 — 드래그 중이 아니면 즉시 폐기한다.
-  // 이 테스트가 실측하려는 것이 "같은 드래그 안의 연속 pointermove"이므로,
-  // 그 조건을 실제로 성립시키려면 진짜 pointerdown~pointerup 사이에서
-  // 값을 바꿔야 한다 — 안 감싸면(이전 버전) dragActive가 계속 거짓이라 두
-  // 번째 변경에서 버퍼가 만료돼 이 테스트 자체가 실패한다.
+  // 리뷰 라운드 2로 pointerdown을 "accent-picker" 서브트리에 쏘는 이유:
+  // 버퍼 만료가 이제 세대 번호(AccentInput의 sessionGen)를 본다 — 새
+  // pointerdown이 그 서브트리 안에서 뜨면 새 세대가 열리고, 그 세대 동안의
+  // 연속 커밋(pointermove 여러 번을 흉내 낸 이 fireEvent.change 세 번)은
+  // 전부 같은 세대라 안 만료된다. 1라운드는 window에 쏴서 dragActive를
+  // 봤는데, 이제 그 메커니즘 자체가 없다 — window에 쏘면 이 서브트리
+  // 리스너가 못 듣는다(피커 서브트리로 정확히 좁혔기 때문). 아무 pointerdown도
+  // 없으면 세대가 기본값(0)에 머물러 있어 사실 이 테스트는 굳이 안 쏴도
+  // 통과하지만, "같은 드래그 세션"이라는 전제를 실제로 성립시키려면 진짜
+  // 세대 전환 이벤트를 쏴야 그 전제를 검증하는 테스트가 된다.
   it("연속 조정(드래그 여러 픽셀)에서도 첫 전이의 pin만 복원 버퍼에 남는다", () => {
     render(<ColorPalettePage />);
     fireEvent.click(screen.getAllByTestId("swatch")[7]); // stop 700
     fireEvent.click(screen.getAllByRole("radio")[0]); // #295bac
     const pinned = screen.getAllByTestId("swatch")[7].getAttribute("aria-label");
 
-    fireEvent.pointerDown(window); // 드래그 시작 — 이 사이엔 버퍼가 안 만료된다
+    fireEvent.pointerDown(screen.getByTestId("accent-picker")); // 드래그 시작 — 새 세대를 연다
     fireEvent.change(screen.getByLabelText("색상"), { target: { value: "262" } }); // 전이 — 기록
-    fireEvent.change(screen.getByLabelText("색상"), { target: { value: "264" } }); // pins 이미 빈 채 — 안 덮음
-    fireEvent.change(screen.getByLabelText("색상"), { target: { value: "266" } }); // 역시 안 덮음
-    fireEvent.pointerUp(window); // 드래그 종료
+    fireEvent.change(screen.getByLabelText("색상"), { target: { value: "264" } }); // 같은 세대 — 안 덮음
+    fireEvent.change(screen.getByLabelText("색상"), { target: { value: "266" } }); // 역시 같은 세대
 
     fireEvent.click(screen.getByRole("button", { name: "복원" }));
     expect(screen.getAllByTestId("swatch")[7].getAttribute("aria-label")).toBe(pinned);
     expect(window.location.search).toContain("s7=295bac"); // 리뷰 M-3: URL 회복도 단언
+  });
+
+  // 리뷰 라운드 2, N-2: NumberField(D10이 승격한 공식 키보드 접근 경로)에
+  // 포커스가 유지된 채 값을 두 번 바꿔도(예: ArrowUp 두 번과 동등한 커밋
+  // 두 번) 배너가 살아있어야 한다 — 1라운드는 포인터만 보고 있어서 이
+  // 경로가 안 걸렸다(NumberField 넛지는 pointerdown이 아니다).
+  it("NumberField에 포커스가 유지된 채 값을 두 번 바꿔도(키보드 넛지) 배너가 유지된다", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getAllByTestId("swatch")[7]); // stop 700
+    fireEvent.click(screen.getAllByRole("radio")[0]); // #295bac
+    const pinned = screen.getAllByTestId("swatch")[7].getAttribute("aria-label");
+
+    const hueField = screen.getByLabelText("색상");
+    fireEvent.focusIn(hueField); // 포커스 진입 — 새 세대를 연다
+    fireEvent.change(hueField, { target: { value: "262" } }); // 전이 — 기록
+    fireEvent.change(hueField, { target: { value: "264" } }); // 포커스 안 떠남 — 같은 세대
+    fireEvent.change(hueField, { target: { value: "266" } }); // 역시 같은 세대
+
+    expect(screen.getByTestId("pin-restore-banner")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "복원" }));
+    expect(screen.getAllByTestId("swatch")[7].getAttribute("aria-label")).toBe(pinned);
+    expect(window.location.search).toContain("s7=295bac");
+  });
+
+  // 리뷰 라운드 2, N-1: pointercancel처럼 pointerup 없이 끝나는 포인터
+  // 시퀀스 뒤에도 오염이 재현되면 안 된다. 세대 기반 설계는 "끝"을 안 보므로
+  // (시작만 본다) 이 시나리오 자체가 구조적으로 안전하다 — pointercancel을
+  // 쐈든 안 쐈든 다음 액센트 변경이 새 세대(hex 칸은 항상 새 세대)라 버퍼가
+  // 만료된다.
+  it("pointerup 없이 pointercancel로 끝나도 다음 액센트 변경들에서 버퍼가 만료돼 오염이 없다", () => {
+    render(<ColorPalettePage />);
+    fireEvent.click(screen.getAllByTestId("swatch")[7]); // stop 700
+    fireEvent.click(screen.getAllByRole("radio")[0]); // #295bac — "파랑" pin
+
+    const picker = screen.getByTestId("accent-picker");
+    fireEvent.pointerDown(picker);
+    fireEvent.change(screen.getByLabelText("색상"), { target: { value: "262" } }); // 드랍
+    fireEvent.pointerCancel(picker); // pointerup 없이 취소 — 세대 설계는 "끝"을 안 본다
+
+    fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#ef4444" } });
+    fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#8b5cf6" } });
+
+    expect(screen.queryByRole("button", { name: "복원" })).toBeNull();
+    expect(window.location.search).toContain("a=8b5cf6");
+    expect(window.location.search).not.toContain("s7=295bac"); // 파랑 시절 pin이 안 섞인다
   });
 
   // 리뷰 C-1: 배너는 복원을 누르기 전까지 안 걷힌다 — 그 사이 사용자가 다른

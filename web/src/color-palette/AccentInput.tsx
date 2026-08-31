@@ -5,19 +5,68 @@
 // 중간 상태에서 React가 매 keystroke마다 값을 이전 유효값으로 되돌려 전체
 // 선택 후 붙여넣기밖에 못 하게 된다. 이 도구의 유일한 필수 입력이라 심각하다.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { OklchPicker } from "../components/OklchPicker";
 
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
 
 export function AccentInput({
   hex, onChange,
-}: { readonly hex: string; readonly onChange: (hex: string) => void }) {
+}: {
+  readonly hex: string;
+  // session: "같은 조정 제스처인가"를 부모(ColorPalettePage)가 판정할 수 있게
+  // 넘기는 세대 번호 — 아래 sessionGen 설명 참고. OklchPicker 자체는 안
+  // 건드린다: 이 컴포넌트(AccentInput)가 OklchPicker의 단일 hex 콜백을
+  // 감싸면서 세대를 붙여 내보낸다.
+  readonly onChange: (hex: string, session: number) => void;
+}) {
   const [draft, setDraft] = useState(hex);
 
   // 부모가 액센트를 바꾸면(후보 선택, URL 복원 등) 드래프트도 따라간다 —
   // 입력 중이 아닐 때만 의미 있는 동기화라 타이핑 중엔 사용자가 친 값이 이긴다.
   useEffect(() => setDraft(hex), [hex]);
+
+  // 최종 리뷰 라운드 2(N-1·N-2)의 근사 교체: "포인터가 지금 눌려 있는가"로
+  // 드래그를 흉내 냈더니 pointercancel처럼 짝이 안 맞는 이벤트에서 영원히
+  // 참으로 고착되고(N-1), 키보드 넛지(NumberField의 ArrowUp)는 애초에
+  // 포인터 이벤트가 아니라서 아예 안 잡혔다(N-2, D10이 NumberField를 공식
+  // 접근 경로로 승격한 것과 정면 충돌). 판정 축을 "지금 이 순간의 상태"에서
+  // "이 커밋이 어느 조정 세대에 속하는가"로 바꾼다 — **끝을 감지할 필요가
+  // 없어진다**(시작만 세면 되므로 pointerup/pointercancel/lostpointercapture
+  // 중 무엇이 오든, 혹은 아예 안 오든 상관없다). 세대는 셋 중 하나에서만
+  // 새로 열린다:
+  //   1. 피커 서브트리 안에서 새 pointerdown(새 드래그 시작)
+  //   2. 피커 서브트리 안 어떤 입력이 focusin(NumberField에 포커스 진입)
+  //   3. hex 입력창 자체의 커밋(항상 자기 자신만의 새 세대 — 아래 참고)
+  // 그 사이의 모든 커밋(pointermove 연속, 같은 포커스 안에서의 ArrowUp
+  // 반복)은 세대가 안 바뀌므로 "같은 조정"으로 묶인다.
+  const sessionGen = useRef(0);
+  const pickerWrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const wrap = pickerWrapRef.current;
+    if (!wrap) return;
+    // window가 아니라 이 wrapper에 붙이는 이유: 페이지의 다른 pointerdown
+    // (스와치 클릭, 팝오버 라디오 등)까지 세대를 밀면 안 된다 — 피커
+    // 서브트리로 정확히 좁힌다. 캡처가 아니라 버블 단계라 실제 target(예:
+    // HueStrip div)에서 이 wrapper로 버블링되며 도착하는데, wrapper가
+    // React 루트보다 target에 더 가까운 조상이라 React의 위임 핸들러
+    // (HueStrip의 onPointerDown, 그 안에서 첫 pick()을 동기 호출)보다
+    // **먼저** 실행된다 — 그래서 새 드래그의 첫 pick()이 onChange를 부를
+    // 때 이미 새 세대가 반영돼 있다(직접 실행 순서 확인).
+    const onPointerDown = () => { sessionGen.current += 1; };
+    wrap.addEventListener("pointerdown", onPointerDown);
+    // focusin은 버블링하는 focus 이벤트다(plain "focus"는 안 한다) — L/C/H
+    // 숫자 칸에 포커스가 들어올 때마다 새 세대를 연다. blur/focusout처럼
+    // "끝"을 별도로 안 듣는 이유는 pointerdown과 같다: 시작만 세면 끝을
+    // 놓쳐서 영원히 고착되는 실패 모드 자체가 생기지 않는다.
+    const onFocusIn = () => { sessionGen.current += 1; };
+    wrap.addEventListener("focusin", onFocusIn);
+    return () => {
+      wrap.removeEventListener("pointerdown", onPointerDown);
+      wrap.removeEventListener("focusin", onFocusIn);
+    };
+  }, []);
 
   return (
     <div
@@ -30,7 +79,9 @@ export function AccentInput({
       {/* wrap을 허용한다 — 이 행의 min-content(피커 256 + gap 24 + hex 112 = 392)가
           카드·페이지 패딩과 합쳐져 페이지 전체의 가로 하한 442px를 만들고 있었다. */}
       <div className="flex flex-wrap items-start gap-6">
-        <OklchPicker hex={hex} onChange={onChange} />
+        <div ref={pickerWrapRef} data-testid="accent-picker">
+          <OklchPicker hex={hex} onChange={(h) => onChange(h, sessionGen.current)} />
+        </div>
         {/* D4 표: hex는 code.sm(12px mono) — 바로 왼쪽 OklchPicker의 L·C·H와
            같은 급이다. 라벨은 caption.sm. w-28(112px)에 12px mono "#3b82f6"은
            여유 있게 들어간다(브라우저 확인). */}
@@ -44,7 +95,16 @@ export function AccentInput({
               setDraft(v);
               // 형식을 갖췄을 때만 부모에 커밋한다 — 드래프트는 화면에서 자유롭게
               // 타이핑을 반영하되, 확정된 팔레트 상태는 여전히 유효한 hex만 본다.
-              if (HEX_RE.test(v)) onChange(v.toLowerCase());
+              if (HEX_RE.test(v)) {
+                // hex 칸 커밋은 매번 새 세대다 — 드래그·넛지 같은 "연속
+                // 탐색"이 아니라 완결된 값 하나를 통째로 정하는 행동이라,
+                // 직전이 무슨 세대였든(심지어 방금 이 칸에서 낸 세대여도)
+                // 매번 새로 판다. 그래야 드랍 직후 이 칸으로 액센트를
+                // 두 번 연달아 바꿔도(리뷰 시퀀스 ②) 첫 변경에서 곧바로
+                // 버퍼가 만료된다.
+                sessionGen.current += 1;
+                onChange(v.toLowerCase(), sessionGen.current);
+              }
             }}
             onBlur={() => {
               // blur 시 형식이 안 맞으면 마지막 유효값으로 되돌린다.

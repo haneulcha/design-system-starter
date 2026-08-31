@@ -27,60 +27,50 @@ export function ColorPalettePage() {
   // 근본 해법(pin을 절대 hex 대신 선택 정체성으로 저장)은 다음 사이클이다.
   const droppedPins = useRef<PaletteState["pins"] | null>(null);
 
-  // 버퍼 만료 판정에 쓰는 "지금 드래그 중인가"(리뷰 I-1). HueStrip·LcPad
-  // 둘 다 pointerdown~pointerup 사이 매 pointermove마다 onChange를 커밋한다
-  // (OklchPicker.tsx의 HueStrip/LcPad 주석 참고) — 즉 진짜 드래그 한 번이
-  // onAccentChange를 수십~수백 번 부른다. 이 ref가 없으면 "다음 액센트
-  // 변경에서 버퍼를 버린다"는 판정이 드래그의 **두 번째 pointermove**에서
-  // 이미 발동해 버려, 사용자가 마우스를 떼기도 전에 배너가 사라진다 — 이
-  // 사이클의 대표 기능(D6: 알리고 복원할 수 있게 한다)이 정작 그 기능을 가장
-  // 많이 쓰는 경로(hue/LC 드래그)에서 사실상 안 뜨는 꼴이 된다. window
-  // 리스너를 쓰는 이유는 pointerdown이 HueStrip/LcPad 각자의 div에서
-  // 시작해도 버블링으로 window까지 올라오기 때문 — 어느 쪽에서 드래그가
-  // 시작했는지 구분할 필요가 없다.
-  const dragActive = useRef(false);
-  useEffect(() => {
-    const onDown = () => { dragActive.current = true; };
-    const onUp = () => { dragActive.current = false; };
-    window.addEventListener("pointerdown", onDown);
-    window.addEventListener("pointerup", onUp);
-    return () => {
-      window.removeEventListener("pointerdown", onDown);
-      window.removeEventListener("pointerup", onUp);
-    };
-  }, []);
+  // 버퍼가 어느 조정 세대에서 만들어졌는지(리뷰 라운드 2, I-1의 재개정).
+  // 1라운드는 "지금 드래그 중인가"(pointerdown~pointerup)로 근사했는데
+  // 틀린 축이었다 — pointercancel처럼 짝이 안 맞는 이벤트 한 번이면 영원히
+  // 참으로 고착되고(N-1), NumberField의 ArrowUp 넛지(D10이 승격한 공식
+  // 키보드 경로)는 애초에 포인터 이벤트가 아니라서 안 잡혔다(N-2). 판정
+  // 축을 AccentInput이 매기는 "세대 번호"(sessionGen)로 바꿨다 — 같은
+  // 드래그·같은 포커스 안의 연속 커밋은 같은 세대, 새 드래그·새 포커스·
+  // hex 칸 커밋은 새 세대(AccentInput.tsx 주석 참고). "끝"을 감지할 필요가
+  // 없어 pointercancel류의 실패 모드 자체가 없다.
+  const sessionAtDrop = useRef<number | null>(null);
 
-  const onAccentChange = (accentHex: string) =>
+  const onAccentChange = (accentHex: string, session: number) =>
     setState((s) => {
       const had = ADJUSTABLE_STOPS.some((i) => s.pins[i] !== undefined);
-      // 전이(있다 → 없다)에서만 기록한다 — hue 스트립은 pointermove마다
-      // 커밋하므로, 매 커밋마다 기록하면 드래그 두 번째 픽셀에서 버퍼가
-      // (withAccent가 이미 비운) 빈 pins로 덮인다. 첫 픽셀에서 잡은 값만
-      // "복원" 대상이어야 한다. 이 업데이터가 React 18 StrictMode에서 두 번
-      // 불려도(개발 모드가 순수성 검증을 위해 하는 재호출) 매번 같은 `s`를
-      // 받아 같은 값을 계산하므로 두 번 대입해도 결과가 같다 — 멱등이라
-      // 안전하다(리뷰로 실측 확인).
+      // `session`은 이 클로저가 생성될 때 캡처된 일반 인자이지 매번 새로
+      // 읽는 ref가 아니다 — 그래서 React 18 StrictMode가 이 업데이터를 두 번
+      // 불러도(개발 모드 순수성 검증) 두 호출 모두 같은 `session`·같은 `s`를
+      // 보고 같은 분기를 탄다(N-3 재검증: 1라운드 주석은 "매번 같은 s를 받아
+      // 같은 값을 계산"이라고만 적어 dragActive.current처럼 시간에 따라
+      // 값이 바뀌는 ref를 읽는 경우까지 멱등을 주장했는데, 그 경우는 실제로
+      // 안 성립할 수 있었다 — 지금은 그런 ref를 안 읽으므로 주장이 다시
+      // 성립한다). `sessionAtDrop.current`를 이 안에서 읽고 쓰긴 하지만,
+      // 같은 dispatch의 두 호출 사이에는 다른 이벤트가 끼어들 수 없어(동기
+      // 재호출) 그 read/write도 두 번 다 같은 결과를 낸다.
       if (had) {
         // 이 대입은 무조건 **교체**다 — 버퍼에 이미 옛 드랍이 남아 있어도
         // 지금 살아있는 pins로 덮어쓴다(리뷰 I-1). 지금 막 드랍되는 pin이
         // "가장 최근"이므로 옛 버퍼(예: stop700을 드랍하고 새로 pin한
         // stop300이 다시 드랍되는 경우)는 더 이상 복원 대상이 아니다.
         droppedPins.current = s.pins;
-      } else if (droppedPins.current && !dragActive.current) {
-        // 버퍼 만료(리뷰 I-1). had가 거짓인데 지금 드래그 중도 아니면, 이
-        // 액센트 변경은 방금 그 드랍을 만든 "같은 제스처의 다음 pointermove"가
-        // 아니라 **그 뒤에 벌어진 별개의 변경**이다(예: 드래그를 끝내고 hex
-        // 입력창에 새 값을 치거나, 새 드래그를 다시 시작함 — 후자는 그
-        // 드래그의 첫 pointerdown이 window 리스너보다 먼저 이 업데이터에
-        // 닿아 dragActive가 아직 갱신 전이므로 여기서 잡힌다). withAccent는
-        // accentHex가 뭐든 pins를 무조건 새로 비우므로, "직전 드랍"이 아닌
-        // 버퍼를 계속 들고 있으면 onRestorePins가 그 값을 지금 팔레트에
-        // 병합해 색이 섞인 hex를 만든다(사이클 3 D6이 막으려던 것의 재생산 —
-        // withAccent 주석 참고). 그래서 곧바로 버린다: 배너는 "복원 클릭"
-        // 또는 "드래그가 끝난 뒤의 다음 액센트 변경" 중 먼저 오는 쪽에서
-        // 걷힌다. onChoose로 새 pin만 찍는 동안은(액센트를 안 바꾸는 한) 안
-        // 걷힌다 — 병합 로직(onRestorePins의 `s.pins[i] ?? restored[i]`)이
-        // 그 경우엔 이미 안전하기 때문이다.
+        sessionAtDrop.current = session;
+      } else if (droppedPins.current && session !== sessionAtDrop.current) {
+        // 버퍼 만료. had가 거짓인데 세대가 드랍 당시와 다르면, 이 액센트
+        // 변경은 "그 드랍과 같은 조정의 연속"이 아니라 그 뒤에 벌어진 별개
+        // 행동이다(새 드래그, 새 포커스, 또는 hex 칸 커밋 — 셋 다 매번 새
+        // 세대를 연다). withAccent는 accentHex가 뭐든 pins를 무조건 새로
+        // 비우므로, "직전 드랍"이 아닌 버퍼를 계속 들고 있으면
+        // onRestorePins가 그 값을 지금 팔레트에 병합해 색이 섞인 hex를
+        // 만든다(사이클 3 D6이 막으려던 것의 재생산 — withAccent 주석
+        // 참고). 그래서 곧바로 버린다: 배너는 "복원 클릭" 또는 "다른
+        // 세대의 다음 액센트 변경" 중 먼저 오는 쪽에서 걷힌다. onChoose로
+        // 새 pin만 찍는 동안은(액센트를 안 바꾸는 한) 안 걷힌다 — 병합
+        // 로직(onRestorePins의 `s.pins[i] ?? restored[i]`)이 그 경우엔
+        // 이미 안전하기 때문이다.
         droppedPins.current = null;
       }
       return withAccent(s, accentHex);
