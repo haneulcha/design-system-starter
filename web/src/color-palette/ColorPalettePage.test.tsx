@@ -950,14 +950,18 @@ describe("경고 ↔ 목업 강조 (스펙 D3, 2026-08-30 개정)", () => {
 
   // M-3: "안 붙는다"를 data-highlights 부재만으로 보이면 실제 hover 시 아무
   // 것도 안 켜지는지는 증명하지 못한다. target === null인 뱃지(상태색
-  // text·text-strong 등)를 실제로 hover해서 두 목업 어디에도 강조가 안 뜨는지
-  // 확인한다. accent/on-solid(이제 유일하게 배선되는 unfixable 뱃지)는
-  // 제외한다 — 그건 위 테스트가 "붙어야 한다"를 이미 고정했다.
+  // text 등)를 실제로 hover해서 두 목업 어디에도 강조가 안 뜨는지 확인한다.
+  //
+  // "솔리드 위 글자" 라벨 매칭으로 unwired를 가려내던 예전 필터는 2026-09-01
+  // 스펙 D5로 더는 유효하지 않다 — accent/on-solid뿐 아니라 warning·success·
+  // info의 text-strong도 이제 배선된다(3.1 D2 은퇴, Task 5). 라벨 대신
+  // ContrastBadge가 실제로 세팅하는 data-highlights 속성 유무로 unwired를
+  // 가른다 — 이게 wired 여부의 근거 신호(target != null)와 그대로 대응한다.
   it("대응 요소가 없는 경고는 실제로 hover해도 아무 것도 안 켜진다", () => {
     render(<ColorPalettePage />);
     const details = screen.getByText(/고칠 수 없는 미달/).closest("details")!;
     const inside = Array.from(details.querySelectorAll('[data-testid="contrast-badge"]'));
-    const unwired = inside.filter((b) => !/솔리드 위 글자/.test(b.textContent ?? ""));
+    const unwired = inside.filter((b) => b.getAttribute("data-highlights") === null);
     expect(unwired.length).toBeGreaterThan(0);
 
     unwired.forEach((b) => {
@@ -1059,10 +1063,15 @@ describe("한 번에 고치기가 무엇을 바꿨는지 말한다 (Task 7, D5)"
     expect(within(pane).getAllByRole("status").length).toBe(1);
   });
 
-  // I-1: text-strong이 옮겨지면 error 배지 글자색도 실제로 따라 움직인다
-  // (Mock의 error 배지는 at(err, "text-strong")으로 그린다 — roles가 전역
-  // 공유라서다, applyRoleShifts 참고). "대응 요소가 없다"던 이전 주장은
-  // 사실이 아니었다 — error-badge도 셋에 포함돼 강조돼야 한다.
+  // I-1: text-strong이 옮겨지면 그 role을 실제로 읽는 목업 요소가 따라
+  // 움직인다(Mock이 at(sc, "text-strong")으로 그린다 — roles가 전역 공유라서다,
+  // applyRoleShifts 참고). "대응 요소가 없다"던 이전 주장은 사실이 아니었다.
+  //
+  // 뒤집는다: 이전 버전은 이 셋에 error-badge를 넣었다 — 그때는 실패 칩이
+  // subtle-bg + text-strong으로 그려져 text-strong 이동에 실제로 반응했기
+  // 때문이다. 2026-09-01 스펙 D5로 실패 칩이 solid + on-solid로 바뀌면서
+  // error-badge는 text-strong을 더 이상 안 읽는다(알려진 한계 1) — 대신
+  // text-strong을 읽는 상태 칩 셋(warning·success·info)이 들어온다.
   //
   // C-1: #eab308의 이동은 라이트 전용이므로 다크 목업 셋은 전부 안 켜져야
   // 한다 — 안 그러면 안 바뀐 다크 요소에 거짓 강조가 걸린다.
@@ -1072,14 +1081,23 @@ describe("한 번에 고치기가 무엇을 바꿨는지 말한다 (Task 7, D5)"
     fireEvent.click(screen.getByRole("button", { name: "한 번에 고치기" }));
 
     const light = screen.getByTestId("mock-light");
-    for (const target of ["card-text", "card-subtext", "share-btn", "error-badge"] as const) {
+    for (const target of [
+      "card-text", "card-subtext", "share-btn",
+      // error-badge는 빠진다 — 실패 칩이 solid+on-solid로 바뀌어 text-strong
+      // 이동에 안 움직인다(스펙 D5, 알려진 한계 1). 대신 text-strong을 실제로
+      // 읽는 상태 칩 셋이 들어온다.
+      "warning-badge", "success-badge", "info-badge",
+    ] as const) {
       expect(
         light.querySelector(`[data-mock-target="${target}"]`)?.getAttribute("data-highlighted"),
       ).toBe("true");
     }
 
     const dark = screen.getByTestId("mock-dark");
-    for (const target of ["card-text", "card-subtext", "share-btn", "error-badge"] as const) {
+    for (const target of [
+      "card-text", "card-subtext", "share-btn",
+      "warning-badge", "success-badge", "info-badge",
+    ] as const) {
       expect(
         dark.querySelector(`[data-mock-target="${target}"]`)?.getAttribute("data-highlighted"),
       ).toBeNull();
@@ -1597,5 +1615,70 @@ describe("피커 조작 중 accent-500 강조 (스펙 D3)", () => {
       fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#00a3a3" } });
     });
     expect(anchorSwatch().getAttribute("data-emphasized")).toBeNull();
+  });
+});
+
+describe("목업 (스펙 D4·D5)", () => {
+  it("상태색 4종이 라이트·다크 목업에 각각 하나씩 있다", () => {
+    render(<ColorPalettePage />);
+    for (const theme of ["light", "dark"] as const) {
+      const mock = screen.getByTestId(`mock-${theme}`);
+      for (const t of ["error-badge", "warning-badge", "success-badge", "info-badge"]) {
+        expect(mock.querySelectorAll(`[data-mock-target="${t}"]`).length).toBe(1);
+      }
+    }
+  });
+
+  // jsdom(cssstyle)은 style을 rgb()로 직렬화한다 — hex 문자열로는 절대
+  // 매치되지 않는다(위 "솔리드 버튼 글자색…" 테스트와 같은 사정). onSolidColor는
+  // "#ffffff"|"#000000" 둘뿐이라 그 자리는 그대로 매핑하면 되지만, solid
+  // 배경은 임의의 hex라 실제로 hex→rgb 변환이 필요하다.
+  const hexToRgb = (hex: string): string => {
+    const n = parseInt(hex.slice(1), 16);
+    return `rgb(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255})`;
+  };
+
+  // 실패 칩만 solid + on-solid다(스펙 D5) — 배경이 solid stop이고 글자가
+  // onSolidColor(solid)임을 실제 스타일로 고정한다. 나머지 셋과 다른 장치를
+  // 쓴다는 사실이 조용히 뒤집히지 않게 한다.
+  it("실패 칩은 solid 배경에 on-solid 글자다", () => {
+    render(<ColorPalettePage />);
+    const scales = deriveScales(defaultState(DEFAULT_ACCENT));
+    const solid = scales.semantic.error[5]; // roles.ts: solid는 light·dark 모두 index 5
+    const chip = screen
+      .getByTestId("mock-light")
+      .querySelector('[data-mock-target="error-badge"]') as HTMLElement;
+    expect(chip.style.background).toBe(hexToRgb(solid));
+    expect(chip.style.color).toBe(
+      onSolidColor(solid) === "#ffffff" ? "rgb(255, 255, 255)" : "rgb(0, 0, 0)",
+    );
+  });
+
+  // 카드 제목과 지표 수치가 같은 역할(neutral text-strong)을 쓴다 — 뱃지 하나가
+  // 둘을 함께 밝히는 것이 정확하다("이 역할은 여기 두 곳에 쓰인다", 스펙 D4).
+  it("card-text를 쓰는 요소가 둘이다 — 제목과 지표 수치", () => {
+    render(<ColorPalettePage />);
+    expect(
+      screen.getByTestId("mock-light").querySelectorAll('[data-mock-target="card-text"]').length,
+    ).toBe(2);
+  });
+
+  // 11px/10px는 "만든 색이 실제로 어떻게 보이는가"를 거의 못 답한다.
+  // 목업 안 텍스트는 크롬이 아니라 색칠 대상인 샘플 UI라 3.3 D4의 크롬 12px
+  // 하한이 적용 안 되던 자리였다(스펙 D4).
+  it("카드 제목·서브텍스트가 ds-type 토큰을 쓴다", () => {
+    render(<ColorPalettePage />);
+    const mock = screen.getByTestId("mock-light");
+    expect(mock.querySelector('[data-mock-target="card-text"]')!.className)
+      .toContain("ds-type-heading-xxs");
+    expect(mock.querySelector('[data-mock-target="card-subtext"]')!.className)
+      .toContain("ds-type-caption-sm");
+  });
+
+  // 막대는 안 건드린다 — BAR_STOPS의 비대칭 구간 함정(PreviewPane 주석)을
+  // 이번에 열지 않는다.
+  it("막대 다섯은 그대로다", () => {
+    render(<ColorPalettePage />);
+    expect(screen.getAllByTestId("mock-bar").length).toBe(10); // 라이트 5 + 다크 5
   });
 });

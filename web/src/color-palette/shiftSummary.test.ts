@@ -80,15 +80,18 @@ describe("shiftHighlightTargets", () => {
     expect(targets.dark).toEqual([]);
   });
 
-  // I-1: text-strong이 옮겨지면 error 배지 글자색도 실제로 따라 움직인다
-  // (Mock의 error 배지는 at(err, "text-strong")으로 그린다 — roles가 전역
-  // 공유라서다). "대응 요소가 없다"는 이전 주장은 사실이 아니었다 — 셋
-  // 다(card-text·share-btn·error-badge) 포함해야 한다.
-  it("text-strong은 카드 제목(neutral)·공유 버튼(accent)·실패 배지(error) 셋 다 가리킨다", () => {
+  // 2026-09-01 스펙 D5로 뒤집힌다: 실패 칩(error)이 solid+on-solid로 바뀌어
+  // text-strong 이동에 더는 안 움직인다. 대신 text-strong을 실제로 읽는
+  // 상태 칩 셋(warning·success·info)이 mockTargetFor를 통해 들어온다 —
+  // mockTargets.ts가 SCALE_ORDER([accent, neutral, error, warning, success,
+  // info]) 순서로 물으므로 error는 null을 내고 건너뛴다.
+  it("text-strong은 카드 제목(neutral)·공유 버튼(accent)·상태 칩 셋(warning·success·info)을 가리킨다", () => {
     const targets = shiftHighlightTargets([
       { roleId: "text-strong", theme: "light", from: 7, to: 8 },
     ]);
-    expect(targets.light).toEqual(["share-btn", "card-text", "error-badge"]);
+    expect(targets.light).toEqual([
+      "share-btn", "card-text", "warning-badge", "success-badge", "info-badge",
+    ]);
     expect(targets.dark).toEqual([]);
   });
 
@@ -104,6 +107,8 @@ describe("shiftHighlightTargets", () => {
       { roleId: "text-strong", theme: "dark", from: 3, to: 2 },
     ]);
     expect(targets.light).toEqual([]);
-    expect(targets.dark).toEqual(["card-subtext", "share-btn", "card-text", "error-badge"]);
+    expect(targets.dark).toEqual([
+      "card-subtext", "share-btn", "card-text", "warning-badge", "success-badge", "info-badge",
+    ]);
   });
 });
