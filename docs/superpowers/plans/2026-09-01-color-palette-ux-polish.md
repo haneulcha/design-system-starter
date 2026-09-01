@@ -32,11 +32,13 @@
 | `web/src/color-palette/AdjustableScale.tsx` | 11-stop 띠 렌더 — `emphasis`를 **받아 그리기만** | 3 |
 | `web/src/color-palette/AccentInput.tsx` | 피커 래핑 + 세대(`sessionGen`) + 활동 신호 | 4 |
 | `web/src/color-palette/mockTargets.ts` | 경고(scaleName·roleId) → 목업 요소 **순수 매핑** | 5 |
-| `web/src/color-palette/PreviewPane.tsx` | 목업 렌더 · 대비 뱃지 | 6 |
+| `web/src/color-palette/PreviewPane.tsx` | 목업 렌더 · 대비 뱃지 | 5 |
 
 테스트는 각 대응 `*.test.tsx`/`*.test.ts`에 붙인다. 새 파일은 만들지 않는다 — 이 사이클의 변경은 전부 기존 책임 안에 들어간다.
 
-**태스크 순서 근거.** 1→2는 main 컬럼(세로를 **버는** 쪽), 3→4는 500 강조(렌더 먼저, 배선 나중), 5→6은 목업(순수 매핑 먼저, 렌더 나중). 7이 실측으로 닫는다.
+**태스크 순서 근거.** 1→2는 main 컬럼(세로를 **버는** 쪽), 3→4는 500 강조(렌더 먼저, 배선 나중), 5는 목업(안에서 순수 매핑 → 렌더). 6이 실측으로 닫는다.
+
+매핑과 렌더가 한 태스크인 이유는 Task 5 머리말에 있다 — 둘을 가르면 중간 커밋의 스위트가 빨갛고, 되살릴 방법이 그 시점에 없다.
 
 ---
 
@@ -48,7 +50,7 @@
 
 **Interfaces:**
 - Consumes: 없음 (첫 태스크)
-- Produces: `main` 요소의 `style.rowGap === "var(--ds-space-sm)"`. `data-testid="palette-section"`(② 섹션), `data-testid="download-section"`(③ 섹션) — Task 2·6이 안 쓰지만 Task 7 실측이 쓴다.
+- Produces: `main` 요소의 `style.rowGap === "var(--ds-space-sm)"`. `data-testid="palette-section"`(② 섹션), `data-testid="download-section"`(③ 섹션) — Task 6 실측이 쓴다.
 
 - [ ] **Step 1: 기존 스위트를 새 단언으로 갈아끼운다 (실패하는 테스트)**
 
@@ -109,7 +111,7 @@
   });
 ```
 
-> `marginBottom: md(16)` + main `rowGap: sm(12)` = 28. `marginTop: xs(8)` + `rowGap: sm(12)` = 20. 둘 다 32가 아니다 — **Step 3에서 실제 값을 정하고, 여기 숫자를 그 값에 맞춰 고친다.** Step 3의 주석에 계산을 적는다.
+> **왜 32가 아닌가.** `marginBottom: md(16)` + main `rowGap: sm(12)` = 28, `marginTop: xs(8)` + `rowGap: sm(12)` = 20. `rowGap`이 12로 고정이라 `xl`(32)을 더하면 44가 되어 토큰 밖 값을 만들지 않고는 정확히 32를 낼 수 없다. 두 자리 다 "다른 덩어리"이지만 각각 자체 경계(h1의 크기, 받기 카드의 테두리)가 있어 28·20으로도 그 뜻이 선다. **위 숫자를 그대로 쓴다** — Task 6 실측에서 폴드가 안 맞으면 그때 조정하고 테스트도 같이 고친다.
 
 - [ ] **Step 2: 실패를 확인한다**
 
@@ -189,7 +191,7 @@ Expected: FAIL — `h1` 텍스트가 `"컬러 팔레트"`, h2 텍스트가 `"①
 ```tsx
       {/* marginTop 8 + main rowGap 12 = 20. ②의 상태색 띠와 받기 카드 사이는
           "다른 덩어리"지만, 받기 카드는 자체 테두리가 있어 경계를 스스로
-          만든다 — 32까지 벌리면 lg에서 카드가 폴드 아래로 밀린다(Task 7
+          만든다 — 32까지 벌리면 lg에서 카드가 폴드 아래로 밀린다(Task 6
           실측으로 확정). */}
       <section
         data-testid="download-section"
@@ -820,15 +822,19 @@ EOF
 
 ---
 
-## Task 5: `mockTargetFor` 매핑을 다시 그린다 — 3.1 D2 은퇴 (D5)
+## Task 5: 목업을 채우고 배선을 다시 그린다 — 3.1 D2 은퇴 (D4·D5)
 
 **Files:**
 - Modify: `web/src/color-palette/mockTargets.ts`
+- Modify: `web/src/color-palette/PreviewPane.tsx`
 - Test: `web/src/color-palette/mockTargets.test.ts`
+- Test: `web/src/color-palette/ColorPalettePage.test.tsx`
 
 **Interfaces:**
-- Consumes: 없음 (순수 함수)
-- Produces: `MockTarget` 유니온에 `"warning-badge"` · `"success-badge"` · `"info-badge"` 추가. `mockTargetFor("error", "solid" | "on-solid") === "error-badge"`, `mockTargetFor("error", "text-strong") === null`. Task 6이 이 타깃 이름들을 `data-mock-target`으로 그린다.
+- Consumes: 없음
+- Produces: `MockTarget` 유니온에 `"warning-badge"` · `"success-badge"` · `"info-badge"` 추가. `mockTargetFor("error", "solid" | "on-solid") === "error-badge"`, `mockTargetFor("error", "text-strong") === null`. 두 Mock 안에 각 타깃이 하나씩. `card-text`를 쓰는 요소가 **둘**(제목과 지표 수치)이 된다.
+
+> **매핑과 요소는 한 태스크다.** 순수 함수를 먼저 고정하고 렌더를 나중에 하는 편이 TDD로는 깔끔하지만, `mockTargetFor`만 바꾸면 `shiftHighlightTargets`(SCALE_ORDER 전부에 묻는다)를 거쳐 기존 `ColorPalettePage.test.tsx` 단언이 그 자리에서 깨진다 — 요소가 없는 한 되살릴 방법이 없다. 칩이 읽는 역할과 매핑은 **어차피 함께 움직여야 하는 쌍**이므로 한 태스크로 묶고, 안에서 순수 함수 → 렌더 순으로 진행한다.
 
 - [ ] **Step 1: 실패하는 테스트를 쓴다**
 
@@ -949,7 +955,7 @@ Expected: FAIL — `warning-badge` 등이 `MockTarget`에 없어 타입이 깨�
 Run: `cd web && pnpm test -- mockTargets.test.ts`
 Expected: PASS.
 
-- [ ] **Step 5: `shiftHighlightTargets`의 파급을 고친다**
+- [ ] **Step 5: `shiftHighlightTargets`의 파급을 고친다 (테스트만 — 요소는 Step 8이 그린다)**
 
 `shiftSummary.ts`의 `targetsForTheme`은 `SCALE_ORDER` 전부에 `mockTargetFor`를 묻는다. 그래서 `text-strong`이 이동하면 이제 **error-badge 대신 warning/success/info 배지**가 켜진다 — 그리고 그게 사실이다: 상태 칩 셋은 `at(sc, "text-strong")`으로 그려 실제로 색이 따라 움직이고, 실패 칩(solid+on-solid)은 안 움직인다.
 
@@ -967,17 +973,11 @@ Expected: PASS.
 
 `dark` 루프의 배열도 같은 값으로 바꾼다.
 
-> 이 Step은 Task 6이 요소를 그리기 전에는 **실패한다**(`querySelector`가 `undefined`를 낸다). Task 6 Step 5에서 함께 통과시킨다. Step 6의 커밋 전 확인이 이 사실을 반영한다.
+> 이 Step은 **아직 실패한다**(`querySelector`가 `undefined`를 낸다) — Step 8이 요소를 그리면 통과한다. 여기서 커밋하지 않는다.
 
-- [ ] **Step 6: 타입체크 후 커밋**
+- [ ] **Step 6: `PreviewPane` 렌더의 실패하는 테스트를 쓴다**
 
-Run: `cd web && npx tsc -b`
-Expected: 오류 없음. (`pnpm test` 전체는 아직 실패한다 — Task 6이 요소를 안 그렸다.)
-
-```bash
-git add web/src/color-palette/mockTargets.ts web/src/color-palette/mockTargets.test.ts web/src/color-palette/ColorPalettePage.test.tsx
-git commit -m "$(cat <<'EOF'
-feat(color-palette): mockTargetFor 매핑 재배선 — 3.1 D2를 상시 규칙에서 은퇴 (D5)
+아래 `describe`를 `ColorPalettePage.test.tsx` 끝에 더한다.
 
 3.1 D2("상태 한 조각… 작게 하나면 충분하다")가 warning·success·info를
 영구 null로 못박고 있었고, 그 결과 checkContrast가 만드는 그 검사들은
@@ -997,22 +997,6 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
 EOF
 )"
 ```
-
----
-
-## Task 6: 목업을 채운다 — 타이포 · 지표 줄 · 상태 칩 넷 (D4, D5)
-
-**Files:**
-- Modify: `web/src/color-palette/PreviewPane.tsx`
-- Test: `web/src/color-palette/ColorPalettePage.test.tsx`
-
-**Interfaces:**
-- Consumes: Task 5의 `MockTarget` 유니온과 `mockTargetFor` 매핑
-- Produces: `data-mock-target` 값 `"warning-badge"` · `"success-badge"` · `"info-badge"`가 두 Mock 안에 각각 하나씩. `card-text`를 쓰는 요소가 **둘**(제목과 지표 수치)이 된다.
-
-- [ ] **Step 1: 실패하는 테스트를 쓴다**
-
-`ColorPalettePage.test.tsx` 끝에 새 describe를 더한다.
 
 ```tsx
 describe("목업 (스펙 D4·D5)", () => {
@@ -1072,12 +1056,12 @@ describe("목업 (스펙 D4·D5)", () => {
 
 > `deriveScales` · `defaultState` · `DEFAULT_ACCENT` · `onSolidColor`는 `ColorPalettePage.test.tsx` 3–5행에서 이미 import돼 있다.
 
-- [ ] **Step 2: 실패를 확인한다**
+- [ ] **Step 7: 실패를 확인한다**
 
 Run: `cd web && pnpm test -- ColorPalettePage.test.tsx`
 Expected: FAIL — `warning-badge` 등이 DOM에 없고, `card-text`가 하나뿐이고, 클래스가 `text-[11px]`다.
 
-- [ ] **Step 3: `PreviewPane.tsx`에 상태 칩 표를 둔다**
+- [ ] **Step 8: `PreviewPane.tsx`에 상태 칩 표를 둔다**
 
 `EMPTY_HIGHLIGHT` 선언 아래(컴포넌트 밖)에 더한다:
 
@@ -1112,7 +1096,7 @@ const STATUS_CHIPS = [
 
 `import`에 `MockTarget`이 타입으로 이미 들어와 있다(`import type { MockTarget } from "./mockTargets";`) — 그대로 쓴다.
 
-- [ ] **Step 4: `Mock` 본문을 고친다**
+- [ ] **Step 9: `Mock` 본문을 고친다**
 
 `const err = scales.semantic.error;` 줄을 지운다 — 칩 표가 스케일을 직접 찾으므로 필요 없다.
 
@@ -1210,24 +1194,25 @@ const STATUS_CHIPS = [
 
 `BAR_STOPS` · `BAR_HEIGHTS` · 막대 렌더 블록은 **한 글자도 안 고친다.**
 
-- [ ] **Step 5: 테스트가 통과하는지 확인한다**
+- [ ] **Step 10: 테스트가 통과하는지 확인한다**
 
 Run: `cd web && pnpm test -- ColorPalettePage.test.tsx mockTargets.test.ts`
-Expected: PASS — 새 describe 다섯, Task 5 Step 5에서 고친 `"이동한 역할들의 목업 요소를…"`, 그리고 기존 목업 hover 스위트 전부.
+Expected: PASS — 새 describe 다섯, Step 5에서 고친 `"이동한 역할들의 목업 요소를…"`, 그리고 기존 목업 hover 스위트 전부.
 
-**실패하면 먼저 볼 것:** `"상태색 4종이 …각각 하나씩"`이 `success-badge` 2를 세면 지표 줄의 증감에 `data-mock-target`을 붙인 것이다 — 증감은 색만 빌리고 배선은 안 한다(Step 4).
+**실패하면 먼저 볼 것:** `"상태색 4종이 …각각 하나씩"`이 `success-badge` 2를 세면 지표 줄의 증감에 `data-mock-target`을 붙인 것이다 — 증감은 색만 빌리고 배선은 안 한다(Step 9).
 
-- [ ] **Step 6: 전체 스위트 + 타입체크**
+- [ ] **Step 11: 전체 스위트 + 타입체크**
 
 Run: `cd web && pnpm test && npx tsc -b`
 Expected: 전부 PASS, 타입 오류 없음.
 
-- [ ] **Step 7: 커밋**
+- [ ] **Step 12: 커밋**
 
 ```bash
-git add web/src/color-palette/PreviewPane.tsx web/src/color-palette/ColorPalettePage.test.tsx
+git add web/src/color-palette/mockTargets.ts web/src/color-palette/mockTargets.test.ts \
+        web/src/color-palette/PreviewPane.tsx web/src/color-palette/ColorPalettePage.test.tsx
 git commit -m "$(cat <<'EOF'
-feat(color-palette): 목업을 채운다 — 타이포·지표 줄·상태 칩 넷 (D4·D5)
+feat(color-palette): 목업을 채우고 배선을 다시 그린다 — 3.1 D2 은퇴 (D4·D5)
 
 목업 안 텍스트는 크롬이 아니라 색칠 대상인 샘플 UI라 3.3 D4의 크롬 12px
 하한이 적용 안 되던 자리였고, 그래서 11/10px로 남아 "만든 색이 실제로
@@ -1248,14 +1233,14 @@ EOF
 
 ---
 
-## Task 7: 브라우저 실측으로 닫고 스펙의 예측을 실측으로 교체한다
+## Task 6: 브라우저 실측으로 닫고 스펙의 예측을 실측으로 교체한다
 
 **Files:**
 - Modify: `docs/superpowers/specs/2026-09-01-color-palette-ux-polish-design.md` ("세로 예산 — 예측과 검증 계획" 절)
 - Modify: `web/src/color-palette/ColorPalettePage.tsx` (실측 결과가 요구하면 Task 1의 `marginTop`/`marginBottom` 값 조정)
 
 **Interfaces:**
-- Consumes: Task 1–6 전부
+- Consumes: Task 1–5 전부
 - Produces: 없음 (마감)
 
 - [ ] **Step 1: dev 서버를 띄운다**
@@ -1351,11 +1336,11 @@ EOF
 
 ## 자체 검토 기록
 
-**스펙 커버리지.** D1 → Task 1. D2 → Task 2. D3 → Task 3(렌더) + Task 4(배선). D4 → Task 6. D5 → Task 5(매핑) + Task 6(요소). 뒤집는 판단 1(3.1 D2 은퇴) → Task 5의 주석 교체. 뒤집는 판단 2(3.3 D3) → Task 1의 테스트 교체. 뒤집는 판단 3(3.3 D5 근거 소멸) → Task 1 Step 3의 h1 주석. 세로 예산 → Task 7.
+**스펙 커버리지.** D1 → Task 1. D2 → Task 2. D3 → Task 3(렌더) + Task 4(배선). D4·D5 → Task 5(매핑 + 요소). 뒤집는 판단 1(3.1 D2 은퇴) → Task 5의 주석 교체. 뒤집는 판단 2(3.3 D3) → Task 1의 테스트 교체. 뒤집는 판단 3(3.3 D5 근거 소멸) → Task 1 Step 3의 h1 주석. 세로 예산 → Task 6.
 
 **계획을 쓰며 찾은 것 둘 — 스펙에 없던 파급이다.**
 
 1. **`shiftHighlightTargets`가 `mockTargetFor`를 `SCALE_ORDER` 전부에 묻는다.** 그래서 D5의 매핑 변경이 `"한 번에 고치기"` 직후 강조에도 파급한다 — `text-strong` 이동 시 `error-badge` 대신 `warning`/`success`/`info` 배지가 켜진다. **그리고 그게 사실이다**(상태 칩 셋은 `text-strong`을 읽고 실패 칩은 안 읽는다). Task 5 Step 5로 다뤘고 스펙에도 한 줄 더한다.
 2. **`NeutralControl`의 `자동으로` 버튼이 무채색에서 사라질 뻔했다.** 원본은 강도 그룹 밖에 있어 무채색에서도 보였는데, 라벨 인라인화로 강도 행 안에 들이면 `!achromatic` 조건에 딸려 사라진다 — 되돌릴 길이 없어지는 함정이다. Task 2 Step 3의 마지막 블록과 ⚠️로 다뤘다.
 
-**타입 일관성.** `emphasis?: number | null`(Task 3 정의 → Task 4 사용), `onPickingActivity: () => void`(Task 4 양쪽), `MockTarget` 유니온 셋(Task 5 정의 → Task 6 사용), `data-testid` 넷(`palette-section`·`download-section`·`neutral-section`·`accent-picker`) — 정의 태스크와 사용 태스크가 일치한다. `accent-picker`는 기존 `AccentInput`에 이미 있다.
+**타입 일관성.** `emphasis?: number | null`(Task 3 정의 → Task 4 사용), `onPickingActivity: () => void`(Task 4 양쪽), `MockTarget` 유니온 셋(Task 5 안에서 정의 → 사용), `data-testid` 넷(`palette-section`·`download-section`·`neutral-section`·`accent-picker`) — 정의 태스크와 사용 태스크가 일치한다. `accent-picker`는 기존 `AccentInput`에 이미 있다.
