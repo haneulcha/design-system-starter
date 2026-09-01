@@ -554,8 +554,14 @@ describe("후보 팝오버 — 후보 밖 (리뷰 R-2)", () => {
 });
 
 describe("크롬 타이포 — 하한 12px", () => {
-  // 목업(Mock)은 명시적 예외다. 사용자 팔레트로 그리는 축소 UI라 하한을 적용하면
-  // 380px 카드가 부풀어 "커지면 정작 색이 안 보인다"(3.1 D2)를 거스른다.
+  // 목업(Mock)은 명시적 예외다 — 이 하한은 **크롬**(도구 자신의 UI 문구)에
+  // 거는 것이고, 목업 안 텍스트는 크롬이 아니라 색칠 대상인 샘플 UI다(스펙
+  // D4 "경계선과의 관계"). 3.1 D2("작게 하나면 충분하다")는 이 사이클에서
+  // 상시 규칙 지위를 잃었으므로(스펙 "뒤집는 판단 1", 2026-09-01 최종 리뷰
+  // 정정 — 옛 코멘트는 이 규칙을 근거로 들었으나 더 이상 유효하지 않다) 이
+  // 예외의 근거가 아니다. 목업 자신의 타이포 크기는 아래 "목업" describe
+  // 블록이 ds-type 토큰으로 직접 핀으로 고정한다 — 그래서 이 테스트가 목업을
+  // 통째로 면제해도 목업 타이포가 검증 밖으로 새지 않는다.
   it("목업 바깥 크롬에 10~11px 손값이 없다", () => {
     const { container } = render(<ColorPalettePage />);
     const mocks = [screen.getByTestId("mock-light"), screen.getByTestId("mock-dark")];
@@ -609,14 +615,17 @@ describe("3단 스테이지 골격", () => {
     for (const h of h2) expect(h.className).toContain("sr-only");
   });
 
-  // "액센트"만 걷고 "뉴트럴"·"상태색"은 남긴다 — 첫 띠가 액센트라는 것은
-  // 위(피커 카드)와 아래(뉴트럴 라벨)로 결정되지만, 뒤의 둘은 위치만으로
-  // 안 갈린다(스펙 D1).
-  it("액센트 라벨은 없고 뉴트럴·상태색 라벨은 남는다", () => {
+  // "액센트"는 sr-only로 내리고 "뉴트럴"·"상태색"은 시각에 남긴다(2026-09-01
+  // 최종 리뷰 정정 — 최초 스펙 D1은 "제거"라고 적었다). 위치("바로 위가 피커
+  // 카드, 바로 아래가 뉴트럴 라벨")로 갈린다는 최초 근거는 화면에는 맞지만
+  // 스크린리더에는 위치가 없다(AdjustableScale.tsx: "스크린리더에는 위치가
+  // 없다") — 그 근거로 라벨을 DOM에서 완전히 지우면 이 화면에서 유일하게
+  // 이름 없는 띠가 액센트가 된다. 그래서 지우지 않고 sr-only로만 내린다.
+  it("액센트 라벨은 sr-only이고 뉴트럴·상태색 라벨은 시각에 남는다", () => {
     render(<ColorPalettePage />);
-    expect(screen.queryByText("액센트")).toBeNull();
-    expect(screen.getByText("뉴트럴")).toBeTruthy();
-    expect(screen.getByText("상태색")).toBeTruthy();
+    expect(screen.getByText("액센트").className).toContain("sr-only");
+    expect(screen.getByText("뉴트럴").className).not.toContain("sr-only");
+    expect(screen.getByText("상태색").className).not.toContain("sr-only");
   });
 
   // 걷어낸 제목이 지던 "여기부터 다른 단계"를 간격이 진다. 값 셋만 쓴다:
@@ -634,9 +643,29 @@ describe("3단 스테이지 골격", () => {
     // ② 안: 액센트 띠 ↔ 뉴트럴 블록 = 다른 덩어리.
     expect((screen.getByTestId("palette-section") as HTMLElement).style.gap)
       .toBe("var(--ds-space-xl)");
-    // ② → ③ 받기도 다른 덩어리 — main의 12에 20을 더해 32를 만든다.
+    // ② → ③ 받기도 다른 덩어리다 — marginTop 8 + main rowGap 12 = 20
+    // (32가 아니다: rowGap이 12로 고정이라 xl을 더하면 44가 된다).
     expect((screen.getByTestId("download-section") as HTMLElement).style.marginTop)
       .toBe("var(--ds-space-xs)");
+  });
+
+  // 뉴트럴 띠 → 상태색은 "이웃 블록"(16)이다 — 둘 다 생성된 산출물이라
+  // 액센트↔뉴트럴의 "다른 덩어리"(32)와는 다른 관계다(스펙 D1 표, 2026-09-01
+  // 최종 리뷰로 코드에 맞춰 정정 — 최초 구현은 palette-section의 gap: xl을
+  // 그대로 물려받아 이 자리도 32였다). 뉴트럴·상태색을 감싸는 래퍼의 안쪽
+  // gap만 16이고, palette-section 레벨의 gap: xl(액센트↔래퍼)은 그대로다.
+  it("뉴트럴 띠 → 상태색은 16이다 (스펙 D1 정정)", () => {
+    render(<ColorPalettePage />);
+    const paletteSection = screen.getByTestId("palette-section");
+    const neutralSection = screen.getByTestId("neutral-section");
+    const semanticSection = screen.getByTestId("semantic-section");
+    const wrapper = neutralSection.parentElement as HTMLElement;
+    // 뉴트럴·상태색이 palette-section의 직접 자식이 아니라 전용 래퍼 안에
+    // 같이 있어야 그 래퍼 안쪽 gap만 16으로 따로 줄 수 있다.
+    expect(wrapper).not.toBe(paletteSection);
+    expect(wrapper.parentElement).toBe(paletteSection);
+    expect(semanticSection.parentElement).toBe(wrapper);
+    expect(wrapper.style.gap).toBe("var(--ds-space-md)");
   });
 
   // 사이클 3 D7로의 회귀 — 접힌 details는 "얇게 노출"이 아니라 "노출 안 함"이었다.
@@ -959,9 +988,13 @@ describe("경고 ↔ 목업 강조 (스펙 D3, 2026-08-30 개정)", () => {
   // 기준 안에 넣는 순환 논증이 된다(리뷰 fix-round-1 #1) — 그러면
   // adjustable 조건이 잘못 좁아져 있어야 할 뱃지가 unwired로 새는 회귀를
   // 이 테스트가 원리적으로 못 잡는다. roleLabel("text")("텍스트 (링크)")는
-  // 매핑과 독립적으로 참인 사실이다 — mockTargetFor는 어떤 스케일의 text
-  // 역할도 절대 배선하지 않는다(mockTargets.ts: text-strong의 TEXT_ROLES
-  // 짝이지만 다른 stop이라 목업에 그 stop을 쓰는 요소가 없다).
+  // 매핑과 독립적으로 참인 사실이다 — 다만 그 범위는 이 details(고칠 수 없는
+  // 미달) 안으로 좁혀 읽어야 한다(2026-09-01 최종 리뷰 정정): "text" 역할이
+  // 전 스케일에서 안 배선된 건 아니다(mockTargetFor("neutral", "text")는
+  // "card-subtext"를 낸다). 이 접힌 그룹은 비-조정 가능(adjustable=false,
+  // 즉 상태색) 스케일의 실패만 담고, 그 상태색 넷의 "text"(text-strong의
+  // TEXT_ROLES 짝, 다른 stop) 역할만 mockTargetFor에서 null이다 — 목업의
+  // 상태 칩이 text-strong stop만 읽고 text stop을 쓰는 요소가 없어서다.
   it("대응 요소가 없는 경고는 실제로 hover해도 아무 것도 안 켜진다", () => {
     render(<ColorPalettePage />);
     const details = screen.getByText(/고칠 수 없는 미달/).closest("details")!;

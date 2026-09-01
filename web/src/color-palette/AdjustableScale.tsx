@@ -49,6 +49,18 @@ interface Props {
 // 이미 뜻하는 것("만질 수 있다")과 어긋나지 않는다.
 // transform은 변위라 prefers-reduced-motion에서도 살아 있고 트윈만 꺼진다
 // (직전 스펙 D9, motion.test.tsx의 가드).
+//
+// 잠재 충돌(2026-09-01 최종 리뷰) — 인라인 style은 항상 클래스를 이긴다.
+// button 분기의 `active:translate-y-[2px]`는 클래스라서, emphasized가 true인
+// 동안은 이 객체의 인라인 `transform: translateY(-2px)`가 press 시에도 그대로
+// 이겨 스와치가 눌려도 안 내려간다 — "이동 2px = 깊이 2px … 두 값은 항상
+// 같이 움직여야 한다"(위 button 분기 주석)는 불변식이 깨진다. 지금은
+// 도달 불가능하다: emphasis는 항상 stop 5(ANCHOR_STOP, ColorPalettePage.tsx)
+// 이고 5는 ADJUSTABLE_STOPS([0,3,7,10])에 없어 button 분기(canAdjust)로
+// 안 간다 — emphasis는 button이 아니라 항상 아래 div 분기(press 불가)에만
+// 걸린다. 나중에 조정 가능한 stop(예: 7)을 강조 대상으로 넓히면 이 충돌이
+// 실제로 열린다 — 그때는 이 스타일 구조 자체를 다시 봐야 한다(이번
+// 리뷰에서는 도달 불가능하므로 재구조화하지 않는다).
 const EMPHASIS_STYLE = {
   outline: "2px solid var(--color-neutral-900)",
   outlineOffset: "2px",

@@ -96,12 +96,24 @@ export interface ThemeHighlightTargets {
  *  모든 스케일(SCALE_ORDER)에 물어본다 — "이동을 계산할 때 어느 스케일을
  *  보는가"(엔진의 ADJUSTABLE = accent·neutral)와 "이동이 실제로 어느
  *  스케일에 반영되는가"는 다른 질문이다. applyRoleShifts는 역할의
- *  lightIndex/darkIndex를 전역으로 바꾸고, Mock의 모든 스케일(error 포함)이
- *  그 공유 role을 통해 stop을 읽는다(stopIdx) — 그래서 text-strong이
- *  움직이면 error 배지 글자색도 실제로 따라 움직인다(실측:
- *  `?a=eab308` 적용 전후 error-badge color가 rgb(183,0,15) →
- *  rgb(125,18,22)). ADJUSTABLE로 스케일을 좁히면 이 사실을 놓치고 "대응
- *  요소가 없다"는 틀린 전제로 실제로 바뀌는 요소를 강조에서 빼게 된다.
+ *  lightIndex/darkIndex를 전역으로 바꾸고, Mock의 모든 스케일이 그 공유
+ *  role을 통해 stop을 읽는다(stopIdx) — 그래서 text-strong이 움직이면
+ *  ADJUSTABLE이 아닌 상태 칩(warning·success·info)의 글자색도 실제로
+ *  따라 움직인다: `?a=eab308`에서 "한 번에 고치기"가 라이트 text-strong을
+ *  700 → 900으로 옮기면 warning-badge·success-badge·info-badge가 모두
+ *  강조된다(ColorPalettePage.test.tsx: "이동한 역할들의 목업 요소를 해당
+ *  테마에서만 잠깐 짚는다"). ADJUSTABLE로 스케일을 좁히면 이 사실을 놓치고
+ *  "대응 요소가 없다"는 틀린 전제로 실제로 바뀌는 요소를 강조에서 빼게 된다.
+ *
+ *  **예외 — error 칩은 이 규칙의 반례가 아니라 별개 배선이다.** 위와 같은
+ *  이동에서도 error-badge는 안 켜진다(같은 테스트가 이것도 단언한다):
+ *  2026-09-01 스펙 D5로 실패 칩이 subtle-bg + text-strong에서
+ *  solid + on-solid로 바뀌면서 error 칩은 더 이상 text-strong을 안 읽기
+ *  때문이다(mockTargetFor("error", "text-strong")은 null). "모든 스케일이
+ *  공유 role을 통해 움직인다"는 위 원칙은 여전히 참이지만, error는 애초에
+ *  그 role을 안 읽는 스케일로 바뀐 것뿐이다 — 이 사실을 이유로
+ *  text-strong → error-badge를 mockTargetFor에 다시 넣지 않는다. 넣으면
+ *  실제로 안 움직이는 요소에 거짓 강조가 켜진다.
  *  (참고: contrastTriage.ts의 `c.adjustable` 논의는 "이 실패를 고칠 수
  *  있는가"를 가리는 것이라 여기 질문과는 축이 다르다 — 혼동하지 않는다.) */
 function targetsForTheme(
