@@ -162,25 +162,50 @@ export function ColorPalettePage() {
                  lg:grid-cols-[1fr_380px]"
       style={{
         padding: "var(--ds-space-lg)",
-        // row/column을 갈라 잡는다 — 하나로 32(--ds-space-xl)를 쓰면 스테이지
-        // 사이가 24에서 32로 벌어져 3칸에서 +24px, 3.3이 남긴 세로 여유
-        // 12.64px를 그 자리에서 넘긴다.
-        rowGap: "var(--ds-space-lg)",
+        // 걷어낸 스테이지 제목이 지던 "여기부터 다른 단계"를 간격이 진다
+        // (스펙 D1). 값은 셋뿐이다 — 12 = 입력과 그 결과 / 16 = 이웃 블록 /
+        // 32 = 다른 덩어리. rowGap을 **가장 좁은 12**로 두고 넓히는 자리만
+        // 명시적으로 올린다: 넓은 기본값에 좁히는 예외를 다는 것보다 어긋날
+        // 자리가 적다. 12가 여기 서는 이유는 이 그리드의 유일한 "좁은" 경계가
+        // ① 피커 카드 → ② 액센트 띠(입력과 그 결과)이기 때문이다.
+        rowGap: "var(--ds-space-sm)",
+        // columnGap 32는 직전 스펙 D1의 분리를 그대로 잇는다 — row와 하나로
+        // 합치면 스테이지 사이가 벌어져 세로 예산을 그 자리에서 넘긴다.
         columnGap: "var(--ds-space-xl)",
       }}
     >
-      <h1 className="ds-type-heading-sm lg:col-span-2">컬러 팔레트</h1>
+      {/* "컬러 팔레트"가 아니라 "생성기"다 — 이 화면은 팔레트가 아니라
+          팔레트를 만드는 도구다. 값(heading.sm 24)은 3.3 D5 그대로 두되,
+          그 근거 중 하나("16으로 내리면 스테이지 제목과 같아진다")는 시각
+          스테이지 제목이 사라지며 소멸했다(스펙 D1). 남은 근거는 "페이지에
+          하나뿐인 최상위 제목"뿐이다.
+          marginBottom 16 + main rowGap 12 = 28 ≈ "다른 덩어리". 32에 4 모자란
+          것은 rowGap이 12로 고정이라 xl(32)을 더하면 44가 되기 때문이다 —
+          토큰 밖 값을 만들지 않고 16을 택했다. */}
+      <h1
+        className="ds-type-heading-sm lg:col-span-2"
+        style={{ marginBottom: "var(--ds-space-md)" }}
+      >
+        컬러 팔레트 생성기
+      </h1>
 
-      <section className="lg:col-start-1" style={{ display: "grid", gap: "var(--ds-space-sm)" }}>
-        <h2 className="ds-type-heading-xxs">① 앵커 정하기</h2>
+      <section className="lg:col-start-1">
+        <h2 className="sr-only">앵커 정하기</h2>
         <AccentInput hex={state.accentHex} onChange={onAccentChange} />
       </section>
 
-      <section className="lg:col-start-1" style={{ display: "grid", gap: "var(--ds-space-md)" }}>
-        <h2 className="ds-type-heading-xxs">② 만들어진 팔레트</h2>
+      <section
+        data-testid="palette-section"
+        className="lg:col-start-1"
+        style={{ display: "grid", gap: "var(--ds-space-xl)" }}
+      >
+        <h2 className="sr-only">만들어진 팔레트</h2>
 
+        {/* ⚠️ gap: xl은 sr-only h2와 첫 자식 사이에도 걸린다. sr-only는
+            position: absolute라 grid 아이템에서 제외되어 **행을 안 먹는다** —
+            직전 스펙이 pin 라이브 리전에서 실측으로 확인한 것과 같은
+            성질이다(915 → 911). */}
         <div style={{ display: "grid", gap: "var(--ds-space-xxs)" }}>
-          <div className="ds-type-caption-sm text-neutral-500">액센트</div>
           {/* 액센트 띠 바로 위, 한 줄 상한 — main 컬럼 세로 예산에 걸린다.
               truncate로 물리적 줄바꿈 자체를 막는다: 좁은 화면에서 문구가
               길어지는 대신 잘리는 쪽을 택한다(1줄 초과는 예산을 넘긴다).
@@ -264,7 +289,7 @@ export function ColorPalettePage() {
           />
         </div>
 
-        <div style={{ display: "grid", gap: "var(--ds-space-xs)" }}>
+        <div style={{ display: "grid", gap: "var(--ds-space-sm)" }}>
           <div className="ds-type-caption-sm text-neutral-500">뉴트럴</div>
           <AdjustableScale hexes={scales.neutral} adjustable={[]} pinned={[]} />
           <NeutralControl
@@ -341,8 +366,16 @@ export function ColorPalettePage() {
         />
       </aside>
 
-      <section className="lg:col-start-1" style={{ display: "grid", gap: "var(--ds-space-sm)" }}>
-        <h2 className="ds-type-heading-xxs">③ 받기</h2>
+      {/* marginTop 8 + main rowGap 12 = 20. ②의 상태색 띠와 받기 카드 사이는
+          "다른 덩어리"지만, 받기 카드는 자체 테두리가 있어 경계를 스스로
+          만든다 — 32까지 벌리면 lg에서 카드가 폴드 아래로 밀린다(Task 6
+          실측으로 확정). */}
+      <section
+        data-testid="download-section"
+        className="lg:col-start-1"
+        style={{ marginTop: "var(--ds-space-xs)" }}
+      >
+        <h2 className="sr-only">받기</h2>
         <DownloadRow scales={scales} roles={roles} />
       </section>
     </main>

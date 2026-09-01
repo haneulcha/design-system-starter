@@ -585,16 +585,57 @@ describe("크롬 타이포 — 하한 12px", () => {
 });
 
 describe("3단 스테이지 골격", () => {
-  it("h1 하나에 h2 셋이 ①②③ 순서로 있다", () => {
+  // 3.3 D3의 "번호 붙은 스테이지 제목"을 뒤집는다 — 걷는 것은 **시각 노출과
+  // 번호**뿐이고 h2 셋의 존재·순서는 유지한다(스펙 D1). 이 화면은 나가는
+  // 링크가 0인 막다른 골목이라(직전 스펙 비-목표) 구조 신호를 더 잃으면
+  // 스크린리더에 평면만 남는다. 순서가 곧 사용 순서라는 3.3 D3의 주장은
+  // 제목이 아니라 간격 위계(아래 테스트)가 계속 진다.
+  it("h1은 생성기이고, h2 셋은 sr-only로 남는다", () => {
     render(<ColorPalettePage />);
-    expect(screen.getAllByRole("heading", { level: 1 }).length).toBe(1);
+    const h1 = screen.getAllByRole("heading", { level: 1 });
+    expect(h1.length).toBe(1);
+    expect(h1[0].textContent).toBe("컬러 팔레트 생성기");
+
     const h2 = screen.getAllByRole("heading", { level: 2 });
     expect(h2.length).toBe(3);
+    // 번호(①②③)는 시각에서 사라지므로 sr-only 문구에서도 뗀다 — 스크린리더
+    // 사용자만 "①"을 듣는 비대칭을 만들지 않는다.
     expect(h2.map((h) => h.textContent)).toEqual([
-      expect.stringContaining("앵커"),
-      expect.stringContaining("팔레트"),
-      expect.stringContaining("받기"),
+      "앵커 정하기",
+      "만들어진 팔레트",
+      "받기",
     ]);
+    for (const h of h2) expect(h.className).toContain("sr-only");
+  });
+
+  // "액센트"만 걷고 "뉴트럴"·"상태색"은 남긴다 — 첫 띠가 액센트라는 것은
+  // 위(피커 카드)와 아래(뉴트럴 라벨)로 결정되지만, 뒤의 둘은 위치만으로
+  // 안 갈린다(스펙 D1).
+  it("액센트 라벨은 없고 뉴트럴·상태색 라벨은 남는다", () => {
+    render(<ColorPalettePage />);
+    expect(screen.queryByText("액센트")).toBeNull();
+    expect(screen.getByText("뉴트럴")).toBeTruthy();
+    expect(screen.getByText("상태색")).toBeTruthy();
+  });
+
+  // 걷어낸 제목이 지던 "여기부터 다른 단계"를 간격이 진다. 값 셋만 쓴다:
+  // 12 = 입력과 그 결과 / 16 = 이웃 블록 / 32 = 다른 덩어리 (스펙 D1).
+  // main의 기본 rowGap을 **가장 좁은 값**으로 두고 넓히는 자리만 명시적으로
+  // 올린다 — 넓은 기본값에 좁히는 예외를 다는 것보다 어긋날 자리가 적다.
+  it("간격 위계가 12/16/32다 (스펙 D1)", () => {
+    render(<ColorPalettePage />);
+    const main = screen.getByRole("main") as HTMLElement;
+    expect(main.style.rowGap).toBe("var(--ds-space-sm)");
+    expect(main.style.columnGap).toBe("var(--ds-space-xl)");
+    // h1 → 피커 카드는 "다른 덩어리"라 좁은 기본값을 덮는다.
+    expect((screen.getAllByRole("heading", { level: 1 })[0] as HTMLElement).style.marginBottom)
+      .toBe("var(--ds-space-md)");
+    // ② 안: 액센트 띠 ↔ 뉴트럴 블록 = 다른 덩어리.
+    expect((screen.getByTestId("palette-section") as HTMLElement).style.gap)
+      .toBe("var(--ds-space-xl)");
+    // ② → ③ 받기도 다른 덩어리 — main의 12에 20을 더해 32를 만든다.
+    expect((screen.getByTestId("download-section") as HTMLElement).style.marginTop)
+      .toBe("var(--ds-space-xs)");
   });
 
   // 사이클 3 D7로의 회귀 — 접힌 details는 "얇게 노출"이 아니라 "노출 안 함"이었다.
