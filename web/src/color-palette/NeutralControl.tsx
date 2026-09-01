@@ -20,16 +20,19 @@ export function NeutralControl({ state, onChange }: Props) {
   const achromatic = activeId === "achromatic";
 
   return (
-    <div className="space-y-2">
-      <div style={{ display: "grid", gap: "var(--ds-space-xxs)" }}>
-        <div className="ds-type-caption-sm text-neutral-500">색조</div>
+    // 라벨을 칩 위가 아니라 **같은 행**에 둔다(스펙 D2) — "색조"·"강도"는 각각
+    // 두 글자인데 칩 위에 한 줄씩 앉아 세로 2행을 먹고 있었다. 라벨은 제자리에
+    // 남고 칩만 flex-wrap으로 접히므로 좁은 화면에서도 라벨이 칩과 갈리지 않는다.
+    <div style={{ display: "grid", gap: "var(--ds-space-xxs)" }}>
+      <div className="flex items-center gap-2">
+        {/* 라벨 색은 neutral-500이다 — 400은 흰 배경에서 2.58:1로 미달이다.
+           어느 축을 고르는지 못 읽으면 칩이 무슨 뜻인지 알 수 없으므로 장식이
+           아니다 (직전 스펙 D2). shrink-0이 없으면 칩이 밀 때 라벨이 줄바꿈된다. */}
+        <div className="ds-type-caption-sm text-neutral-500 shrink-0">색조</div>
         {/* role="group"만 쓰고 radiogroup을 쓰지 않는 이유: APG 라디오 패턴은
            roving tabindex + 화살표 이동=선택을 요구하는데, 그 함정(방향키 한 번이
            곧 확정이라 "고르기 전에 결과를 본다"가 깨지는 것)은 이 화면이
-           CandidatePopover에서 이미 밟았다(사이클 3.2 알려진 한계 3). 여기 버튼들은
-           상호 배타 선택(그룹당 aria-pressed=true가 정확히 하나)이지만, 그 APG
-           라디오 패턴의 함정을 피하려고 group + aria-pressed 토글 그룹으로
-           표현한다. */}
+           CandidatePopover에서 이미 밟았다(사이클 3.2 알려진 한계 3). */}
         <div role="group" aria-label="뉴트럴 색조" className="flex flex-wrap gap-1.5">
           {TINT_ATTRACTORS.map((a) => (
             <button
@@ -48,58 +51,60 @@ export function NeutralControl({ state, onChange }: Props) {
             >
               {a.label}
               {a.id === snapped.id && (
-                <span
-                  // 점 표식 색은 neutral-500이다 — 400은 2.58:1로 미달이다.
-                  // 어느 칩이 자동으로 붙은 것인지 못 읽으면 알 수 없으므로
-                  // 장식이 아니다. aria-label에 "(자동)"이 들어가지만 (40행),
-                  // 시각 채널로도 구분 가능해야 한다 (스펙 D2).
-                  className="ml-1 text-neutral-500"
-                >
-                  •
-                </span>
+                // 점 표식 색도 neutral-500이다 — 어느 칩이 자동으로 붙은 것인지
+                // 못 읽으면 알 수 없으므로 장식이 아니다.
+                <span className="ml-1 text-neutral-500">•</span>
               )}
             </button>
           ))}
         </div>
       </div>
-      <div className="flex items-center gap-1.5">
-        {!achromatic && (
-          <div style={{ display: "grid", gap: "var(--ds-space-xxs)" }}>
-            <div className="ds-type-caption-sm text-neutral-500">강도</div>
-            <div role="group" aria-label="강도" className="flex items-center gap-1.5">
-              {(["soft", "strong"] as const).map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  aria-pressed={strength === s}
-                  onClick={() => onChange({ attractorId: activeId, strength: s })}
-                  className={`rounded px-2 py-0.5 ds-type-caption-sm border ${
-                    strength === s ? "border-neutral-900 font-medium" : "border-neutral-200"
-                  }`}
-                >
-                  {s === "soft" ? "은은" : "뚜렷"}
-                </button>
-              ))}
-            </div>
+      {/* 무채색에는 강도가 없다 — 행이 통째로 사라지고 아래가 당겨진다.
+         이 화면에서 조건부로 사라지는 유일한 컨트롤이다(스펙 알려진 한계 4). */}
+      {!achromatic && (
+        <div className="flex items-center gap-2">
+          <div className="ds-type-caption-sm text-neutral-500 shrink-0">강도</div>
+          <div role="group" aria-label="강도" className="flex items-center gap-1.5">
+            {(["soft", "strong"] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                aria-pressed={strength === s}
+                onClick={() => onChange({ attractorId: activeId, strength: s })}
+                className={`rounded px-2 py-0.5 ds-type-caption-sm border ${
+                  strength === s ? "border-neutral-900 font-medium" : "border-neutral-200"
+                }`}
+              >
+                {s === "soft" ? "은은" : "뚜렷"}
+              </button>
+            ))}
           </div>
-        )}
-        {/* 칩이든 강도든 한 번 누르면 어트랙터가 확정된다(state.tint !== null) —
-           액센트를 나중에 바꿔도 자동 스냅으로 돌아가지 못하는 함정이 되지
-           않도록, 확정된 상태에서만 되돌릴 길을 둔다. "자동으로"는 선택지가
-           아니라 되돌리기라 강도 그룹 밖에 둔다. */}
-        {state.tint && (
-          <button
-            type="button"
-            onClick={() => onChange(null)}
-            // 링크 색은 neutral-500이다 — 400은 2.58:1로 미달이다.
-            // "되돌리기" 버튼을 못 읽으면 자동 스냅으로 돌아갈 길이 없으므로
-            // 장식이 아니다 (스펙 D2).
-            className="ds-type-caption-sm text-neutral-500 hover:text-neutral-700 underline"
-          >
-            자동으로
-          </button>
-        )}
-      </div>
+          {/* 칩이든 강도든 한 번 누르면 어트랙터가 확정된다(state.tint !== null) —
+             액센트를 나중에 바꿔도 자동 스냅으로 돌아가지 못하는 함정이 되지
+             않도록 되돌릴 길을 둔다. "자동으로"는 선택지가 아니라 되돌리기라
+             강도 그룹 **밖**에 둔다. 링크 색 neutral-500도 대비 하한이다. */}
+          {state.tint && (
+            <button
+              type="button"
+              onClick={() => onChange(null)}
+              className="ds-type-caption-sm text-neutral-500 hover:text-neutral-700 underline"
+            >
+              자동으로
+            </button>
+          )}
+        </div>
+      )}
+      {/* 무채색이면 강도 행이 없으므로 "자동으로"도 갈 곳이 없다 — 되돌릴 길이
+         사라지면 함정이 된다. 그래서 이 경우에만 따로 한 줄 세운다. */}
+      {achromatic && state.tint && (
+        <button
+          type="button"
+          onClick={() => onChange(null)}
+          className="ds-type-caption-sm text-neutral-500 hover:text-neutral-700 underline justify-self-start"
+        >
+          자동으로
+        </button>
+      )}
     </div>
   );
 }

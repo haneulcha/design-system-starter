@@ -791,6 +791,32 @@ describe("접근성", () => {
     expect(screen.getByRole("group", { name: "강도" })).toBeTruthy();
   });
 
+  // 액센트는 피커(위) → 띠(아래)인데 뉴트럴만 반대였다 — 같은 화면에서 같은
+  // 관계가 두 방향으로 그려졌다. 둘 다 "입력 → 결과"로 맞춘다(스펙 D2).
+  it("뉴트럴 컨트롤이 뉴트럴 띠보다 앞에 온다 (스펙 D2)", () => {
+    render(<ColorPalettePage />);
+    const block = screen.getByTestId("neutral-section");
+    const control = block.querySelector('[role="group"][aria-label="뉴트럴 색조"]')!;
+    const strip = block.querySelector('[data-testid="swatch"]')!;
+    expect(control).toBeTruthy();
+    expect(strip).toBeTruthy();
+    // DOCUMENT_POSITION_FOLLOWING = strip이 control 뒤에 온다.
+    expect(control.compareDocumentPosition(strip) & Node.DOCUMENT_POSITION_FOLLOWING)
+      .toBeTruthy();
+  });
+
+  // 라벨은 각각 두 글자인데 칩 위에 한 줄씩 앉아 세로 2행을 먹고 있었다.
+  // 같은 행으로 내리면 그 2행이 통째로 사라진다(스펙 D2).
+  it("색조·강도 라벨이 칩과 같은 행에 있다 (스펙 D2)", () => {
+    render(<ColorPalettePage />);
+    for (const [label, groupName] of [["색조", "뉴트럴 색조"], ["강도", "강도"]] as const) {
+      const group = screen.getByRole("group", { name: groupName });
+      const row = group.parentElement!;
+      expect(row.className).toContain("flex");
+      expect(row.textContent).toContain(label);
+    }
+  });
+
   // 뱃지는 hover 프리뷰(shownScales)까지 반영해 스와치를 스칠 때마다 바뀐다.
   // 헤드라인은 그 뱃지 목록과 별개로 확정 팔레트(scales) 기준으로 낸다 —
   // "hover는 미리보기일 뿐 확정이 아니다"라는 이 화면의 계약을 헤드라인 자체의

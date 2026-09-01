@@ -289,13 +289,21 @@ export function ColorPalettePage() {
           />
         </div>
 
-        <div style={{ display: "grid", gap: "var(--ds-space-sm)" }}>
-          <div className="ds-type-caption-sm text-neutral-500">뉴트럴</div>
-          <AdjustableScale hexes={scales.neutral} adjustable={[]} pinned={[]} />
+        {/* 액센트와 같은 "입력 → 결과" 방향이다(스펙 D2) — 컨트롤이 위, 띠가
+            아래. 그 사이 12는 ① 피커 카드 → 액센트 띠와 **같은 뜻**의 12다.
+            같은 관계에 같은 값을 쓰는 것이 D1 간격 위계의 요점이다. */}
+        <div
+          data-testid="neutral-section"
+          style={{ display: "grid", gap: "var(--ds-space-sm)" }}
+        >
           <NeutralControl
             state={state}
             onChange={(tint) => setState((s) => ({ ...s, tint }))}
           />
+          <div style={{ display: "grid", gap: "var(--ds-space-xxs)" }}>
+            <div className="ds-type-caption-sm text-neutral-500">뉴트럴</div>
+            <AdjustableScale hexes={scales.neutral} adjustable={[]} pinned={[]} />
+          </div>
         </div>
 
         {/* 상태색은 접지 않는다 — 산출물에 무조건 들어가므로 화면에 없으면
