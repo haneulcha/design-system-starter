@@ -196,6 +196,13 @@ hex 칸은 완결된 값 하나를 통째로 정하는 별개 행동이다(`Acce
 | --- | --- | --- | --- |
 | `주간 활성 사용자` | `text-[11px]` | `ds-type-heading-xxs` (16/600) | neutral `text-strong` |
 | `지난 5주` | `text-[10px]` | `ds-type-caption-sm` (12) | neutral `text` |
+| `보고서 열기` · `공유` | `text-[11px] font-medium` | `ds-type-button-sm` (14/500) | accent `solid`+`on-solid` / `subtle-bg`+`border`+`text-strong` |
+
+> **버튼 두 줄은 구현 중에 추가됐다(2026-09-01 사람 판단).** 최초 스펙은 제목·서브텍스트만
+> 올리고 버튼은 뺐는데, Task 5 리뷰가 "카드 안에서 이 둘만 11px로 남아 위 세 줄과
+> 어긋난다"를 지적했다. 그 둘이 이 화면에서 가장 중요한 색 쌍(accent solid+on-solid,
+> subtle-bg+border+text-strong)을 지는 자리라 함께 올렸다. `ds-type-button-sm`(14/500)은
+> 카드 제목 `ds-type-heading-xxs`(16/600)보다 가벼워 위계가 뒤집히지 않는다(실측 확인).
 
 **그래프 위 지표 줄 — 신설.** 막대 바로 위에 한 줄을 더한다:
 
@@ -206,8 +213,15 @@ hex 칸은 완결된 값 하나를 통째로 정하는 별개 행동이다(`Acce
 - `12,480` — `ds-type-heading-xs` (18/600), neutral `text-strong`. `data-mock-target`은
   **`card-text`를 공유**한다. 같은 역할을 쓰는 요소가 둘이면 뱃지 하나가 둘을 함께
   밝히는 것이 정확하다("이 역할은 여기 두 곳에 쓰인다").
-- `+8.2%` — `ds-type-caption-sm`, **success `text-strong`**. 새 타깃 `success-badge`와
-  같은 역할이므로 그것을 공유한다.
+- `+8.2%` — `ds-type-caption-sm`, **success `text-strong`** 색을 쓰지만 **배선은 안 한다**
+  (`data-testid="mock-delta"`만 달고 `data-mock-target`은 안 단다).
+
+  > **정정 — 최초 스펙은 "`success-badge` 타깃을 공유한다"고 적었다.** 구현 계획 단계에서
+  > 뒤집었고, 스펙의 그 문장은 코드와 어긋난 채 남아 있었다(이 절에서 고친다). 이유:
+  > `card-text`를 제목과 수치가 공유하는 것은 **둘이 붙어 있어** 뱃지 하나가 켜도 "여기"가
+  > 한 덩어리로 읽히지만, 증감(막대 위)과 완료 칩(칩 행)은 **서로 떨어져 있어** 같은 뱃지가
+  > 둘을 켜면 "어디를 보라는 건가"가 흐려진다. 색만 빌리고 가리킴은 칩 하나로 모은다.
+  > 테스트가 이 판단을 고정한다(목업당 `success-badge`는 정확히 하나).
 
 **상태 칩 넷.** 지금 `실패 2` 하나뿐인 자리를 넷으로 넓힌다.
 
