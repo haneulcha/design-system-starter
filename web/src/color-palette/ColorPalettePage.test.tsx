@@ -556,12 +556,17 @@ describe("후보 팝오버 — 후보 밖 (리뷰 R-2)", () => {
 describe("크롬 타이포 — 하한 12px", () => {
   // 목업(Mock)은 명시적 예외다 — 이 하한은 **크롬**(도구 자신의 UI 문구)에
   // 거는 것이고, 목업 안 텍스트는 크롬이 아니라 색칠 대상인 샘플 UI다(스펙
-  // D4 "경계선과의 관계"). 3.1 D2("작게 하나면 충분하다")는 이 사이클에서
-  // 상시 규칙 지위를 잃었으므로(스펙 "뒤집는 판단 1", 2026-09-01 최종 리뷰
-  // 정정 — 옛 코멘트는 이 규칙을 근거로 들었으나 더 이상 유효하지 않다) 이
-  // 예외의 근거가 아니다. 목업 자신의 타이포 크기는 아래 "목업" describe
-  // 블록이 ds-type 토큰으로 직접 핀으로 고정한다 — 그래서 이 테스트가 목업을
-  // 통째로 면제해도 목업 타이포가 검증 밖으로 새지 않는다.
+  // "뒤집는 판단" 절의 하위 "경계선과의 관계" 표 중 D4 행 — "경계선과의
+  // 관계" 자체는 D4 전용 절이 아니라 D3·D4·D1을 함께 판정하는 절이다).
+  // 3.1 D2("작게 하나면 충분하다")는 이 사이클에서 상시 규칙 지위를
+  // 잃었으므로(스펙 "뒤집는 판단 1", 2026-09-01 최종 리뷰 정정 — 옛 코멘트는
+  // 이 규칙을 근거로 들었으나 더 이상 유효하지 않다) 이 예외의 근거가
+  // 아니다. 목업 자신의 타이포 중 카드 제목(ds-type-heading-xxs)과
+  // 서브텍스트(ds-type-caption-sm)는 아래 "목업" describe 블록이 ds-type
+  // 토큰으로 직접 핀으로 고정한다 — 그래서 이 테스트가 목업을 통째로
+  // 면제해도 그 둘의 타이포는 검증 밖으로 새지 않는다. 상태 칩
+  // (ds-type-caption-xs)은 이 핀 대상이 아니다 — 그 블록도, 다른 어느
+  // 테스트도 칩 타이포 크기는 단언하지 않는다.
   it("목업 바깥 크롬에 10~11px 손값이 없다", () => {
     const { container } = render(<ColorPalettePage />);
     const mocks = [screen.getByTestId("mock-light"), screen.getByTestId("mock-dark")];
@@ -665,6 +670,9 @@ describe("3단 스테이지 골격", () => {
     expect(wrapper).not.toBe(paletteSection);
     expect(wrapper.parentElement).toBe(paletteSection);
     expect(semanticSection.parentElement).toBe(wrapper);
+    // display: grid가 아니면 gap이 안 먹는다 — style.gap 단언만으로는
+    // 래퍼를 display: block으로 바꿔도 초록으로 남는다(리뷰 지적).
+    expect(wrapper.style.display).toBe("grid");
     expect(wrapper.style.gap).toBe("var(--ds-space-md)");
   });
 
@@ -991,10 +999,19 @@ describe("경고 ↔ 목업 강조 (스펙 D3, 2026-08-30 개정)", () => {
   // 매핑과 독립적으로 참인 사실이다 — 다만 그 범위는 이 details(고칠 수 없는
   // 미달) 안으로 좁혀 읽어야 한다(2026-09-01 최종 리뷰 정정): "text" 역할이
   // 전 스케일에서 안 배선된 건 아니다(mockTargetFor("neutral", "text")는
-  // "card-subtext"를 낸다). 이 접힌 그룹은 비-조정 가능(adjustable=false,
-  // 즉 상태색) 스케일의 실패만 담고, 그 상태색 넷의 "text"(text-strong의
-  // TEXT_ROLES 짝, 다른 stop) 역할만 mockTargetFor에서 null이다 — 목업의
-  // 상태 칩이 text-strong stop만 읽고 text stop을 쓰는 요소가 없어서다.
+  // "card-subtext"를 낸다). 이 접힌 그룹(고칠 수 없는 미달) 안에는
+  // accent/on-solid도 있다 — `contrastTriage.ts`의 `canFix`는
+  // `c.adjustable && shifts.some(...)`로 판정하는데 on-solid은
+  // adjustable === true라도 shifts 쪽 매칭이 없어 unfixable로 온다(D3 배선
+  // 기준 개정의 계기가 된 바로 그 사례, mockTargets.ts 헤더·PreviewPane.tsx의
+  // "unfixable도 target != null이면 배선한다" 참고). 다만 아래 `unwired`는
+  // 그 그룹 전체가 아니라 "text" 라벨을 문자열로 골라낸 부분집합이다 —
+  // on-solid은 다른 라벨("솔리드 위 글자")을 달고 있어 이 필터에 안 걸린다.
+  // 그래서 이 부분집합으로 좁히면: "text" 라벨을 단 항목은 전부 비-조정
+  // 가능(adjustable=false, 즉 상태색) 스케일의 실패이고, 그 상태색 넷의
+  // "text"(text-strong의 TEXT_ROLES 짝, 다른 stop) 역할만 mockTargetFor에서
+  // null이다 — 목업의 상태 칩이 text-strong stop만 읽고 text stop을 쓰는
+  // 요소가 없어서다.
   it("대응 요소가 없는 경고는 실제로 hover해도 아무 것도 안 켜진다", () => {
     render(<ColorPalettePage />);
     const details = screen.getByText(/고칠 수 없는 미달/).closest("details")!;
