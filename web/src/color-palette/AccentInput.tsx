@@ -11,7 +11,7 @@ import { OklchPicker } from "../components/OklchPicker";
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
 
 export function AccentInput({
-  hex, onChange,
+  hex, onChange, onPickingActivity,
 }: {
   readonly hex: string;
   // session: "같은 조정 제스처인가"를 부모(ColorPalettePage)가 판정할 수 있게
@@ -19,6 +19,12 @@ export function AccentInput({
   // 건드린다: 이 컴포넌트(AccentInput)가 OklchPicker의 단일 hex 콜백을
   // 감싸면서 세대를 붙여 내보낸다.
   readonly onChange: (hex: string, session: number) => void;
+  /** 피커 서브트리에서 조작이 일어났다는 신호. **끝은 안 알린다** — 부모가
+   *  데드라인으로 판정하므로 시작만 세면 되고, 그래서 pointerup/pointercancel
+   *  같은 "끝 이벤트"를 못 받아 고착되는 실패 모드 자체가 없다(스펙 D3).
+   *  세대(sessionGen)와 축이 같지만 목적이 다르다: 세대는 "같은 조정인가"를,
+   *  이건 "방금 조작이 있었나"를 답한다. */
+  readonly onPickingActivity: () => void;
 }) {
   const [draft, setDraft] = useState(hex);
 
@@ -45,6 +51,13 @@ export function AccentInput({
   const sessionGen = useRef(0);
   const pickerWrapRef = useRef<HTMLDivElement>(null);
 
+  // 아래 리스너 등록 effect는 deps가 []다(마운트 시 한 번) — 그 클로저가 prop을
+  // 직접 읽으면 첫 렌더 값에 영원히 고정된다. ref에 매 렌더 최신값을 넣어
+  // 리스너가 그것을 읽게 한다. 부모가 useCallback으로 안정화해도 되지만,
+  // 이 effect가 []에 의존하는 사실이 부모 구현에 조용히 매이지 않게 여기서 끊는다.
+  const activityRef = useRef(onPickingActivity);
+  activityRef.current = onPickingActivity;
+
   useEffect(() => {
     const wrap = pickerWrapRef.current;
     if (!wrap) return;
@@ -56,7 +69,7 @@ export function AccentInput({
     // (HueStrip의 onPointerDown, 그 안에서 첫 pick()을 동기 호출)보다
     // **먼저** 실행된다 — 그래서 새 드래그의 첫 pick()이 onChange를 부를
     // 때 이미 새 세대가 반영돼 있다(직접 실행 순서 확인).
-    const onPointerDown = () => { sessionGen.current += 1; };
+    const onPointerDown = () => { sessionGen.current += 1; activityRef.current(); };
     wrap.addEventListener("pointerdown", onPointerDown);
     // 리뷰 라운드 3, F-1: pointercancel도 "시작" 취급으로 새 세대를 연다.
     // 근인은 OklchPicker(HueStrip·LcPad)의 draggingRef가 pointerup에서만
@@ -71,7 +84,7 @@ export function AccentInput({
     // 증가는 단조라 이 방어 자체가 "끝을 놓쳐 고착"되는 실패 모드를 만들지
     // 않는다 — pointercancel을 또 놓쳐도(예: lostpointercapture만 오는
     // 브라우저) 다음 pointerdown이나 hex 칸 커밋이 여전히 세대를 연다.
-    const onPointerCancel = () => { sessionGen.current += 1; };
+    const onPointerCancel = () => { sessionGen.current += 1; activityRef.current(); };
     wrap.addEventListener("pointercancel", onPointerCancel);
     // focusin은 버블링하는 focus 이벤트다(plain "focus"는 안 한다) — 이
     // 서브트리 밖에서 안으로 들어올 때만 새 세대를 연다. blur/focusout처럼
@@ -91,6 +104,10 @@ export function AccentInput({
     // wrapper 안이면 건너뛴다: 서브트리 밖(예: hex 칸, 스와치, 페이지의
     // 다른 곳)에서 들어올 때만 새 세대다.
     const onFocusIn = (e: FocusEvent) => {
+      // L↔C↔H NumberField 사이의 이동도 "피커를 조작 중"이다 — 세대는 안 열지만
+      // 활동은 알린다. 세대(같은 조정인가)와 활동(방금 조작이 있었나)은 다른
+      // 질문이라 여기서 갈린다.
+      activityRef.current();
       if (e.relatedTarget instanceof Node && wrap.contains(e.relatedTarget)) return;
       sessionGen.current += 1;
     };
@@ -114,7 +131,16 @@ export function AccentInput({
           카드·페이지 패딩과 합쳐져 페이지 전체의 가로 하한 442px를 만들고 있었다. */}
       <div className="flex flex-wrap items-start gap-6">
         <div ref={pickerWrapRef} data-testid="accent-picker">
-          <OklchPicker hex={hex} onChange={(h) => onChange(h, sessionGen.current)} />
+          <OklchPicker
+            hex={hex}
+            onChange={(h) => {
+              // 드래그 중 pointermove와 NumberField의 ArrowUp 넛지가 둘 다 여기로
+              // 온다 — 포인터 이벤트가 아닌 경로까지 활동으로 세는 자리다(직전
+              // 스펙 최종 리뷰 N-2가 놓쳤던 바로 그 경로).
+              onPickingActivity();
+              onChange(h, sessionGen.current);
+            }}
+          />
         </div>
         {/* D4 표: hex는 code.sm(12px mono) — 바로 왼쪽 OklchPicker의 L·C·H와
            같은 급이다. 라벨은 caption.sm. w-28(112px)에 12px mono "#3b82f6"은

@@ -1524,3 +1524,78 @@ describe("pin 소멸 배너 만료 (최종 리뷰 I-1)", () => {
     expect(window.location.search).not.toContain("s7=295bac");
   });
 });
+
+// 직전 사이클이 같은 종류의 판정에서 두 라운드를 썼다(최종 리뷰 I-1 라운드
+// 2·3): "지금 드래그 중인가"를 pointerdown~pointerup으로 근사했더니
+// pointercancel 한 번에 영원히 참으로 고착되고, 키보드 넛지는 포인터 이벤트가
+// 아니라 아예 안 잡혔다. 그 교훈을 되풀이하지 않는다 — 판정 축이 데드라인이라
+// **끄는 이벤트가 없고**, 그래서 못 받아서 고착될 이벤트도 없다(스펙 D3).
+describe("피커 조작 중 accent-500 강조 (스펙 D3)", () => {
+  const anchorSwatch = () =>
+    screen.getByTestId("palette-section").querySelectorAll('[data-testid="swatch"]')[5];
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("기본 상태에서는 강조가 없다", () => {
+    render(<ColorPalettePage />);
+    expect(anchorSwatch().getAttribute("data-emphasized")).toBeNull();
+  });
+
+  it("피커 pointerdown이 강조를 켠다", () => {
+    vi.useFakeTimers();
+    render(<ColorPalettePage />);
+    act(() => {
+      fireEvent.pointerDown(screen.getByTestId("accent-picker"));
+    });
+    expect(anchorSwatch().getAttribute("data-emphasized")).toBe("true");
+  });
+
+  // 핵심 단언 — pointerup/pointercancel/lostpointercapture를 **하나도 안 보내도**
+  // 풀린다. 끝을 감지하지 않는다는 것이 방어 코드가 아니라 판정 축의 성질임을
+  // 고정한다.
+  it("끝 이벤트를 하나도 안 받아도 600ms 뒤 풀린다 (고착 불가)", () => {
+    vi.useFakeTimers();
+    render(<ColorPalettePage />);
+    act(() => {
+      fireEvent.pointerDown(screen.getByTestId("accent-picker"));
+    });
+    expect(anchorSwatch().getAttribute("data-emphasized")).toBe("true");
+    act(() => {
+      vi.advanceTimersByTime(600);
+    });
+    expect(anchorSwatch().getAttribute("data-emphasized")).toBeNull();
+  });
+
+  // 데드라인은 활동마다 **갱신**된다 — 드래그가 길어도 중간에 안 꺼진다.
+  it("활동이 이어지면 만료가 미뤄진다", () => {
+    vi.useFakeTimers();
+    render(<ColorPalettePage />);
+    act(() => {
+      fireEvent.pointerDown(screen.getByTestId("accent-picker"));
+    });
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
+    expect(anchorSwatch().getAttribute("data-emphasized")).toBe("true");
+    act(() => {
+      fireEvent.pointerDown(screen.getByTestId("accent-picker"));
+    });
+    act(() => {
+      vi.advanceTimersByTime(400); // 첫 활동 기준으로는 800ms — 갱신 안 되면 꺼진다
+    });
+    expect(anchorSwatch().getAttribute("data-emphasized")).toBe("true");
+  });
+
+  // hex 칸은 "피커 위"가 아니다 — 완결된 값 하나를 통째로 정하는 별개 행동이고,
+  // AccentInput의 sessionGen이 이미 같은 축으로 둘을 가른다(스펙 D3).
+  it("hex 칸 커밋은 강조를 안 켠다", () => {
+    vi.useFakeTimers();
+    render(<ColorPalettePage />);
+    act(() => {
+      fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#00a3a3" } });
+    });
+    expect(anchorSwatch().getAttribute("data-emphasized")).toBeNull();
+  });
+});

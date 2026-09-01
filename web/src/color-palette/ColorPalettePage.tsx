@@ -12,6 +12,16 @@ import { DownloadRow } from "./DownloadRow";
 import { NeutralControl } from "./NeutralControl";
 import { PreviewPane } from "./PreviewPane";
 
+// 강조가 살아 있는 시간. 이 화면의 다른 두 타이머보다 훨씬 짧다 —
+// DownloadRow 복사 피드백 2000, PreviewPane 적용 강조 3000. 그 둘은 **완료된
+// 행동**을 알리지만 이건 **진행 중인 제스처**를 따라가므로 길면 조작과 어긋난다.
+// 부수효과 하나가 바람직하다: 손을 뗀 뒤에도 이만큼 링이 남아 "500이 어디
+// 앉았는지" 확인할 틈이 생긴다(스펙 D3).
+const PICK_EMPHASIS_MS = 600;
+// paletteState의 pinsOf가 anchor로 넣는 자리 — accent[5]는 문자 그대로 피커
+// 위의 hex다. 강조가 사실 지목인 근거가 이 상수다.
+const ANCHOR_STOP = 5;
+
 export function ColorPalettePage() {
   const [state, setState] = useState<PaletteState>(() => parse(window.location.search));
   const [open, setOpen] = useState<number | null>(null);
@@ -37,6 +47,28 @@ export function ColorPalettePage() {
   // hex 칸 커밋은 새 세대(AccentInput.tsx 주석 참고). "끝"을 감지할 필요가
   // 없어 pointercancel류의 실패 모드 자체가 없다.
   const sessionAtDrop = useRef<number | null>(null);
+
+  // "지금 피커를 조작 중인가"를 **끝 이벤트로 판정하지 않는다**(스펙 D3).
+  // 활동이 올 때마다 타이머를 새로 걸어 만료 시각을 뒤로 민다 — 갱신만 있고
+  // 종료 신호가 없으므로, pointerup·pointercancel·lostpointercapture 중
+  // 무엇이 오든 혹은 하나도 안 오든 결과가 같다. 직전 사이클이 두 라운드를
+  // 쓴 고착(I-1 라운드 2·3)이 구조적으로 불가능해진다.
+  const [picking, setPicking] = useState(false);
+  const pickTimerRef = useRef<number | null>(null);
+
+  const onPickingActivity = () => {
+    setPicking(true);
+    if (pickTimerRef.current !== null) window.clearTimeout(pickTimerRef.current);
+    pickTimerRef.current = window.setTimeout(() => {
+      setPicking(false);
+      pickTimerRef.current = null;
+    }, PICK_EMPHASIS_MS);
+  };
+
+  // 언마운트 시 남은 타이머를 걷는다 — 사라진 컴포넌트에 setState하지 않는다.
+  useEffect(() => () => {
+    if (pickTimerRef.current !== null) window.clearTimeout(pickTimerRef.current);
+  }, []);
 
   const onAccentChange = (accentHex: string, session: number) =>
     setState((s) => {
@@ -191,7 +223,11 @@ export function ColorPalettePage() {
 
       <section className="lg:col-start-1">
         <h2 className="sr-only">앵커 정하기</h2>
-        <AccentInput hex={state.accentHex} onChange={onAccentChange} />
+        <AccentInput
+          hex={state.accentHex}
+          onChange={onAccentChange}
+          onPickingActivity={onPickingActivity}
+        />
       </section>
 
       <section
@@ -269,6 +305,7 @@ export function ColorPalettePage() {
             // 확대 확인 후 테두리만 neutral-400으로 강화(스펙 D9,
             // AdjustableScale의 boundaryEmphasis 주석 참조).
             boundaryEmphasis={[0]}
+            emphasis={picking ? ANCHOR_STOP : null}
             onPick={(i) => { setOpen(open === i ? null : i); setHover(null); }}
             preview={open !== null && hover ? previewScale(state, open, hover) : null}
             openIndex={open}
