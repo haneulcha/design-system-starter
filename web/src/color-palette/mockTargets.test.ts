@@ -38,9 +38,16 @@ describe("mockTargetFor (스펙 D3)", () => {
   // 쓴다 — 실패 칩이 solid 쌍을 쓰므로 text-strong은 그 칩이 안 읽는 역할이
   // 됐다. 안 쓰는 역할을 매핑하면 mockTargets가 처음부터 막으려던 것
   // (실제로 안 쓰인 stop의 실패에 엉뚱한 요소가 켜지는 것)이 재생산된다.
-  it("error text-strong·text는 이제 null이다 — 칩이 그 역할을 안 쓴다", () => {
+  //
+  // subtle-bg도 같이 뒤집힌 반쪽이다 — 옛 매핑의 배경 역할이었는데 이제
+  // 칩 배경이 solid라 subtle-bg는 가리킬 데가 없다. subtle-bg는
+  // RoleShift.roleId도 ContrastCheck.roleId도 아니라서(체크 자체가 안 생긴다)
+  // "warning·success·info와의 대칭을 맞춘다"며 이 분기에 subtle-bg를 도로
+  // 넣어도 다른 테스트가 못 잡는다 — 이 한 줄이 유일한 안전장치다.
+  it("error text-strong·text·subtle-bg는 이제 null이다 — 칩이 그 역할을 안 쓴다", () => {
     expect(mockTargetFor("error", "text-strong")).toBeNull();
     expect(mockTargetFor("error", "text")).toBeNull();
+    expect(mockTargetFor("error", "subtle-bg")).toBeNull();
   });
 
   // text와 text-strong은 TEXT_ROLES 짝이지만 서로 다른 stop이고, 상태 칩은

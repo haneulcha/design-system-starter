@@ -189,12 +189,17 @@ function Mock({
           ))}
         </div>
 
+        {/* 두 버튼도 ds-type으로 올린다(fix-round-1 #4, 사람 판단) — 카드 제목을
+            올린 것과 같은 이유다: 이 글자는 크롬이 아니라 색칠 대상인 샘플 UI라
+            3.3 D4의 크롬 12px 하한이 안 걸리는 자리였다. 게다가 이 둘은 화면에서
+            가장 무거운 색 쌍(accent solid/on-solid, subtle-bg/border/text-strong)을
+            나른다 — 대비 문제가 가장 먼저 드러나야 할 자리다. */}
         <div className="flex items-center gap-2">
           <span
             data-testid="mock-solid-btn"
             data-mock-target="solid-btn"
             data-highlighted={isActive("solid-btn") ? "true" : undefined}
-            className="rounded px-2.5 py-1 text-[11px] font-medium"
+            className="rounded px-2.5 py-1 ds-type-button-sm"
             style={{
               background: solid, color: onSolidColor(solid), ...highlightStyle(isActive("solid-btn")),
             }}
@@ -206,7 +211,7 @@ function Mock({
           <span
             data-mock-target="share-btn"
             data-highlighted={isActive("share-btn") ? "true" : undefined}
-            className="rounded border px-2.5 py-1 text-[11px] font-medium"
+            className="rounded border px-2.5 py-1 ds-type-button-sm"
             style={{
               background: at(a, "subtle-bg"),
               borderColor: at(a, "border"),

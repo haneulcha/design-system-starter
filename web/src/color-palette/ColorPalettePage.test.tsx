@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, waitFor, act, within } from "@testing-library/react";
 import { onSolidColor } from "@core/color/contrast.js";
 import { ColorPalettePage } from "./ColorPalettePage";
+import { roleLabel } from "./contrastTriage";
 import { DEFAULT_ACCENT, defaultState, deriveScales } from "./paletteState";
 
 beforeEach(() => window.history.replaceState({}, "", "/color-palette"));
@@ -952,16 +953,20 @@ describe("경고 ↔ 목업 강조 (스펙 D3, 2026-08-30 개정)", () => {
   // 것도 안 켜지는지는 증명하지 못한다. target === null인 뱃지(상태색
   // text 등)를 실제로 hover해서 두 목업 어디에도 강조가 안 뜨는지 확인한다.
   //
-  // "솔리드 위 글자" 라벨 매칭으로 unwired를 가려내던 예전 필터는 2026-09-01
-  // 스펙 D5로 더는 유효하지 않다 — accent/on-solid뿐 아니라 warning·success·
-  // info의 text-strong도 이제 배선된다(3.1 D2 은퇴, Task 5). 라벨 대신
-  // ContrastBadge가 실제로 세팅하는 data-highlights 속성 유무로 unwired를
-  // 가른다 — 이게 wired 여부의 근거 신호(target != null)와 그대로 대응한다.
+  // unwired 집합은 배선(data-highlights 유무)이 아니라 라벨로 고른다 — 배선
+  // 자체로 고르면 "wired가 아닌 것 == data-highlights가 없는 것"이 되어
+  // 이 테스트가 증명하려는 바(그 집합이 실제로 켜지지 않는다)를 이미 선택
+  // 기준 안에 넣는 순환 논증이 된다(리뷰 fix-round-1 #1) — 그러면
+  // adjustable 조건이 잘못 좁아져 있어야 할 뱃지가 unwired로 새는 회귀를
+  // 이 테스트가 원리적으로 못 잡는다. roleLabel("text")("텍스트 (링크)")는
+  // 매핑과 독립적으로 참인 사실이다 — mockTargetFor는 어떤 스케일의 text
+  // 역할도 절대 배선하지 않는다(mockTargets.ts: text-strong의 TEXT_ROLES
+  // 짝이지만 다른 stop이라 목업에 그 stop을 쓰는 요소가 없다).
   it("대응 요소가 없는 경고는 실제로 hover해도 아무 것도 안 켜진다", () => {
     render(<ColorPalettePage />);
     const details = screen.getByText(/고칠 수 없는 미달/).closest("details")!;
     const inside = Array.from(details.querySelectorAll('[data-testid="contrast-badge"]'));
-    const unwired = inside.filter((b) => b.getAttribute("data-highlights") === null);
+    const unwired = inside.filter((b) => (b.textContent ?? "").includes(roleLabel("text")));
     expect(unwired.length).toBeGreaterThan(0);
 
     unwired.forEach((b) => {
@@ -1092,6 +1097,13 @@ describe("한 번에 고치기가 무엇을 바꿨는지 말한다 (Task 7, D5)"
         light.querySelector(`[data-mock-target="${target}"]`)?.getAttribute("data-highlighted"),
       ).toBe("true");
     }
+    // 알려진 한계 1을 프로즈가 아니라 단언으로 고정한다 — 실패 칩은
+    // solid+on-solid로 그려서 text-strong 이동에 안 움직인다. 위 루프에서
+    // error-badge를 뺀 것과 정확히 짝을 이루는 부정 단언이 없으면 "안 움직인다"는
+    // 주석으로만 존재하고, error-badge가 실수로 다시 켜져도 이 테스트는 못 잡는다.
+    expect(
+      light.querySelector('[data-mock-target="error-badge"]')?.getAttribute("data-highlighted"),
+    ).toBeNull();
 
     const dark = screen.getByTestId("mock-dark");
     for (const target of [
