@@ -27,10 +27,22 @@
 //     반증: #00a3a3에서 text만 실패·text-strong은 통과인데 공유 버튼이 켜짐).
 //     막대(bars)는 raw index(a[3..7])로 그려서 역할과 아예 무관 — 이 함수는
 //     bars를 결코 반환하지 않는다("MockTarget" 유니온에는 남아 있다, 아래 참고).
-//   - error: subtle-bg + text-strong 배지 하나("실패 2"). error의 solid·text는
-//     목업에 없다.
-// warning·success·info는 목업에 아예 없다 — 목업을 넓혀 커버리지를 올리지
-// 않는다(3.1 D2 재개봉 금지). 그런 조합은 null.
+//   - error: **solid + on-solid** 배지 하나("실패 2"). 진한 배경·밝은 글자다.
+//     subtle-bg·text-strong은 이 칩이 안 읽으므로 null이다 — 옛 매핑을 뒤집는다
+//     (2026-09-01 스펙 D5).
+//   - warning·success·info: subtle-bg 배경 + text-strong 글자 칩 각각 하나
+//     ("지연 1" / "완료 12" / "동기화").
+//
+// **3.1 D2("상태 한 조각… 작게 하나면 충분하다")는 상시 규칙에서 은퇴했다**
+// (2026-09-01 스펙의 "뒤집는 판단 1"). 이 파일의 옛 주석은 그 규칙을 근거로
+// warning·success·info를 영구 null로 선언했는데, 그 결과 checkContrast가
+// 만드는 그 스케일들의 검사는 **가리킬 데가 구조적으로 없었다** — 3.1 D2와
+// 직전 스펙 D3의 배선 기준("가리킬 데가 있는가")이 서로를 막고 있던 셈이다.
+// 은퇴시키되 새 상시 규칙을 그 자리에 세우지 않는다: 목업은 aside 세로 여유
+// 실측과 이 파일의 배선 원칙 둘로 충분히 다스려진다.
+//
+// 잃은 것도 적는다 — error/text-strong은 이제 가리킬 데가 없다. 칩 하나는
+// 배경·글자 쌍을 하나만 쓰기 때문이고, 회피 가능한 실수가 아니라 구조다.
 export type MockTarget =
   | "solid-btn"
   | "share-btn"
@@ -40,7 +52,10 @@ export type MockTarget =
   | "bars"
   | "card-text"
   | "card-subtext"
-  | "error-badge";
+  | "error-badge"
+  | "warning-badge"
+  | "success-badge"
+  | "info-badge";
 
 export function mockTargetFor(scaleName: string, roleId: string): MockTarget | null {
   if (scaleName === "accent") {
@@ -55,10 +70,20 @@ export function mockTargetFor(scaleName: string, roleId: string): MockTarget | n
     if (roleId === "text") return "card-subtext";
     return null;
   }
+  // 실패 칩은 solid + on-solid다 — 바로 옆 "보고서 열기"(accent solid +
+  // on-solid)와 같은 장치를 쓴다. on-solid은 라이트만 검사되므로(checkContrast)
+  // 다크 목업의 이 칩은 어떤 뱃지도 안 가리킨다 — "보고서 열기"가 이미 같은
+  // 상태라 새 비대칭이 아니다.
   if (scaleName === "error") {
-    if (roleId === "subtle-bg" || roleId === "text-strong") return "error-badge";
+    if (roleId === "solid" || roleId === "on-solid") return "error-badge";
     return null;
   }
-  // warning·success·info: 목업에 아예 없다.
+  // 나머지 셋은 subtle-bg 배경 + text-strong 글자다. subtle-bg는 배선해도
+  // 뱃지로는 안 뜬다(checkContrast가 text·text-strong·on-solid 셋만 검사를
+  // 만든다) — 그래도 "이 칩이 그 역할을 읽는다"는 사실은 같으므로 매핑한다.
+  if (scaleName === "warning" || scaleName === "success" || scaleName === "info") {
+    if (roleId === "text-strong" || roleId === "subtle-bg") return `${scaleName}-badge`;
+    return null;
+  }
   return null;
 }

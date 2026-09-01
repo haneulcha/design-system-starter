@@ -20,6 +20,33 @@ import { checksFingerprint, shiftHighlightTargets, summarizeShifts } from "./shi
 const APPLIED_HIGHLIGHT_MS = 3000;
 const EMPTY_HIGHLIGHT: readonly MockTarget[] = [];
 
+// 목업이 그리는 상태 칩. 3.1 D2("상태 한 조각… 작게 하나면 충분하다")를 상시
+// 규칙에서 은퇴시킨 결과다(2026-09-01 스펙의 "뒤집는 판단 1") — 근거는 미학이
+// 아니라 배선이다: checkContrast가 6개 스케일 전부에 검사를 만드는데
+// mockTargetFor가 warning·success·info에 전부 null을 내서, 가리킬 데가
+// 구조적으로 없는 경고가 상시 존재했다.
+//
+// 실패만 solid다 — 요청한 "텍스트·배경 swap"의 겉모습(진한 배경·밝은 글자)을
+// subtle-bg↔text-strong 맞바꾸기가 아니라 solid + on-solid로 낸다. 맞바꾸는
+// 쪽은 대비비가 대칭이라 숫자는 맞지만 배지 문구가 bgLabel에서 나와
+// "은은한 배경 위 진한 글자"로 읽혀 화면과 방향이 반대가 된다 — bgLabel은
+// src/color/라 엔진 불변에 막혀 못 고친다(스펙 D5).
+//
+// 이 표와 mockTargets.ts의 매핑은 **함께 움직여야 한다** — 칩이 읽는 역할을
+// 바꾸면 그쪽 매핑도 같이 바꾼다. 안 그러면 실제로 안 쓰인 stop의 실패에
+// 엉뚱한 요소가 켜진다(mockTargets.ts의 리뷰 반증 사례).
+const STATUS_CHIPS = [
+  { id: "error", target: "error-badge", label: "실패 2", solid: true },
+  { id: "warning", target: "warning-badge", label: "지연 1", solid: false },
+  { id: "success", target: "success-badge", label: "완료 12", solid: false },
+  { id: "info", target: "info-badge", label: "동기화", solid: false },
+] as const satisfies readonly {
+  id: keyof ScaleSet["semantic"];
+  target: MockTarget;
+  label: string;
+  solid: boolean;
+}[];
+
 // 강조 아웃라인 — 목업 배경·전경은 전부 사용자 팔레트라 어떤 단일 고정색도
 // 대비를 보장하지 못한다(전역 제약: 팔레트 색을 쓰지 않는다). 흰/검 이중
 // 링이면 배경이 무엇이든 최소 한쪽 링은 반드시 도드라진다 — 크롬 중립색.
@@ -74,7 +101,6 @@ function Mock({
   const at = (hexes: readonly string[], id: string) => hexes[stopIdx(roles, id, theme)];
   const a = scales.accent;
   const n = scales.neutral;
-  const err = scales.semantic.error;
   const solid = at(a, "solid");
   // hover든 "한 번에 고치기" 직후 자동 강조든 같은 링을 켠다 — 소스가
   // 두 개이지 장치는 하나다.
@@ -98,7 +124,10 @@ function Mock({
           <div
             data-mock-target="card-text"
             data-highlighted={isActive("card-text") ? "true" : undefined}
-            className="text-[11px] font-semibold"
+            // 11px에서 올렸다 — 목업 안 텍스트는 크롬이 아니라 **색칠 대상인
+            // 샘플 UI**라 3.3 D4의 크롬 12px 하한이 적용 안 되던 자리였고,
+            // 그래서 "만든 색이 실제로 어떻게 보이는가"를 거의 못 답했다(스펙 D4).
+            className="ds-type-heading-xxs"
             style={{ color: at(n, "text-strong"), ...highlightStyle(isActive("card-text")) }}
             onMouseEnter={() => onHover("card-text")}
             onMouseLeave={() => onHover(null)}
@@ -108,12 +137,40 @@ function Mock({
           <div
             data-mock-target="card-subtext"
             data-highlighted={isActive("card-subtext") ? "true" : undefined}
-            className="text-[10px]"
+            className="ds-type-caption-sm"
             style={{ color: at(n, "text"), ...highlightStyle(isActive("card-subtext")) }}
             onMouseEnter={() => onHover("card-subtext")}
             onMouseLeave={() => onHover(null)}
           >
             지난 5주
+          </div>
+        </div>
+
+        {/* 지표 줄 — 막대 위에 선다(스펙 D4). 수치는 제목과 **같은 역할**
+            (neutral text-strong)이라 data-mock-target도 card-text를 공유한다:
+            뱃지 하나가 둘을 함께 밝히는 것이 정확하다("이 역할은 여기 두 곳에
+            쓰인다").
+            증감은 success text-strong 색을 쓰지만 **배선은 안 한다** — 같은
+            역할의 강조 대상을 칩과 둘로 나누면 success 뱃지 하나가 서로 떨어진
+            두 곳을 켜서 "어디를 보라는 건가"가 흐려진다. 색만 빌리고 가리킴은
+            칩 하나로 모은다. */}
+        <div className="flex items-baseline gap-2">
+          <div
+            data-mock-target="card-text"
+            data-highlighted={isActive("card-text") ? "true" : undefined}
+            className="ds-type-heading-xs"
+            style={{ color: at(n, "text-strong"), ...highlightStyle(isActive("card-text")) }}
+            onMouseEnter={() => onHover("card-text")}
+            onMouseLeave={() => onHover(null)}
+          >
+            12,480
+          </div>
+          <div
+            data-testid="mock-delta"
+            className="ds-type-caption-sm"
+            style={{ color: at(scales.semantic.success, "text-strong") }}
+          >
+            +8.2%
           </div>
         </div>
 
@@ -132,12 +189,17 @@ function Mock({
           ))}
         </div>
 
+        {/* 두 버튼도 ds-type으로 올린다(fix-round-1 #4, 사람 판단) — 카드 제목을
+            올린 것과 같은 이유다: 이 글자는 크롬이 아니라 색칠 대상인 샘플 UI라
+            3.3 D4의 크롬 12px 하한이 안 걸리는 자리였다. 게다가 이 둘은 화면에서
+            가장 무거운 색 쌍(accent solid/on-solid, subtle-bg/border/text-strong)을
+            나른다 — 대비 문제가 가장 먼저 드러나야 할 자리다. */}
         <div className="flex items-center gap-2">
           <span
             data-testid="mock-solid-btn"
             data-mock-target="solid-btn"
             data-highlighted={isActive("solid-btn") ? "true" : undefined}
-            className="rounded px-2.5 py-1 text-[11px] font-medium"
+            className="rounded px-2.5 py-1 ds-type-button-sm"
             style={{
               background: solid, color: onSolidColor(solid), ...highlightStyle(isActive("solid-btn")),
             }}
@@ -149,7 +211,7 @@ function Mock({
           <span
             data-mock-target="share-btn"
             data-highlighted={isActive("share-btn") ? "true" : undefined}
-            className="rounded border px-2.5 py-1 text-[11px] font-medium"
+            className="rounded border px-2.5 py-1 ds-type-button-sm"
             style={{
               background: at(a, "subtle-bg"),
               borderColor: at(a, "border"),
@@ -161,19 +223,34 @@ function Mock({
           >
             공유
           </span>
-          <span
-            data-mock-target="error-badge"
-            data-highlighted={isActive("error-badge") ? "true" : undefined}
-            className="ml-auto rounded px-1.5 py-0.5 text-[10px]"
-            style={{
-              background: at(err, "subtle-bg"), color: at(err, "text-strong"),
-              ...highlightStyle(isActive("error-badge")),
-            }}
-            onMouseEnter={() => onHover("error-badge")}
-            onMouseLeave={() => onHover(null)}
-          >
-            실패 2
-          </span>
+        </div>
+
+        {/* 상태 칩 넷. 380px 사이드바 안쪽(~330px)에서 한 줄에 안 들어가면
+            두 줄로 접힌다 — 접히는 것이 정상이다(칩을 줄이거나 글자를 깎지
+            않는다). 산출물에 무조건 들어가는 색이므로 화면에 없으면 받아간
+            파일에 모르는 색이 들어있게 된다(사이클 3 D7). */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          {STATUS_CHIPS.map((c) => {
+            const sc = scales.semantic[c.id];
+            const solidHex = at(sc, "solid");
+            return (
+              <span
+                key={c.id}
+                data-mock-target={c.target}
+                data-highlighted={isActive(c.target) ? "true" : undefined}
+                className="rounded px-1.5 py-0.5 ds-type-caption-xs"
+                style={{
+                  background: c.solid ? solidHex : at(sc, "subtle-bg"),
+                  color: c.solid ? onSolidColor(solidHex) : at(sc, "text-strong"),
+                  ...highlightStyle(isActive(c.target)),
+                }}
+                onMouseEnter={() => onHover(c.target)}
+                onMouseLeave={() => onHover(null)}
+              >
+                {c.label}
+              </span>
+            );
+          })}
         </div>
       </div>
     </div>

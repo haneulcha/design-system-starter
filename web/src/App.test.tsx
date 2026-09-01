@@ -12,8 +12,9 @@ describe("App 라우팅", () => {
   it("renders the colour tool at /color-palette", () => {
     goTo("/color-palette");
     render(<App />);
-    // level: 1 — 태스크 4가 붙인 h2 "② 만들어진 팔레트"도 /팔레트/에 걸려
-    // level 없이는 getByRole이 둘을 찾고 모호하다며 실패한다.
+    // level: 1 — h2 "만들어진 팔레트"(2026-09-01 스펙 D1로 sr-only가 됐고
+    // 번호도 뗐다, 구 문구는 "② 만들어진 팔레트")도 /팔레트/에 걸려 level
+    // 없이는 getByRole이 둘을 찾고 모호하다며 실패한다.
     expect(screen.getByRole("heading", { level: 1, name: /팔레트/ })).toBeTruthy();
   });
 

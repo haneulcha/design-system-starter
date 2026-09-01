@@ -34,12 +34,43 @@ interface Props {
    *  없었다(확대 확인). "그림자 색 = 테두리 색" 규칙은 pinned/기본 케이스에서
    *  그대로 유지된다 — 이 예외 하나만 테두리가 그림자보다 한 단계 진하다. */
   readonly boundaryEmphasis?: readonly number[];
+  /** 지금 짚을 stop 하나. 피커를 조작하는 동안 accent-500을 가리키는 데 쓴다
+   *  (스펙 D3). **언제 켜고 끄는지는 이 컴포넌트가 안 정한다** — 부모가 준
+   *  값을 그릴 뿐이다(CLAUDE.md 로직/렌더 분리). null = 강조 없음. */
+  readonly emphasis?: number | null;
 }
+
+// 링은 흰 페이지 배경 위에 그려지므로 neutral-900 단색으로 충분하다 —
+// PreviewPane의 흰/검 이중 링(HIGHLIGHT_RING)은 배경이 사용자 팔레트라서
+// 필요했던 장치이고, 여기엔 그 조건이 없다.
+// outline을 쓰는 이유는 레이아웃을 안 밀기 때문이다(border는 칩 크기를 바꾸고
+// box-shadow는 이 컴포넌트가 이미 depth 어포던스로 쓰고 있어 신호가 겹친다).
+// 리프트 2px는 스와치의 press 이동(2px)과 같은 값이다 — 이 띠에서 "2px 뜬다"가
+// 이미 뜻하는 것("만질 수 있다")과 어긋나지 않는다.
+// transform은 변위라 prefers-reduced-motion에서도 살아 있고 트윈만 꺼진다
+// (직전 스펙 D9, motion.test.tsx의 가드).
+//
+// 잠재 충돌(2026-09-01 최종 리뷰) — 인라인 style은 항상 클래스를 이긴다.
+// button 분기의 `active:translate-y-[2px]`는 클래스라서, emphasized가 true인
+// 동안은 이 객체의 인라인 `transform: translateY(-2px)`가 press 시에도 그대로
+// 이겨 스와치가 눌려도 안 내려간다 — "이동 2px = 깊이 2px … 두 값은 항상
+// 같이 움직여야 한다"(위 button 분기 주석)는 불변식이 깨진다. 지금은
+// 도달 불가능하다: emphasis는 항상 stop 5(ANCHOR_STOP, ColorPalettePage.tsx)
+// 이고 5는 ADJUSTABLE_STOPS([0,3,7,10])에 없어 button 분기(canAdjust)로
+// 안 간다 — emphasis는 button이 아니라 항상 아래 div 분기(press 불가)에만
+// 걸린다. 나중에 조정 가능한 stop(예: 7)을 강조 대상으로 넓히면 이 충돌이
+// 실제로 열린다 — 그때는 이 스타일 구조 자체를 다시 봐야 한다(이번
+// 리뷰에서는 도달 불가능하므로 재구조화하지 않는다).
+const EMPHASIS_STYLE = {
+  outline: "2px solid var(--color-neutral-900)",
+  outlineOffset: "2px",
+  transform: "translateY(-2px)",
+} as const;
 
 export function AdjustableScale({
   hexes, adjustable, pinned, onPick, preview, showCaptions = true,
   openIndex = null, popoverContent, onClosePopover, compact = false,
-  boundaryEmphasis = [],
+  boundaryEmphasis = [], emphasis = null,
 }: Props) {
   const shown = preview ?? hexes;
   // clamp 기준이다 — 띠 자신이 경계다(스펙 D3).
@@ -53,6 +84,7 @@ export function AdjustableScale({
     <div ref={stripRef} className="flex gap-0.5">
       {shown.map((hex, i) => {
         const canAdjust = adjustable.includes(i);
+        const emphasized = i === emphasis;
         const label = `${STOP_KEYS[i]} ${hex}${canAdjust ? " — 조정" : ""}`;
         return (
           // relative는 패널의 absolute 기준이다. 열린 칸에만 필요하지만 11칸에
@@ -96,14 +128,16 @@ export function AdjustableScale({
                       : `border-neutral-300
                          shadow-[0_2px_0_0_var(--color-neutral-300)]`
                 }`}
-                style={{ background: hex }}
+                data-emphasized={emphasized ? "true" : undefined}
+                style={{ background: hex, ...(emphasized ? EMPHASIS_STYLE : undefined) }}
               />
             ) : (
               <div
                 aria-label={label}
                 data-testid="swatch"
-                className={`w-full ${compact ? "h-5" : "h-9"} rounded-sm border border-neutral-200`}
-                style={{ background: hex }}
+                className={`w-full ${compact ? "h-5" : "h-9"} rounded-sm border border-neutral-200 transition-transform`}
+                data-emphasized={emphasized ? "true" : undefined}
+                style={{ background: hex, ...(emphasized ? EMPHASIS_STYLE : undefined) }}
               />
             )}
             {/* 조정 가능 여부는 칩(1px 테두리 차이)도 캡션의 굵기·명도도 아니라

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, waitFor, act, within } from "@testing-library/react";
 import { onSolidColor } from "@core/color/contrast.js";
 import { ColorPalettePage } from "./ColorPalettePage";
+import { roleLabel } from "./contrastTriage";
 import { DEFAULT_ACCENT, defaultState, deriveScales } from "./paletteState";
 
 beforeEach(() => window.history.replaceState({}, "", "/color-palette"));
@@ -553,8 +554,19 @@ describe("후보 팝오버 — 후보 밖 (리뷰 R-2)", () => {
 });
 
 describe("크롬 타이포 — 하한 12px", () => {
-  // 목업(Mock)은 명시적 예외다. 사용자 팔레트로 그리는 축소 UI라 하한을 적용하면
-  // 380px 카드가 부풀어 "커지면 정작 색이 안 보인다"(3.1 D2)를 거스른다.
+  // 목업(Mock)은 명시적 예외다 — 이 하한은 **크롬**(도구 자신의 UI 문구)에
+  // 거는 것이고, 목업 안 텍스트는 크롬이 아니라 색칠 대상인 샘플 UI다(스펙
+  // "뒤집는 판단" 절의 하위 "경계선과의 관계" 표 중 D4 행 — "경계선과의
+  // 관계" 자체는 D4 전용 절이 아니라 D3·D4·D1을 함께 판정하는 절이다).
+  // 3.1 D2("작게 하나면 충분하다")는 이 사이클에서 상시 규칙 지위를
+  // 잃었으므로(스펙 "뒤집는 판단 1", 2026-09-01 최종 리뷰 정정 — 옛 코멘트는
+  // 이 규칙을 근거로 들었으나 더 이상 유효하지 않다) 이 예외의 근거가
+  // 아니다. 목업 자신의 타이포 중 카드 제목(ds-type-heading-xxs)과
+  // 서브텍스트(ds-type-caption-sm)는 아래 "목업" describe 블록이 ds-type
+  // 토큰으로 직접 핀으로 고정한다 — 그래서 이 테스트가 목업을 통째로
+  // 면제해도 그 둘의 타이포는 검증 밖으로 새지 않는다. 상태 칩
+  // (ds-type-caption-xs)은 이 핀 대상이 아니다 — 그 블록도, 다른 어느
+  // 테스트도 칩 타이포 크기는 단언하지 않는다.
   it("목업 바깥 크롬에 10~11px 손값이 없다", () => {
     const { container } = render(<ColorPalettePage />);
     const mocks = [screen.getByTestId("mock-light"), screen.getByTestId("mock-dark")];
@@ -585,16 +597,83 @@ describe("크롬 타이포 — 하한 12px", () => {
 });
 
 describe("3단 스테이지 골격", () => {
-  it("h1 하나에 h2 셋이 ①②③ 순서로 있다", () => {
+  // 3.3 D3의 "번호 붙은 스테이지 제목"을 뒤집는다 — 걷는 것은 **시각 노출과
+  // 번호**뿐이고 h2 셋의 존재·순서는 유지한다(스펙 D1). 이 화면은 나가는
+  // 링크가 0인 막다른 골목이라(직전 스펙 비-목표) 구조 신호를 더 잃으면
+  // 스크린리더에 평면만 남는다. 순서가 곧 사용 순서라는 3.3 D3의 주장은
+  // 제목이 아니라 간격 위계(아래 테스트)가 계속 진다.
+  it("h1은 생성기이고, h2 셋은 sr-only로 남는다", () => {
     render(<ColorPalettePage />);
-    expect(screen.getAllByRole("heading", { level: 1 }).length).toBe(1);
+    const h1 = screen.getAllByRole("heading", { level: 1 });
+    expect(h1.length).toBe(1);
+    expect(h1[0].textContent).toBe("컬러 팔레트 생성기");
+
     const h2 = screen.getAllByRole("heading", { level: 2 });
     expect(h2.length).toBe(3);
+    // 번호(①②③)는 시각에서 사라지므로 sr-only 문구에서도 뗀다 — 스크린리더
+    // 사용자만 "①"을 듣는 비대칭을 만들지 않는다.
     expect(h2.map((h) => h.textContent)).toEqual([
-      expect.stringContaining("앵커"),
-      expect.stringContaining("팔레트"),
-      expect.stringContaining("받기"),
+      "앵커 정하기",
+      "만들어진 팔레트",
+      "받기",
     ]);
+    for (const h of h2) expect(h.className).toContain("sr-only");
+  });
+
+  // "액센트"는 sr-only로 내리고 "뉴트럴"·"상태색"은 시각에 남긴다(2026-09-01
+  // 최종 리뷰 정정 — 최초 스펙 D1은 "제거"라고 적었다). 위치("바로 위가 피커
+  // 카드, 바로 아래가 뉴트럴 라벨")로 갈린다는 최초 근거는 화면에는 맞지만
+  // 스크린리더에는 위치가 없다(AdjustableScale.tsx: "스크린리더에는 위치가
+  // 없다") — 그 근거로 라벨을 DOM에서 완전히 지우면 이 화면에서 유일하게
+  // 이름 없는 띠가 액센트가 된다. 그래서 지우지 않고 sr-only로만 내린다.
+  it("액센트 라벨은 sr-only이고 뉴트럴·상태색 라벨은 시각에 남는다", () => {
+    render(<ColorPalettePage />);
+    expect(screen.getByText("액센트").className).toContain("sr-only");
+    expect(screen.getByText("뉴트럴").className).not.toContain("sr-only");
+    expect(screen.getByText("상태색").className).not.toContain("sr-only");
+  });
+
+  // 걷어낸 제목이 지던 "여기부터 다른 단계"를 간격이 진다. 값 셋만 쓴다:
+  // 12 = 입력과 그 결과 / 16 = 이웃 블록 / 32 = 다른 덩어리 (스펙 D1).
+  // main의 기본 rowGap을 **가장 좁은 값**으로 두고 넓히는 자리만 명시적으로
+  // 올린다 — 넓은 기본값에 좁히는 예외를 다는 것보다 어긋날 자리가 적다.
+  it("간격 위계가 12/16/32다 (스펙 D1)", () => {
+    render(<ColorPalettePage />);
+    const main = screen.getByRole("main") as HTMLElement;
+    expect(main.style.rowGap).toBe("var(--ds-space-sm)");
+    expect(main.style.columnGap).toBe("var(--ds-space-xl)");
+    // h1 → 피커 카드는 "다른 덩어리"라 좁은 기본값을 덮는다.
+    expect((screen.getAllByRole("heading", { level: 1 })[0] as HTMLElement).style.marginBottom)
+      .toBe("var(--ds-space-md)");
+    // ② 안: 액센트 띠 ↔ 뉴트럴 블록 = 다른 덩어리.
+    expect((screen.getByTestId("palette-section") as HTMLElement).style.gap)
+      .toBe("var(--ds-space-xl)");
+    // ② → ③ 받기도 다른 덩어리다 — marginTop 8 + main rowGap 12 = 20
+    // (32가 아니다: rowGap이 12로 고정이라 xl을 더하면 44가 된다).
+    expect((screen.getByTestId("download-section") as HTMLElement).style.marginTop)
+      .toBe("var(--ds-space-xs)");
+  });
+
+  // 뉴트럴 띠 → 상태색은 "이웃 블록"(16)이다 — 둘 다 생성된 산출물이라
+  // 액센트↔뉴트럴의 "다른 덩어리"(32)와는 다른 관계다(스펙 D1 표, 2026-09-01
+  // 최종 리뷰로 코드에 맞춰 정정 — 최초 구현은 palette-section의 gap: xl을
+  // 그대로 물려받아 이 자리도 32였다). 뉴트럴·상태색을 감싸는 래퍼의 안쪽
+  // gap만 16이고, palette-section 레벨의 gap: xl(액센트↔래퍼)은 그대로다.
+  it("뉴트럴 띠 → 상태색은 16이다 (스펙 D1 정정)", () => {
+    render(<ColorPalettePage />);
+    const paletteSection = screen.getByTestId("palette-section");
+    const neutralSection = screen.getByTestId("neutral-section");
+    const semanticSection = screen.getByTestId("semantic-section");
+    const wrapper = neutralSection.parentElement as HTMLElement;
+    // 뉴트럴·상태색이 palette-section의 직접 자식이 아니라 전용 래퍼 안에
+    // 같이 있어야 그 래퍼 안쪽 gap만 16으로 따로 줄 수 있다.
+    expect(wrapper).not.toBe(paletteSection);
+    expect(wrapper.parentElement).toBe(paletteSection);
+    expect(semanticSection.parentElement).toBe(wrapper);
+    // display: grid가 아니면 gap이 안 먹는다 — style.gap 단언만으로는
+    // 래퍼를 display: block으로 바꿔도 초록으로 남는다(리뷰 지적).
+    expect(wrapper.style.display).toBe("grid");
+    expect(wrapper.style.gap).toBe("var(--ds-space-md)");
   });
 
   // 사이클 3 D7로의 회귀 — 접힌 details는 "얇게 노출"이 아니라 "노출 안 함"이었다.
@@ -750,6 +829,53 @@ describe("접근성", () => {
     expect(screen.getByRole("group", { name: "강도" })).toBeTruthy();
   });
 
+  // 액센트는 피커(위) → 띠(아래)인데 뉴트럴만 반대였다 — 같은 화면에서 같은
+  // 관계가 두 방향으로 그려졌다. 둘 다 "입력 → 결과"로 맞춘다(스펙 D2).
+  it("뉴트럴 컨트롤이 뉴트럴 띠보다 앞에 온다 (스펙 D2)", () => {
+    render(<ColorPalettePage />);
+    const block = screen.getByTestId("neutral-section");
+    const control = block.querySelector('[role="group"][aria-label="뉴트럴 색조"]')!;
+    const strip = block.querySelector('[data-testid="swatch"]')!;
+    expect(control).toBeTruthy();
+    expect(strip).toBeTruthy();
+    // DOCUMENT_POSITION_FOLLOWING = strip이 control 뒤에 온다.
+    expect(control.compareDocumentPosition(strip) & Node.DOCUMENT_POSITION_FOLLOWING)
+      .toBeTruthy();
+  });
+
+  // 라벨은 각각 두 글자인데 칩 위에 한 줄씩 앉아 세로 2행을 먹고 있었다.
+  // 같은 행으로 내리면 그 2행이 통째로 사라진다(스펙 D2).
+  it("색조·강도 라벨이 칩과 같은 행에 있다 (스펙 D2)", () => {
+    render(<ColorPalettePage />);
+    for (const [label, groupName] of [["색조", "뉴트럴 색조"], ["강도", "강도"]] as const) {
+      const group = screen.getByRole("group", { name: groupName });
+      const row = group.parentElement!;
+      expect(row.className).toContain("flex");
+      expect(row.textContent).toContain(label);
+    }
+  });
+
+  // "자동으로"(되돌리기) 버튼은 두 자리 중 하나에 산다: 보통은 강도 행 안에,
+  // 무채색 틴트에서는 강도 행 자체가 사라지므로 따로 한 줄로. 무채색 분기를
+  // 지우면(예: "중복 버튼 정리" 리팩터) 강도 행이 없는 상태에서 되돌릴 길이
+  // 통째로 사라져 자동 스냅으로 못 돌아가는 함정이 된다 — 이 테스트는 그
+  // 분기 하나만 지워도 실패한다. state.tint는 칩을 눌러야 채워지므로(자동
+  // 스냅 중엔 null) 실제 UI로 칩을 눌러 도달한다.
+  it("자동으로 버튼은 무채색이든 아니든 항상 갈 곳이 있다", () => {
+    render(<ColorPalettePage />);
+
+    // 무채색: 강도 행이 없고, "자동으로"는 독립된 줄로 뜬다.
+    fireEvent.click(screen.getByRole("button", { name: /무채색/ }));
+    expect(screen.queryByRole("group", { name: "강도" })).toBeNull();
+    expect(screen.getByRole("button", { name: "자동으로" })).toBeTruthy();
+
+    // 비무채색: 강도 행이 있고, "자동으로"는 그 행 안에 있다.
+    fireEvent.click(screen.getByRole("button", { name: /웜 그레이/ }));
+    const strengthGroup = screen.getByRole("group", { name: "강도" });
+    const strengthRow = strengthGroup.parentElement!;
+    expect(strengthRow.contains(screen.getByRole("button", { name: "자동으로" }))).toBe(true);
+  });
+
   // 뱃지는 hover 프리뷰(shownScales)까지 반영해 스와치를 스칠 때마다 바뀐다.
   // 헤드라인은 그 뱃지 목록과 별개로 확정 팔레트(scales) 기준으로 낸다 —
   // "hover는 미리보기일 뿐 확정이 아니다"라는 이 화면의 계약을 헤드라인 자체의
@@ -862,14 +988,35 @@ describe("경고 ↔ 목업 강조 (스펙 D3, 2026-08-30 개정)", () => {
 
   // M-3: "안 붙는다"를 data-highlights 부재만으로 보이면 실제 hover 시 아무
   // 것도 안 켜지는지는 증명하지 못한다. target === null인 뱃지(상태색
-  // text·text-strong 등)를 실제로 hover해서 두 목업 어디에도 강조가 안 뜨는지
-  // 확인한다. accent/on-solid(이제 유일하게 배선되는 unfixable 뱃지)는
-  // 제외한다 — 그건 위 테스트가 "붙어야 한다"를 이미 고정했다.
+  // text 등)를 실제로 hover해서 두 목업 어디에도 강조가 안 뜨는지 확인한다.
+  //
+  // unwired 집합은 배선(data-highlights 유무)이 아니라 라벨로 고른다 — 배선
+  // 자체로 고르면 "wired가 아닌 것 == data-highlights가 없는 것"이 되어
+  // 이 테스트가 증명하려는 바(그 집합이 실제로 켜지지 않는다)를 이미 선택
+  // 기준 안에 넣는 순환 논증이 된다(리뷰 fix-round-1 #1) — 그러면
+  // adjustable 조건이 잘못 좁아져 있어야 할 뱃지가 unwired로 새는 회귀를
+  // 이 테스트가 원리적으로 못 잡는다. roleLabel("text")("텍스트 (링크)")는
+  // 매핑과 독립적으로 참인 사실이다 — 다만 그 범위는 이 details(고칠 수 없는
+  // 미달) 안으로 좁혀 읽어야 한다(2026-09-01 최종 리뷰 정정): "text" 역할이
+  // 전 스케일에서 안 배선된 건 아니다(mockTargetFor("neutral", "text")는
+  // "card-subtext"를 낸다). 이 접힌 그룹(고칠 수 없는 미달) 안에는
+  // accent/on-solid도 있다 — `contrastTriage.ts`의 `canFix`는
+  // `c.adjustable && shifts.some(...)`로 판정하는데 on-solid은
+  // adjustable === true라도 shifts 쪽 매칭이 없어 unfixable로 온다(D3 배선
+  // 기준 개정의 계기가 된 바로 그 사례, mockTargets.ts 헤더·PreviewPane.tsx의
+  // "unfixable도 target != null이면 배선한다" 참고). 다만 아래 `unwired`는
+  // 그 그룹 전체가 아니라 "text" 라벨을 문자열로 골라낸 부분집합이다 —
+  // on-solid은 다른 라벨("솔리드 위 글자")을 달고 있어 이 필터에 안 걸린다.
+  // 그래서 이 부분집합으로 좁히면: "text" 라벨을 단 항목은 전부 비-조정
+  // 가능(adjustable=false, 즉 상태색) 스케일의 실패이고, 그 상태색 넷의
+  // "text"(text-strong의 TEXT_ROLES 짝, 다른 stop) 역할만 mockTargetFor에서
+  // null이다 — 목업의 상태 칩이 text-strong stop만 읽고 text stop을 쓰는
+  // 요소가 없어서다.
   it("대응 요소가 없는 경고는 실제로 hover해도 아무 것도 안 켜진다", () => {
     render(<ColorPalettePage />);
     const details = screen.getByText(/고칠 수 없는 미달/).closest("details")!;
     const inside = Array.from(details.querySelectorAll('[data-testid="contrast-badge"]'));
-    const unwired = inside.filter((b) => !/솔리드 위 글자/.test(b.textContent ?? ""));
+    const unwired = inside.filter((b) => (b.textContent ?? "").includes(roleLabel("text")));
     expect(unwired.length).toBeGreaterThan(0);
 
     unwired.forEach((b) => {
@@ -971,10 +1118,15 @@ describe("한 번에 고치기가 무엇을 바꿨는지 말한다 (Task 7, D5)"
     expect(within(pane).getAllByRole("status").length).toBe(1);
   });
 
-  // I-1: text-strong이 옮겨지면 error 배지 글자색도 실제로 따라 움직인다
-  // (Mock의 error 배지는 at(err, "text-strong")으로 그린다 — roles가 전역
-  // 공유라서다, applyRoleShifts 참고). "대응 요소가 없다"던 이전 주장은
-  // 사실이 아니었다 — error-badge도 셋에 포함돼 강조돼야 한다.
+  // I-1: text-strong이 옮겨지면 그 role을 실제로 읽는 목업 요소가 따라
+  // 움직인다(Mock이 at(sc, "text-strong")으로 그린다 — roles가 전역 공유라서다,
+  // applyRoleShifts 참고). "대응 요소가 없다"던 이전 주장은 사실이 아니었다.
+  //
+  // 뒤집는다: 이전 버전은 이 셋에 error-badge를 넣었다 — 그때는 실패 칩이
+  // subtle-bg + text-strong으로 그려져 text-strong 이동에 실제로 반응했기
+  // 때문이다. 2026-09-01 스펙 D5로 실패 칩이 solid + on-solid로 바뀌면서
+  // error-badge는 text-strong을 더 이상 안 읽는다(알려진 한계 1) — 대신
+  // text-strong을 읽는 상태 칩 셋(warning·success·info)이 들어온다.
   //
   // C-1: #eab308의 이동은 라이트 전용이므로 다크 목업 셋은 전부 안 켜져야
   // 한다 — 안 그러면 안 바뀐 다크 요소에 거짓 강조가 걸린다.
@@ -984,14 +1136,30 @@ describe("한 번에 고치기가 무엇을 바꿨는지 말한다 (Task 7, D5)"
     fireEvent.click(screen.getByRole("button", { name: "한 번에 고치기" }));
 
     const light = screen.getByTestId("mock-light");
-    for (const target of ["card-text", "card-subtext", "share-btn", "error-badge"] as const) {
+    for (const target of [
+      "card-text", "card-subtext", "share-btn",
+      // error-badge는 빠진다 — 실패 칩이 solid+on-solid로 바뀌어 text-strong
+      // 이동에 안 움직인다(스펙 D5, 알려진 한계 1). 대신 text-strong을 실제로
+      // 읽는 상태 칩 셋이 들어온다.
+      "warning-badge", "success-badge", "info-badge",
+    ] as const) {
       expect(
         light.querySelector(`[data-mock-target="${target}"]`)?.getAttribute("data-highlighted"),
       ).toBe("true");
     }
+    // 알려진 한계 1을 프로즈가 아니라 단언으로 고정한다 — 실패 칩은
+    // solid+on-solid로 그려서 text-strong 이동에 안 움직인다. 위 루프에서
+    // error-badge를 뺀 것과 정확히 짝을 이루는 부정 단언이 없으면 "안 움직인다"는
+    // 주석으로만 존재하고, error-badge가 실수로 다시 켜져도 이 테스트는 못 잡는다.
+    expect(
+      light.querySelector('[data-mock-target="error-badge"]')?.getAttribute("data-highlighted"),
+    ).toBeNull();
 
     const dark = screen.getByTestId("mock-dark");
-    for (const target of ["card-text", "card-subtext", "share-btn", "error-badge"] as const) {
+    for (const target of [
+      "card-text", "card-subtext", "share-btn",
+      "warning-badge", "success-badge", "info-badge",
+    ] as const) {
       expect(
         dark.querySelector(`[data-mock-target="${target}"]`)?.getAttribute("data-highlighted"),
       ).toBeNull();
@@ -1434,5 +1602,145 @@ describe("pin 소멸 배너 만료 (최종 리뷰 I-1)", () => {
     expect(screen.queryByRole("button", { name: "복원" })).toBeNull();
     expect(window.location.search).toContain("a=22c55e");
     expect(window.location.search).not.toContain("s7=295bac");
+  });
+});
+
+// 직전 사이클이 같은 종류의 판정에서 두 라운드를 썼다(최종 리뷰 I-1 라운드
+// 2·3): "지금 드래그 중인가"를 pointerdown~pointerup으로 근사했더니
+// pointercancel 한 번에 영원히 참으로 고착되고, 키보드 넛지는 포인터 이벤트가
+// 아니라 아예 안 잡혔다. 그 교훈을 되풀이하지 않는다 — 판정 축이 데드라인이라
+// **끄는 이벤트가 없고**, 그래서 못 받아서 고착될 이벤트도 없다(스펙 D3).
+describe("피커 조작 중 accent-500 강조 (스펙 D3)", () => {
+  const anchorSwatch = () =>
+    screen.getByTestId("palette-section").querySelectorAll('[data-testid="swatch"]')[5];
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("기본 상태에서는 강조가 없다", () => {
+    render(<ColorPalettePage />);
+    expect(anchorSwatch().getAttribute("data-emphasized")).toBeNull();
+  });
+
+  it("피커 pointerdown이 강조를 켠다", () => {
+    vi.useFakeTimers();
+    render(<ColorPalettePage />);
+    act(() => {
+      fireEvent.pointerDown(screen.getByTestId("accent-picker"));
+    });
+    expect(anchorSwatch().getAttribute("data-emphasized")).toBe("true");
+  });
+
+  // 핵심 단언 — pointerup/pointercancel/lostpointercapture를 **하나도 안 보내도**
+  // 풀린다. 끝을 감지하지 않는다는 것이 방어 코드가 아니라 판정 축의 성질임을
+  // 고정한다.
+  it("끝 이벤트를 하나도 안 받아도 600ms 뒤 풀린다 (고착 불가)", () => {
+    vi.useFakeTimers();
+    render(<ColorPalettePage />);
+    act(() => {
+      fireEvent.pointerDown(screen.getByTestId("accent-picker"));
+    });
+    expect(anchorSwatch().getAttribute("data-emphasized")).toBe("true");
+    act(() => {
+      vi.advanceTimersByTime(600);
+    });
+    expect(anchorSwatch().getAttribute("data-emphasized")).toBeNull();
+  });
+
+  // 데드라인은 활동마다 **갱신**된다 — 드래그가 길어도 중간에 안 꺼진다.
+  it("활동이 이어지면 만료가 미뤄진다", () => {
+    vi.useFakeTimers();
+    render(<ColorPalettePage />);
+    act(() => {
+      fireEvent.pointerDown(screen.getByTestId("accent-picker"));
+    });
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
+    expect(anchorSwatch().getAttribute("data-emphasized")).toBe("true");
+    act(() => {
+      fireEvent.pointerDown(screen.getByTestId("accent-picker"));
+    });
+    act(() => {
+      vi.advanceTimersByTime(400); // 첫 활동 기준으로는 800ms — 갱신 안 되면 꺼진다
+    });
+    expect(anchorSwatch().getAttribute("data-emphasized")).toBe("true");
+  });
+
+  // hex 칸은 "피커 위"가 아니다 — 완결된 값 하나를 통째로 정하는 별개 행동이고,
+  // AccentInput의 sessionGen이 이미 같은 축으로 둘을 가른다(스펙 D3).
+  it("hex 칸 커밋은 강조를 안 켠다", () => {
+    vi.useFakeTimers();
+    render(<ColorPalettePage />);
+    act(() => {
+      fireEvent.change(screen.getByLabelText("액센트 hex"), { target: { value: "#00a3a3" } });
+    });
+    expect(anchorSwatch().getAttribute("data-emphasized")).toBeNull();
+  });
+});
+
+describe("목업 (스펙 D4·D5)", () => {
+  it("상태색 4종이 라이트·다크 목업에 각각 하나씩 있다", () => {
+    render(<ColorPalettePage />);
+    for (const theme of ["light", "dark"] as const) {
+      const mock = screen.getByTestId(`mock-${theme}`);
+      for (const t of ["error-badge", "warning-badge", "success-badge", "info-badge"]) {
+        expect(mock.querySelectorAll(`[data-mock-target="${t}"]`).length).toBe(1);
+      }
+    }
+  });
+
+  // jsdom(cssstyle)은 style을 rgb()로 직렬화한다 — hex 문자열로는 절대
+  // 매치되지 않는다(위 "솔리드 버튼 글자색…" 테스트와 같은 사정). onSolidColor는
+  // "#ffffff"|"#000000" 둘뿐이라 그 자리는 그대로 매핑하면 되지만, solid
+  // 배경은 임의의 hex라 실제로 hex→rgb 변환이 필요하다.
+  const hexToRgb = (hex: string): string => {
+    const n = parseInt(hex.slice(1), 16);
+    return `rgb(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255})`;
+  };
+
+  // 실패 칩만 solid + on-solid다(스펙 D5) — 배경이 solid stop이고 글자가
+  // onSolidColor(solid)임을 실제 스타일로 고정한다. 나머지 셋과 다른 장치를
+  // 쓴다는 사실이 조용히 뒤집히지 않게 한다.
+  it("실패 칩은 solid 배경에 on-solid 글자다", () => {
+    render(<ColorPalettePage />);
+    const scales = deriveScales(defaultState(DEFAULT_ACCENT));
+    const solid = scales.semantic.error[5]; // roles.ts: solid는 light·dark 모두 index 5
+    const chip = screen
+      .getByTestId("mock-light")
+      .querySelector('[data-mock-target="error-badge"]') as HTMLElement;
+    expect(chip.style.background).toBe(hexToRgb(solid));
+    expect(chip.style.color).toBe(
+      onSolidColor(solid) === "#ffffff" ? "rgb(255, 255, 255)" : "rgb(0, 0, 0)",
+    );
+  });
+
+  // 카드 제목과 지표 수치가 같은 역할(neutral text-strong)을 쓴다 — 뱃지 하나가
+  // 둘을 함께 밝히는 것이 정확하다("이 역할은 여기 두 곳에 쓰인다", 스펙 D4).
+  it("card-text를 쓰는 요소가 둘이다 — 제목과 지표 수치", () => {
+    render(<ColorPalettePage />);
+    expect(
+      screen.getByTestId("mock-light").querySelectorAll('[data-mock-target="card-text"]').length,
+    ).toBe(2);
+  });
+
+  // 11px/10px는 "만든 색이 실제로 어떻게 보이는가"를 거의 못 답한다.
+  // 목업 안 텍스트는 크롬이 아니라 색칠 대상인 샘플 UI라 3.3 D4의 크롬 12px
+  // 하한이 적용 안 되던 자리였다(스펙 D4).
+  it("카드 제목·서브텍스트가 ds-type 토큰을 쓴다", () => {
+    render(<ColorPalettePage />);
+    const mock = screen.getByTestId("mock-light");
+    expect(mock.querySelector('[data-mock-target="card-text"]')!.className)
+      .toContain("ds-type-heading-xxs");
+    expect(mock.querySelector('[data-mock-target="card-subtext"]')!.className)
+      .toContain("ds-type-caption-sm");
+  });
+
+  // 막대는 안 건드린다 — BAR_STOPS의 비대칭 구간 함정(PreviewPane 주석)을
+  // 이번에 열지 않는다.
+  it("막대 다섯은 그대로다", () => {
+    render(<ColorPalettePage />);
+    expect(screen.getAllByTestId("mock-bar").length).toBe(10); // 라이트 5 + 다크 5
   });
 });

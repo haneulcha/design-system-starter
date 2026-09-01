@@ -12,6 +12,16 @@ import { DownloadRow } from "./DownloadRow";
 import { NeutralControl } from "./NeutralControl";
 import { PreviewPane } from "./PreviewPane";
 
+// 강조가 살아 있는 시간. 이 화면의 다른 두 타이머보다 훨씬 짧다 —
+// DownloadRow 복사 피드백 2000, PreviewPane 적용 강조 3000. 그 둘은 **완료된
+// 행동**을 알리지만 이건 **진행 중인 제스처**를 따라가므로 길면 조작과 어긋난다.
+// 부수효과 하나가 바람직하다: 손을 뗀 뒤에도 이만큼 링이 남아 "500이 어디
+// 앉았는지" 확인할 틈이 생긴다(스펙 D3).
+const PICK_EMPHASIS_MS = 600;
+// paletteState의 pinsOf가 anchor로 넣는 자리 — accent[5]는 문자 그대로 피커
+// 위의 hex다. 강조가 사실 지목인 근거가 이 상수다.
+const ANCHOR_STOP = 5;
+
 export function ColorPalettePage() {
   const [state, setState] = useState<PaletteState>(() => parse(window.location.search));
   const [open, setOpen] = useState<number | null>(null);
@@ -37,6 +47,28 @@ export function ColorPalettePage() {
   // hex 칸 커밋은 새 세대(AccentInput.tsx 주석 참고). "끝"을 감지할 필요가
   // 없어 pointercancel류의 실패 모드 자체가 없다.
   const sessionAtDrop = useRef<number | null>(null);
+
+  // "지금 피커를 조작 중인가"를 **끝 이벤트로 판정하지 않는다**(스펙 D3).
+  // 활동이 올 때마다 타이머를 새로 걸어 만료 시각을 뒤로 민다 — 갱신만 있고
+  // 종료 신호가 없으므로, pointerup·pointercancel·lostpointercapture 중
+  // 무엇이 오든 혹은 하나도 안 오든 결과가 같다. 직전 사이클이 두 라운드를
+  // 쓴 고착(I-1 라운드 2·3)이 구조적으로 불가능해진다.
+  const [picking, setPicking] = useState(false);
+  const pickTimerRef = useRef<number | null>(null);
+
+  const onPickingActivity = () => {
+    setPicking(true);
+    if (pickTimerRef.current !== null) window.clearTimeout(pickTimerRef.current);
+    pickTimerRef.current = window.setTimeout(() => {
+      setPicking(false);
+      pickTimerRef.current = null;
+    }, PICK_EMPHASIS_MS);
+  };
+
+  // 언마운트 시 남은 타이머를 걷는다 — 사라진 컴포넌트에 setState하지 않는다.
+  useEffect(() => () => {
+    if (pickTimerRef.current !== null) window.clearTimeout(pickTimerRef.current);
+  }, []);
 
   const onAccentChange = (accentHex: string, session: number) =>
     setState((s) => {
@@ -162,25 +194,63 @@ export function ColorPalettePage() {
                  lg:grid-cols-[1fr_380px]"
       style={{
         padding: "var(--ds-space-lg)",
-        // row/column을 갈라 잡는다 — 하나로 32(--ds-space-xl)를 쓰면 스테이지
-        // 사이가 24에서 32로 벌어져 3칸에서 +24px, 3.3이 남긴 세로 여유
-        // 12.64px를 그 자리에서 넘긴다.
-        rowGap: "var(--ds-space-lg)",
+        // 걷어낸 스테이지 제목이 지던 "여기부터 다른 단계"를 간격이 진다
+        // (스펙 D1). 값은 셋뿐이다 — 12 = 입력과 그 결과 / 16 = 이웃 블록 /
+        // 32 = 다른 덩어리. rowGap을 **가장 좁은 12**로 두고 넓히는 자리만
+        // 명시적으로 올린다: 넓은 기본값에 좁히는 예외를 다는 것보다 어긋날
+        // 자리가 적다. 12가 여기 서는 이유는 이 그리드의 유일한 "좁은" 경계가
+        // ① 피커 카드 → ② 액센트 띠(입력과 그 결과)이기 때문이다.
+        rowGap: "var(--ds-space-sm)",
+        // columnGap 32는 직전 스펙 D1의 분리를 그대로 잇는다 — row와 하나로
+        // 합치면 스테이지 사이가 벌어져 세로 예산을 그 자리에서 넘긴다.
         columnGap: "var(--ds-space-xl)",
       }}
     >
-      <h1 className="ds-type-heading-sm lg:col-span-2">컬러 팔레트</h1>
+      {/* "컬러 팔레트"가 아니라 "생성기"다 — 이 화면은 팔레트가 아니라
+          팔레트를 만드는 도구다. 값(heading.sm 24)은 3.3 D5 그대로 두되,
+          그 근거 중 하나("16으로 내리면 스테이지 제목과 같아진다")는 시각
+          스테이지 제목이 사라지며 소멸했다(스펙 D1). 남은 근거는 "페이지에
+          하나뿐인 최상위 제목"뿐이다.
+          marginBottom 16 + main rowGap 12 = 28 ≈ "다른 덩어리". 32에 4 모자란
+          것은 rowGap이 12로 고정이라 xl(32)을 더하면 44가 되기 때문이다 —
+          토큰 밖 값을 만들지 않고 16을 택했다. */}
+      <h1
+        className="ds-type-heading-sm lg:col-span-2"
+        style={{ marginBottom: "var(--ds-space-md)" }}
+      >
+        컬러 팔레트 생성기
+      </h1>
 
-      <section className="lg:col-start-1" style={{ display: "grid", gap: "var(--ds-space-sm)" }}>
-        <h2 className="ds-type-heading-xxs">① 앵커 정하기</h2>
-        <AccentInput hex={state.accentHex} onChange={onAccentChange} />
+      <section className="lg:col-start-1">
+        <h2 className="sr-only">앵커 정하기</h2>
+        <AccentInput
+          hex={state.accentHex}
+          onChange={onAccentChange}
+          onPickingActivity={onPickingActivity}
+        />
       </section>
 
-      <section className="lg:col-start-1" style={{ display: "grid", gap: "var(--ds-space-md)" }}>
-        <h2 className="ds-type-heading-xxs">② 만들어진 팔레트</h2>
+      <section
+        data-testid="palette-section"
+        className="lg:col-start-1"
+        style={{ display: "grid", gap: "var(--ds-space-xl)" }}
+      >
+        <h2 className="sr-only">만들어진 팔레트</h2>
 
+        {/* ⚠️ gap: xl은 sr-only h2와 첫 자식 사이에도 걸린다. sr-only는
+            position: absolute라 grid 아이템에서 제외되어 **행을 안 먹는다** —
+            직전 스펙이 pin 라이브 리전에서 실측으로 확인한 것과 같은
+            성질이다(915 → 911). */}
         <div style={{ display: "grid", gap: "var(--ds-space-xxs)" }}>
-          <div className="ds-type-caption-sm text-neutral-500">액센트</div>
+          {/* "제거"가 아니라 sr-only다(2026-09-01 최종 리뷰 정정 — 최초 스펙 D1은
+              "제거"라고 적었다). 최초 근거("바로 위가 피커 카드, 바로 아래가
+              뉴트럴 라벨이라 위치로 정해진다")는 화면에는 맞지만 스크린리더에는
+              위치가 없다(AdjustableScale.tsx: "스크린리더에는 위치가 없다") —
+              그 근거로 라벨을 DOM에서 완전히 지우면 이 화면에서 유일하게 이름
+              없는 띠가 액센트가 된다. sr-only로 내려 성공 기준 2("접근성 골격은
+              안 잃는다")를 지킨다. sr-only는 position:absolute라 grid 아이템에서
+              제외되어 행을 안 먹는다 — 시각 레이아웃에는 영향이 없다. */}
+          <div className="sr-only">액센트</div>
           {/* 액센트 띠 바로 위, 한 줄 상한 — main 컬럼 세로 예산에 걸린다.
               truncate로 물리적 줄바꿈 자체를 막는다: 좁은 화면에서 문구가
               길어지는 대신 잘리는 쪽을 택한다(1줄 초과는 예산을 넘긴다).
@@ -244,6 +314,7 @@ export function ColorPalettePage() {
             // 확대 확인 후 테두리만 neutral-400으로 강화(스펙 D9,
             // AdjustableScale의 boundaryEmphasis 주석 참조).
             boundaryEmphasis={[0]}
+            emphasis={picking ? ANCHOR_STOP : null}
             onPick={(i) => { setOpen(open === i ? null : i); setHover(null); }}
             preview={open !== null && hover ? previewScale(state, open, hover) : null}
             openIndex={open}
@@ -264,62 +335,80 @@ export function ColorPalettePage() {
           />
         </div>
 
-        <div style={{ display: "grid", gap: "var(--ds-space-xs)" }}>
-          <div className="ds-type-caption-sm text-neutral-500">뉴트럴</div>
-          <AdjustableScale hexes={scales.neutral} adjustable={[]} pinned={[]} />
-          <NeutralControl
-            state={state}
-            onChange={(tint) => setState((s) => ({ ...s, tint }))}
-          />
-        </div>
-
-        {/* 상태색은 접지 않는다 — 산출물에 무조건 들어가므로 화면에 없으면
-            받아간 파일에 모르는 색이 들어있게 된다 (사이클 3 D7). 라벨을 왼쪽
-            열로 빼고 띠를 compact로 낮춰 세로를 아낀다 (스펙 D3).
-            2×2 그리드는 사람 승인 4번째 나사(Task 7 후속) — 4줄(~112px)을
-            2줄(~56px)로 압축해 900px 세로 예산의 잔여 35.36px 초과분을 덮는다.
-            stop 번호가 없고(showCaptions=false) 조정 불가라 히트 타깃도 없어
-            절반 폭(스톱당 ~30px)에서도 "산출물에 이 색이 들어간다"는 목적은
-            유지된다(사이클 3 D7 "얇게 노출") — CSS 그리드라 DOM 순서·인덱스는
-            그대로다. */}
-        <div
-          data-testid="semantic-section"
-          style={{ display: "grid", gap: "var(--ds-space-xxs)" }}
-        >
-          <div className="ds-type-caption-sm text-neutral-500">상태색</div>
-          {/* 2×2는 lg 전용이다 — 390px에서 그대로 두면 스톱당 폭이 ~7px로
-              줄어 사이클 3 D7 "얇게 노출"의 목적(그래도 색은 식별된다)이
-              깨진다. 좁은 화면은 1열로 쌓아 스톱 폭을 지킨다. */}
+        {/* 뉴트럴 띠 → 상태색은 "이웃 블록"(16)이다 — 둘 다 생성된 산출물이라
+            액센트↔이 래퍼의 "다른 덩어리"(32)와는 다른 관계다(스펙 D1 표,
+            2026-09-01 최종 리뷰로 코드에 맞춰 정정 — 최초 구현은 이 자리도
+            palette-section의 gap: xl을 그대로 물려받아 32였다). gap: xl은
+            palette-section의 **모든** 직계 자식 사이에 걸리므로, 뉴트럴·상태색
+            둘을 감싸는 래퍼를 하나 두고 그 **안쪽** gap만 16으로 따로 준다 —
+            그래야 palette-section 레벨에서는 [액센트 그룹, 이 래퍼] 두 자식만
+            보여 액센트↔래퍼 32는 그대로 유지된다. */}
+        <div style={{ display: "grid", gap: "var(--ds-space-md)" }}>
+          {/* 액센트와 같은 "입력 → 결과" 방향이다(스펙 D2) — 컨트롤이 위, 띠가
+              아래. 그 사이 12는 ① 피커 카드 → 액센트 띠와 **같은 뜻**의 12다.
+              같은 관계에 같은 값을 쓰는 것이 D1 간격 위계의 요점이다. */}
           <div
-            className="grid grid-cols-1 lg:grid-cols-2"
-            style={{ columnGap: "var(--ds-space-md)", rowGap: "var(--ds-space-xxs)" }}
+            data-testid="neutral-section"
+            style={{ display: "grid", gap: "var(--ds-space-sm)" }}
           >
-            {SEMANTIC_ANCHORS.map((a) => (
-              <div
-                key={a.id}
-                // 56px 고정 트랙은 라벨이 자라면(예: 더 긴 문구로 바뀌면) 조용히
-                // 스와치를 덮는다 — 현 라벨도 12px에서 이미 56px를 살짝 넘겨
-                // gap이 흡수 중이었다. minmax(56px, auto)로 트랙이 늘어나게 둔다.
-                className="grid grid-cols-[minmax(56px,auto)_1fr] items-center"
-                style={{ gap: "var(--ds-space-xs)" }}
-              >
+            <NeutralControl
+              state={state}
+              onChange={(tint) => setState((s) => ({ ...s, tint }))}
+            />
+            <div style={{ display: "grid", gap: "var(--ds-space-xxs)" }}>
+              <div className="ds-type-caption-sm text-neutral-500">뉴트럴</div>
+              <AdjustableScale hexes={scales.neutral} adjustable={[]} pinned={[]} />
+            </div>
+          </div>
+
+          {/* 상태색은 접지 않는다 — 산출물에 무조건 들어가므로 화면에 없으면
+              받아간 파일에 모르는 색이 들어있게 된다 (사이클 3 D7). 라벨을 왼쪽
+              열로 빼고 띠를 compact로 낮춰 세로를 아낀다 (스펙 D3).
+              2×2 그리드는 사람 승인 4번째 나사(Task 7 후속) — 4줄(~112px)을
+              2줄(~56px)로 압축해 900px 세로 예산의 잔여 35.36px 초과분을 덮는다.
+              stop 번호가 없고(showCaptions=false) 조정 불가라 히트 타깃도 없어
+              절반 폭(스톱당 ~30px)에서도 "산출물에 이 색이 들어간다"는 목적은
+              유지된다(사이클 3 D7 "얇게 노출") — CSS 그리드라 DOM 순서·인덱스는
+              그대로다. */}
+          <div
+            data-testid="semantic-section"
+            style={{ display: "grid", gap: "var(--ds-space-xxs)" }}
+          >
+            <div className="ds-type-caption-sm text-neutral-500">상태색</div>
+            {/* 2×2는 lg 전용이다 — 390px에서 그대로 두면 스톱당 폭이 ~7px로
+                줄어 사이클 3 D7 "얇게 노출"의 목적(그래도 색은 식별된다)이
+                깨진다. 좁은 화면은 1열로 쌓아 스톱 폭을 지킨다. */}
+            <div
+              className="grid grid-cols-1 lg:grid-cols-2"
+              style={{ columnGap: "var(--ds-space-md)", rowGap: "var(--ds-space-xxs)" }}
+            >
+              {SEMANTIC_ANCHORS.map((a) => (
                 <div
-                  // 라벨 색은 neutral-500이다 — 400은 흰 배경에서 2.58:1로 기준
-                  // 미달이다. 상태색 이름을 못 읽으면 어느 팔레트인지 알 수
-                  // 없으므로 장식이 아니다 (스펙 D2).
-                  className="ds-type-caption-sm text-neutral-500 whitespace-nowrap"
+                  key={a.id}
+                  // 56px 고정 트랙은 라벨이 자라면(예: 더 긴 문구로 바뀌면) 조용히
+                  // 스와치를 덮는다 — 현 라벨도 12px에서 이미 56px를 살짝 넘겨
+                  // gap이 흡수 중이었다. minmax(56px, auto)로 트랙이 늘어나게 둔다.
+                  className="grid grid-cols-[minmax(56px,auto)_1fr] items-center"
+                  style={{ gap: "var(--ds-space-xs)" }}
                 >
-                  {a.label}
+                  <div
+                    // 라벨 색은 neutral-500이다 — 400은 흰 배경에서 2.58:1로 기준
+                    // 미달이다. 상태색 이름을 못 읽으면 어느 팔레트인지 알 수
+                    // 없으므로 장식이 아니다 (스펙 D2).
+                    className="ds-type-caption-sm text-neutral-500 whitespace-nowrap"
+                  >
+                    {a.label}
+                  </div>
+                  <AdjustableScale
+                    hexes={scales.semantic[a.id]}
+                    adjustable={[]}
+                    pinned={[]}
+                    showCaptions={false}
+                    compact
+                  />
                 </div>
-                <AdjustableScale
-                  hexes={scales.semantic[a.id]}
-                  adjustable={[]}
-                  pinned={[]}
-                  showCaptions={false}
-                  compact
-                />
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -341,8 +430,16 @@ export function ColorPalettePage() {
         />
       </aside>
 
-      <section className="lg:col-start-1" style={{ display: "grid", gap: "var(--ds-space-sm)" }}>
-        <h2 className="ds-type-heading-xxs">③ 받기</h2>
+      {/* marginTop 8 + main rowGap 12 = 20. ②의 상태색 띠와 받기 카드 사이는
+          "다른 덩어리"지만, 받기 카드는 자체 테두리가 있어 경계를 스스로
+          만든다 — 32까지 벌리면 lg에서 카드가 폴드 아래로 밀린다(Task 6
+          실측으로 확정). */}
+      <section
+        data-testid="download-section"
+        className="lg:col-start-1"
+        style={{ marginTop: "var(--ds-space-xs)" }}
+      >
+        <h2 className="sr-only">받기</h2>
         <DownloadRow scales={scales} roles={roles} />
       </section>
     </main>
