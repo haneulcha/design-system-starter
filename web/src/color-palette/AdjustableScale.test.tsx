@@ -186,4 +186,35 @@ describe("AdjustableScale", () => {
     expect(swatches[3].className).toContain("border-neutral-300");
     expect(swatches[3].className).toContain("shadow-[0_2px_0_0_var(--color-neutral-300)]");
   });
+
+  // accent[5]는 paletteState의 pinsOf가 anchor로 넣는 자리라 **문자 그대로
+  // 피커 위의 hex**다. 강조는 "지금 네가 정하는 자리가 여기다"라는 사실
+  // 지목이다(스펙 D3). 판단(언제 켜는가)은 부모에 있고 여긴 그리기만 한다.
+  it("emphasis가 준 인덱스에만 표식이 붙는다", () => {
+    render(<AdjustableScale hexes={HEXES} adjustable={[]} pinned={[]} emphasis={5} />);
+    const swatches = screen.getAllByTestId("swatch");
+    expect(swatches[5].getAttribute("data-emphasized")).toBe("true");
+    for (const i of [0, 4, 6, 10]) {
+      expect(swatches[i].getAttribute("data-emphasized")).toBeNull();
+    }
+  });
+
+  it("emphasis가 null이면 아무 표식도 없다", () => {
+    render(<AdjustableScale hexes={HEXES} adjustable={[]} pinned={[]} />);
+    for (const s of screen.getAllByTestId("swatch")) {
+      expect(s.getAttribute("data-emphasized")).toBeNull();
+    }
+  });
+
+  // 기각한 대안의 회귀 가드 — "나머지를 흐린다(opacity)"는 드래그하는 내내
+  // 램프 10칩을 실제와 다른 색으로 보이게 한다. 이 화면은 사다리의 간격을
+  // 눈으로 재는 도구이므로, 재려고 드래그하는 순간에 사다리가 거짓말을 하면
+  // 안 된다(스펙 D3의 기각 근거). 나중에 선의로 흐림을 더하면 여기서 걸린다.
+  it("강조가 다른 칩의 불투명도를 안 건드린다 (스펙 D3 기각 대안)", () => {
+    render(<AdjustableScale hexes={HEXES} adjustable={[]} pinned={[]} emphasis={5} />);
+    for (const s of screen.getAllByTestId("swatch")) {
+      expect((s as HTMLElement).style.opacity).toBe("");
+      expect(s.className).not.toMatch(/opacity-/);
+    }
+  });
 });
