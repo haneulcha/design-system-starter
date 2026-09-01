@@ -817,6 +817,27 @@ describe("접근성", () => {
     }
   });
 
+  // "자동으로"(되돌리기) 버튼은 두 자리 중 하나에 산다: 보통은 강도 행 안에,
+  // 무채색 틴트에서는 강도 행 자체가 사라지므로 따로 한 줄로. 무채색 분기를
+  // 지우면(예: "중복 버튼 정리" 리팩터) 강도 행이 없는 상태에서 되돌릴 길이
+  // 통째로 사라져 자동 스냅으로 못 돌아가는 함정이 된다 — 이 테스트는 그
+  // 분기 하나만 지워도 실패한다. state.tint는 칩을 눌러야 채워지므로(자동
+  // 스냅 중엔 null) 실제 UI로 칩을 눌러 도달한다.
+  it("자동으로 버튼은 무채색이든 아니든 항상 갈 곳이 있다", () => {
+    render(<ColorPalettePage />);
+
+    // 무채색: 강도 행이 없고, "자동으로"는 독립된 줄로 뜬다.
+    fireEvent.click(screen.getByRole("button", { name: /무채색/ }));
+    expect(screen.queryByRole("group", { name: "강도" })).toBeNull();
+    expect(screen.getByRole("button", { name: "자동으로" })).toBeTruthy();
+
+    // 비무채색: 강도 행이 있고, "자동으로"는 그 행 안에 있다.
+    fireEvent.click(screen.getByRole("button", { name: /웜 그레이/ }));
+    const strengthGroup = screen.getByRole("group", { name: "강도" });
+    const strengthRow = strengthGroup.parentElement!;
+    expect(strengthRow.contains(screen.getByRole("button", { name: "자동으로" }))).toBe(true);
+  });
+
   // 뱃지는 hover 프리뷰(shownScales)까지 반영해 스와치를 스칠 때마다 바뀐다.
   // 헤드라인은 그 뱃지 목록과 별개로 확정 팔레트(scales) 기준으로 낸다 —
   // "hover는 미리보기일 뿐 확정이 아니다"라는 이 화면의 계약을 헤드라인 자체의
